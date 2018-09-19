@@ -86,3 +86,4 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但应该不会太深入去做。毕竟 VIM 原生自带的 `<C-X><C-N>`、`<C-X><C-O>`、`<C-X><C-F>`以及`<C-X><C-L>`就已经是最好的补全工具了。
 
 Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源工具作者！为我带来很棒的灵感！~
+
