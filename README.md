@@ -9,7 +9,7 @@
 为什么又一个轮子？已有的 VIM 自动补全能力不够用吗：
 
 - [Omni-Completion](http://vim.wikia.com/wiki/Omni_completion)：VIM 默认代码补全，内置了一些常用语言的关键词，由于词表不能自由增减而且很古老，准确度已经大大下降了，但对于 HTML 和 CSS 来说还是很好的一个选择，优点是 VIM 自带，不用再安装了，使用 <kbd>C-X C-O</kbd> 呼出
-- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：这是一个非常棒的代码提示引擎，由 Google 工程师 Val Markovic 开发。YCM 非常适合写 C、CPP 和 Python，因为插件是基于 Python 的，编译安装后运行时速度很快，能够做到跟指敲击的自动补全，能够对 Python 做到一定程度的词义分析，给出更智能的提示，是 Python 编程最佳选择。YCM 有三个缺陷，第一是强依赖 Python，每次安装必须要重新编译，不够轻便携带，第二是语法上的支持稍弱，更没有整合进代码片段的缩写展开，第三，启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
+- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：这是一个非常棒的代码提示引擎，由 Google 工程师 Val Markovic 开发。YCM 非常适合写 C、CPP 和 Python，因为插件是基于 Python 的，编译安装后运行时速度很快，能够做到跟指敲击的自动补全，能够对 Python 做到一定程度的词义分析，给出更智能的提示，是 Python 编程最佳选择。YCM 有三点我不习惯，第一是强依赖 Python，每次安装必须要重新编译，不够轻便携带，第二是语法上的支持稍弱，必须整合 [Ultisnips](https://github.com/SirVer/ultisnips) 才能做代码片段展开，第三，启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
 - [SnipMate](https://github.com/garbas/vim-snipmate)：非常棒的代码展开补全工具，完全基于 VimL 实现，便携性很好，但它是一个类似 Zencoding 的代码展开工具，不带补全提示。
 - [Deoplete](https://github.com/Shougo/deoplete.nvim)：和 YouCompleteMe 齐名的补全框架，作者是日本人。该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 或者 [Neovim](https://github.com/neovim/neovim) 之上，而且必须依赖 Python3，便携性不佳，配置起来超级复杂，适合 VIM 深度玩家。
 - [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，交互设计上最符合我的习惯，基于 VIM8 和 Python，社区支持很不错，当前项目依然活跃，比较看好。因为使用了很多 VIM8 的新特性，对 VIM7 兼容不好。
@@ -86,6 +86,8 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 - 第三，脚本编程，VIM 为王。当编程语言（诸如 Swift、Kotlin、Go..）越来越像脚本的今天，VIM 将会发挥其独特的价值，越灵活、越简洁、越脚本化，VIM 就越适合。让 VIM 专注于文本编辑，配合 Unix 强大的工具平台，可以很好的搭配完成更复杂的业务，很好的适应快进快出、随时随地进入编程状态。这种“碎片编程”的特点，对初级开发者知识广度拓宽也是很有好处的。更何况，VIM 所形成的键盘肌肉记忆，对文本编辑提速极有帮助，最关键的是，**它很酷**。
 
 因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但应该不会太深入去做。从某种角度讲，VIM 原生的 <kbd>C-X C-N</kbd>、<kbd>C-X C-O</kbd>、<kbd>C-X C-F</kbd> 以及 <kbd>C-X C-L</kbd> 就已经是最好的补全工具了。
+
+此外，我整理了一份常用编程语言的词表 [vim-dictionary](https://github.com/jayli/vim-dictionary)，安装完成无需配置直接生效，配合 EasyComplete 使用体验最佳。
 
 > 当然 VIM 很多派生版本诸如 [SpaceVim](https://github.com/SpaceVim/SpaceVim) 和 [NeoVim](https://neovim.io/) 借助更强的 GUI 外壳也很好的满足工程型的编程。<br />也远超过我当下的需要 : )
 
