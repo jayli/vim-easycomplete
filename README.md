@@ -28,8 +28,37 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen) 安装（VIM7 & 8）
 
+先安装 EasyComplete
+
 	cd ~/.vim/bundle/
 	git clone https://github.com/jayli/vim-easycomplete.git
+
+然后在`~/.vim/bundle/`目录中安装 SnipMate
+
+	cd ~/.vim/bundle
+	git clone https://github.com/tomtom/tlib_vim.git
+	git clone https://github.com/MarcWeber/vim-addon-mw-utils.git
+	git clone https://github.com/garbas/vim-snipmate.git
+	git clone https://github.com/honza/vim-snippets.git
+
+最后推荐安装我整理的常用编程语言词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)：
+
+	cd ~/.vim/bundle
+	git clone https://github.com/jayli/vim-dictionary.git
+
+#### - 基于 [Vundle.vim](https://github.com/VundleVim/Vundle.vim) 安装（VIM7 & 8）
+
+在`.vimrc`中添加下面代码，进入`vim`后执行`:PluginInstall`
+
+	" SnipMate 携带的四个插件
+	Plugin 'MarcWeber/vim-addon-mw-utils'
+	Plugin 'tomtom/tlib_vim'
+	Plugin 'garbas/vim-snipmate'
+	Plugin 'honza/vim-snippets'  
+
+	" EasyComplete 插件和 Dictionary 词表
+	Plugin 'jayli/vim-easycomplete'
+	Plugin 'jayli/vim-dictionary'
 
 #### - 也可以直接基于 VIM8 安装
 
