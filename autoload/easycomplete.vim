@@ -166,9 +166,9 @@ function! easycomplete#CleverTab()
 			" 等同于 return "\<C-R>=snipMate#TriggerSnippet()\<CR>"
 			return jump
 		endif
-	elseif strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$' || 
-				\ strpart( getline('.'), col('.')-2, col('.')-1 ) =~ '\s' || 
-				\ len(getline('.')) == 0 
+	elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' || 
+				\ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' || 
+				\ len(s:StringTrim(getline('.'))) == 0 
 		" 如果整行是空行
 		" 前一个字符是空格
 		" 空行
