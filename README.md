@@ -1,6 +1,6 @@
 # Vim-EasyComplete 
 
-![Vim](https://img.shields.io/badge/vim-awesome-brightgreen.svg) [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge) 
+![Vim](https://img.shields.io/badge/vim-awesome-brightgreen.svg) [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/Linux-available-brightgreen.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg)
 
 一个简单轻便的 VIM 自动补全插件。@author：[Jayli](https://github.com/jayli)
 
