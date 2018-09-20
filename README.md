@@ -85,7 +85,7 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 
 因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但应该不会太深入去做。从某种角度讲，VIM 原生的 <kbd>C-X C-N</kbd>、<kbd>C-X C-O</kbd>、<kbd>C-X C-F</kbd> 以及 <kbd>C-X C-L</kbd> 就已经是最好的补全工具了。
 
-> 当然 VIM 很多派生版本诸如 [SpaceVim](https://github.com/SpaceVim/SpaceVim) 和 [NeoVim](https://neovim.io/) 借助更强的 GUI 外壳也很好的满足工程型的编程。也远超过我当下的需要 :)
+> 当然 VIM 很多派生版本诸如 [SpaceVim](https://github.com/SpaceVim/SpaceVim) 和 [NeoVim](https://neovim.io/) 借助更强的 GUI 外壳也很好的满足工程型的编程。<br />也远超过我当下的需要 : )
 
 Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源工具作者！为我带来很棒的灵感！~
 
