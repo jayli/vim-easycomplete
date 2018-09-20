@@ -2,11 +2,11 @@
 
 ![Vim](https://img.shields.io/badge/vim-awesome-brightgreen.svg) [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge) 
 
-一个简单轻便的 VIM 自动补全插件。@author：[拔赤](https://github.com/jayli)
+一个简单轻便的 VIM 自动补全插件。@author：[Jayli](https://github.com/jayli)
 
 ![](https://raw.githubusercontent.com/jayli/jayli.github.com/master/photo/assets/vim-easycomplete-1.gif)
 
-为什么又一个轮子？已有的 VIM 补全能力不够用吗：
+为什么又一个轮子？已有的 VIM 自动补全能力不够用吗：
 
 - [Omni-Completion](http://vim.wikia.com/wiki/Omni_completion)：VIM 默认代码补全，内置了一些常用语言的关键词，由于词表不能自由增减而且很古老，准确度已经大大下降了，但对于 HTML 和 CSS 来说还是很好的一个选择，优点是 VIM 自带，不用再安装了，使用 <kbd>C-X C-O</kbd> 呼出
 - [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：这是一个非常棒的代码提示引擎，由 Google 工程师 Val Markovic 开发。YCM 非常适合写 C、CPP 和 Python，因为插件是基于 Python 的，编译安装后运行时速度很快，能够做到跟指敲击的自动补全，能够对 Python 做到一定程度的词义分析，给出更智能的提示，是 Python 编程最佳选择。YCM 有三个缺陷，第一是强依赖 Python，每次安装必须要重新编译，不够轻便携带，第二是语法上的支持稍弱，更没有整合进代码片段的缩写展开，第三，启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
@@ -36,11 +36,11 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 代码片段补全支持（[SnipMate](https://github.com/garbas/vim-snipmate)）
 
-代码片段补全支持是可选项，但强烈建议安装。我这里依赖的代码片段引擎是 [SnipMate](https://www.vim.org/scripts/script.php?script_id=2540)，它同时也是 VIM 官方推荐插件，参照它[文档的基于 Pathogen 安装部分](https://github.com/garbas/vim-snipmate#installing-snipmate)。
+代码片段补全支持是可选项，但强烈建议安装。我这里依赖的代码片段引擎是 [SnipMate](https://www.vim.org/scripts/script.php?script_id=2540)，它同时也是 VIM 官方推荐插件，参照它[文档的基于 Pathogen 安装的部分](https://github.com/garbas/vim-snipmate#installing-snipmate)。
 
 ### 配置
 
-我习惯使用 <kbd>Tab</kbd> 键呼出补全菜单，如果遇到 <kbd>Tab</kbd> 键在插入模式下不能输出原始 `Tab`，我会习惯性的敲入 <kbd>Shift-Tab</kbd> 。这里以配置 <kbd>Tab</kbd> 键唤醒补全菜单为例：在`.vimrc`中加入：
+我习惯使用 <kbd>Tab</kbd> 键呼出补全菜单，如果遇到 <kbd>Tab</kbd> 键在插入模式下不能输出原始 `Tab`，我个人习惯敲入 <kbd>Shift-Tab</kbd> 。这里以配置 <kbd>Tab</kbd> 键唤醒补全菜单为例：在`.vimrc`中加入：
 
 	imap <Tab>   <Plug>EasyCompTabTrigger
 	imap <S-Tab> <Plug>EasyCompShiftTabTrigger
@@ -73,17 +73,19 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 
 <img src="https://gw.alicdn.com/tfs/TB1sbagbAvoK1RjSZFDXXXY3pXa-1078-448.png" width=400>
 
-代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/LB1wEy4bzTpK1RjSZKPXXa3UpXa-800-409.gif)展示了代码补全的情形。
+代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)展示了代码补全的情形。
 
 ### VIM 代码补全的一些思考
 
-首先，原生 VIM 不适合做 IDE，VIM 最擅长做“文本编辑”，基于 VIM 的代码编辑本质上是文本编辑，有三个特点：
+原生 VIM 不适合做 IDE，VIM 最擅长做“文本编辑”，根据我个人的使用场景，对编辑器的要求有三点：
 
-- 第一，随进随退，轻便开发。由于我在服务器编程时间时间较多，VIM 常被用来阅读源码、微调试和写快捷脚本，完成一个任务后就离开了，然后进入下一个任务，而 VIM 在这个过程中的文本编辑效率是最重要的，所谓轻便开发，就是我 ssh 到一个陌生的机器，一个命令就可以快速将 VIM 环境配置完成，随即进入任务，完成任务后离开服务器，有可能一阵子不会再回到这台机器。因此这时 VIM 不适于携带过多依赖，特别是对 Python 的依赖，因此要有取舍。
-- 第二，VIM 并不经常装载工程。也就是说对于包含大量源文件的源码工程，并不首先适于由原生 VIM 来装载。类似 Eclipse 和 Visual Studio 等等或许是最好的选择。VIM 的绝大多数特性和配置依赖于 VimL，VimL 毕竟只是脚本，性能上是有严重瓶颈的，装载工程是一件吃力的事情。比如最常用的自动补全功能，越希望它智能，就越需要框定工程边界，以防止查找溢出。而在 VIM 中做智能的语义补全，也因普遍缺少工程边界而变得很困难，比如 NodeJS 中的 node_modules 目录中的层层引用，如果需要在 JavaScript 中匹配出正确的对象成员，一次匹配相当于运行一次整个（边界不确定的）“工程”，消耗是巨大的。做不到精确，就无法带来更好的体验，当然，这也是 VIM 不擅长的地方。
-- 第三，脚本编程，VIM 为王。当编程语言（诸如 Swift、Kotlin、Go..）越来越像脚本的今天，VIM 将会发挥其独特的价值，越灵活、越简洁、越脚本化，VIM 就越适合。让 VIM 专注于文本编辑，配合 Unix 强大的工具平台，可以很好的搭配完成更复杂的业务，很好的适应快进快出、随时随地进入编程状态。这种“碎片编程”的表征，对初级开发者知识广度拓宽也是很有好处的。更何况，VIM 固有的键盘肌肉记忆，让 VIM 党们无条件为之狂热。我虽然不是 VIM 党，但也曾经为这种极客编程体验所感染，在 VIM 上撸过不少代码，还是感到非常庆幸的。
+- 第一，随进随退，轻便开发。由于我在服务器编程时间时间较多，VIM 常被用来阅读源码、微调试和写快捷脚本，完成一个任务后就离开了，随即进入下一个任务，这个过程中，VIM 的文本编辑效率非常重要，所谓轻便开发，就是我 ssh 到一个新的机器，用一个命令就可以快速将 VIM 环境配置完成，随即进入任务，完成任务后离开服务器，有可能一阵子不会再回到这台机器。所以 VIM 一定要易于配置，且不适于携带过多三方依赖，包括对 Python 的依赖，因此要有取舍。
+- 第二，VIM 并不经常装载工程。也就是说对于包含大量源文件的源码工程，并不首先适于由原生 VIM 来装载。类似 Eclipse 和 Visual Studio 等等或许是更好的选择。VIM 的绝大多数特性和配置依赖于 VimL，VimL 作为脚本，性能上是有瓶颈的，装载工程是一件吃力的事情。比如最常用的自动补全功能，越希望它智能，就越需要框定工程边界，以防止查找溢出。而在 VIM 中做智能的语义补全，也因普遍缺少工程边界而变得很困难，比如 NodeJS 中的 `node_modules` 目录中的层层引用，如果需要在 JavaScript 中匹配出正确的对象成员，一次匹配相当于运行一次整个（边界不确定的）“工程”，消耗是巨大的。做不到精确，就无法带来更好的体验。
+- 第三，脚本编程，VIM 为王。当编程语言（诸如 Swift、Kotlin、Go..）越来越像脚本的今天，VIM 将会发挥其独特的价值，越灵活、越简洁、越脚本化，VIM 就越适合。让 VIM 专注于文本编辑，配合 Unix 强大的工具平台，可以很好的搭配完成更复杂的业务，很好的适应快进快出、随时随地进入编程状态。这种“碎片编程”的特点，对初级开发者知识广度拓宽也是很有好处的。更何况，VIM 所形成的键盘肌肉记忆，对文本编辑提速极有帮助，最关键的是，**它很酷**。
 
-因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但应该不会太深入去做。毕竟 VIM 原生自带的 `<C-X><C-N>`、`<C-X><C-O>`、`<C-X><C-F>`以及`<C-X><C-L>`就已经是最好的补全工具了。
+因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但应该不会太深入去做。从某种角度讲，VIM 原生的 <kbd>C-X C-N</kbd>、<kbd>C-X C-O</kbd>、<kbd>C-X C-F</kbd> 以及 <kbd>C-X C-L</kbd> 就已经是最好的补全工具了。
+
+> 当然 VIM 很多派生版本诸如 [SpaceVim](https://github.com/SpaceVim/SpaceVim) 和 [NeoVim](https://neovim.io/) 借助更强的 GUI 外壳也很好的满足工程型的编程。也远超过我当下的需要 :)
 
 Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源工具作者！为我带来很棒的灵感！~
 
