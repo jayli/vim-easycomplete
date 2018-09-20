@@ -421,8 +421,8 @@ function! s:GetWrappedDictKeywordList()
 			try
 				let lines = readfile(onedict)
 			catch /.*/
-				echoe "关键词字典不存在!请删除该字典配置 ". 
-							\ "dictionary-=".onedict
+				"echoe "关键词字典不存在!请删除该字典配置 ". 
+				"			\ "dictionary-=".onedict
 				continue
 			endtry
 
