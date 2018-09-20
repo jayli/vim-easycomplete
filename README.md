@@ -16,7 +16,7 @@
 - [Zencoding](https://github.com/mattn/emmet-vim)：古老但很酷的 html 编程利器，适合写标签，自定义代码片段难度极高，毕竟太古老了，轻易用不到。
 - [TernJS](http://ternjs.net/)：TernJS 不是一个完整的插件，是一个 JavaScript 解释器，用来生成 JS 语法树，可以内嵌到一些插件里，辅助做到 JS 的上下文语义的提示补全，这个项目已经不维护了，另外两个缺陷是配置相对复杂，不够所见所得，还有就是不能做到 100% 的基于语义的补全，比如`var a = require("http")`，`a.`也做不到补全`http`模块成员，这个是 JS 这类脚本编程的通病。
 
-我的需求散落在各个插件里，四个主要需求，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，登录一台裸机，一个命令快速搞定，所以不能有 Python 依赖，要纯 VimL 实现。最后，相比于输入跟随提示（略干扰），我更习惯 <kbd>Tab</kbd> 提示。以上这些插件均不能同时满足我这四个需求，不得已我造了 [Vim-EasyComplete](https://github.com/jayli/vim-easycomplete)。
+我的需求散落在各个插件里，四个主要需求，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，登录一台裸机，一个命令快速搞定，所以不能有 Python 依赖，要纯 VimL 实现。最后，相比于输入跟随提示（略干扰），我更习惯 <kbd>Tab</kbd> 提示。以上这些插件均不能同时满足我这四个需求，不得已我造了 [Vim-EasyComplete](https://github.com/jayli/vim-easycomplete)，以及常用词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)（配合 EasyComplete 使用体验最佳）。
 
 因为要用到代码片段展开，Vim-EasyComplete 只对 SnipMate 有依赖，SnipMate 也是干净的 VimL 实现。当然，SnipMate 没有安装，EasyComplete 也是可以正常工作的。
 
@@ -28,22 +28,14 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen) 安装（VIM7 & 8）
 
-先安装 EasyComplete
+一口气安装 EasyComplete、vim-dictionary 和 snipmate
 
 	cd ~/.vim/bundle/
-	git clone https://github.com/jayli/vim-easycomplete.git
-
-然后在`~/.vim/bundle/`目录中安装 SnipMate
-
-	cd ~/.vim/bundle
 	git clone https://github.com/tomtom/tlib_vim.git
 	git clone https://github.com/MarcWeber/vim-addon-mw-utils.git
 	git clone https://github.com/garbas/vim-snipmate.git
 	git clone https://github.com/honza/vim-snippets.git
-
-最后推荐安装我整理的常用编程语言词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)：
-
-	cd ~/.vim/bundle
+	git clone https://github.com/jayli/vim-easycomplete.git
 	git clone https://github.com/jayli/vim-dictionary.git
 
 #### - 基于 [Vundle.vim](https://github.com/VundleVim/Vundle.vim) 安装（VIM7 & 8）
@@ -62,8 +54,22 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 也可以直接基于 VIM8 安装
 
+一口气安装：
+
 	git clone https://github.com/jayli/vim-easycomplete.git \
 		~/.vim/pack/dist/start/vim-easycomplete
+	git clone https://github.com/jayli/vim-dictionary.git \
+		~/.vim/pack/dist/start/vim-dictionary
+	git clone https://github.com/MarcWeber/vim-addon-mw-utils.git \
+		~/.vim/pack/dist/start/vim-addon-mw-utils
+	git clone https://github.com/tomtom/tlib_vim.git \
+		~/.vim/pack/dist/start/tlib_vim
+	git clone https://github.com/garbas/vim-snipmate.git \
+		~/.vim/pack/dist/start/vim-snipmate
+	git clone https://github.com/honza/vim-snippets.git \
+		~/.vim/pack/dist/start/vim-snippets
+	
+Done!
 
 #### - 代码片段补全支持（[SnipMate](https://github.com/garbas/vim-snipmate)）
 
