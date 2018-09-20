@@ -22,7 +22,7 @@
 
 ### 安装
 
-VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理器，这里以 Pathogen 插件安装为例子：
+VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理器：
 
 > EasyComplete 兼容 Linux 和 MacOS，暂不支持 CygWin
 
