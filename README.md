@@ -71,7 +71,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 	
 Done!
 
-> 代码片段补全支持是可选项，但强烈建议安装。我这里依赖的代码片段引擎是 [SnipMate](https://www.vim.org/scripts/script.php?script_id=2540)，它同时也是 VIM 官方推荐插件，参照它[文档的基于 Pathogen 安装的部分](https://github.com/garbas/vim-snipmate#installing-snipmate)。
+> 代码片段补全插件 SnipMate 支持尽管是可选项，但强烈建议安装。以上安装示例也包含 SnipMate 的安装，它同时也是 VIM 官方推荐插件，独立使用请参照[它的文档](https://github.com/garbas/vim-snipmate)。
 
 ### 配置
 
