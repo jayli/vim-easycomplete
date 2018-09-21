@@ -84,6 +84,8 @@ Done!
 
 > SnipMate 的代码补全功能已经整合入了 EasyComplete，原则上是不用针对 SnipMate 做额外配置的，安装好就好了。
 
+帮助 Tags 生成（可选）：安装完成后进入 VIM 执行`:helptags ~/.vim/bundle/vim-easycomplete/doc`，便可`:help easycomplete`来阅读文档
+
 ### 使用
 
 EasyComplete 目前有四种常见用法：关键词补全、字典补全、文件路径补全和代码片段补全，除了代码片段补全之外，其他三种补全逻辑参照了 YCM 的实现，比如文件路径补全和关键词补全是解耦开的。
