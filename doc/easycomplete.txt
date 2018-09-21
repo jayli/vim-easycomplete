@@ -1,0 +1,25 @@
+*easycomplete.txt*		Vim-EasyComplete Plugin
+
+			Copyright (c) 2018-2020 @Jayli
+	More Info:<https://github.com/jayli/vim-easycomplete>
+
+EasyComplete                                                     *easycomplete*
+
+===============================================================================
+
+介绍
+
+EasyComplete 是一个非常好用的自动补全插件，配合 Vim-Dictionary 使用效果更佳
+
+===============================================================================
+
+安装：参照文档 <https://github.com/jayli/vim-easycomplete>
+
+配置：在 .vimrc 中添加：
+
+>
+	imap <Tab>   <Plug>EasyCompTabTrigger
+	imap <S-Tab> <Plug>EasyCompShiftTabTrigger
+<
+
+S-Tab 配置是可选项，更多用法请参照源码
