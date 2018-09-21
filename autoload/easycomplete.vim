@@ -30,8 +30,10 @@ function! easycomplete#Enable()
 	set completeopt+=menuone
 	" 这个是非必要设置，通常用来表示可以为所有匹配项插入通用前缀符，这样就可以
 	" 为不同匹配项设置特定的标识，这个插件不需要这么复杂的设置。同时，设置
-	" longest可以阻断插件的正常运行
+	" longest 为贪婪匹配，这里不需要
 	set completeopt-=longest
+	" noselect 可配可不配
+	"set completeopt+=noselect
 	" <C-X><C-U><C-N>时触发默认关键词匹配，函数劫持至此
 	let &completefunc = 'easycomplete#CompleteFunc'
 	" 插入模式下的回车事件监听
@@ -482,6 +484,7 @@ function! s:CloseCompletionMenu()
 endfunction
 
 " 判断当前是否正在输入一个地址path
+" base 原本想传入当前文件名字，实际上传不进来，这里也没用到
 function! easycomplete#TypingAPath(base)
 	" 这里不清楚为什么
 	" 输入 ./a/b/c ，./a/b/  两者得到的prefx都为空
@@ -493,7 +496,7 @@ function! easycomplete#TypingAPath(base)
 
 	" 需要注意，参照上一个注释，fpath和spath只是path，没有filename
 	" 从正在输入的一整行字符(行首到光标)中匹配出一个path出来
-	" TODO 正则不严格，需要优化，下面这几个情况匹配不准确
+	" TODO（fixed） 正则不严格，需要优化，下面这几个情况匹配要正确
 	"	\ a <Tab>
 	"	\<Tab>
 	"	asdf \ asdf<Tab> 
@@ -501,31 +504,41 @@ function! easycomplete#TypingAPath(base)
 				\	"\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)") 
 
 	" 兼容单个 '/' 匹配的情况
-	let spath = substitute(fpath,"^[\\.\\/].*\\/","./","g") 
+	let spath = s:GetPathName( substitute(fpath,"^[\\.\\/].*\\/","./","g") )
+	" 清除对 '\' 的路径识别
+	let fpath = s:GetPathName(fpath)
 
-	let pathDict                  = {}
-	let pathDict.fname            = a:base
-	let pathDict.fpath            = s:GetPathName(fpath)	" fullpath
-	let pathDict.spath            = s:GetPathName(spath)	" shortpath
-	let pathDict.full_path_start  = coln - len(fpath) + 2
-	let pathDict.short_path_start = coln - len(spath) + 2
+	let pathDict                 = {}
+	let pathDict.line            = line
+	let pathDict.prefx           = prefx
+	" fname 暂没用上，放这里备用
+	let pathDict.fname           = s:GetFileName(prefx)
+	let pathDict.fpath           = fpath " fullpath
+	let pathDict.spath           = spath " shortpath
+	let pathDict.full_path_start = coln - len(fpath) + 2
+	if pathDict.fname == ''
+		let pathDict.short_path_start = coln - len(spath) + 2
+	else
+		let pathDict.short_path_start = coln - len(pathDict.fname)
+	endif
 
 	" 排除掉输入注释的情况
 	" TODO: bug => 如果输入'//'紧跟<Tab>出来仍然会<C-X><C-U><C-N>出补全菜单
-	if match(prefx,"\\(\\/\\/\\|\\/\\*\\)") < 0
-		let pathDict.isPath = !empty(fpath) && len(fpath) > 0 ? 1 : 0
-	else
+	if len(fpath) == 0 || match(prefx,"\\(\\/\\/\\|\\/\\*\\)") >= 0
 		let pathDict.isPath = 0
+	else
+		let pathDict.isPath = 1
 	endif
 
 	return pathDict
 endfunction
 
 " 根据输入的 path 匹配出结果，返回的是一个List ['f1','f2','d1','d2']
+" 查询条件实际上是用 base 来做的，typing_path 里无法包含当前敲入的filename
 " ./ => 基于当前 bufpath 查询
 " ../../ => 当前buf文件所在的目录向上追溯2次查询
 " /a/b/c => 直接从根查询
-function! s:GetDirAndFiles(typing_path)
+function! s:GetDirAndFiles(typing_path, base)
 	let fpath   = a:typing_path.fpath
 	let fname   = bufname('%')
 	let bufpath = s:GetPathName(fname)
@@ -536,19 +549,17 @@ function! s:GetDirAndFiles(typing_path)
 		let path = simplify(fpath)
 	endif
 
-	if a:typing_path.fname == ""
+	if a:base == ""
 		" 查找目录下的文件和目录
-		let result_list = systemlist('ls '. path)
+		let result_list = systemlist('ls '. path .
+										\ " 2>/dev/null") 
 	else
-		" 带有 filename 查找目录下匹配文件名前缀的文件和目录
-		let g:cmd = 'ls '. s:GetPathName(path) .
-					\ ' | grep -i ^' . a:typing_path.fname
 		" 这里没考虑Cygwin的情况
 		let result_list = systemlist('ls '. s:GetPathName(path) . 
 										\ " 2>/dev/null") 
 		" 使用filter过滤，没有使用grep过滤，以便后续性能调优
 		let result_list = filter(result_list, 
-				\ 'v:val =~ "'. a:typing_path.fname . '"')
+				\ 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
 	endif
 
 	return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path))
@@ -607,17 +618,16 @@ function! easycomplete#CompleteFunc( findstart, base )
 	let typing_path = easycomplete#TypingAPath(a:base)
 
 	" 如果正在敲入一个文件路径
-	if typing_path.isPath
+	if typing_path.isPath && a:findstart
 		" 兼容这几种情况 =>
 		" ./a/b/c/d
 		" ../asdf./
 		" /a/b/c/ds
 		" /a/b/c/d/
-		if a:findstart
-			return typing_path.short_path_start
-		endif
+		return typing_path.short_path_start
+	elseif typing_path.isPath
 		" 查找目录
-		let result = s:GetDirAndFiles(typing_path)
+		let result = s:GetDirAndFiles(typing_path, a:base)
 		return result
 	endif
 
@@ -626,6 +636,11 @@ function! easycomplete#CompleteFunc( findstart, base )
 		" 定位当前关键字的起始位置
 		let line = getline('.')
 		let start = col('.') - 1
+		" Hack: 如果是 '//' 后紧跟<Tab>，直接输出<Tab>
+		if strpart(line, start - 1, 2) == '//'
+			return start
+		endif
+
 		while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
 			let start -= 1
 		endwhile
@@ -642,7 +657,7 @@ function! easycomplete#CompleteFunc( findstart, base )
 	" tab 用 s-tab (我个人习惯)，而不是一味求全 tab 的容错，容错不报错也
 	" 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
 	" 这里需要读者注意
-	if len(all_result) == 0
+	if len(all_result) == 0 || len(a:base) == 0
 		call s:CloseCompletionMenu()
 		call s:SendKeys("\<Tab>")
 		return 0
