@@ -493,6 +493,10 @@ function! easycomplete#TypingAPath(base)
 
 	" 需要注意，参照上一个注释，fpath和spath只是path，没有filename
 	" 从正在输入的一整行字符(行首到光标)中匹配出一个path出来
+	" TODO 正则不严格，需要优化，下面这几个情况匹配不准确
+	"	\ a <Tab>
+	"	\<Tab>
+	"	asdf \ asdf<Tab> 
 	let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
 				\	"\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)") 
 
