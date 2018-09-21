@@ -558,6 +558,9 @@ function! s:GetDirAndFiles(typing_path, base)
 		let result_list = systemlist('ls '. s:GetPathName(path) . 
 										\ " 2>/dev/null") 
 		" 使用filter过滤，没有使用grep过滤，以便后续性能调优
+		" TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
+		" 只有首次点击<Tab>时能忽略大小写，
+		" 应该在del跟随和tab时都忽略大小写才对
 		let result_list = filter(result_list, 
 				\ 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
 	endif
