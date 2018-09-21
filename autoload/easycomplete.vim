@@ -622,7 +622,7 @@ function! easycomplete#CompleteFunc( findstart, base )
 		" 定位当前关键字的起始位置
 		let line = getline('.')
 		let start = col('.') - 1
-		while start > 0 && line[start - 1] =~ '\a'
+		while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
 			let start -= 1
 		endwhile
 		return start
