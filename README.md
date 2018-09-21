@@ -94,7 +94,7 @@ EasyComplete 目前有四种常见用法：关键词补全、字典补全、文�
 
 和 VIM 自带的智能补全 <kbd>C-X C-N</kbd> 能力一致，从当前缓冲区和字典中解析出关键词匹配出来，速度也是最快的。单词输入时按 <kbd>Tab</kbd> 呼出补全菜单，字典配置方法`set dictionary={你的字典文件}`，样例如下，用 <kbd>Tab</kbd> 和 <kbd>Shift-Tab</kbd> 键来切换下一个和上一个匹配词。
 
-<img src="https://gw.alicdn.com/tfs/TB1UqTwckzoK1RjSZFlXXai4VXa-1580-616.png" width=500>
+<img src="https://gw.alicdn.com/tfs/TB1UqTwckzoK1RjSZFlXXai4VXa-1580-616.png" width=550>
 
 > 其中`common.dict`是当前关键词所在的字典文件
 
@@ -102,13 +102,13 @@ EasyComplete 目前有四种常见用法：关键词补全、字典补全、文�
 
 VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，但补全窗口的起点是整个路径匹配的起点，占太多屏幕面积，这里参照 YCM 重写了路径匹配的逻辑。插件会判断你是否正在输入一个路径，尤其是当你输入`./`或者`/`，也可紧跟要匹配的文件名或者目录名片段，点击 <kbd>Tab</kbd> 呼出匹配项。
 
-<img src="https://gw.alicdn.com/tfs/TB1WifrcgTqK1RjSZPhXXXfOFXa-1576-886.png" width=500>
+<img src="https://gw.alicdn.com/tfs/TB1WifrcgTqK1RjSZPhXXXfOFXa-1576-886.png" width=550>
 
 #### - 代码片段补全（基于 SnipMate）
 
 当安装了 SnipMate，补全窗口中会自动带上可匹配的代码片段缩写，比如下图示例一个 VIM 文件中输入`he`点击 <kbd>Tab</kbd> ，匹配窗里第一行是可展开的代码片段，点击回车将插入代码段，支持的代码段来自于[vim-snippets](https://github.com/honza/vim-snippets)，可以[在这里](https://github.com/honza/vim-snippets/tree/master/snippets)查看有哪些可用的代码片段。
 
-<img src="https://gw.alicdn.com/tfs/TB1Pp_scmzqK1RjSZFjXXblCFXa-1522-646.png" width=400>
+<img src="https://gw.alicdn.com/tfs/TB1Pp_scmzqK1RjSZFjXXblCFXa-1522-646.png" width=550>
 
 代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)展示了代码补全的情形。
 
