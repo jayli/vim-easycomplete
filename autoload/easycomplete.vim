@@ -198,7 +198,6 @@ endfunction
 
 " CleverShiftTab 逻辑判断，无补全菜单情况下输出<Tab>
 " Shift-Tab 在插入模式下输出为 Tab，是我个人习惯
-" TODO 是否要抽离到 vimrc 中？
 function! easycomplete#CleverShiftTab()
 	return pumvisible()?"\<C-P>":"\<Tab>"
 endfunction
@@ -496,10 +495,11 @@ function! easycomplete#TypingAPath(base)
 
 	" 需要注意，参照上一个注释，fpath和spath只是path，没有filename
 	" 从正在输入的一整行字符(行首到光标)中匹配出一个path出来
-	" TODO（fixed） 正则不严格，需要优化，下面这几个情况匹配要正确
-	"	\ a <Tab>
-	"	\<Tab>
-	"	asdf \ asdf<Tab> 
+	" TODO 正则不严格，需要优化，下面这几个情况匹配要正确
+	"	\ a <Tab>  => done
+	"	\<Tab> => done
+	"	asdf \ asdf<Tab> => done
+	"	"/<tab>" => 不起作用
 	let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
 				\	"\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)") 
 
@@ -523,7 +523,7 @@ function! easycomplete#TypingAPath(base)
 	endif
 
 	" 排除掉输入注释的情况
-	" TODO: bug => 如果输入'//'紧跟<Tab>出来仍然会<C-X><C-U><C-N>出补全菜单
+	" 因为如果输入'//'紧跟<Tab>不应该出<C-X><C-U><C-N>出补全菜单
 	if len(fpath) == 0 || match(prefx,"\\(\\/\\/\\|\\/\\*\\)") >= 0
 		let pathDict.isPath = 0
 	else
