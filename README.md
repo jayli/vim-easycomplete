@@ -96,8 +96,6 @@ EasyComplete 目前有四种常见用法：关键词补全、字典补全、文�
 
 <img src="https://gw.alicdn.com/tfs/TB1UqTwckzoK1RjSZFlXXai4VXa-1580-616.png" width=550>
 
-> 其中`common.dict`是当前关键词所在的字典文件
-
 #### - 文件路径补全
 
 VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，但补全窗口的起点是整个路径匹配的起点，占太多屏幕面积，这里参照 YCM 重写了路径匹配的逻辑。插件会判断你是否正在输入一个路径，尤其是当你输入`./`或者`/`，也可紧跟要匹配的文件名或者目录名片段，点击 <kbd>Tab</kbd> 呼出匹配项。
