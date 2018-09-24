@@ -128,4 +128,6 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 
 Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源工具作者！为我带来很棒的灵感！~
 
+### For Help！？需要帮助
 
+→ [请给我提 ISSUE](https://github.com/jayli/vim-easycomplete/issues)
