@@ -110,7 +110,7 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 
 代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)展示了代码补全的情形。
 
-### VIM 代码补全的一些思考
+### 关于 VIM 代码补全的一些思考
 
 原生 VIM 不适合做 IDE，VIM 最擅长做“文本编辑”，根据我个人的使用场景，对编辑器的要求有三点：
 
@@ -129,3 +129,5 @@ Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源�
 ### For Help！？需要帮助
 
 → [在这里提 ISSUE](https://github.com/jayli/vim-easycomplete/issues)
+
+> 更多好玩的 VIM 碎碎，参照[我的 VIM 配置](https://github.com/jayli/vim)
