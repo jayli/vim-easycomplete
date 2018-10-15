@@ -82,6 +82,10 @@ Done!
 
 这里起主要作用的是第一行，第二行 <kbd>Shift-Tab</kbd> 为可选，我这里将 <kbd>Shift-Tab</kbd> 也定义为了插入模式下前进一个 <kbd>Tab</kbd>。
 
+弹窗样式配置，这里提供了两个默认样式配置，暗：`dark`，亮：`macos`，在`.vimrc`里增加下面这行，如果不配，跟全局样式一致
+
+	let g:pmenu_scheme = 'dark'
+
 > SnipMate 的代码补全功能已经整合入了 EasyComplete，原则上是不用针对 SnipMate 做额外配置的，安装好就好了。
 
 帮助 Tags 生成（可选）：安装完成后进入 VIM 执行`:helptags ~/.vim/bundle/vim-easycomplete/doc`，便可`:help easycomplete`来阅读文档
