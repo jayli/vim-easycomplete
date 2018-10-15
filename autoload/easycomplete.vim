@@ -44,6 +44,19 @@ function! easycomplete#Enable()
 	inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
 	inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
+	" 配置弹框样式，目前默认两种样式，暗：default，亮 macos
+	if g:pmenu_scheme == 'default'
+		hi Pmenu      ctermfg=81  ctermbg=235
+		hi PmenuSel   ctermfg=255 ctermbg=240
+		hi PmenuSbar  ctermbg=235
+		hi PmenuThumb ctermbg=234
+	elseif g:pmenu_scheme == 'macos'
+		hi Pmenu      ctermfg=234 ctermbg=251
+		hi PmenuSel   ctermfg=255 ctermbg=26
+		hi PmenuSbar  ctermbg=251
+		hi PmenuThumb ctermbg=247
+	endif
+
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
