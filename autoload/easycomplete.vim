@@ -46,8 +46,8 @@ function! easycomplete#Enable()
 
 	" 配置弹框样式，目前默认两种样式，暗：default，亮 macos
 	if g:pmenu_scheme == 'default'
-		hi Pmenu      ctermfg=81  ctermbg=235
-		hi PmenuSel   ctermfg=255 ctermbg=240
+		hi Pmenu      ctermfg=111 ctermbg=235
+		hi PmenuSel   ctermfg=255 ctermbg=238
 		hi PmenuSbar  ctermbg=235
 		hi PmenuThumb ctermbg=234
 	elseif g:pmenu_scheme == 'macos'
@@ -310,7 +310,9 @@ endfunction
 " 相当于 trim，去掉首尾的空字符
 function! s:StringTrim(str)
 	if !empty(a:str)
-		return substitute(a:str, "^\\s\\+\\(.\\{\-}\\)\\s\\+$","\\1","g")
+		let a1 = substitute(a:str, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
+		let a1 = substitute(a:str, "^\\(.\\{\-}\\)\\s\\+$","\\1","g")
+		return a1
 	endif
 	return ""
 endfunction
