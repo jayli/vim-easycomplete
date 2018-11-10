@@ -342,10 +342,10 @@ function! s:GetKeywords(base)
 	let bufKeywordList        = s:GetBufKeywordsList()
 	let wrappedBufKeywordList = s:GetWrappedBufKeywordList(bufKeywordList)
 	return s:MenuArrayDistinct(extend(
-			\		wrappedBufKeywordList,
-			\		s:GetWrappedDictKeywordList()
-			\	),
-			\	a:base)
+		\		wrappedBufKeywordList,
+		\		s:GetWrappedDictKeywordList()
+		\	),
+		\	a:base)
 endfunction
 
 "popup 菜单内关键词去重，只做buff和dict里的keyword去重
@@ -456,10 +456,10 @@ function! s:GetWrappedDictKeywordList()
 
 			for item in localdicts
 				call add (dictkeywords, {
-								\	"word" : item ,
-								\	"kind" : "[ID]",
-								\	"menu" : filename 
-								\ })
+						\	"word" : item ,
+						\	"kind" : "[ID]",
+						\	"menu" : filename 
+						\ })
 			endfor
 		endfor
 
@@ -565,11 +565,11 @@ function! s:GetDirAndFiles(typing_path, base)
 	if a:base == ""
 		" 查找目录下的文件和目录
 		let result_list = systemlist('ls '. path .
-										\ " 2>/dev/null") 
+							\ " 2>/dev/null") 
 	else
 		" 这里没考虑Cygwin的情况
 		let result_list = systemlist('ls '. s:GetPathName(path) . 
-										\ " 2>/dev/null") 
+							\ " 2>/dev/null") 
 		" 使用filter过滤，没有使用grep过滤，以便后续性能调优
 		" TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
 		" 只有首次点击<Tab>时能忽略大小写，
