@@ -398,7 +398,7 @@ function! s:GetBufKeywordsList()
 	let keywordList = s:ArrayDistinct(tmpkeywords)
 	let keywordFormedList = []
 	for v in keywordList
-		call add(keywordFormedList, v )
+		call add(keywordFormedList, v)
 	endfor
 
 	return keywordFormedList
