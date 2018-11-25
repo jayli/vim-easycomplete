@@ -426,7 +426,6 @@ function! s:GetWrappedDictKeywordList()
 	if exists("b:globalDictKeywords")
 		return b:globalDictKeywords
 	endif
-
 	let b:globalDictKeywords = []
 
 	" 如果当前 Buff 所读取的字典目录存在
@@ -682,6 +681,12 @@ function! easycomplete#CompleteFunc( findstart, base )
 	endif
 
 	return all_result
+endfunction
+
+function! s:LogMsg(msg)
+	echohl MoreMsg
+	echom '>>> '. a:msg
+	echohl NONE
 endfunction
 
 "vim: foldmethod=marker:softtabstop=4:tabstop=4:shiftwidth=4
