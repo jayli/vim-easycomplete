@@ -14,7 +14,7 @@
 " TODO:
 " - [fixed] 如果一个单词刚好只有一个匹配，或者匹配不出东西，点击tab是没有反应
 " - [fixed] 各种补全形态的支持，包括支持 File 匹配
-" - [doing] 各种语言的词表收集,doing
+" - [done]  各种语言的词表收集,done
 " - [later] js include 的文件词表生成记录入buf
 " - [later] ":"隔断的单词匹配不出来,later
 " - [later] 单词位置的就近匹配
