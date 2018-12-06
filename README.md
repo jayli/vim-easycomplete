@@ -135,3 +135,4 @@ Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源�
 → [在这里提 ISSUE](https://github.com/jayli/vim-easycomplete/issues)
 
 > 更多好玩的 VIM 碎碎，参照[我的 VIM 配置](https://github.com/jayli/vim)
+
