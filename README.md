@@ -54,7 +54,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 也可以直接基于 VIM8 安装
 
-执行脚本：
+执行如下脚本：
 
 	git clone https://github.com/jayli/vim-easycomplete.git \
 		~/.vim/pack/dist/start/vim-easycomplete
