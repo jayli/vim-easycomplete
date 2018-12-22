@@ -28,7 +28,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen) 安装（VIM7 & 8）
 
-一口气安装 EasyComplete、vim-dictionary 和 snipmate
+同时安装 EasyComplete、vim-dictionary 和 snipmate
 
 	cd ~/.vim/bundle/
 	git clone https://github.com/tomtom/tlib_vim.git
