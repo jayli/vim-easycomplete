@@ -665,6 +665,7 @@ function! easycomplete#CompleteFunc( findstart, base )
 	endif
 
 	" 获得各类关键字的匹配结果
+	" TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
 	let keywords_result = s:GetKeywords(a:base)
 	let snippets_result = g:GetSnippets(deepcopy([&filetype]),a:base)
 	let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
