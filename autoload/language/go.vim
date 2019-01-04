@@ -72,7 +72,11 @@ function! s:gocodeAutocomplete()
 	return result
 endfunction
 
-function! gocomplete#Complete(findstart, base)
+function language#go#GocodeAutocomplete()
+	return s:gocodeAutocomplete()
+endfunction
+
+function! language#go#Complete(findstart, base)
 	"findstart = 1 when we need to get the text length
 	if a:findstart == 1
 		execute "silent let g:gocomplete_completions = " . s:gocodeAutocomplete()
@@ -82,3 +86,4 @@ function! gocomplete#Complete(findstart, base)
 		return g:gocomplete_completions[1]
 	endif
 endfunction
+
