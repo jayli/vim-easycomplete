@@ -57,6 +57,10 @@ function! easycomplete#Enable()
 		hi PmenuThumb ctermbg=247
 	endif
 
+	" hack for golang
+	" if &filetype == "go" && b:did_ftplugin == 1
+		
+
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
@@ -181,6 +185,10 @@ function! easycomplete#CleverTab()
 			" 等同于 return "\<C-R>=snipMate#TriggerSnippet()\<CR>"
 			return jump
 		endif
+	elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "." 
+		" Hack for Golang
+		"唤醒easycomplete菜单
+		return "\<C-X>\<C-U>"
 	elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' || 
 				\ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' || 
 				\ len(s:StringTrim(getline('.'))) == 0 
@@ -658,24 +666,50 @@ function! easycomplete#CompleteFunc( findstart, base )
 			return start
 		endif
 
+		if a:findstart == 1 
+			" for go
+			if &filetype == "go" && exists("g:go_loaded_install")
+				execute "silent let g:g_syntax_completions = " . language#go#GocodeAutocomplete()
+			else 
+				let g:g_syntax_completions = []
+			endif
+		endif
+
+		" Hack: 如果是 "." 后面应该点出来上下文语义匹配的结果
+		if strpart(line, start, 1 ) == '.'
+			return start
+		endif
+
 		while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
 			let start -= 1
 		endwhile
+
 		return start
 	endif
 
 	" 获得各类关键字的匹配结果
-	" TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
 	let keywords_result = s:GetKeywords(a:base)
 	let snippets_result = g:GetSnippets(deepcopy([&filetype]),a:base)
 	let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
+
+	" TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
+	let syntax_complete = g:g_syntax_completions[1]
+
+	if len(a:base) == 0 && len(syntax_complete) > 0
+		let all_result = syntax_complete
+	elseif len(a:base) == 0 && len(syntax_complete) == 0
+		let all_result = []
+	else
+		let all_result = syntax_complete + all_result
+	endif
 
 	" TODO 如果匹配不出任何结果，还是执行原有按键，我这里用tab，实际上还
 	" 有一种选择，暂停行为，给出match不成功的提示，我建议要强化insert输入
 	" tab 用 s-tab (我个人习惯)，而不是一味求全 tab 的容错，容错不报错也
 	" 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
 	" 这里需要读者注意
-	if len(all_result) == 0 || len(a:base) == 0
+
+	if len(all_result) == 0 
 		call s:CloseCompletionMenu()
 		call s:SendKeys("\<Tab>")
 		return 0
