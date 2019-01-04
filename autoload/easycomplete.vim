@@ -176,6 +176,7 @@ endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
+	setlocal completeopt-=noselect
 	if pumvisible()
 		return "\<C-N>"
 	elseif exists("g:snipMate") && exists('b:snip_state') 
@@ -188,6 +189,7 @@ function! easycomplete#CleverTab()
 	elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "." 
 		" Hack for Golang
 		"唤醒easycomplete菜单
+		setlocal completeopt+=noselect
 		return "\<C-X>\<C-U>"
 	elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' || 
 				\ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' || 
@@ -683,7 +685,6 @@ function! easycomplete#CompleteFunc( findstart, base )
 		while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
 			let start -= 1
 		endwhile
-
 		return start
 	endif
 
