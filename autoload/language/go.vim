@@ -38,8 +38,10 @@ function! s:gocodeCommand(cmd, preargs, args)
 	for i in range(0, len(a:preargs) - 1)
 		let a:preargs[i] = s:gocodeShellescape(a:preargs[i])
 	endfor
-	let g:kk = printf('gocode %s %s %s', join(a:preargs), a:cmd, join(a:args))
+	let cmd_line = printf('gocode %s %s %s', join(a:preargs), a:cmd, join(a:args))
 	let result = s:system(printf('gocode %s %s %s', join(a:preargs), a:cmd, join(a:args)))
+	call s:LogMsg(cmd_line)
+	call s:LogMsg(result)
 	if v:shell_error != 0
 		return "[\"0\", []]"
 	else
@@ -88,3 +90,8 @@ function! language#go#Complete(findstart, base)
 	endif
 endfunction
 
+function! s:LogMsg(msg)
+	echohl MoreMsg
+	echom '>>> '. a:msg
+	echohl NONE
+endfunction
