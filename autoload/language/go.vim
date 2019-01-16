@@ -30,7 +30,6 @@ function! s:gocodeShellescape(arg)
 	endtry
 endfunction
 
-
 function! s:gocodeCommand(cmd, preargs, args)
 	for i in range(0, len(a:args) - 1)
 		let a:args[i] = s:gocodeShellescape(a:args[i])
