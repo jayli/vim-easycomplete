@@ -34,6 +34,7 @@ function! easycomplete#Enable()
 	set completeopt-=longest
 	" noselect 可配可不配
 	"set completeopt+=noselect
+	set completeopt-=noselect
 	" <C-X><C-U><C-N>时触发默认关键词匹配，函数劫持至此
 	let &completefunc = 'easycomplete#CompleteFunc'
 	" 插入模式下的回车事件监听
