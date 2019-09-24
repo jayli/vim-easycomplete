@@ -46,6 +46,10 @@ function! easycomplete#Enable()
 	inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
 	" 配置弹框样式，目前默认两种样式，暗：default，亮 macos
+	if !exists("g:pmenu_scheme")
+		let g:pmenu_scheme = "default"
+	endif
+
 	if g:pmenu_scheme == 'default'
 		hi Pmenu      ctermfg=111 ctermbg=235
 		hi PmenuSel   ctermfg=255 ctermbg=238
