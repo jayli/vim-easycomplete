@@ -60,8 +60,6 @@ function! easycomplete#Enable()
 
 	" hack for golang
 	" if &filetype == "go" && b:did_ftplugin == 1
-		
-
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
@@ -230,28 +228,28 @@ endfunction
 " 插入 snipmete 展开后的代码，否则还是默认回车事件
 function! TypeEnterWithPUM()
 	" 如果浮窗存在
-	if pumvisible()
-		if exists("g:snipMate")
-			" 得到当前光标处已匹配的单词
-			let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-			" 根据单词查找 snippets 中的匹配项
-			let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
-			" 关闭浮窗
-			call s:CloseCompletionMenu()
+	if pumvisible() && exists("g:snipMate")
+		" 得到当前光标处已匹配的单词
+		let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+		" 根据单词查找 snippets 中的匹配项
+		let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
+		" 关闭浮窗
 
-			"是否前缀可被匹配 && 是否完全匹配到snippet
-			if snipMate#CanBeTriggered() && !empty(list)
-				call feedkeys( "\<Plug>snipMateNextOrTrigger" )
-			endif
-			return ""
-		else
+		" 1. 优先判断是否前缀可被匹配 && 是否完全匹配到snippet
+		if snipMate#CanBeTriggered() && !empty(list)
 			call s:CloseCompletionMenu()
+			call feedkeys( "\<Plug>snipMateNextOrTrigger" )
 			return ""
 		endif
-	else
-		"除此之外还是回车的正常行为
-		return "\<CR>"
+
+		" 2. 如果安装了 jedi，回车补全单词
+		if &filetype == "python" && 
+					\ exists("g:jedi#auto_initialization") && 
+					\ g:jedi#auto_initialization == 1
+			return "\<C-Y>"
+		endif
 	endif
+	return "\<CR>"
 endfunction
 
 " 将 snippets 原始格式做简化，用作浮窗提示展示用
@@ -509,14 +507,23 @@ endfunction
 
 " 判断当前是否正在输入一个地址path
 " base 原本想传入当前文件名字，实际上传不进来，这里也没用到
-function! easycomplete#TypingAPath(base)
+function! easycomplete#TypingAPath(findstart, base)
 	" 这里不清楚为什么
 	" 输入 ./a/b/c ，./a/b/  两者得到的prefx都为空
 	" 前者应该得到 c
 	" 这里只能临时将base透传进来表示文件名
 	let line  = getline('.')
 	let coln  = col('.') - 1
-	let prefx = ' ' . line[0:coln]
+	let prefx = ' ' . line[0:coln - 1]
+
+	" Hack: 第二次进来 getline('.')时把光标所在的字符吃掉了，原因不明
+	" 所以这里临时存一下 line 的值
+	if exists('l:tmp_line_str') && a:findstart == 1
+		let l:tmp_line_str = line
+	elseif exists('l:tmp_line_str') && a:findstart == 0
+		let line = l:tmp_line_str
+		unlet l:tmp_line_str
+	endif
 
 	" 需要注意，参照上一个注释，fpath和spath只是path，没有filename
 	" 从正在输入的一整行字符(行首到光标)中匹配出一个path出来
@@ -541,7 +548,7 @@ function! easycomplete#TypingAPath(base)
 	let pathDict.fpath           = fpath " fullpath
 	let pathDict.spath           = spath " shortpath
 	let pathDict.full_path_start = coln - len(fpath) + 2
-	if pathDict.fname == ''
+	if trim(pathDict.fname) == ''
 		let pathDict.short_path_start = coln - len(spath) + 2
 	else
 		let pathDict.short_path_start = coln - len(pathDict.fname)
@@ -643,7 +650,7 @@ endfunction
 "	./Foo		[File]
 "	./b/		[Dir]
 function! easycomplete#CompleteFunc( findstart, base )
-	let typing_path = easycomplete#TypingAPath(a:base)
+	let typing_path = easycomplete#TypingAPath(a:findstart, a:base)
 
 	" 如果正在敲入一个文件路径
 	if typing_path.isPath && a:findstart
@@ -656,6 +663,11 @@ function! easycomplete#CompleteFunc( findstart, base )
 	elseif typing_path.isPath
 		" 查找目录
 		let result = s:GetDirAndFiles(typing_path, a:base)
+		if len(result) == 0
+			call s:CloseCompletionMenu()
+			call s:SendKeys("\<Tab>")
+			return 0
+		endif
 		return result
 	endif
 
@@ -695,6 +707,9 @@ function! easycomplete#CompleteFunc( findstart, base )
 	let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
 
 	" TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
+	if !exists("g:g_syntax_completions")
+		let g:g_syntax_completions = [1,[]]
+	endif
 	let syntax_complete = g:g_syntax_completions[1]
 
 	if len(a:base) == 0 && len(syntax_complete) > 0
