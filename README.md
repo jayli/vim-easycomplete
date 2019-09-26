@@ -6,19 +6,18 @@
 
 ![](https://raw.githubusercontent.com/jayli/jayli.github.com/master/photo/assets/vim-easycomplete-1.gif?t=1)
 
-为什么又一个轮子？已有的 VIM 自动补全能力不够用吗：
+已有的 VIM 自动补全能力不够用吗：
 
-- [Omni-Completion](http://vim.wikia.com/wiki/Omni_completion)：VIM 默认代码补全，内置了一些常用语言的关键词，由于词表不能自由增减而且很古老，准确度已经大大下降了，但对于 HTML 和 CSS 来说还是很好的一个选择，优点是 VIM 自带，不用再安装了，使用 <kbd>C-X C-O</kbd> 呼出
-- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：这是一个非常棒的代码提示引擎，由 Google 工程师 Val Markovic 开发。YCM 非常适合写 C、CPP 和 Python，因为插件是基于 Python 的，编译安装后运行时速度很快，能够做到跟指敲击的自动补全，能够对 Python 做到一定程度的词义分析，给出更智能的提示，是 Python 编程最佳选择。YCM 有三点我不习惯，第一是强依赖 Python，每次安装必须要重新编译，不够轻便携带，第二是语法上的支持稍弱，必须整合 [Ultisnips](https://github.com/SirVer/ultisnips) 才能做代码片段展开，第三，启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
-- [SnipMate](https://github.com/garbas/vim-snipmate)：非常棒的代码展开补全工具，完全基于 VimL 实现，便携性很好，但它是一个类似 Zencoding 的代码展开工具，不带补全提示。
-- [Deoplete](https://github.com/Shougo/deoplete.nvim)：和 YouCompleteMe 齐名的补全框架，作者是日本人。该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 或者 [Neovim](https://github.com/neovim/neovim) 之上，而且必须依赖 Python3，便携性不佳，配置起来超级复杂，适合 VIM 深度玩家。
-- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，交互设计上最符合我的习惯，基于 VIM8 和 Python，社区支持很不错，当前项目依然活跃，比较看好。因为使用了很多 VIM8 的新特性，对 VIM7 兼容不好。
-- [Zencoding](https://github.com/mattn/emmet-vim)：古老但很酷的 html 编程利器，适合写标签，自定义代码片段难度极高，毕竟太古老了，轻易用不到。
-- [TernJS](http://ternjs.net/)：TernJS 不是一个完整的插件，是一个 JavaScript 解释器，用来生成 JS 语法树，可以内嵌到一些插件里，辅助做到 JS 的上下文语义的提示补全，这个项目已经不维护了，另外两个缺陷是配置相对复杂，不够所见所得，还有就是不能做到 100% 的基于语义的补全，比如`var a = require("http")`，`a.`也做不到补全`http`模块成员，这个是 JS 这类脚本编程的通病。
+- [Omni-Completion](http://vim.wikia.com/wiki/Omni_completion)：VIM 默认代码补全，VIM 自带，使用 <kbd>C-X C-O</kbd> 呼出
+- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：权威的代码补全。非常适合写 C、CPP 和 Python，我需要的 [Ultisnips](https://github.com/SirVer/ultisnips) 不支持，当然启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
+- [SnipMate](https://github.com/garbas/vim-snipmate)：仅做代码展开，完全基于 VimL 实现，便携性很好，不带补全提示。
+- [Deoplete](https://github.com/Shougo/deoplete.nvim)：该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 和 [Neovim](https://github.com/neovim/neovim) 上，必须依赖 Python3，配置起来超级复杂，适合 VIM 深度玩家。
+- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，比较看好。因为使用了很多 VIM8 的新特性，对 VIM7 兼容不好。
+- [Zencoding](https://github.com/mattn/emmet-vim)：古董，致敬一下。
 
-我的需求散落在各个插件里，四个主要需求，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，登录一台裸机，一个命令快速搞定，所以不能有 Python 依赖，要纯 VimL 实现。最后，相比于输入跟随提示（略干扰），我更习惯 <kbd>Tab</kbd> 提示。以上这些插件均不能同时满足我这四个需求，不得已我造了 [Vim-EasyComplete](https://github.com/jayli/vim-easycomplete)，以及常用词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)（配合 EasyComplete 使用体验最佳）。
+我的需求是，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，最好要纯 VimL 实现。最后，我不需要输入跟随提示（略干扰），我更习惯 <kbd>Tab</kbd> 提示。这就是 [Vim-EasyComplete](https://github.com/jayli/vim-easycomplete)，以及常用词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)（配合 EasyComplete 使用体验最佳）。
 
-因为要用到代码片段展开，Vim-EasyComplete 只对 SnipMate 有依赖，SnipMate 也是干净的 VimL 实现。当然，SnipMate 没有安装，EasyComplete 也是可以正常工作的。
+因为要用到代码片段展开，Vim-EasyComplete 只对 SnipMate 有依赖，SnipMate 也是干净的 VimL 实现。SnipMate 没有安装，EasyComplete 亦可以正常工作。
 
 ### 安装
 
@@ -28,7 +27,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen) 安装（VIM7 & 8）
 
-同时安装 EasyComplete、vim-dictionary 和 snipmate
+同时安装 EasyComplete、vim-dictionary、snipmate 和 jedi-vim
 
 	cd ~/.vim/bundle/
 	git clone https://github.com/tomtom/tlib_vim.git
@@ -37,6 +36,11 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 	git clone https://github.com/honza/vim-snippets.git
 	git clone https://github.com/jayli/vim-easycomplete.git
 	git clone https://github.com/jayli/vim-dictionary.git
+	git clone https://github.com/davidhalter/jedi-vim.git
+
+Python 语言的联想需要安装 Jedi 
+
+	pip3 install jedi
 
 #### - 基于 [Vundle.vim](https://github.com/VundleVim/Vundle.vim) 安装（VIM7 & 8）
 
@@ -48,9 +52,14 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 	Plugin 'garbas/vim-snipmate'
 	Plugin 'honza/vim-snippets'  
 
+	" Jedi
+	Plugin 'davidhalter/jedi-vim'
+
 	" EasyComplete 插件和 Dictionary 词表
 	Plugin 'jayli/vim-easycomplete'
 	Plugin 'jayli/vim-dictionary'
+
+安装jedi：pip3 install jedi
 
 #### - 也可以直接基于 VIM8 安装
 
@@ -69,7 +78,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 	git clone https://github.com/honza/vim-snippets.git \
 		~/.vim/pack/dist/start/vim-snippets
 	
-Done!
+最后安装jedi：pip3 install jedi
 
 > 代码片段补全插件 SnipMate 支持尽管是可选项，但强烈建议安装。以上安装示例也包含 SnipMate 的安装，它同时也是 VIM 官方推荐插件，独立使用请参照[它的文档](https://github.com/garbas/vim-snipmate)。
 
@@ -114,19 +123,7 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 
 代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)展示了代码补全的情形。
 
-### 关于 VIM 代码补全的一些思考
-
-原生 VIM 不适合做 IDE，VIM 最擅长做“文本编辑”，根据我个人的使用场景，对编辑器的要求有三点：
-
-- 第一，随进随退，轻便开发。由于我在服务器编程时间时间较多，VIM 常被用来阅读源码、微调试和写快捷脚本，完成一个任务后就离开了，随即进入下一个任务，这个过程中，VIM 的文本编辑效率非常重要，所谓轻便开发，就是我 ssh 到一个新的机器，用一个命令就可以快速将 VIM 环境配置完成，随即进入任务，完成任务后离开服务器，有可能一阵子不会再回到这台机器。所以 VIM 一定要易于配置，且不适于携带过多三方依赖，包括对 Python 的依赖，因此要有取舍。
-- 第二，VIM 并不经常装载工程。也就是说对于包含大量源文件的源码工程，并不首先适于由原生 VIM 来装载。类似 Eclipse 和 Visual Studio 等等或许是更好的选择。VIM 的绝大多数特性和配置依赖于 VimL，VimL 作为脚本，性能上是有瓶颈的，装载工程是一件吃力的事情。比如最常用的自动补全功能，越希望它智能，就越需要框定工程边界，以防止查找溢出。而在 VIM 中做智能的语义补全，也因普遍缺少工程边界而变得很困难，比如 NodeJS 中的 `node_modules` 目录中的层层引用，如果需要在 JavaScript 中匹配出正确的对象成员，一次匹配相当于运行一次整个（边界不确定的）“工程”，消耗是巨大的。做不到精确，就无法带来更好的体验。
-- 第三，VIM 最适合脚本编程。特别是当编程语言（诸如 Swift、Kotlin、Go..）越来越“脚本化”，VIM 将会发挥其独特的价值，越灵活、越简洁、越脚本化，VIM 就越适合。让 VIM 专注于文本编辑，配合 Unix 强大的工具平台，可以很好的搭配完成更复杂的业务，很好的适应快进快出、随时随地进入编程状态，满足部分人“碎片编程”的情况。
-
-因此 EasyComplete 会尝试实现一定程度的词法分析的代码补全，但不会深入做。从某种角度讲，VIM 原生的 <kbd>C-X C-N</kbd>、<kbd>C-X C-O</kbd>、<kbd>C-X C-F</kbd> 以及 <kbd>C-X C-L</kbd> 就已经是最好的补全工具了。
-
 此外，我整理了一份常用编程语言的词表 [vim-dictionary](https://github.com/jayli/vim-dictionary)，安装完成无需配置直接生效，配合 EasyComplete 使用体验最佳。
-
-> 当然 VIM 很多派生版本诸如 [SpaceVim](https://github.com/SpaceVim/SpaceVim) 和 [NeoVim](https://neovim.io/) 借助更强的 GUI 外壳也很好的满足工程型的编程。<br />也远超过我当下的需要 : )
 
 Ps：感谢 YCM、SnipMate、Deoplete、Completor.. 这些优秀的 VIM 开源工具作者！为我带来很棒的灵感！~
 
