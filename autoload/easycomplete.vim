@@ -45,25 +45,37 @@ function! easycomplete#Enable()
 	inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
 	inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
-	" 配置弹框样式，目前默认两种样式，暗：default，亮 macos
+	" 配置弹框样式，目前默认两种样式，暗：default，亮 light 
 	if !exists("g:pmenu_scheme")
-		let g:pmenu_scheme = "default"
+		let g:pmenu_scheme = "None"
 	endif
 
-	if g:pmenu_scheme == 'default'
-		hi Pmenu      ctermfg=111 ctermbg=235
-		hi PmenuSel   ctermfg=255 ctermbg=238
-		hi PmenuSbar  ctermbg=235
-		hi PmenuThumb ctermbg=234
-	elseif g:pmenu_scheme == 'macos'
-		hi Pmenu      ctermfg=234 ctermbg=251
-		hi PmenuSel   ctermfg=255 ctermbg=26
-		hi PmenuSbar  ctermbg=251
-		hi PmenuThumb ctermbg=247
-	endif
+	call s:SetPmenuScheme(g:pmenu_scheme)
+endfunction
 
-	" hack for golang
-	" if &filetype == "go" && b:did_ftplugin == 1
+" 菜单样式设置
+function! s:SetPmenuScheme(scheme_name)
+	" hi Pmenu      ctermfg=111 ctermbg=235
+	" hi PmenuSel   ctermfg=255 ctermbg=238
+	" hi PmenuSbar				ctermbg=235
+	" hi PmenuThumb				ctermbg=234
+	let l:scheme_config = {
+		\	'dark':[[111, 235],[255, 238],[-1,  235],[-1,  234]],
+		\	'light':[[234, 251],[255, 26],[-1,  251],[-1,  247]],
+		\	'rider':[[249, 237],[231, 25],[-1,  237],[-1,  239]
+		\	]
+		\ }
+	if has_key(l:scheme_config, a:scheme_name)
+		let sch = l:scheme_config[a:scheme_name]
+		let hiPmenu =      ['hi','Pmenu',      'ctermfg='.sch[0][0], 'ctermbg='.sch[0][1]]
+		let hiPmenuSel =   ['hi','PmenuSel',   'ctermfg='.sch[1][0], 'ctermbg='.sch[1][1]]
+		let hiPmenuSbar =  ['hi','PmenuSbar',  '',                   'ctermbg='.sch[2][1]]
+		let hiPmenuThumb = ['hi','PmenuThumb', '',                   'ctermbg='.sch[3][1]]
+		execute join(hiPmenu, ' ')
+		execute join(hiPmenuSel, ' ')
+		execute join(hiPmenuSbar, ' ')
+		execute join(hiPmenuThumb, ' ')
+	endif
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
@@ -248,10 +260,13 @@ function! TypeEnterWithPUM()
 
 		" 2. 如果安装了 jedi，回车补全单词
 		if &filetype == "python" && 
-					\ exists("g:jedi#auto_initialization") && 
-					\ g:jedi#auto_initialization == 1
+				\ exists("g:jedi#auto_initialization") && 
+				\ g:jedi#auto_initialization == 1
 			return "\<C-Y>"
 		endif
+	endif
+	if pumvisible()
+		return "\<C-Y>"
 	endif
 	return "\<CR>"
 endfunction
@@ -534,8 +549,8 @@ function! easycomplete#TypingAPath(findstart, base)
 	" TODO 正则不严格，需要优化，下面这几个情况匹配要正确
 	"	\ a <Tab>  => done
 	"	\<Tab> => done
-	"	asdf \ asdf<Tab> => done
-	"	"/<tab>" => 不起作用
+	"	xxxss \ xxxss<Tab> => done
+	"	"/<tab>" => 不起作用, fixed at 2019-09-28
 	let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
 				\	"\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)") 
 
