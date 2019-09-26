@@ -82,7 +82,7 @@ Done!
 
 这里起主要作用的是第一行，第二行 <kbd>Shift-Tab</kbd> 为可选，我这里将 <kbd>Shift-Tab</kbd> 也定义为了插入模式下前进一个 <kbd>Tab</kbd>。
 
-弹窗样式配置，这里提供了两个默认样式配置，暗：`dark`，亮：`macos`，在`.vimrc`里增加下面这行，如果不配，跟全局样式一致
+弹窗样式配置，这里提供了两个默认样式配置，暗：`dark`，亮：`light`，在`.vimrc`里增加下面这行，如果不配，跟全局样式一致
 
 	let g:pmenu_scheme = 'dark'
 
