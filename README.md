@@ -2,32 +2,33 @@
 
 ![Vim](https://img.shields.io/badge/vim-awesome-brightgreen.svg) [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/Linux-available-brightgreen.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/:%20h-easycomplete-orange.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-一个简单轻便的 VIM 自动补全插件。@author：[Jayli](https://github.com/jayli)
+字典 VIM 自动补全 && SnipMate。注意不要和 SuperTab 共用。
 
 ![](https://raw.githubusercontent.com/jayli/jayli.github.com/master/photo/assets/vim-easycomplete-1.gif?t=1)
 
 已有的 VIM 自动补全能力不够用吗：
 
 - [Omni-Completion](http://vim.wikia.com/wiki/Omni_completion)：VIM 默认代码补全，VIM 自带，使用 <kbd>C-X C-O</kbd> 呼出
-- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：权威的代码补全。非常适合写 C、CPP 和 Python，我需要的 [Ultisnips](https://github.com/SirVer/ultisnips) 不支持，当然启动速度是最慢的，在 MacBookPro 上打开 VIM 要卡上 600 到 800 毫秒。
+- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：最权威的补全插件。不支持 [Ultisnips](https://github.com/SirVer/ultisnips) 不支持，启动速度太慢，在 MacBookPro 上打开 VIM 要卡上 600 毫秒至少。
 - [SnipMate](https://github.com/garbas/vim-snipmate)：仅做代码展开，完全基于 VimL 实现，便携性很好，不带补全提示。
-- [Deoplete](https://github.com/Shougo/deoplete.nvim)：该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 和 [Neovim](https://github.com/neovim/neovim) 上，必须依赖 Python3，配置起来超级复杂，适合 VIM 深度玩家。
-- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，比较看好。因为使用了很多 VIM8 的新特性，对 VIM7 兼容不好。
-- [Zencoding](https://github.com/mattn/emmet-vim)：古董，致敬一下。
+- [Deoplete](https://github.com/Shougo/deoplete.nvim)：该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 和 [Neovim](https://github.com/neovim/neovim) 上，必须依赖 Python3，配置太麻烦了，不兼容vim7。
+- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，不兼容vim7。
+- [Zencoding](https://github.com/mattn/emmet-vim)：一个古董。
 
-我的需求是，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，最好要纯 VimL 实现。最后，我不需要输入跟随提示（略干扰），我更习惯 <kbd>Tab</kbd> 提示。这就是 [Vim-EasyComplete](https://github.com/jayli/vim-easycomplete)，以及常用词表 [Vim-Dictionary](https://github.com/jayli/vim-dictionary)（配合 EasyComplete 使用体验最佳）。
+我的需求是，第一，浮窗提示，第二，支持代码片段提示+展开，第三，优先选择关键词和词表匹配，第四，因为经常登录服务器，除了要支持 VIM7 以外，还要便于携带和安装，要纯 VimL 实现。最后，我不需要输入跟随提示（太干扰），我更习惯 <kbd>Tab</kbd> 提示。
 
-因为要用到代码片段展开，Vim-EasyComplete 只对 SnipMate 有依赖，SnipMate 也是干净的 VimL 实现。SnipMate 没有安装，EasyComplete 亦可以正常工作。
+[Vim-EasyComplete](https://github.com/jayli/vim-easycomplete) +  [Vim-Dictionary](https://github.com/jayli/vim-dictionary) 满足这些需求。
+
+> - Vim-EasyComplete 只对 SnipMate 有依赖
+> - 兼容 Linux 和 MacOS，暂不支持 CygWin
 
 ### 安装
 
-VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理器：
-
-> EasyComplete 兼容 Linux 和 MacOS，暂不支持 CygWin
+可选 Pathogen、Vundle 等很棒的插件管理器：
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen) 安装（VIM7 & 8）
 
-同时安装 EasyComplete、vim-dictionary、snipmate 和 jedi-vim
+同时安装 EasyComplete、vim-dictionary、snipmate 和 jedi-vim（可选）
 
 	cd ~/.vim/bundle/
 	git clone https://github.com/tomtom/tlib_vim.git
@@ -38,7 +39,7 @@ VIM 插件安装极其方便，可选 Pathogen、Vundle 等很棒的插件管理
 	git clone https://github.com/jayli/vim-dictionary.git
 	git clone https://github.com/davidhalter/jedi-vim.git
 
-Python 语言的联想需要安装 Jedi 
+Python 语言的联想需要安装 Jedi
 
 	pip3 install jedi
 
@@ -50,7 +51,7 @@ Python 语言的联想需要安装 Jedi
 	Plugin 'MarcWeber/vim-addon-mw-utils'
 	Plugin 'tomtom/tlib_vim'
 	Plugin 'garbas/vim-snipmate'
-	Plugin 'honza/vim-snippets'  
+	Plugin 'honza/vim-snippets'
 
 	" Jedi
 	Plugin 'davidhalter/jedi-vim'
@@ -77,25 +78,23 @@ Python 语言的联想需要安装 Jedi
 		~/.vim/pack/dist/start/vim-snipmate
 	git clone https://github.com/honza/vim-snippets.git \
 		~/.vim/pack/dist/start/vim-snippets
-	
-最后安装jedi：pip3 install jedi
 
-> 代码片段补全插件 SnipMate 支持尽管是可选项，但强烈建议安装。以上安装示例也包含 SnipMate 的安装，它同时也是 VIM 官方推荐插件，独立使用请参照[它的文档](https://github.com/garbas/vim-snipmate)。
+最后安装jedi：pip3 install jedi
 
 ### 配置
 
-我习惯使用 <kbd>Tab</kbd> 键呼出补全菜单，如果遇到 <kbd>Tab</kbd> 键在插入模式下不能输出原始 `Tab`，我个人习惯敲入 <kbd>Shift-Tab</kbd> 。这里以配置 <kbd>Tab</kbd> 键唤醒补全菜单为例：在`.vimrc`中加入：
+使用 <kbd>Tab</kbd> 键呼出补全菜单，如果遇到 <kbd>Tab</kbd> 键在插入模式下不能输出原始 `Tab`，我个人习惯敲入 <kbd>Shift-Tab</kbd> 。这里以配置 <kbd>Tab</kbd> 键唤醒补全菜单为例：在`.vimrc`中加入：
 
 	imap <Tab>   <Plug>EasyCompTabTrigger
 	imap <S-Tab> <Plug>EasyCompShiftTabTrigger
 
 这里起主要作用的是第一行，第二行 <kbd>Shift-Tab</kbd> 为可选，我这里将 <kbd>Shift-Tab</kbd> 也定义为了插入模式下前进一个 <kbd>Tab</kbd>。
 
-弹窗样式配置，这里提供了两个默认样式配置，暗：`dark`，亮：`light`，在`.vimrc`里增加下面这行，如果不配，跟全局样式一致
+弹窗样式配置，这里提供了两个默认样式配置，暗：`dark`，亮：`light`，通用：`rider`，在`.vimrc`里增加下面这行
 
 	let g:pmenu_scheme = 'dark'
 
-> SnipMate 的代码补全功能已经整合入了 EasyComplete，原则上是不用针对 SnipMate 做额外配置的，安装好就好了。
+> 不用针对 SnipMate 做额外配置，安装好就可以用了
 
 帮助 Tags 生成（可选）：安装完成后进入 VIM 执行`:helptags ~/.vim/bundle/vim-easycomplete/doc`，便可`:help easycomplete`来阅读文档
 
