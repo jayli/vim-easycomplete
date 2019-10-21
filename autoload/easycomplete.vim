@@ -8,7 +8,7 @@
 "
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
-"               Thanks for SnipMate: 
+"               Thanks for SnipMate:
 "                   <https://www.vim.org/scripts/script.php?script_id=2540>
 "
 " TODO:
@@ -259,8 +259,8 @@ function! TypeEnterWithPUM()
         endif
 
         " 2. 如果安装了 jedi，回车补全单词
-        if &filetype == "python" && 
-                \ exists("g:jedi#auto_initialization") && 
+        if &filetype == "python" &&
+                \ exists("g:jedi#auto_initialization") &&
                 \ g:jedi#auto_initialization == 1
             return "\<C-Y>"
         endif
@@ -395,9 +395,9 @@ function! s:MenuArrayDistinct(menuList, base)
                         \ 'matchstrpos(v:val, "'.a:base.'")[1] == 0'))
 
     "[word1,word2,word3...]
-    let menulist_assetlist = [] 
+    let menulist_assetlist = []
     "[{word:word1,kind..},{word:word2,kind..}..]
-    let menulist_result = [] 
+    let menulist_result = []
 
     for item in a:menuList
         let word = get(item, "word")
@@ -439,7 +439,7 @@ function! s:GetWrappedBufKeywordList(keywordList)
     if empty(a:keywordList) || len(a:keywordList) == 0
         return []
     endif
-    
+
     let wrappedList = []
     for word_str in a:keywordList
         call add(wrappedList,{"word":word_str,"kind":"[ID]"})
@@ -460,7 +460,7 @@ function! s:GetWrappedDictKeywordList()
     if !empty(&dictionary)
         let dictsFiles   = split(&dictionary,",")
         let dictkeywords = []
-        for onedict in dictsFiles 
+        for onedict in dictsFiles
             try
                 let lines = readfile(onedict)
             catch /.*/
@@ -487,14 +487,14 @@ function! s:GetWrappedDictKeywordList()
                 call add (dictkeywords, {
                         \   "word" : item ,
                         \   "kind" : "[ID]",
-                        \   "menu" : filename 
+                        \   "menu" : filename
                         \ })
             endfor
         endfor
 
         let b:globalDictKeywords = dictkeywords
         return dictkeywords
-    else 
+    else
         return []
     endif
 endfunction
@@ -504,10 +504,10 @@ function! s:ArrayDistinct( list )
     if empty(a:list)
         return []
     else
-        let tmparray = [] 
+        let tmparray = []
         let uniqlist = uniq(a:list)
         for item in uniqlist
-            if !empty(item) && 
+            if !empty(item) &&
                     \ !str2nr(item) &&
                     \ len(item) != 1
                 call add(tmparray,item)
@@ -552,7 +552,7 @@ function! easycomplete#TypingAPath(findstart, base)
     "   xxxss \ xxxss<Tab> => done
     "   "/<tab>" => 不起作用, fixed at 2019-09-28
     let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-                \   "\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)") 
+                \   "\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
 
     " 兼容单个 '/' 匹配的情况
     let spath = s:GetPathName( substitute(fpath,"^[\\.\\/].*\\/","./","g") )
@@ -603,16 +603,16 @@ function! s:GetDirAndFiles(typing_path, base)
     if a:base == ""
         " 查找目录下的文件和目录
         let result_list = systemlist('ls '. path .
-                            \ " 2>/dev/null") 
+                            \ " 2>/dev/null")
     else
         " 这里没考虑Cygwin的情况
-        let result_list = systemlist('ls '. s:GetPathName(path) . 
-                            \ " 2>/dev/null") 
+        let result_list = systemlist('ls '. s:GetPathName(path) .
+                            \ " 2>/dev/null")
         " 使用filter过滤，没有使用grep过滤，以便后续性能调优
         " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
         " 只有首次点击<Tab>时能忽略大小写，
         " 应该在del跟随和tab时都忽略大小写才对
-        let result_list = filter(result_list, 
+        let result_list = filter(result_list,
                 \ 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
     endif
 
@@ -625,7 +625,7 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath)
     if len(a:rlist) == 0
         return []
     endif
-    
+
     let result_with_kind = []
 
     for item in a:rlist
@@ -745,7 +745,7 @@ function! easycomplete#CompleteFunc( findstart, base )
     " 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
     " 这里需要读者注意
 
-    if len(all_result) == 0 
+    if len(all_result) == 0
         call s:CloseCompletionMenu()
         call s:SendKeys("\<Tab>")
         return 0
