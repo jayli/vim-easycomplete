@@ -321,15 +321,15 @@ function! s:GetSnip(snipobj)
     let lang_type = ""
 
     if empty(a:snipobj)
-        let snip_body = errmsg 
-    else 
+        let snip_body = errmsg
+    else
         let v = values(a:snipobj)
         let k = keys(a:snipobj)
         if !empty(v[0]) && !empty(k[0])
             let snip_body = v[0][0]
             let lang_type = split(k[0], "\\s")[0]
         else
-            let snip_body = errmsg 
+            let snip_body = errmsg
         endif
     endif
     return {"snipbody":snip_body,"langtype":lang_type}
@@ -350,10 +350,10 @@ function! s:MenuStringTrim(localstr)
     let default_length = 33
     let simplifed_result = s:GetSnippetSimplified(a:localstr)
 
-    if !empty(simplifed_result) && len(simplifed_result) > default_length 
+    if !empty(simplifed_result) && len(simplifed_result) > default_length
         let trim_str = simplifed_result[:default_length] . ".."
     else
-        let trim_str = simplifed_result 
+        let trim_str = simplifed_result
     endif
 
     return split(trim_str,"[\n]")[0]
@@ -464,7 +464,7 @@ function! s:GetWrappedDictKeywordList()
             try
                 let lines = readfile(onedict)
             catch /.*/
-                "echoe "关键词字典不存在!请删除该字典配置 ". 
+                "echoe "关键词字典不存在!请删除该字典配置 ".
                 "           \ "dictionary-=".onedict
                 continue
             endtry
