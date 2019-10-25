@@ -194,21 +194,21 @@ function! easycomplete#CleverTab()
     setlocal completeopt-=noinsert
     if pumvisible()
         return "\<C-N>"
-    elseif exists("g:snipMate") && exists('b:snip_state') 
+    elseif exists("g:snipMate") && exists('b:snip_state')
         " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
         let jump = b:snip_state.jump_stop(0)
         if type(jump) == 1 " 返回字符串
             " 等同于 return "\<C-R>=snipMate#TriggerSnippet()\<CR>"
             return jump
         endif
-    elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "." 
+    elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "."
         " Hack for Golang
         "唤醒easycomplete菜单
         setlocal completeopt+=noinsert
         return "\<C-X>\<C-U>"
-    elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' || 
-                \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' || 
-                \ len(s:StringTrim(getline('.'))) == 0 
+    elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
+                \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
+                \ len(s:StringTrim(getline('.'))) == 0
         " 如果整行是空行
         " 前一个字符是空格
         " 空行
@@ -589,6 +589,7 @@ endfunction
 " ./ => 基于当前 bufpath 查询
 " ../../ => 当前buf文件所在的目录向上追溯2次查询
 " /a/b/c => 直接从根查询
+" TODO ~/ 的支持
 function! s:GetDirAndFiles(typing_path, base)
     let fpath   = a:typing_path.fpath
     let fname   = bufname('%')
@@ -678,6 +679,7 @@ function! easycomplete#CompleteFunc( findstart, base )
         " ../asdf./
         " /a/b/c/ds
         " /a/b/c/d/
+        " ~/
         return typing_path.short_path_start
     elseif typing_path.isPath
         " 查找目录
@@ -700,11 +702,11 @@ function! easycomplete#CompleteFunc( findstart, base )
             return start
         endif
 
-        if a:findstart == 1 
+        if a:findstart == 1
             " for go
             if &filetype == "go" && exists("g:go_loaded_install")
                 execute "silent let g:g_syntax_completions = " . language#go#GocodeAutocomplete()
-            else 
+            else
                 let g:g_syntax_completions = [1,[]]
             endif
         endif
