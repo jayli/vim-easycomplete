@@ -552,7 +552,7 @@ function! easycomplete#TypingAPath(findstart, base)
     "   xxxss \ xxxss<Tab> => done
     "   "/<tab>" => 不起作用, fixed at 2019-09-28
     let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-                \   "\\([\\/\\.]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
+                \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
 
     " 兼容单个 '/' 匹配的情况
     let spath = s:GetPathName( substitute(fpath,"^[\\.\\/].*\\/","./","g") )
