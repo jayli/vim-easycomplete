@@ -258,6 +258,7 @@ function! TypeEnterWithPUM()
         " jayli
         " bug，如果菜单中匹配出了 javascript 和 react 两个 snip，选择 react 的
         " snip 回车，这里不执行，list是空，而且 snipMateNextOrTrigger 无结果
+        " 实在过不去，就整合成一个 javascript.snipp 文件
         if snipMate#CanBeTriggered() && !empty(list)
             call s:CloseCompletionMenu()
             call feedkeys( "\<Plug>snipMateNextOrTrigger" )
