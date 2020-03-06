@@ -221,13 +221,16 @@ function! easycomplete#CleverTab()
         let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
         let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
-        if snipMate#CanBeTriggered() && !empty(list) && len(list) == 1
-            call feedkeys( "\<Plug>snipMateNextOrTrigger" )
-            return ""
-        else
-            "唤醒easycomplete菜单
-            return "\<C-X>\<C-U>"
-        endif
+        "if snipMate#CanBeTriggered() && !empty(list) && len(list) == 1
+        "    call feedkeys( "\<Plug>snipMateNextOrTrigger" )
+        "    return ""
+        "else
+        "    "唤醒easycomplete菜单
+        "    return "\<C-X>\<C-U>"
+        "endif
+
+        " bugfix 如果只匹配一个，也还是给出提示
+        return "\<C-X>\<C-U>"
     else
         "唤醒easycomplete菜单
         return "\<C-X>\<C-U>"
@@ -252,6 +255,9 @@ function! TypeEnterWithPUM()
         " 关闭浮窗
 
         " 1. 优先判断是否前缀可被匹配 && 是否完全匹配到snippet
+        " jayli
+        " bug，如果菜单中匹配出了 javascript 和 react 两个 snip，选择 react 的
+        " snip 回车，这里不执行，list是空，而且 snipMateNextOrTrigger 无结果
         if snipMate#CanBeTriggered() && !empty(list)
             call s:CloseCompletionMenu()
             call feedkeys( "\<Plug>snipMateNextOrTrigger" )
@@ -722,9 +728,15 @@ function! easycomplete#CompleteFunc( findstart, base )
         return start
     endif
 
+    if &filetype == "javascript.jsx" || &filetype == "javascript"
+        let t_filetypes = ["javascript.react","javascript","javascript-es6-react","javascript.node"]
+    else
+        let t_filetypes = deepcopy([&filetype])
+    endif
+
     " 获得各类关键字的匹配结果
     let keywords_result = s:GetKeywords(a:base)
-    let snippets_result = g:GetSnippets(deepcopy([&filetype]),a:base)
+    let snippets_result = g:GetSnippets(t_filetypes,a:base)
     let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
 
     " TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
