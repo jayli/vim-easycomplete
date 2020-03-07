@@ -124,6 +124,8 @@ function! s:GetLangTypeRawStr(lang)
     let lang_abbr['jade']            = "[Jade]"
     let lang_abbr['java']            = "[Java]"
     let lang_abbr['javascript']      = "[JS]"
+    let lang_abbr['javascript.react']= "[Rax]"
+    let lang_abbr['javascript-es6-react']= "[Rax]"
     let lang_abbr['jinja']           = "[jinj]"
     let lang_abbr['jsp']             = "[JSP]"
     let lang_abbr['julia']           = "[jul]"
@@ -729,15 +731,11 @@ function! easycomplete#CompleteFunc( findstart, base )
         return start
     endif
 
-    if &filetype == "javascript.jsx" || &filetype == "javascript"
-        let t_filetypes = ["javascript.react","javascript","javascript-es6-react","javascript.node"]
-    else
-        let t_filetypes = deepcopy([&filetype])
-    endif
+    let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
 
     " 获得各类关键字的匹配结果
     let keywords_result = s:GetKeywords(a:base)
-    let snippets_result = g:GetSnippets(t_filetypes,a:base)
+    let snippets_result = g:GetSnippets(t_filetypes, a:base)
     let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
 
     " TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
