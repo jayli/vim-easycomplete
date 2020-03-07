@@ -37,7 +37,6 @@ function! easycomplete#Enable()
     set completeopt-=noselect
     " <C-X><C-U><C-N>时触发默认关键词匹配，函数劫持至此
     let &completefunc = 'easycomplete#CompleteFunc'
-    " jayli todo here
     " let &completefunc = 'tern#Complete'
     " 插入模式下的回车事件监听
     inoremap <expr> <CR> TypeEnterWithPUM()
@@ -81,117 +80,9 @@ function! s:SetPmenuScheme(scheme_name)
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
-"function s:GetLangTypeRawStr(lang) {{{
 function! s:GetLangTypeRawStr(lang)
-    let lang_abbr = {}
-    
-    let lang_abbr['_']               = "[_]"
-    let lang_abbr['actionscript']    = "[As]"
-    let lang_abbr['ada']             = "[Ada]"
-    let lang_abbr['alpaca']          = "[alp]"
-    let lang_abbr['apache']          = "[apa]"
-    let lang_abbr['arduino']         = "[ard]"
-    let lang_abbr['autoit']          = "[aut]"
-    let lang_abbr['awk']             = "[Awk]"
-    let lang_abbr['c']               = "[C]"
-    let lang_abbr['chef']            = "[chef]"
-    let lang_abbr['clojure']         = "[cloj]"
-    let lang_abbr['cmake']           = "[cmk]"
-    let lang_abbr['codeigniter']     = "[code]"
-    let lang_abbr['coffee']          = "[coff]"
-    let lang_abbr['cpp']             = "[Cpp]"
-    let lang_abbr['crystal']         = "[cyl]"
-    let lang_abbr['cs']              = "[Cs]"
-    let lang_abbr['css']             = "[Css]"
-    let lang_abbr['cuda']            = "[cuda]"
-    let lang_abbr['d']               = "[D]"
-    let lang_abbr['dart']            = "[dart]"
-    let lang_abbr['django']          = "[dja]"
-    let lang_abbr['dosini']          = "[Dos]"
-    let lang_abbr['eelixir']         = "[elix]"
-    let lang_abbr['elixir']          = "[elix]"
-    let lang_abbr['elm']             = "[elm]"
-    let lang_abbr['erlang']          = "[elng]"
-    let lang_abbr['eruby']           = "[Ruby]"
-    let lang_abbr['falcon']          = "[falc]"
-    let lang_abbr['fortran']         = "[fort]"
-    let lang_abbr['go']              = "[Go]"
-    let lang_abbr['haml']            = "[haml]"
-    let lang_abbr['handlebars']      = "[hand]"
-    let lang_abbr['haskell']         = "[hskl]"
-    let lang_abbr['html']            = "[Html]"
-    let lang_abbr['htmldjango']      = "[Html]"
-    let lang_abbr['htmltornado']     = "[Html]"
-    let lang_abbr['idris']           = "[diri]"
-    let lang_abbr['jade']            = "[Jade]"
-    let lang_abbr['java']            = "[Java]"
-    let lang_abbr['javascript']      = "[JS]"
-    let lang_abbr['javascript.react']= "[Rax]"
-    let lang_abbr['javascript-es6-react']= "[Rax]"
-    let lang_abbr['jinja']           = "[jinj]"
-    let lang_abbr['jsp']             = "[JSP]"
-    let lang_abbr['julia']           = "[jul]"
-    let lang_abbr['kotlin']          = "[kotl]"
-    let lang_abbr['laravel']         = "[lar]"
-    let lang_abbr['ledger']          = "[ledg]"
-    let lang_abbr['lfe']             = "[lfe]"
-    let lang_abbr['ls']              = "[Ls]"
-    let lang_abbr['lua']             = "[Lua]"
-    let lang_abbr['make']            = "[Make]"
-    let lang_abbr['mako']            = "[Mako]"
-    let lang_abbr['markdown']        = "[mkd]"
-    let lang_abbr['matlab']          = "[mtl]"
-    let lang_abbr['mustache']        = "[mst]"
-    let lang_abbr['objc']            = "[OC]"
-    let lang_abbr['ocaml']           = "[OC]"
-    let lang_abbr['openfoam']        = "[opf]"
-    let lang_abbr['perl']            = "[Perl]"
-    let lang_abbr['perl6']           = "[Perl]"
-    let lang_abbr['php']             = "[Php]"
-    let lang_abbr['plsql']           = "[Sql]"
-    let lang_abbr['po']              = "[po]"
-    let lang_abbr['processing']      = "[prc]"
-    let lang_abbr['progress']        = "[prg]"
-    let lang_abbr['ps1']             = "[Ps1]"
-    let lang_abbr['puppet']          = "[ppt]"
-    let lang_abbr['purescript']      = "[ps]"
-    let lang_abbr['python']          = "[PY]"
-    let lang_abbr['r']               = "[R]"
-    let lang_abbr['rails']           = "[Rail]"
-    let lang_abbr['reason']          = "[rea]"
-    let lang_abbr['rst']             = "[Rst]"
-    let lang_abbr['ruby']            = "[Ruby]"
-    let lang_abbr['rust']            = "[Rust]"
-    let lang_abbr['sass']            = "[Sass]"
-    let lang_abbr['scala']           = "[scl]"
-    let lang_abbr['scheme']          = "[sch]"
-    let lang_abbr['scss']            = "[scss]"
-    let lang_abbr['sh']              = "[SH]"
-    let lang_abbr['simplemvcf']      = "[spm]"
-    let lang_abbr['slim']            = "[slim]"
-    let lang_abbr['snippets']        = "[snp]"
-    let lang_abbr['sql']             = "[sql]"
-    let lang_abbr['stylus']          = "[stl]"
-    let lang_abbr['supercollider']   = "[sup]"
-    let lang_abbr['systemverilog']   = "[SYS]"
-    let lang_abbr['tcl']             = "[TCL]"
-    let lang_abbr['tex']             = "[TEX]"
-    let lang_abbr['textile']         = "[TEX]"
-    let lang_abbr['twig']            = "[twi]"
-    let lang_abbr['typescript']      = "[TS]"
-    let lang_abbr['typescriptreact'] = "[TS]"
-    let lang_abbr['verilog']         = "[vrl]"
-    let lang_abbr['vhdl']            = "[vhdl]"
-    let lang_abbr['vim']             = "[VIM]"
-    let lang_abbr['vue']             = "[VUE]"
-    let lang_abbr['xml']             = "[XML]"
-    let lang_abbr['xslt']            = "[xslt]"
-    let lang_abbr['yii']             = "[YII]"
-    let lang_abbr['zsh']             = "[ZSH]"
-
-    return has_key(lang_abbr, a:lang) ? get(lang_abbr, a:lang) : "[Ukn]"
+    return language_alias#GetLangTypeRawStr(a:lang)
 endfunction
-"}}}
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
@@ -218,13 +109,14 @@ function! easycomplete#CleverTab()
         " 空行
         return "\<Tab>"
     elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
-                                                \ "\\(\\w\\|\\/\\)$") < 0
-        " 如果正在输入一个非字母，也不是'/'
+                                            \ "\\(\\w\\|\\/\\|\\.\\)$") < 0
+        " 如果正在输入一个非字母，也不是'/'或'.'
         return "\<Tab>"
     elseif exists("g:snipMate")
         let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
         let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
+        " 注释掉原因：如果正是 snipmate 串，先给个提示再打开，防止误操作更好一些
         "if snipMate#CanBeTriggered() && !empty(list) && len(list) == 1
         "    call feedkeys( "\<Plug>snipMateNextOrTrigger" )
         "    return ""
@@ -322,6 +214,25 @@ function! s:MixinBufKeywordAndSnippets(keywords,snippets)
 
     call extend(snipabbr_list , a:keywords)
     return snipabbr_list
+endfunction
+
+" 将 Tern 的结果转换成这里显示无错位的格式
+function! s:ParseTernMatchResult(result)
+    if empty(a:result) || len(a:result) == 0
+        return []
+    endif
+
+    let t_result = []
+    for v in a:result
+        let menu_str = s:MenuStringTrim(get(v, "info"))
+        call add(t_result, {
+            \   "word": get(v,"word"),
+            \   "menu": s:MenuStringTrim(get(v, "menu")),
+            \   "kind" : "(ϟ)",
+            \   "icase": get(v, "icase")
+            \ })
+    endfor
+    return t_result
 endfunction
 
 " 从一个完整的SnipObject中得到Snippet最有用的两个信息
@@ -667,6 +578,24 @@ function! s:GetPathName(path)
     return pathname
 endfunction
 
+" 根据词根返回语法匹配的结果，每个语言都需要单独处理
+function! s:GetSyntaxCompletionResult(base)
+    let syntax_complete = []
+    " 处理 Javascript 语法匹配
+    if exists('g:tern_show_argument_hints') && &filetype =~ "^javascript"
+        let tern_js_result  = tern#Complete(0, a:base)
+        let syntax_complete = s:ParseTernMatchResult(tern_js_result)
+    endif
+    " 处理 Go 语法匹配
+    if &filetype == "go" && exists("g:go_loaded_install")
+        if !exists("g:g_syntax_completions")
+            let g:g_syntax_completions = [1,[]]
+        endif
+        let syntax_complete = g:g_syntax_completions[1]
+    endif
+    return syntax_complete
+endfunction
+
 " 补全菜单展示逻辑入口，光标跟随或者<Tab>键呼出
 " 由于性能问题，推荐<Tab>键呼出
 " 菜单格式说明（参照 YouCompleteMe 的菜单格式）
@@ -683,8 +612,8 @@ endfunction
 function! easycomplete#CompleteFunc( findstart, base )
     let typing_path = easycomplete#TypingAPath(a:findstart, a:base)
 
-    " 如果正在敲入一个文件路径
-    if typing_path.isPath && a:findstart
+    " 如果正在敲入一个文件路径 ---- {{{
+    if typing_path.isPath && a:findstart " 第一次调用求起始位置
         " 兼容这几种情况 =>
         " ./a/b/c/d
         " ../asdf./
@@ -692,7 +621,7 @@ function! easycomplete#CompleteFunc( findstart, base )
         " /a/b/c/d/
         " ~/
         return typing_path.short_path_start
-    elseif typing_path.isPath
+    elseif typing_path.isPath " 第二次调用返回匹配结果
         " 查找目录
         let result = s:GetDirAndFiles(typing_path, a:base)
         if len(result) == 0
@@ -702,10 +631,11 @@ function! easycomplete#CompleteFunc( findstart, base )
         endif
         return result
     endif
+    " 文件路径处理结束         ---- }}}
 
-    " 常规的关键字处理
+    " 常规的关键字处理         ---- {{{
     if a:findstart
-        " 定位当前关键字的起始位置
+        " 第一次调用，定位当前关键字的起始位置
         let line = getline('.')
         let start = col('.') - 1
         " Hack: 如果是 '//' 后紧跟<Tab>，直接输出<Tab>
@@ -722,6 +652,10 @@ function! easycomplete#CompleteFunc( findstart, base )
             endif
         endif
 
+        if exists('g:tern_show_argument_hints') && &filetype =~ "^javascript"
+            call tern#Complete(1, a:base)
+        endif
+
         " Hack: 如果是 "." 后面应该点出来上下文语义匹配的结果
         if strpart(line, start, 1 ) == '.'
             return start
@@ -733,19 +667,20 @@ function! easycomplete#CompleteFunc( findstart, base )
         return start
     endif
 
+    " 第二次调用，给出匹配列表
     let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
 
-    " 获得各类关键字的匹配结果
+    " 获得关键词匹配结果
     let keywords_result = s:GetKeywords(a:base)
+    " 获得常用代码片段简写项
     let snippets_result = g:GetSnippets(t_filetypes, a:base)
+    " 以上两者混合
     let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
+    " 获得语法匹配结果
+    let syntax_complete = s:GetSyntaxCompletionResult(a:base)
 
-    " TODO: 获得各种语言的 Omni 匹配结果，从 Go 开始
-    if !exists("g:g_syntax_completions")
-        let g:g_syntax_completions = [1,[]]
-    endif
-    let syntax_complete = g:g_syntax_completions[1]
-
+    " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
+    " 作，否则返回全量结果
     if len(a:base) == 0 && len(syntax_complete) > 0
         let all_result = syntax_complete
     elseif len(a:base) == 0 && len(syntax_complete) == 0
@@ -759,7 +694,7 @@ function! easycomplete#CompleteFunc( findstart, base )
     " tab 用 s-tab (我个人习惯)，而不是一味求全 tab 的容错，容错不报错也
     " 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
     " 这里需要读者注意
-
+    "
     if len(all_result) == 0
         call s:CloseCompletionMenu()
         call s:SendKeys("\<Tab>")
@@ -767,9 +702,10 @@ function! easycomplete#CompleteFunc( findstart, base )
     endif
 
     return all_result
+    " 常规的关键字处理         ---- }}}
 endfunction
 
-function! s:LogMsg(msg)
+function! s:log(msg)
     echohl MoreMsg
     echom '>>> '. a:msg
     echohl NONE
