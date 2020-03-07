@@ -37,6 +37,8 @@ function! easycomplete#Enable()
     set completeopt-=noselect
     " <C-X><C-U><C-N>时触发默认关键词匹配，函数劫持至此
     let &completefunc = 'easycomplete#CompleteFunc'
+    " jayli todo here
+    " let &completefunc = 'tern#Complete'
     " 插入模式下的回车事件监听
     inoremap <expr> <CR> TypeEnterWithPUM()
     " 插入模式下 Tab 和 Shift-Tab 的监听
