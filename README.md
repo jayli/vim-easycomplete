@@ -120,4 +120,3 @@ VIM 自带 <kbd>C-X C-F</kbd> 来呼出文件路径匹配窗，也很好用，�
 <img src="https://gw.alicdn.com/tfs/TB1KXw9iXP7gK0jSZFjXXc5aXXa-1048-486.png" width=550>
 
 代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)展示了代码补全的情形。
-
