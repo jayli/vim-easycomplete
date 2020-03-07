@@ -681,7 +681,13 @@ function! easycomplete#CompleteFunc( findstart, base )
 
     " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
     " 作，否则返回全量结果
+    " Bug: MTop.ge<Tab> 可以正确匹配结果，但 Backspace 时又出来一大堆完全结果
+    " ，不只是语法结果 TODO
+    let line = getline('.')
+    let start = col('.') - 1
     if len(a:base) == 0 && len(syntax_complete) > 0
+        let all_result = syntax_complete
+    elseif len(a:base) > 0 && strpart(line, start - 1, 1) == '.'
         let all_result = syntax_complete
     elseif len(a:base) == 0 && len(syntax_complete) == 0
         let all_result = []
