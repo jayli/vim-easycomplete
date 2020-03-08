@@ -668,7 +668,12 @@ function! easycomplete#CompleteFunc( findstart, base )
     endif
 
     " 第二次调用，给出匹配列表
-    let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
+    if has_key(g:snipMate.scope_aliases, &filetype)
+                \ && get(g:snipMate.scope_aliases, &filetype) != ""
+        let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
+    else
+        let t_filetypes = [&filetype]
+    endif
 
     " 获得关键词匹配结果
     let keywords_result = s:GetKeywords(a:base)
@@ -686,13 +691,19 @@ function! easycomplete#CompleteFunc( findstart, base )
     let line = getline('.')
     let start = col('.') - 1
     if len(a:base) == 0 && len(syntax_complete) > 0
+        " 直接输入'.'后匹配
         let all_result = syntax_complete
     elseif len(a:base) > 0 && strpart(line, start - 1, 1) == '.'
+        " 点后一个字符匹配(最常用的形式避免正则，速度更快一些)
+        let all_result = syntax_complete
+    elseif len(a:base) > 0 && match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0
+        " 点后两个或两个以上字符，用正则匹配
         let all_result = syntax_complete
     elseif len(a:base) == 0 && len(syntax_complete) == 0
         let all_result = []
     else
         let all_result = syntax_complete + all_result
+        call s:log(string(all_result))
     endif
 
     " TODO 如果匹配不出任何结果，还是执行原有按键，我这里用tab，实际上还
@@ -713,7 +724,7 @@ endfunction
 
 function! s:log(msg)
     echohl MoreMsg
-    echom '>>> '. a:msg
+    echom '>>> '. string(a:msg)
     echohl NONE
 endfunction
 
