@@ -1,10 +1,6 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
-" Description:  easycomplete.vim 是 vim-easycomplete 插件的启动文件，
-"               easycomplete 实现了针对字典和 buff keyword 的自动补全，不依赖
-"               于其他语言，完全基于 VimL 实现，安装比较干净，同时该插件兼容了
-"               snipMate 和其携带的 snipets 代码片段，书写代码超级舒服
-"               改文件是主要的逻辑，说明均已注释跟随在代码里
+" Description:  整合了字典、代码展开和语法补全的提示插件 
 "
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
@@ -12,9 +8,6 @@
 "                   <https://www.vim.org/scripts/script.php?script_id=2540>
 "
 " TODO:
-" - [fixed] 如果一个单词刚好只有一个匹配，或者匹配不出东西，点击tab是没有反应
-" - [fixed] 各种补全形态的支持，包括支持 File 匹配
-" - [done]  各种语言的词表收集,done
 " - [later] js include 的文件词表生成记录入buf
 " - [later] ":"隔断的单词匹配不出来,later
 " - [later] 单词位置的就近匹配
@@ -151,10 +144,6 @@ function! TypeEnterWithPUM()
         " 关闭浮窗
 
         " 1. 优先判断是否前缀可被匹配 && 是否完全匹配到snippet
-        " jayli
-        " bug，如果菜单中匹配出了 javascript 和 react 两个 snip，选择 react 的
-        " snip 回车，这里不执行，list是空，而且 snipMateNextOrTrigger 无结果
-        " 实在过不去，就整合成一个 javascript.snipp 文件
         if snipMate#CanBeTriggered() && !empty(list)
             call s:CloseCompletionMenu()
             call feedkeys( "\<Plug>snipMateNextOrTrigger" )
@@ -686,8 +675,6 @@ function! easycomplete#CompleteFunc( findstart, base )
 
     " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
     " 作，否则返回全量结果
-    " Bug: MTop.ge<Tab> 可以正确匹配结果，但 Backspace 时又出来一大堆完全结果
-    " ，不只是语法结果 TODO
     let line = getline('.')
     let start = col('.') - 1
     if len(a:base) == 0 && len(syntax_complete) > 0
