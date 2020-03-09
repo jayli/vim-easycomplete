@@ -16,7 +16,9 @@
 - [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配。
 - [Zencoding](https://github.com/mattn/emmet-vim)：一个古董，代码展开。
 
-依赖：补全和字典分别依赖 vim-snipmate 和 vim-dictionary。这里支持了 Go、Python 和 JavaScript 的语法补全。
+依赖：补全和字典分别依赖 vim-snipmate 和 vim-dictionary。这里支持了 Go、Python 和 JavaScript 的语法补全。Popup 菜单如下：
+
+<img src="https://gw.alicdn.com/tfs/TB1KIX2xKL2gK0jSZFmXXc7iXXa-1484-1036.png" width=600>
 
 ### 安装
 
