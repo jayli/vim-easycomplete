@@ -6,7 +6,7 @@
 
 代码自动补全插件，把代码片段展开、字典提醒、Tab 唤醒以及语法补全合并在一起。（注意不要和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
 
-![](https://gw.alicdn.com/tfs/TB1po..ilr0gK0jSZFnXXbRRXXa-559-261.gif?t=1)
+<img src="https://gw.alicdn.com/tfs/TB1ABBUxND1gK0jSZFsXXbldVXa-881-464.gif" width=500>
 
 灵感来自这些优秀的插件：
 
@@ -100,16 +100,12 @@ Go 可选配置：
 
 EasyComplete 目前有四种常见用法：关键词补全、字典补全、文件路径补全和代码片段补全，除了代码片段补全之外，其他三种补全逻辑参照了 YCM 的实现，比如文件路径补全和关键词补全是解耦开的。
 
+JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。
+
 关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。
 
 路径补全和 <kbd>C-X C-F</kbd> 类似，这里参照 YCM 重写了路径匹配的逻辑。插件会判断你是否正在输入一个路径，尤其是当你输入`./`或者`/`，也可紧跟要匹配的文件名或者目录名片段，点击 <kbd>Tab</kbd> 呼出匹配项。
 
-<img src="https://gw.alicdn.com/tfs/TB1maZ9ihn1gK0jSZKPXXXvUXXa-1010-586.png" width=550>
+<img src="https://gw.alicdn.com/tfs/TB15JJWxQP2gK0jSZPxXXacQpXa-1204-446.png" width=600>
 
-#### - 代码片段补全（基于 SnipMate）
-
-代码片段补全，这里支持的代码段来自于 [vim-snippets](https://github.com/honza/vim-snippets)，可以[在这里](https://github.com/honza/vim-snippets/tree/master/snippets)查看有哪些可用的代码片段。
-
-<img src="https://gw.alicdn.com/tfs/TB1KXw9iXP7gK0jSZFjXXc5aXXa-1048-486.png" width=550>
-
-代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)。
+关于代码片段补全，这里支持的代码段来自于 [vim-snippets](https://github.com/honza/vim-snippets)，可以[在这里](https://github.com/honza/vim-snippets/tree/master/snippets)查看有哪些可用的代码片段。代码片段内的占位符填充的动作和 SnipMate 保持一样，用 <kbd>Tab</kbd> 键切换下一个占位符。比如[这个例子](https://gw.alicdn.com/tfs/TB1PJtCbQzoK1RjSZFlXXai4VXa-1000-513.gif)。
