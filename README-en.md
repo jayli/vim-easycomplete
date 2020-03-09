@@ -8,14 +8,6 @@ Dictionary autocomplete with SnipMate support. Incompatible with [SuperTab](http
 
 ![](https://gw.alicdn.com/tfs/TB1po..ilr0gK0jSZFnXXbRRXXa-559-261.gif?t=1)
 
-Why another completion plugin.
-
-- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe): The most popular as-you-type code completion engin. Without [Ultisnips](https://github.com/SirVer/ultisnips) supported. It requires python and it's sometime unresponsive while typing. It's too "Big And All-embracing". I want a lighter one.
-- [SnipMate](https://github.com/garbas/vim-snipmate): A popular code expanding plugin. It was implemented with pure vimscript. That's cool.
-- [Deoplete](https://github.com/Shougo/deoplete.nvim): Only compatible with vim8 and neovim, And requires python3. Not support vim7 and lower.
-- [Completor](https://github.com/maralla/completor.vim): A new completion plugin, it's fast but no support vim 7 and lower.
-- [Zencoding](https://github.com/mattn/emmet-vim): An antique.
-
 What I wanted:
 
 - No suggestions popup with typing. Use "tab" to invoke popup menu.
