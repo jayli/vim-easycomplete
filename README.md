@@ -100,7 +100,9 @@ Go 可选配置：
 
 EasyComplete 目前有四种常见用法：关键词补全、字典补全、文件路径补全和代码片段补全，除了代码片段补全之外，其他三种补全逻辑参照了 YCM 的实现，比如文件路径补全和关键词补全是解耦开的。
 
-JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。
+JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。和 VSCode 的语法嗅探的比较：
+
+![](https://gw.alicdn.com/tfs/TB1ozNVxUY1gK0jSZFMXXaWcVXa-1978-672.png)
 
 关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。
 
