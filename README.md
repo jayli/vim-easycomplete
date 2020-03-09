@@ -6,7 +6,7 @@
 
 代码自动补全插件，把代码片段展开、字典提醒、Tab 唤醒以及语法补全合并在一起。（注意不要和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
 
-<img src="https://gw.alicdn.com/tfs/TB1ABBUxND1gK0jSZFsXXbldVXa-881-464.gif" width=600>
+<img src="https://gw.alicdn.com/tfs/TB1ABBUxND1gK0jSZFsXXbldVXa-881-464.gif" width=650>
 
 灵感来自这些优秀的插件：
 
