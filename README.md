@@ -13,7 +13,7 @@
 - [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：语法补全权威插件。
 - [SnipMate](https://github.com/garbas/vim-snipmate)：仅做代码展开，完全基于 VimL 实现，不支持语法嗅探。
 - [Deoplete](https://github.com/Shougo/deoplete.nvim)：该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 和 [Neovim](https://github.com/neovim/neovim) 上，配置麻烦，不兼容vim7。
-- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配，体验很赞。
+- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配。
 - [Zencoding](https://github.com/mattn/emmet-vim)：一个古董，代码展开。
 
 依赖：补全和字典分别依赖 vim-snipmate 和 vim-dictionary。这里支持了 Go、Python 和 JavaScript 的语法补全。
