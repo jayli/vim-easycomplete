@@ -41,9 +41,9 @@
     git clone https://github.com/ternjs/tern_for_vim.git
     git clone https://github.com/fatih/vim-go.git
 
-> Python 需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi`
-> JavaScript 需要安装 [tern](https://ternjs.net/)：进入`~/.vim/bundle/tern_for_vim/`后执行`npm i`
-> Go 需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
+> - Python 需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi`
+> - JavaScript 需要安装 [tern](https://ternjs.net/)：进入`~/.vim/bundle/tern_for_vim/`后执行`npm i`
+> - Go 需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
 
 ### 配置
 
