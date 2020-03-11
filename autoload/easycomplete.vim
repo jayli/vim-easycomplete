@@ -39,7 +39,7 @@ function! easycomplete#Enable()
     inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
     inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
-    " 配置弹框样式，目前默认两种样式，暗：default，亮 light 
+    " 配置弹框样式，目前默认两种样式，暗：default，亮 light
     if !exists("g:pmenu_scheme")
         let g:pmenu_scheme = "None"
     endif

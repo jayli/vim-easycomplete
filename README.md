@@ -18,7 +18,7 @@
 
 依赖：补全和字典分别依赖 vim-snipmate 和 vim-dictionary。这里支持了 Go、Python 和 JavaScript 的语法补全。Popup 菜单如下：
 
-<img src="https://gw.alicdn.com/tfs/TB1KIX2xKL2gK0jSZFmXXc7iXXa-1484-1036.png" width=600>
+<img src="https://gw.alicdn.com/tfs/TB19wGlx.Y1gK0jSZFMXXaWcVXa-1460-1022.png" width=600>
 
 ### 安装
 
