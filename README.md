@@ -1,6 +1,6 @@
 # Vim-EasyComplete
 
-<img src="https://gw.alicdn.com/tfs/TB1Ee4TxQL0gK0jSZFxXXXWHVXa-1184-488.png" width=200> [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
+<img align=right src="https://gw.alicdn.com/tfs/TB1Ee4TxQL0gK0jSZFxXXXWHVXa-1184-488.png" width=200> [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
 代码自动补全插件，把代码片段展开、字典提醒、Tab 唤醒以及语法补全合并在一起。（注意不要和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
 

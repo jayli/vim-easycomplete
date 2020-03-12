@@ -1,11 +1,9 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
-" Description:  整合了字典、代码展开和语法补全的提示插件 
+" Description:  整合了字典、代码展开和语法补全的提示插件
 "
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
-"               Thanks for SnipMate:
-"                   <https://www.vim.org/scripts/script.php?script_id=2540>
 "
 " TODO:
 " - [later] js include 的文件词表生成记录入buf
@@ -28,9 +26,8 @@ function! easycomplete#Enable()
     " noselect 可配可不配
     "set completeopt+=noselect
     set completeopt-=noselect
-    " <C-X><C-U><C-N>时触发默认关键词匹配，函数劫持至此
+    " <C-X><C-U><C-N> 时的函数回调
     let &completefunc = 'easycomplete#CompleteFunc'
-    " let &completefunc = 'tern#Complete'
     " 插入模式下的回车事件监听
     inoremap <expr> <CR> TypeEnterWithPUM()
     " 插入模式下 Tab 和 Shift-Tab 的监听
@@ -39,7 +36,7 @@ function! easycomplete#Enable()
     inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
     inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
-    " 配置弹框样式，目前默认两种样式，暗：default，亮 light
+    " 配置弹框样式，支持三种，dark,light 和 rider
     if !exists("g:pmenu_scheme")
         let g:pmenu_scheme = "None"
     endif
@@ -91,7 +88,7 @@ function! easycomplete#CleverTab()
         endif
     elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "."
         " Hack for Golang
-        "唤醒easycomplete菜单
+        " 唤醒easycomplete菜单
         setlocal completeopt+=noinsert
         return "\<C-X>\<C-U>"
     elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
@@ -127,7 +124,7 @@ function! easycomplete#CleverTab()
 endfunction
 
 " CleverShiftTab 逻辑判断，无补全菜单情况下输出<Tab>
-" Shift-Tab 在插入模式下输出为 Tab，是我个人习惯
+" Shift-Tab 在插入模式下输出为 Tab，仅为我个人习惯
 function! easycomplete#CleverShiftTab()
     return pumvisible()?"\<C-P>":"\<Tab>"
 endfunction
@@ -329,7 +326,6 @@ function! s:GetBufKeywordsList()
     for buf in getbufinfo()
         let lines = getbufline(buf.bufnr, 1 ,"$")
         for line in lines
-            " 获取 buff keyword 的正则表达式
             call extend(tmpkeywords, split(line,'[^A-Za-z0-9_#]'))
         endfor
     endfor
