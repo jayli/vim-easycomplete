@@ -628,7 +628,7 @@ function! easycomplete#CompleteFunc( findstart, base )
         let line = getline('.')
         let start = col('.') - 1
         " Hack: 如果是 '//' 后紧跟<Tab>，直接输出<Tab>
-        if strpart(line, start - 1, 2) == '//'
+        if strpart(line, start - 2, 2) == '//'
             return start
         endif
 
@@ -645,8 +645,10 @@ function! easycomplete#CompleteFunc( findstart, base )
             call tern#Complete(1, a:base)
         endif
 
+        call s:log(strpart(line, start-1, 1))
+
         " Hack: 如果是 "." 后面应该点出来上下文语义匹配的结果
-        if strpart(line, start, 1 ) == '.'
+        if strpart(line, start - 1, 1 ) == '.'
             return start
         endif
 
