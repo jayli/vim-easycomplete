@@ -1,6 +1,4 @@
-<img align=right src="https://gw.alicdn.com/tfs/TB1Ee4TxQL0gK0jSZFxXXXWHVXa-1184-488.png" width=200>
-
-# Vim-EasyComplete
+# Vim-EasyComplete <img align=right src="https://gw.alicdn.com/tfs/TB1Ee4TxQL0gK0jSZFxXXXWHVXa-1184-488.png" width=200>
 
 [![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
