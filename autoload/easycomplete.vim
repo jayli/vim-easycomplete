@@ -567,7 +567,7 @@ endfunction
 function! s:GetSyntaxCompletionResult(base)
     let syntax_complete = []
     " 处理 Javascript 语法匹配
-    if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\|typescript\\)"
+    if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
         let tern_js_result  = tern#Complete(0, a:base)
         let syntax_complete = s:ParseTernMatchResult(tern_js_result)
     endif
@@ -637,7 +637,7 @@ function! easycomplete#CompleteFunc( findstart, base )
             endif
         endif
 
-        if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\|typescript\\)"
+        if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
             call tern#Complete(1, a:base)
         endif
 
