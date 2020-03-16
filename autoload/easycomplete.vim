@@ -28,6 +28,7 @@ function! easycomplete#Enable()
     set completeopt-=noselect
     " <C-X><C-U><C-N> 时的函数回调
     let &completefunc = 'easycomplete#CompleteFunc'
+    " let &completefunc = 'tsuquyomi#complete'
     " 插入模式下的回车事件监听
     inoremap <expr> <CR> TypeEnterWithPUM()
     " 插入模式下 Tab 和 Shift-Tab 的监听
