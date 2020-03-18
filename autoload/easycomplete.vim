@@ -568,18 +568,53 @@ endfunction
 function! s:GetSyntaxCompletionResult(base)
     let syntax_complete = []
     " 处理 Javascript 语法匹配
-    if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
+    if s:IsTernSyntaxCompleteReady()
         let tern_js_result  = tern#Complete(0, a:base)
         let syntax_complete = s:ParseTernMatchResult(tern_js_result)
     endif
+    if s:IsTsSyntaxCompleteReady()
+        let ts_comp_result  =  tsuquyomi#complete(0, a:base)
+        " tsuquyomi#complete 这里先创建菜单再 complete_add 进去
+        " 所以这里 ts_comp_result 总是空
+        let syntax_complete = [] 
+    endif
     " 处理 Go 语法匹配
-    if &filetype == "go" && exists("g:go_loaded_install")
+    if s:IsGoSyntaxCompleteReady()
         if !exists("g:g_syntax_completions")
             let g:g_syntax_completions = [1,[]]
         endif
         let syntax_complete = g:g_syntax_completions[1]
     endif
     return syntax_complete
+endfunction
+
+function! s:IsGoSyntaxCompleteReady()
+    if &filetype == "go" && exists("g:go_loaded_install")
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+function! s:IsTsSyntaxCompleteReady()
+    if exists('g:loaded_tsuquyomi') &&
+                \ exists('g:tsuquyomi_javascript_support') &&
+                \ g:loaded_tsuquyomi == 1 &&
+                \ g:tsuquyomi_javascript_support == 1 &&
+                \ &filetype =~ "^\\(typescript\\|javascript\\)"
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+function! s:IsTernSyntaxCompleteReady()
+    return 0
+    if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
+        return 1
+    else
+        return 0
+    endif
 endfunction
 
 " 补全菜单展示逻辑入口，光标跟随或者<Tab>键呼出
@@ -631,18 +666,20 @@ function! easycomplete#CompleteFunc( findstart, base )
 
         if a:findstart == 1
             " for go
-            if &filetype == "go" && exists("g:go_loaded_install")
+            if s:IsGoSyntaxCompleteReady()
                 execute "silent let g:g_syntax_completions = " . language#go#GocodeAutocomplete()
             else
                 let g:g_syntax_completions = [1,[]]
             endif
         endif
 
-        if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
+        if s:IsTernSyntaxCompleteReady()
             call tern#Complete(1, a:base)
         endif
 
-        call s:log(strpart(line, start-1, 1))
+        if s:IsTsSyntaxCompleteReady()
+            call tsuquyomi#complete(1, a:base)
+        endif
 
         " Hack: 如果是 "." 后面应该点出来上下文语义匹配的结果
         if strpart(line, start - 1, 1 ) == '.'
@@ -689,7 +726,6 @@ function! easycomplete#CompleteFunc( findstart, base )
         let all_result = []
     else
         let all_result = syntax_complete + all_result
-        call s:log(string(all_result))
     endif
 
     " TODO 如果匹配不出任何结果，还是执行原有按键，我这里用tab，实际上还

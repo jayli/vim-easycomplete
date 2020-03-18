@@ -38,11 +38,10 @@
 
     cd ~/.vim/bundle/
     git clone https://github.com/davidhalter/jedi-vim.git
-    git clone https://github.com/ternjs/tern_for_vim.git
     git clone https://github.com/fatih/vim-go.git
 
 > - Python 需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi`
-> - JavaScript 需要安装 [tern](https://ternjs.net/)：进入`~/.vim/bundle/tern_for_vim/`后执行`npm i`
+> - JavaScript 需要安装 tsserver，直接执行 `npm -g install typescript`
 > - Go 需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
 
 ### 配置
@@ -64,12 +63,10 @@ SnipMate 可选配置，主要是配置 JavaScript 的类型映射集合：
     let g:snipMate.scope_aliases['javascript'] = g:javascript_scope_aliases
     let g:snipMate.scope_aliases['javascript.jsx'] = g:javascript_scope_aliases
 
-Tern 可选配置：
+Typescript 和 Javascript 可选配置：
 
-    let g:tern_show_argument_hints = 'on_move'
-    let g:tern_show_argument_hints = 'yes'
-    let g:tern_show_signature_in_pum = 1
-    let g:tern_set_omni_function=0
+    let g:tsuquyomi_completion_detail = 1
+    let g:tsuquyomi_javascript_support = 1
 
 Jedi 可选配置：
 
@@ -100,7 +97,20 @@ Go 可选配置：
 
 EasyComplete 目前有四种常见用法：关键词补全、字典补全、文件路径补全和代码片段补全，除了代码片段补全之外，其他三种补全逻辑参照了 YCM 的实现，比如文件路径补全和关键词补全是解耦开的。
 
-JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。最好的办法是在你的用户根目录下创建`.tern-project`。和 VSCode 的语法嗅探的比较：
+<del>JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。最好的办法是在你的用户根目录下创建`.tern-project`。</del>
+
+
+JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig.json`
+
+    {
+      "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "es5",
+        "module": "commonjs"
+      }
+    }
+
+和 VSCode 的语法嗅探的比较：
 
 ![](https://gw.alicdn.com/tfs/TB1ozNVxUY1gK0jSZFMXXaWcVXa-1978-672.png)
 
