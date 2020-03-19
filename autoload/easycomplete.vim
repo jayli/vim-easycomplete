@@ -716,13 +716,16 @@ function! easycomplete#CompleteFunc( findstart, base )
     if len(a:base) == 0 && s:IsTsSyntaxCompleteReady()
         " 如果是点
         " TSServer 自动语法匹配
+        let all_result = []
     elseif len(a:base) > 0 &&
                 \ strpart(getline('.'), start-1 , 1) == '.' &&
                 \ s:IsTsSyntaxCompleteReady()
+        let all_result = []
         " 如果是点后字符匹配
         " TSServer 自动语法匹配
     elseif len(a:base) > 0 && match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0 &&
                 \ s:IsTsSyntaxCompleteReady()
+        let all_result = []
         " TSServer 自动语法匹配
     elseif len(a:base) == 0 && len(syntax_complete) > 0
         " 直接输入'.'后匹配
@@ -743,9 +746,8 @@ function! easycomplete#CompleteFunc( findstart, base )
     " 有一种选择，暂停行为，给出match不成功的提示，我建议要强化insert输入
     " tab 用 s-tab (我个人习惯)，而不是一味求全 tab 的容错，容错不报错也
     " 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
-    " 这里需要读者注意
-    "
-    if len(all_result) == 0
+    " 这里需要使用者注意
+    if len(all_result) == 0 && !s:IsTsSyntaxCompleteReady()
         call s:CloseCompletionMenu()
         call s:SendKeys("\<Tab>")
         return 0
