@@ -111,7 +111,7 @@ JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig
 
 和 VSCode 的语法嗅探的比较：
 
-![](https://gw.alicdn.com/tfs/TB1ozNVxUY1gK0jSZFMXXaWcVXa-1978-672.png)
+![](https://gw.alicdn.com/tfs/TB1YpXfyYY1gK0jSZTEXXXDQVXa-2026-752.png)
 
 关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。
 
