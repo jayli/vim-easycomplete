@@ -713,19 +713,16 @@ function! easycomplete#CompleteFunc( findstart, base )
     " 作，否则返回全量结果
     let line = getline('.')
     let start = col('.') - 1
-    " todo here 
-    " jayli
-    "   document.qu<tab> 出错
-    "   line只能取到 documen. 后面的qu 两个字符吃掉了？
-    call s:log(line)
-    call s:log(start)
-    call s:log(getline('.')[0 : start])
     if len(a:base) == 0 && s:IsTsSyntaxCompleteReady()
+        " 如果是点
         " TSServer 自动语法匹配
     elseif len(a:base) > 0 &&
-                \ match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0 &&
+                \ strpart(getline('.'), start-1 , 1) == '.' &&
                 \ s:IsTsSyntaxCompleteReady()
-        " jayli todo,这里进不来，因为上面的理由
+        " 如果是点后字符匹配
+        " TSServer 自动语法匹配
+    elseif len(a:base) > 0 && match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0 &&
+                \ s:IsTsSyntaxCompleteReady()
         " TSServer 自动语法匹配
     elseif len(a:base) == 0 && len(syntax_complete) > 0
         " 直接输入'.'后匹配

@@ -34,11 +34,11 @@
     git clone https://github.com/jayli/vim-easycomplete.git
     git clone https://github.com/jayli/vim-dictionary.git
 
-安装语言自动匹配插件：
+进入 `~/.vim/bundle` 安装语言自动匹配插件（根据自己的技术栈选择）：
 
-    cd ~/.vim/bundle/
-    git clone https://github.com/davidhalter/jedi-vim.git
-    git clone https://github.com/fatih/vim-go.git
+- Python `git clone https://github.com/davidhalter/jedi-vim.git`
+- Go `git clone https://github.com/fatih/vim-go.git`
+- JavaScript & TypeScript `git clone https://github.com/jayli/tsuquyomi.git`
 
 > - Python 需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi`
 > - JavaScript 需要安装 tsserver，直接执行 `npm -g install typescript`
@@ -63,7 +63,7 @@ SnipMate 可选配置，主要是配置 JavaScript 的类型映射集合：
     let g:snipMate.scope_aliases['javascript'] = g:javascript_scope_aliases
     let g:snipMate.scope_aliases['javascript.jsx'] = g:javascript_scope_aliases
 
-Typescript 和 Javascript 可选配置：
+Typescript 和 Javascript 配置：
 
     let g:tsuquyomi_completion_detail = 1
     let g:tsuquyomi_javascript_support = 1
@@ -96,9 +96,6 @@ Go 可选配置：
 ### 使用
 
 EasyComplete 目前有四种常见用法：关键词补全、字典补全、文件路径补全和代码片段补全，除了代码片段补全之外，其他三种补全逻辑参照了 YCM 的实现，比如文件路径补全和关键词补全是解耦开的。
-
-<del>JavaScript 的语法补全基于 Tern，建议配置 `.tern-project` 来优化语法嗅探，配置方法参照[这里](https://ternjs.net/doc/manual.html#configuration)。最好的办法是在你的用户根目录下创建`.tern-project`。</del>
-
 
 JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig.json`
 
