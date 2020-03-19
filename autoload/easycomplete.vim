@@ -43,6 +43,13 @@ function! easycomplete#Enable()
     endif
 
     call s:SetPmenuScheme(g:pmenu_scheme)
+
+    if s:IsTsSyntaxCompleteReady() && exists("g:tsuquyomi_auto_open") &&
+                \ g:tsuquyomi_auto_open == 0
+        " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
+        " 放到最后启动，避免影响vim打开速度
+        autocmd SourcePost * :TsuquyomiOpen
+    endif
 endfunction
 
 " 菜单样式设置

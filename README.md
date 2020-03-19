@@ -65,8 +65,10 @@ SnipMate 可选配置，主要是配置 JavaScript 的类型映射集合：
 
 Typescript 和 Javascript 配置：
 
-    let g:tsuquyomi_completion_detail = 1
     let g:tsuquyomi_javascript_support = 1
+    let g:tsuquyomi_completion_detail = 0
+    let g:tsuquyomi_completion_preview = 0
+    let g:tsuquyomi_auto_open = 0
 
 Jedi 可选配置：
 
