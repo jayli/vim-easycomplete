@@ -4,19 +4,12 @@
 "
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
-"
-" TODO:
-" - [later] js include 的文件词表生成记录入buf
-" - [later] ":"隔断的单词匹配不出来,later
-" - [later] 单词位置的就近匹配
-" - [later] snip 词表排序
 
 " 插件初始化入口
 function! easycomplete#Enable()
     " VI 兼容模式，连续输入时的popup兼容性好
     set cpoptions+=B
-    " completeopt 需要设置成 menuone，不然如果只有一个展示
-    " 列表时，菜单往往无法弹出
+    " completeopt 需要设置成 menuonea，一个展示项也弹出菜单
     set completeopt-=menu
     set completeopt+=menuone
     " 这个是非必要设置，通常用来表示可以为所有匹配项插入通用前缀符，这样就可以
@@ -24,11 +17,9 @@ function! easycomplete#Enable()
     " longest 为贪婪匹配，这里不需要
     set completeopt-=longest
     " noselect 可配可不配
-    "set completeopt+=noselect
     set completeopt-=noselect
     " <C-X><C-U><C-N> 时的函数回调
     let &completefunc = 'easycomplete#CompleteFunc'
-    " let &completefunc = 'tsuquyomi#complete'
     " 插入模式下的回车事件监听
     inoremap <expr> <CR> TypeEnterWithPUM()
     " 插入模式下 Tab 和 Shift-Tab 的监听
@@ -44,10 +35,10 @@ function! easycomplete#Enable()
 
     call s:SetPmenuScheme(g:pmenu_scheme)
 
+    " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
+    " 放到最后启动，避免影响vim打开速度
     if s:IsTsSyntaxCompleteReady() && exists("g:tsuquyomi_auto_open") &&
                 \ g:tsuquyomi_auto_open == 0
-        " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
-        " 放到最后启动，避免影响vim打开速度
         autocmd SourcePost * :TsuquyomiOpen
     endif
 endfunction
@@ -102,9 +93,10 @@ function! easycomplete#CleverTab()
     elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
                 \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
                 \ len(s:StringTrim(getline('.'))) == 0
-        " 如果整行是空行
-        " 前一个字符是空格
-        " 空行
+        " 判断空行的三个条件
+        "   如果整行是空行
+        "   前一个字符是空格
+        "   空行
         return "\<Tab>"
     elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
                                             \ "\\(\\w\\|\\/\\|\\.\\)$") < 0
@@ -114,19 +106,10 @@ function! easycomplete#CleverTab()
         let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
         let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
-        " 注释掉原因：如果正是 snipmate 串，先给个提示再打开，防止误操作更好一些
-        "if snipMate#CanBeTriggered() && !empty(list) && len(list) == 1
-        "    call feedkeys( "\<Plug>snipMateNextOrTrigger" )
-        "    return ""
-        "else
-        "    "唤醒easycomplete菜单
-        "    return "\<C-X>\<C-U>"
-        "endif
-
-        " bugfix 如果只匹配一个，也还是给出提示
+        " 如果只匹配一个，也还是给出提示
         return "\<C-X>\<C-U>"
     else
-        "唤醒easycomplete菜单
+        " 正常逻辑下都唤醒easycomplete菜单
         return "\<C-X>\<C-U>"
     endif
 endfunction
@@ -140,7 +123,7 @@ endfunction
 " 回车事件的行为，如果补全浮窗内点击回车，要判断是否
 " 插入 snipmete 展开后的代码，否则还是默认回车事件
 function! TypeEnterWithPUM()
-    " 如果浮窗存在
+    " 如果浮窗存在且 snipMate 已安装
     if pumvisible() && exists("g:snipMate")
         " 得到当前光标处已匹配的单词
         let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
@@ -148,7 +131,7 @@ function! TypeEnterWithPUM()
         let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
         " 关闭浮窗
 
-        " 1. 优先判断是否前缀可被匹配 && 是否完全匹配到snippet
+        " 1. 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
         if snipMate#CanBeTriggered() && !empty(list)
             call s:CloseCompletionMenu()
             call feedkeys( "\<Plug>snipMateNextOrTrigger" )
@@ -208,25 +191,6 @@ function! s:MixinBufKeywordAndSnippets(keywords,snippets)
 
     call extend(snipabbr_list , a:keywords)
     return snipabbr_list
-endfunction
-
-" 将 Tern 的结果转换成这里显示无错位的格式
-function! s:ParseTernMatchResult(result)
-    if empty(a:result) || len(a:result) == 0
-        return []
-    endif
-
-    let t_result = []
-    for v in a:result
-        let menu_str = s:MenuStringTrim(get(v, "info"))
-        call add(t_result, {
-            \   "word": get(v,"word"),
-            \   "menu": s:MenuStringTrim(get(v, "menu")),
-            \   "kind" : "(ϟ)",
-            \   "icase": get(v, "icase")
-            \ })
-    endfor
-    return t_result
 endfunction
 
 " 从一个完整的SnipObject中得到Snippet最有用的两个信息
@@ -575,15 +539,11 @@ endfunction
 function! s:GetSyntaxCompletionResult(base)
     let syntax_complete = []
     " 处理 Javascript 语法匹配
-    if s:IsTernSyntaxCompleteReady()
-        let tern_js_result  = tern#Complete(0, a:base)
-        let syntax_complete = s:ParseTernMatchResult(tern_js_result)
-    endif
     if s:IsTsSyntaxCompleteReady()
         let ts_comp_result  =  tsuquyomi#complete(0, a:base)
         " tsuquyomi#complete 这里先创建菜单再 complete_add 进去
         " 所以这里 ts_comp_result 总是空
-        let syntax_complete = [] 
+        let syntax_complete = []
     endif
     " 处理 Go 语法匹配
     if s:IsGoSyntaxCompleteReady()
@@ -609,15 +569,6 @@ function! s:IsTsSyntaxCompleteReady()
                 \ g:loaded_tsuquyomi == 1 &&
                 \ g:tsuquyomi_javascript_support == 1 &&
                 \ &filetype =~ "^\\(typescript\\|javascript\\)"
-        return 1
-    else
-        return 0
-    endif
-endfunction
-
-function! s:IsTernSyntaxCompleteReady()
-    return 0
-    if exists('g:tern_show_argument_hints') && &filetype =~ "^\\(javascript\\)"
         return 1
     else
         return 0
@@ -678,10 +629,6 @@ function! easycomplete#CompleteFunc( findstart, base )
             else
                 let g:g_syntax_completions = [1,[]]
             endif
-        endif
-
-        if s:IsTernSyntaxCompleteReady()
-            call tern#Complete(1, a:base)
         endif
 
         if s:IsTsSyntaxCompleteReady()
