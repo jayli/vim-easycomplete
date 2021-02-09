@@ -13,6 +13,7 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
+
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
     autocmd!

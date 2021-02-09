@@ -20,6 +20,7 @@ function! easycomplete#Enable()
   set completeopt-=noselect
   " <C-X><C-U><C-N> 时的函数回调
   let &completefunc = 'easycomplete#CompleteFunc'
+  " let &completefunc = 'tsuquyomi#complete'
   " 插入模式下的回车事件监听
   inoremap <expr> <CR> TypeEnterWithPUM()
   " 插入模式下 Tab 和 Shift-Tab 的监听
@@ -39,7 +40,8 @@ function! easycomplete#Enable()
   " 放到最后启动，避免影响vim打开速度
   if s:IsTsSyntaxCompleteReady() && exists("g:tsuquyomi_auto_open") &&
         \ g:tsuquyomi_auto_open == 0
-    autocmd SourcePost * :TsuquyomiOpen
+    " 非必要
+    " autocmd SourcePost * :TsuquyomiOpen
   endif
 endfunction
 
@@ -542,11 +544,11 @@ function! s:GetPathName(path)
 endfunction
 
 " 根据词根返回语法匹配的结果，每个语言都需要单独处理
-function! s:GetSyntaxCompletionResult(base)
+function! s:GetSyntaxCompletionResult(base) abort
   let syntax_complete = []
   " 处理 Javascript 语法匹配
   if s:IsTsSyntaxCompleteReady()
-    let ts_comp_result  =  tsuquyomi#complete(0, a:base)
+    call tsuquyomi#complete(0, a:base)
     " tsuquyomi#complete 这里先创建菜单再 complete_add 进去
     " 所以这里 ts_comp_result 总是空
     let syntax_complete = []
@@ -571,7 +573,6 @@ endfunction
 
 function! s:IsTsSyntaxCompleteReady()
   if exists('g:loaded_tsuquyomi') &&
-        \ exists('g:tsuquyomi_javascript_support') &&
         \ g:loaded_tsuquyomi == 1 &&
         \ g:tsuquyomi_javascript_support == 1 &&
         \ &filetype =~ "^\\(typescript\\|javascript\\)"
@@ -667,14 +668,15 @@ function! easycomplete#CompleteFunc( findstart, base )
   " 结果，不知为何，待调试
 
   " 获得关键词匹配结果
+  let all_result = []
   let keywords_result = s:GetKeywords(a:base)
   " 获得常用代码片段简写项
   let snippets_result = g:GetSnippets(t_filetypes, a:base)
   " 以上两者混合
   let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
   " 获得语法匹配结果
+  " call tsuquyomi#complete(0, a:base)
   let syntax_complete = s:GetSyntaxCompletionResult(a:base)
-
 
   " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
   " 作，否则返回全量结果
