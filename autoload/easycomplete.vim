@@ -7,6 +7,11 @@
 
 " 插件初始化入口
 function! easycomplete#Enable()
+  if exists("g:easy_complete_loaded") && g:easy_complete_loaded == 1
+    return
+  endif
+
+  let g:easy_complete_loaded = 1
   " VI 兼容模式，连续输入时的popup兼容性好
   set cpoptions+=B
   " completeopt 需要设置成 menuonea，一个展示项也弹出菜单
@@ -28,6 +33,8 @@ function! easycomplete#Enable()
   " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
   inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
+
+  " inoremap <buffer> . .<C-X><C-U><C-P>
 
   " 配置弹框样式，支持三种，dark,light 和 rider
   if !exists("g:pmenu_scheme")
