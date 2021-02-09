@@ -103,8 +103,8 @@ function! easycomplete#CleverTab()
     " 如果正在输入一个非字母，也不是'/'或'.'
     return "\<Tab>"
   elseif exists("g:snipMate")
-    let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-    let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
+    " let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+    " let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
     " 如果只匹配一个，也还是给出提示
     return "\<C-X>\<C-U>"
@@ -185,7 +185,7 @@ function! s:MixinBufKeywordAndSnippets(keywords,snippets)
     let snip_body = s:MenuStringTrim(get(snip_obj,'snipbody'))
     let menu_kind = s:StringTrim(s:GetLangTypeRawStr(get(snip_obj,'langtype')))
     " kind 内以尖括号表示语言类型
-    let menu_kind = substitute(menu_kind,"\\[\\(\\w\\+\\)\\]","\<\\1\>","g")
+    " let menu_kind = substitute(menu_kind,"\\[\\(\\w\\+\\)\\]","\<\\1\>","g")
     call add(snipabbr_list, {"word": k , "menu": snip_body, "kind": menu_kind})
   endfor
 
@@ -227,7 +227,7 @@ endfunction
 
 " 弹窗内需要展示的代码提示片段的 'Trim'
 function! s:MenuStringTrim(localstr)
-  let default_length = 33
+  let default_length = 25
   let simplifed_result = s:GetSnippetSimplified(a:localstr)
 
   if !empty(simplifed_result) && len(simplifed_result) > default_length
@@ -240,7 +240,7 @@ function! s:MenuStringTrim(localstr)
 endfunction
 
 " 如果 vim-snipmate 已经安装，用这个插件的方法取 snippets
-function! g:GetSnippets(scopes, trigger)
+function! g:GetSnippets(scopes, trigger) abort
   if exists("g:snipMate")
     return snipMate#GetSnippets(a:scopes, a:trigger)
   endif
@@ -339,6 +339,7 @@ function! s:GetWrappedDictKeywordList()
   if !empty(&dictionary)
     let dictsFiles   = split(&dictionary,",")
     let dictkeywords = []
+    let dictFile = ""
     for onedict in dictsFiles
       try
         let lines = readfile(onedict)
@@ -348,7 +349,12 @@ function! s:GetWrappedDictKeywordList()
         continue
       endtry
 
-      let filename         = substitute(onedict,"^.\\+[\\/]","","g")
+      " jayli
+      if dictFile == ""
+        let dictFile = substitute(onedict,"^.\\+[\\/]","","g")
+        let dictFile = substitute(dictFile,".txt","","g")
+      endif
+      let filename         = dictFile
       let localdicts       = []
       let localWrappedList = []
 
@@ -654,6 +660,12 @@ function! easycomplete#CompleteFunc( findstart, base )
     let t_filetypes = [&filetype]
   endif
 
+  " bug TO BE Fixed TODO
+  " 现象是第一次tab匹配速度慢，主要是执行到这里速度慢
+  " let snippets_result = g:GetSnippets(t_filetypes, a:base)
+  " 调试的时候，把这句屏蔽掉s:GetSyntaxCompletionResult(a:base) 却执行结束后没
+  " 结果，不知为何，待调试
+
   " 获得关键词匹配结果
   let keywords_result = s:GetKeywords(a:base)
   " 获得常用代码片段简写项
@@ -662,6 +674,7 @@ function! easycomplete#CompleteFunc( findstart, base )
   let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
   " 获得语法匹配结果
   let syntax_complete = s:GetSyntaxCompletionResult(a:base)
+
 
   " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
   " 作，否则返回全量结果
