@@ -38,11 +38,9 @@ function! easycomplete#Enable()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
-  if s:IsTsSyntaxCompleteReady() && exists("g:tsuquyomi_auto_open") &&
-        \ g:tsuquyomi_auto_open == 0
-    " 非必要
-    " autocmd SourcePost * :TsuquyomiOpen
-  endif
+  let g:tsuquyomi_is_available = 1
+  autocmd SourcePost * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+
 endfunction
 
 " 菜单样式设置
@@ -572,9 +570,9 @@ function! s:IsGoSyntaxCompleteReady()
 endfunction
 
 function! s:IsTsSyntaxCompleteReady()
-  if exists('g:loaded_tsuquyomi') &&
+  if exists('g:loaded_tsuquyomi') && exists('g:tsuquyomi_is_available') &&
         \ g:loaded_tsuquyomi == 1 &&
-        \ g:tsuquyomi_javascript_support == 1 &&
+        \ g:tsuquyomi_is_available == 1 &&
         \ &filetype =~ "^\\(typescript\\|javascript\\)"
     return 1
   else
@@ -732,4 +730,3 @@ function! s:log(msg)
   echohl NONE
 endfunction
 
-"vim: foldmethod=marker:softtabstop=4:tabstop=4:shiftwidth=4
