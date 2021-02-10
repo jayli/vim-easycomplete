@@ -1,26 +1,26 @@
-# Vim-EasyComplete <img align=right src="https://gw.alicdn.com/tfs/TB1Ee4TxQL0gK0jSZFxXXXWHVXa-1184-488.png" width=200>
+# Vim-EasyComplete
 
-[![Gitter](https://img.shields.io/badge/gitter-join%20chat-yellowgreen.svg)](https://gitter.im/jayli/vim-easycomplete) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
+![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-代码自动补全插件，把代码片段展开、字典提醒、Tab 唤醒以及语法补全合并在一起。（注意不要和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
+一个简单的自动补全插件，把代码片段展开、字典提醒、Tab 唤醒以及语法补全合并在一起。
 
-<img src="https://gw.alicdn.com/tfs/TB1ABBUxND1gK0jSZFsXXbldVXa-881-464.gif?t=1" width=650>
+> 我重写了 Tab 的逻辑，不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
 
 灵感来自这些优秀的插件：
 
-- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：语法补全权威插件。
-- [SnipMate](https://github.com/garbas/vim-snipmate)：仅做代码展开，完全基于 VimL 实现，不支持语法嗅探。
+- [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)：语法补全权威插件。配置太复杂了，不爱用。
+- [SnipMate](https://github.com/garbas/vim-snipmate)：仅做代码展开，完全基于 VimL 实现。
 - [Deoplete](https://github.com/Shougo/deoplete.nvim)：该插件只能运行在 [VIM8](https://github.com/vim/vim/releases/tag/v8.1.0408) 和 [Neovim](https://github.com/neovim/neovim) 上，配置麻烦，不兼容vim7。
-- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配。
+- [Completor](https://github.com/maralla/completor.vim)：一个全新的自动补全插件，作者是中国人 [Wei Zhang](https://github.com/maralla/completor.vim)，同时支持了关键词匹配和代码片段缩写匹配。强依赖 python
 - [Zencoding](https://github.com/mattn/emmet-vim)：一个古董，代码展开。
 
-依赖：补全和字典分别依赖 vim-snipmate 和 vim-dictionary。这里支持了 Go、Python 和 JavaScript 的语法补全。Popup 菜单如下：
+依赖 vim-snipmate。我支持了 Go、Python 和 JavaScript 的语法补全。Popup 菜单如下：
 
 <img src="https://gw.alicdn.com/tfs/TB19wGlx.Y1gK0jSZFMXXaWcVXa-1460-1022.png" width=600>
 
 ### 安装
 
-可选 Pathogen、Vundle 等很棒的插件管理器，这里以 Pathogen 为例：
+可选 Pathogen、Vundle 等很棒的插件管理器，以 Pathogen 为例：
 
 #### - 基于 [Pathogen.vim](https://github.com/tpope/vim-pathogen)（VIM 8）
 
@@ -32,7 +32,6 @@
     git clone https://github.com/garbas/vim-snipmate.git
     git clone https://github.com/honza/vim-snippets.git
     git clone https://github.com/jayli/vim-easycomplete.git
-    git clone https://github.com/jayli/vim-dictionary.git
 
 进入 `~/.vim/bundle` 安装语言自动匹配插件（根据自己的技术栈选择）：
 
@@ -63,13 +62,13 @@ SnipMate 可选配置，主要是配置 JavaScript 的类型映射集合：
     let g:snipMate.scope_aliases['javascript'] = g:javascript_scope_aliases
     let g:snipMate.scope_aliases['javascript.jsx'] = g:javascript_scope_aliases
 
-Typescript 和 Javascript 配置：
+Typescript 和 Javascript 可选配置：
 
     let g:tsuquyomi_completion_detail = 1
     let g:tsuquyomi_javascript_support = 1
-    let g:easycomplete_typing_popup = 1
+    let g:easycomplete_typing_popup = 1 " 是否输入跟随补全提示
 
-Jedi 可选配置：
+Jedi （Python）可选配置：
 
     " Jedi 配置
     let g:jedi#auto_initialization = 1
