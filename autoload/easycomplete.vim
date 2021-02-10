@@ -47,7 +47,8 @@ function! easycomplete#Enable()
   " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
 
-  if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1
+  if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
+        \ &filetype =~ "^\\(typescript\\|javascript\\)"
     call s:BindingTypingCommand()
   endif
 endfunction
