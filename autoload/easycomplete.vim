@@ -34,8 +34,6 @@ function! easycomplete#Enable()
   inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
-  " inoremap <buffer> . .<C-X><C-U><C-P>
-
   " 配置弹框样式，支持三种，dark,light 和 rider
   if !exists("g:pmenu_scheme")
     let g:pmenu_scheme = "None"
@@ -46,8 +44,46 @@ function! easycomplete#Enable()
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
   let g:tsuquyomi_is_available = 1
-  autocmd SourcePost * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+  " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+  call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
 
+  if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1
+    call s:BindingTypingCommand()
+  endif
+endfunction
+
+function! easycomplete#typing()
+  if pumvisible()
+    return ''
+  endif
+  let typing_key = strpart(getline('.'), col('.') - 2, 1)
+  let typing_word = s:GetTypingWord()
+  if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
+    return "\<C-X>\<C-U>\<C-P>"
+  endif
+  return ''
+endfunction
+
+function! s:GetTypingWord()
+  let start = col('.') - 1
+  let line = getline('.')
+  call s:log('--')
+  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
+    let start = start - 1
+  endwhile
+  let word = strpart(line, start, col('.') - 1)
+  return word
+endfunction
+
+function! s:BindingTypingCommand()
+  let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let l:cursor = 0
+  while l:cursor < strwidth(l:key_liststr)
+    let key = l:key_liststr[l:cursor]
+    exe 'inoremap <silent> <buffer> ' . key .  ' ' . key . '<C-R>=easycomplete#typing()<CR>'
+    let l:cursor = l:cursor + 1
+  endwhile
 endfunction
 
 " 菜单样式设置
@@ -666,12 +702,6 @@ function! easycomplete#CompleteFunc( findstart, base )
     let t_filetypes = [&filetype]
   endif
 
-  " bug TO BE Fixed TODO
-  " 现象是第一次tab匹配速度慢，主要是执行到这里速度慢
-  " let snippets_result = g:GetSnippets(t_filetypes, a:base)
-  " 调试的时候，把这句屏蔽掉s:GetSyntaxCompletionResult(a:base) 却执行结束后没
-  " 结果，不知为何，待调试
-
   " 获得关键词匹配结果
   let all_result = []
   let keywords_result = s:GetKeywords(a:base)
@@ -680,7 +710,6 @@ function! easycomplete#CompleteFunc( findstart, base )
   " 以上两者混合
   let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
   " 获得语法匹配结果
-  " call tsuquyomi#complete(0, a:base)
   let syntax_complete = s:GetSyntaxCompletionResult(a:base)
 
   " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
