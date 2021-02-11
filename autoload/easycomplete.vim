@@ -47,10 +47,33 @@ function! easycomplete#Enable()
   " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
 
-  " TODO 适配 go 和 python
   if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
-        \ index(['typescript','javascript','javascript.jsx','go','python'], &filetype) >= -1
+        \ index([
+        \   'typescript','javascript',
+        \   'javascript.jsx','go',
+        \   'python','vim'
+        \ ], s:GetCurrentFileType()) >= 0
     call s:BindingTypingCommand()
+  endif
+endfunction
+
+function! s:GetCurrentFileType()
+  " SourcePost 事件中 &filetype 为空，应当从 bufname 中获取
+  let filename = fnameescape(fnamemodify(bufname('%'),':p'))
+  let ext_part = substitute(filename,"^.\\+[\\.]","","g")
+  let filetype_dict = {
+        \ 'js':'javascript',
+        \ 'ts':'typescript',
+        \ 'jsx':'javascript.jsx',
+        \ 'tsx':'javascript.jsx',
+        \ 'py':'python',
+        \ 'rb':'ruby',
+        \ 'sh':'shell'
+        \ }
+  if index(['js','ts','jsx','tsx','py','rb','sh'], ext_part) >= 0
+    return filetype_dict[ext_part]
+  else
+    return ext_part
   endif
 endfunction
 
@@ -58,12 +81,19 @@ function! easycomplete#typing()
   if pumvisible()
     return ''
   endif
-  let typing_key = strpart(getline('.'), col('.') - 2, 1)
+  let g:typing_key = strpart(getline('.'), col('.') - 2, 1)
   let typing_word = s:GetTypingWord()
   if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
     return "\<C-X>\<C-U>\<C-P>"
   endif
   return ''
+endfunction
+
+function! s:GetTypingKey()
+  if exists('g:typing_key') && g:typing_key != ""
+    return g:typing_key
+  endif
+  return "\<Tab>"
 endfunction
 
 function! s:GetTypingWord()
@@ -272,7 +302,7 @@ endfunction
 
 " 弹窗内需要展示的代码提示片段的 'Trim'
 function! s:MenuStringTrim(localstr)
-  let default_length = 25
+  let default_length = 28
   let simplifed_result = s:GetSnippetSimplified(a:localstr)
 
   if !empty(simplifed_result) && len(simplifed_result) > default_length
@@ -655,7 +685,9 @@ function! easycomplete#CompleteFunc( findstart, base )
     let result = s:GetDirAndFiles(typing_path, a:base)
     if len(result) == 0
       call s:CloseCompletionMenu()
-      call s:SendKeys("\<Tab>")
+      if strwidth(s:GetTypingKey()) != 1
+        call s:SendKeys("\<Tab>")
+      endif
       return 0
     endif
     return result
@@ -754,7 +786,9 @@ function! easycomplete#CompleteFunc( findstart, base )
   " 这里需要使用者注意
   if len(all_result) == 0 && !s:IsTsSyntaxCompleteReady()
     call s:CloseCompletionMenu()
-    call s:SendKeys("\<Tab>")
+    if strwidth(s:GetTypingKey()) != 1
+      call s:SendKeys("\<Tab>")
+    endif
     return 0
   endif
 
