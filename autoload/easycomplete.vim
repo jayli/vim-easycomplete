@@ -108,7 +108,7 @@ endfunction
 
 function! s:BindingTypingCommand()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/'
   let l:cursor = 0
   while l:cursor < strwidth(l:key_liststr)
     let key = l:key_liststr[l:cursor]
