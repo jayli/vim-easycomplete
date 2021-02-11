@@ -99,7 +99,6 @@ endfunction
 function! s:GetTypingWord()
   let start = col('.') - 1
   let line = getline('.')
-  call s:log('--')
   while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
     let start = start - 1
   endwhile
