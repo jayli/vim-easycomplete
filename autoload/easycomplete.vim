@@ -47,8 +47,9 @@ function! easycomplete#Enable()
   " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
 
+  " TODO 适配 go 和 python
   if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
-        \ &filetype =~ "^\\(typescript\\|javascript\\)"
+        \ index(['typescript','javascript','javascript.jsx','go','python'], &filetype) >= -1
     call s:BindingTypingCommand()
   endif
 endfunction
