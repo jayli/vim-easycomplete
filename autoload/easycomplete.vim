@@ -7,11 +7,12 @@
 
 " 插件初始化入口
 function! easycomplete#Enable()
-  if exists("g:easy_complete_loaded") && g:easy_complete_loaded == 1
+  if exists("g:easy_complete_loaded")
     return
   endif
-
   let g:easy_complete_loaded = 1
+
+  set updatetime=500
   " VI 兼容模式，连续输入时的popup兼容性好
   set cpoptions+=B
   " completeopt 需要设置成 menuonea，一个展示项也弹出菜单
@@ -46,7 +47,9 @@ function! easycomplete#Enable()
   let g:tsuquyomi_is_available = 1
   " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+  let g:easycomplete_tsserver_stopped = 0
 
+  " Binding Maping 过滤条件
   if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
         \ index([
         \   'typescript','javascript',
@@ -77,6 +80,58 @@ function! s:GetCurrentFileType()
   endif
 endfunction
 
+function! s:CompleteAsync()
+  call s:SendKeys("\<C-X>\<C-U>\<C-P>")
+endfunction
+
+function! easycomplete#AsyncRun(method, args)
+  return timer_start(10, { -> s:Call(a:method, a:args)})
+endfunction
+
+function! s:Call(method, args)
+  try
+    call call(a:method, a:args)
+    redraw
+  catch /.*/
+    return 0
+  endtry
+endfunction
+
+function! s:CompleteRunning()
+  if !exists('g:easycomplete_popup_timer') || g:easycomplete_popup_timer == -1
+    return 0
+  endif
+
+  let l:timer = timer_info(g:easycomplete_popup_timer)
+  " try
+    return string(l:timer) != "[]"
+  " catch /.*/
+  "   return 0
+  " endtry
+endfunction
+
+function! s:StopTSServer()
+  if exists('g:easycomplete_tsserver_stopped') && g:easycomplete_tsserver_stopped == 1
+    " Do Nothing
+  else
+    call tsuquyomi#stopServer()
+    let g:easycomplete_tsserver_stopped = 1
+  endif
+endfunction
+
+function! s:StartTSServer()
+  if exists('g:easycomplete_tsserver_stopped') && g:easycomplete_tsserver_stopped == 1
+    call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+    let g:easycomplete_tsserver_stopped = 0
+  else
+    " Do Nothing
+  endif
+endfunction
+
+function! easycomplete#startTsServer()
+  call s:StartTSServer()
+endfunction
+
 function! easycomplete#typing()
   if pumvisible()
     return ''
@@ -84,7 +139,12 @@ function! easycomplete#typing()
   let g:typing_key = strpart(getline('.'), col('.') - 2, 1)
   let typing_word = s:GetTypingWord()
   if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
-    return "\<C-X>\<C-U>\<C-P>"
+    if s:CompleteRunning() && exists('g:easycomplete_popup_timer')
+      call timer_stop(g:easycomplete_popup_timer)
+      call s:StopTSServer()
+      let g:easycomplete_popup_timer = -1
+    endif
+    let g:easycomplete_popup_timer = easycomplete#AsyncRun('s:SendKeys', ["\<C-X>\<C-U>\<C-P>"])
   endif
   return ''
 endfunction
@@ -106,15 +166,25 @@ function! s:GetTypingWord()
   return word
 endfunction
 
+function! easycomplete#foo()
+  " call s:log('sdf');
+  call feedkeys("\<ESC>a")
+endfunction
+
 function! s:BindingTypingCommand()
+  " autocmd TextChangedI *.js,*.py call easycomplete#foo()
+  " return
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/'
   let l:cursor = 0
   while l:cursor < strwidth(l:key_liststr)
     let key = l:key_liststr[l:cursor]
-    exe 'inoremap <silent> <buffer> ' . key .  ' ' . key . '<C-R>=easycomplete#typing()<CR>'
+    exe 'inoremap <buffer> <silent>' . key .  ' ' . key . '<C-R>=easycomplete#typing()<CR>'
     let l:cursor = l:cursor + 1
   endwhile
+
+  autocmd CursorHoldI * call easycomplete#startTsServer()
+  " autocmd CompleteDone * call feedkeys("\<ESC>a")
 endfunction
 
 " 菜单样式设置

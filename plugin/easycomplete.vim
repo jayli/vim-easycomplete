@@ -13,7 +13,7 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
-
+" hack for tsserver initialize speed
 let g:tsuquyomi_is_available = 0
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
