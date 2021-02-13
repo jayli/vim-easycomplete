@@ -25,8 +25,9 @@ function! easycomplete#Enable()
   " noselect 可配可不配
   set completeopt-=noselect
   " <C-X><C-U><C-N> 时的函数回调
-  let &completefunc = 'easycomplete#CompleteFunc'
+  " let &completefunc = 'easycomplete#CompleteFunc'
   " let &completefunc = 'tsuquyomi#complete'
+  let &completefunc = 'easycomplete#nill'
   " 插入模式下的回车事件监听
   inoremap <expr> <CR> TypeEnterWithPUM()
   " 插入模式下 Tab 和 Shift-Tab 的监听
@@ -44,10 +45,10 @@ function! easycomplete#Enable()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
-  let g:tsuquyomi_is_available = 1
-  " autocmd! BufEnter * call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
-  call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+  " let g:tsuquyomi_is_available = 1
+  " call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   let g:easycomplete_tsserver_stopped = 0
+
 
   " Binding Maping 过滤条件
   if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
@@ -128,6 +129,10 @@ function! s:StartTSServer()
   endif
 endfunction
 
+function! easycomplete#nill()
+  " Do Nothing
+endfunction
+
 function! easycomplete#startTsServer()
   call s:StartTSServer()
 endfunction
@@ -138,6 +143,17 @@ function! easycomplete#typing()
   endif
   let g:typing_key = strpart(getline('.'), col('.') - 2, 1)
   let typing_word = s:GetTypingWord()
+
+  call complete(col('.'),['a','b','c','d','e','f','g','h','i','a','s','d','f;','l','k','m'])
+  call complete_add("abcdefghijklmnopqrstuvwxyz")
+  call s:SendKeys("\<C-P>")
+  call s:log(complete_info())
+  let g:easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', ["co"])
+  return ""
+
+
+
+
   if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
     if s:CompleteRunning() && exists('g:easycomplete_popup_timer')
       call timer_stop(g:easycomplete_popup_timer)
@@ -183,8 +199,7 @@ function! s:BindingTypingCommand()
     let l:cursor = l:cursor + 1
   endwhile
 
-  autocmd CursorHoldI * call easycomplete#startTsServer()
-  " autocmd CompleteDone * call feedkeys("\<ESC>a")
+  " autocmd CursorHoldI * call easycomplete#startTsServer()
 endfunction
 
 " 菜单样式设置
@@ -798,6 +813,22 @@ function! easycomplete#CompleteFunc( findstart, base )
   endif
 
   " 第二次调用，给出匹配列表
+
+  let g:easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:base])
+  return v:none
+  return  [{"word":"s"}]
+
+  " 常规的关键字处理         ---- }}}
+endfunction
+
+function! s:HandleCompleteResult(base)
+  call complete_add("kkkkkkkkkk")
+  call complete_add("jjjjjjjj")
+  call s:SendKeys("\<C-P>")
+  return
+
+
+
   if has_key(g:snipMate.scope_aliases, &filetype)
         \ && get(g:snipMate.scope_aliases, &filetype) != ""
     let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
@@ -814,6 +845,7 @@ function! easycomplete#CompleteFunc( findstart, base )
   let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
   " 获得语法匹配结果
   let syntax_complete = s:GetSyntaxCompletionResult(a:base)
+
 
   " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
   " 作，否则返回全量结果
@@ -861,13 +893,35 @@ function! easycomplete#CompleteFunc( findstart, base )
     return 0
   endif
 
-  return all_result
-  " 常规的关键字处理         ---- }}}
+  " call complete_add({"word":"1","menu":"sdf","kind":"sdfsdf"})
+
+  " for item in all_result
+  "   call complete_add({"word":"1","menu":"sdf","kind":"sdfsdf"})
+  " endfor
+endfunction
+
+function! easycomplete#UpdateCompleteInfo()
+  let item = v:event.completed_item
+  let info = {"word":"1","menu":"sdf","kind":"sdfsdf"}
+  call s:ShowCompleteInfo(info)
+endfunction
+
+function! s:ShowCompleteInfo(info)
+  call s:log('222');
+  let id = popup_findinfo()
+  if id
+    call popup_settext(id, 'async info: ')
+    call popup_show(id)
+  endif
 endfunction
 
 function! s:log(msg)
   echohl MoreMsg
   echom '>>> '. string(a:msg)
   echohl NONE
+endfunction
+
+function! easycomplete#log(msg)
+  call s:log(a:msg)
 endfunction
 
