@@ -12,13 +12,20 @@ function! easycomplete#Enable()
   endif
   let g:easy_complete_loaded = 1
 
+  set updatetime=500
+  " VI 兼容模式，连续输入时的popup兼容性好
+  set cpoptions+=B
+  " completeopt 需要设置成 menuonea，一个展示项也弹出菜单
   set completeopt-=menu
   set completeopt+=menuone
-  set completeopt+=noselect
-  " set completeopt+=noinsert
-
+  " 这个是非必要设置，通常用来表示可以为所有匹配项插入通用前缀符，这样就可以
+  " 为不同匹配项设置特定的标识，这个插件不需要这么复杂的设置。同时，设置
+  " longest 为贪婪匹配，这里不需要
+  set completeopt-=longest
+  " noselect 可配可不配
+  set completeopt-=noselect
   " <C-X><C-U><C-N> 时的函数回调
-  let &completefunc = 'easycomplete#CompleteFunc'
+  " let &completefunc = 'easycomplete#CompleteFunc'
   " let &completefunc = 'tsuquyomi#complete'
   " let &completefunc = 'easycomplete#nill'
   " 插入模式下的回车事件监听
@@ -88,54 +95,28 @@ function! easycomplete#foo()
 endfunction
 
 function! s:BindingTypingCommand()
+  " autocmd TextChangedI *.js,*.py call easycomplete#foo()
+  " return
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/'
   let l:cursor = 0
   while l:cursor < strwidth(l:key_liststr)
     let key = l:key_liststr[l:cursor]
-    exec 'inoremap <buffer><silent>' . key . ' ' . key . '<C-R>=easycomplete#typing()<CR>'
+    exe 'inoremap <buffer><expr><silent>' . key . ' easycomplete#typing("' .key. '")'
     let l:cursor = l:cursor + 1
   endwhile
 
   " autocmd CursorHoldI * call easycomplete#startTsServer()
 endfunction
 
-function! easycomplete#typing()
-  " call s:log(pumvisible())
-  " call s:log('-------------------')
-
-  if pumvisible()
-    return ''
-  endif
-
-  " let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [g:typing_key])
-  " call s:SendKeys("\<C-X>\<C-U>")
-  return "\<C-X>\<C-U>"
-
-
-
-
-  if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
-    if s:CompleteRunning() && exists('g:_easycomplete_popup_timer')
-      call timer_stop(g:_easycomplete_popup_timer)
-      call s:StopTSServer()
-      let g:_easycomplete_popup_timer = -1
-    endif
-    let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:SendKeys', ["\<C-X>\<C-U>\<C-P>"])
-  endif
-  return ''
-endfunction
-
-
 
 function! easycomplete#AsyncRun(method, args)
-  return timer_start(1000, { -> s:Call(a:method, a:args)})
+  return timer_start(0, { -> s:Call(a:method, a:args)})
 endfunction
 
 function! s:Call(method, args) abort
   try
     call call(a:method, a:args)
-    let g:_easycomplete_popup_timer = -1
     redraw
   catch /.*/
     return 0
@@ -175,6 +156,35 @@ endfunction
 
 function! easycomplete#startTsServer()
   call s:StartTSServer()
+endfunction
+
+function! easycomplete#typing(key)
+  call s:log(pumvisible())
+  call s:log('-------------------')
+
+  " if pumvisible()
+  "   return ''
+  " endif
+  " let g:typing_key = strpart(getline('.'), col('.') - 2, 1)
+  let g:typing_key = a:key
+  let typing_word = s:GetTypingWord()
+
+  let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:key])
+  " call s:SendKeys(a:key)
+  return a:key
+
+
+
+
+  if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
+    if s:CompleteRunning() && exists('g:_easycomplete_popup_timer')
+      call timer_stop(g:_easycomplete_popup_timer)
+      call s:StopTSServer()
+      let g:_easycomplete_popup_timer = -1
+    endif
+    let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:SendKeys', ["\<C-X>\<C-U>\<C-P>"])
+  endif
+  return ''
 endfunction
 
 function! s:GetTypingKey()
@@ -745,90 +755,153 @@ endfunction
 "   ./Foo       [File]
 "   ./b/        [Dir]
 function! easycomplete#CompleteFunc( findstart, base )
+  let typing_path = easycomplete#TypingAPath(a:findstart, a:base)
+
+  " 如果正在敲入一个文件路径 ---- {{{
+  if typing_path.isPath && a:findstart " 第一次调用求起始位置
+    " 兼容这几种情况 =>
+    " ./a/b/c/d
+    " ../asdf./
+    " /a/b/c/ds
+    " /a/b/c/d/
+    " ~/
+    return typing_path.short_path_start
+  elseif typing_path.isPath " 第二次调用返回匹配结果
+    " 查找目录
+    let result = s:GetDirAndFiles(typing_path, a:base)
+    if len(result) == 0
+      call s:CloseCompletionMenu()
+      if strwidth(s:GetTypingKey()) != 1
+        call s:SendKeys("\<Tab>")
+      endif
+      return 0
+    endif
+    return result
+  endif
+  " 文件路径处理结束         ---- }}}
+
   " 常规的关键字处理         ---- {{{
   if a:findstart
     " 第一次调用，定位当前关键字的起始位置
+    let line = getline('.')
     let start = col('.') - 1
+    " Hack: 如果是 '//' 后紧跟<Tab>，直接输出<Tab>
+    if strpart(line, start - 2, 2) == '//'
+      return start
+    endif
+
+    if a:findstart == 1
+      " for go
+      if s:IsGoSyntaxCompleteReady()
+        execute "silent let g:g_syntax_completions = " . language#go#GocodeAutocomplete()
+      else
+        let g:g_syntax_completions = [1,[]]
+      endif
+    endif
+
+    if s:IsTsSyntaxCompleteReady()
+      call tsuquyomi#complete(1, a:base)
+    endif
+
+    " Hack: 如果是 "." 后面应该点出来上下文语义匹配的结果
+    if strpart(line, start - 1, 1 ) == '.'
+      return start
+    endif
+
+    while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
+      let start -= 1
+    endwhile
     return start
   endif
 
   " 第二次调用，给出匹配列表
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
   let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:base])
   return v:none
-  " return  ["sss"]
+  return  [{"word":"s"}]
 
   " 常规的关键字处理         ---- }}}
 endfunction
 
 function! s:HandleCompleteResult(key)
-  if complete_check()
-    call feedkeys("\<C-E>")
-  endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
-  " call s:log(pumvisible())
-  " call s:log(a:key)
-  call complete(col('.') - strwidth(s:GetTypingWord()), [''])
-  call feedkeys("\<C-P>")
+  call s:log(pumvisible())
+  call complete(col('.'),[a:key])
   call complete_add('abcdefghijklmnopqrstuvwxyz')
   call complete_add("kkkkkkkkkk")
   call complete_add("jjjjjjjj")
-  call complete_add("ikn")
-  call complete_add("io98")
-  call complete_add("xkid")
-  let g:easycomplete_menuitems= complete_info().items
-  " let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:key])
-  call easycomplete#AsyncRun('s:Foo', [""])
-  call s:log('-------------------')
-  call s:log(string(complete_info()))
-endfunction
+  call s:SendKeys("\<C-P>")
+  return
 
-function! s:Foo(...)
-  if complete_check()
-    call feedkeys("\<C-E>")
-  endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
+
+
+  if has_key(g:snipMate.scope_aliases, &filetype)
+        \ && get(g:snipMate.scope_aliases, &filetype) != ""
+    let t_filetypes = split(g:snipMate.scope_aliases[&filetype],",")
+  else
+    let t_filetypes = [&filetype]
   endif
 
-  call s:log('foo')
-  call complete(col('.') - strwidth(s:GetTypingWord()),['asdf'])
-  for item in g:easycomplete_menuitems
-    call complete_add(item)
-  endfor
-  let g:easycomplete_menuitems= complete_info().items
-  call popup_show(popup_findinfo())
-  call easycomplete#AsyncRun('s:Foo2', [""])
-  call feedkeys("\<C-P>\<C-P>")
-endfunction
+  " 获得关键词匹配结果
+  let all_result = []
+  let keywords_result = s:GetKeywords(a:base)
+  " 获得常用代码片段简写项
+  let snippets_result = g:GetSnippets(t_filetypes, a:base)
+  " 以上两者混合
+  let all_result      = s:MixinBufKeywordAndSnippets(keywords_result, snippets_result)
+  " 获得语法匹配结果
+  let syntax_complete = s:GetSyntaxCompletionResult(a:base)
 
-function! s:Foo2(...)
-  if complete_check()
-    call feedkeys("\<C-E>")
+
+  " 这里主要是处理前缀是否为'.'，如果是则只返回语法结果，无语法结果就不做动
+  " 作，否则返回全量结果
+  let line = getline('.')
+  let start = col('.') - 1
+  if len(a:base) == 0 && s:IsTsSyntaxCompleteReady()
+    " 如果是点
+    " TSServer 自动语法匹配
+    let all_result = []
+  elseif len(a:base) > 0 &&
+        \ strpart(getline('.'), start-1 , 1) == '.' &&
+        \ s:IsTsSyntaxCompleteReady()
+    let all_result = []
+    " 如果是点后字符匹配
+    " TSServer 自动语法匹配
+  elseif len(a:base) > 0 && match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0 &&
+        \ s:IsTsSyntaxCompleteReady()
+    let all_result = []
+    " TSServer 自动语法匹配
+  elseif len(a:base) == 0 && len(syntax_complete) > 0
+    " 直接输入'.'后匹配
+    let all_result = syntax_complete
+  elseif len(a:base) > 0 && strpart(line, start - 1, 1) == '.'
+    " 点后一个字符匹配(最常用的形式避免正则，速度更快一些)
+    let all_result = syntax_complete
+  elseif len(a:base) > 0 && match(strpart(getline('.'), 0 ,start)[0:start],"\\.\\w\\+$") > 0
+    " 点后两个或两个以上字符，用正则匹配
+    let all_result = syntax_complete
+  elseif len(a:base) == 0 && len(syntax_complete) == 0
+    let all_result = []
+  else
+    let all_result = syntax_complete + all_result
   endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
+
+  " TODO 如果匹配不出任何结果，还是执行原有按键，我这里用tab，实际上还
+  " 有一种选择，暂停行为，给出match不成功的提示，我建议要强化insert输入
+  " tab 用 s-tab (我个人习惯)，而不是一味求全 tab 的容错，容错不报错也
+  " 是一个问题，Shift-Tab 被有些人用来设定为Tab回退，可能会被用不习惯，
+  " 这里需要使用者注意
+  if len(all_result) == 0 && !s:IsTsSyntaxCompleteReady()
+    call s:CloseCompletionMenu()
+    if strwidth(s:GetTypingKey()) != 1
+      call s:SendKeys("\<Tab>")
+    endif
+    return 0
   endif
 
-  call s:log('foo')
-  call complete(col('.') - strwidth(s:GetTypingWord()),['iiiass'])
-  for item in g:easycomplete_menuitems
-    call complete_add(item)
-  endfor
-  call complete_add("8")
-  call complete_add("7")
-  call complete_add("6")
-  call complete_add("5")
-  call complete_add("4")
-  call complete_add("3")
-  call complete_add("2")
-  call popup_show(popup_findinfo())
-  call feedkeys("\<C-P>\<C-P>")
+  " call complete_add({"word":"1","menu":"sdf","kind":"sdfsdf"})
 
+  " for item in all_result
+  "   call complete_add({"word":"1","menu":"sdf","kind":"sdfsdf"})
+  " endfor
 endfunction
 
 function! easycomplete#UpdateCompleteInfo()
