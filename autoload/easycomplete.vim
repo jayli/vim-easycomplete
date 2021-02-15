@@ -5,7 +5,7 @@
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
 
-" 插件初始化入口
+" 初始化入口
 function! easycomplete#Enable()
   if exists("g:easy_complete_loaded")
     return
@@ -15,9 +15,8 @@ function! easycomplete#Enable()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
-  " set completeopt+=noinsert
 
-  " <C-X><C-U><C-N> 时的函数回调
+  " <C-X><C-U><C-N> 函数回调
   let &completefunc = 'easycomplete#CompleteFunc'
   " let &completefunc = 'tsuquyomi#complete'
   " let &completefunc = 'easycomplete#nill'
@@ -29,12 +28,7 @@ function! easycomplete#Enable()
   inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
-  " 配置弹框样式，支持三种，dark,light 和 rider
-  if !exists("g:pmenu_scheme")
-    let g:pmenu_scheme = "None"
-  endif
-
-  call s:SetPmenuScheme(g:pmenu_scheme)
+  call easycomplete#ui#SetScheme()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
@@ -43,48 +37,21 @@ function! easycomplete#Enable()
   let g:easycomplete_tsserver_stopped = 0
 
   " Binding Maping 过滤条件
-  if exists("g:easycomplete_typing_popup") && g:easycomplete_typing_popup == 1 &&
-        \ index([
+  if index([
         \   'typescript','javascript',
         \   'javascript.jsx','go',
         \   'python','vim'
-        \ ], s:GetCurrentFileType()) >= 0
+        \ ], easycomplete#util#filetype()) >= 0
     call s:BindingTypingCommand()
   endif
 endfunction
 
 function! easycomplete#nill() abort
-  " Do Nothing
-  return v:none
-endfunction
-
-function! s:GetCurrentFileType()
-  " SourcePost 事件中 &filetype 为空，应当从 bufname 中获取
-  let filename = fnameescape(fnamemodify(bufname('%'),':p'))
-  let ext_part = substitute(filename,"^.\\+[\\.]","","g")
-  let filetype_dict = {
-        \ 'js':'javascript',
-        \ 'ts':'typescript',
-        \ 'jsx':'javascript.jsx',
-        \ 'tsx':'javascript.jsx',
-        \ 'py':'python',
-        \ 'rb':'ruby',
-        \ 'sh':'shell'
-        \ }
-  if index(['js','ts','jsx','tsx','py','rb','sh'], ext_part) >= 0
-    return filetype_dict[ext_part]
-  else
-    return ext_part
-  endif
+  return v:none " DO NOTHING
 endfunction
 
 function! s:CompleteAsync()
   call s:SendKeys("\<C-X>\<C-U>\<C-P>")
-endfunction
-
-function! easycomplete#foo()
-  " call s:log('sdf');
-  call feedkeys("\<ESC>a")
 endfunction
 
 function! s:BindingTypingCommand()
@@ -108,39 +75,14 @@ function! easycomplete#typing()
     return ''
   endif
 
-  " let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [g:typing_key])
+  " let g:_easycomplete_popup_timer = easycomplete#util#AsyncRun('s:HandleCompleteResult', [g:typing_key])
   " call s:SendKeys("\<C-X>\<C-U>")
   return "\<C-X>\<C-U>"
 
-
-
-
-  if strwidth(typing_word) >= 2 || strpart(getline('.'), col('.') - 3 , 1) == '.'
-    if s:CompleteRunning() && exists('g:_easycomplete_popup_timer')
-      call timer_stop(g:_easycomplete_popup_timer)
-      call s:StopTSServer()
-      let g:_easycomplete_popup_timer = -1
-    endif
-    let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:SendKeys', ["\<C-X>\<C-U>\<C-P>"])
-  endif
-  return ''
 endfunction
 
 
 
-function! easycomplete#AsyncRun(method, args)
-  return timer_start(1000, { -> s:Call(a:method, a:args)})
-endfunction
-
-function! s:Call(method, args) abort
-  try
-    call call(a:method, a:args)
-    let g:_easycomplete_popup_timer = -1
-    redraw
-  catch /.*/
-    return 0
-  endtry
-endfunction
 
 function! s:CompleteRunning()
   if !exists('g:_easycomplete_popup_timer') || g:_easycomplete_popup_timer == -1
@@ -192,31 +134,6 @@ function! s:GetTypingWord()
   endwhile
   let word = strpart(line, start, col('.') - 1)
   return word
-endfunction
-
-" 菜单样式设置
-function! s:SetPmenuScheme(scheme_name)
-  " hi Pmenu      ctermfg=111 ctermbg=235
-  " hi PmenuSel   ctermfg=255 ctermbg=238
-  " hi PmenuSbar              ctermbg=235
-  " hi PmenuThumb             ctermbg=234
-  let l:scheme_config = {
-        \   'dark':[[111, 235],[255, 238],[-1,  235],[-1,  234]],
-        \   'light':[[234, 251],[255, 26],[-1,  251],[-1,  247]],
-        \   'rider':[[249, 237],[231, 25],[-1,  237],[-1,  239]
-        \   ]
-        \ }
-  if has_key(l:scheme_config, a:scheme_name)
-    let sch = l:scheme_config[a:scheme_name]
-    let hiPmenu =      ['hi','Pmenu',      'ctermfg='.sch[0][0], 'ctermbg='.sch[0][1]]
-    let hiPmenuSel =   ['hi','PmenuSel',   'ctermfg='.sch[1][0], 'ctermbg='.sch[1][1]]
-    let hiPmenuSbar =  ['hi','PmenuSbar',  '',                   'ctermbg='.sch[2][1]]
-    let hiPmenuThumb = ['hi','PmenuThumb', '',                   'ctermbg='.sch[3][1]]
-    execute join(hiPmenu, ' ')
-    execute join(hiPmenuSel, ' ')
-    execute join(hiPmenuSbar, ' ')
-    execute join(hiPmenuThumb, ' ')
-  endif
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
@@ -745,7 +662,6 @@ endfunction
 "   ./Foo       [File]
 "   ./b/        [Dir]
 function! easycomplete#CompleteFunc( findstart, base )
-  " 常规的关键字处理         ---- {{{
   if a:findstart
     " 第一次调用，定位当前关键字的起始位置
     let start = col('.') - 1
@@ -753,82 +669,106 @@ function! easycomplete#CompleteFunc( findstart, base )
   endif
 
   " 第二次调用，给出匹配列表
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
-  let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:base])
+  call s:StopAsyncRun()
+  call s:AsyncRun('easycomplete#CompleteHandler')
   return v:none
-  " return  ["sss"]
-
-  " 常规的关键字处理         ---- }}}
 endfunction
 
-function! s:HandleCompleteResult(key)
+function! easycomplete#CompleteHandler()
+  call s:CompleteSet()
+  call s:StopAsyncRun()
+  if s:NotInsertMode()
+    return
+  endif
+  if strwidth(s:GetTypingWord()) == 0
+    return
+  endif
+  call s:log(s:GetTypingWord())
+  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteAdd([
+        \ 'abcdefghijklmnopqrstuvwxyz',
+        \ "kkkkkkkkkk",
+        \ "jjjjjjjj",
+        \ "ikn",
+        \ "io98",
+        \ "xkid"
+        \ ])
+  call s:ShowCompletePopup()
+  call s:AsyncRun('g:Foo')
+endfunction
+
+function! g:Foo(...)
+  call s:CompleteSet()
+  call s:StopAsyncRun()
+  if s:NotInsertMode()
+    return
+  endif
+
+  if strwidth(s:GetTypingWord()) == 0
+    return
+  endif
+  call s:log(s:GetTypingWord())
+  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteAdd("asdf")
+  call s:ShowCompletePopup()
+  call s:AsyncRun('g:Foo2')
+endfunction
+
+function! g:Foo2(...)
+  call s:CompleteSet()
+  call s:StopAsyncRun()
+  if s:NotInsertMode()
+    return
+  endif
+
+  if strwidth(s:GetTypingWord()) == 0
+    return
+  endif
+  call s:log(s:GetTypingWord())
+  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteAdd(["1","2","3","4","5","6"])
+  call s:ShowCompletePopup()
+endfunction
+
+function! s:CompleteSet()
   if complete_check()
     call feedkeys("\<C-E>")
   endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
-  " call s:log(pumvisible())
-  " call s:log(a:key)
-  call complete(col('.') - strwidth(s:GetTypingWord()), [''])
-  call feedkeys("\<C-P>")
-  call complete_add('abcdefghijklmnopqrstuvwxyz')
-  call complete_add("kkkkkkkkkk")
-  call complete_add("jjjjjjjj")
-  call complete_add("ikn")
-  call complete_add("io98")
-  call complete_add("xkid")
-  let g:easycomplete_menuitems= complete_info().items
-  " let g:_easycomplete_popup_timer = easycomplete#AsyncRun('s:HandleCompleteResult', [a:key])
-  call easycomplete#AsyncRun('s:Foo', [""])
-  call s:log('-------------------')
-  call s:log(string(complete_info()))
+  " let g:easycomplete_menuitems = []
 endfunction
 
-function! s:Foo(...)
-  if complete_check()
-    call feedkeys("\<C-E>")
+function! s:CompleteInit(base)
+  if !exists('a:base')
+    let l:word = s:GetTypingWord()
+  else
+    let l:word = a:base
   endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
+  call complete(col('.') - strwidth(l:word), [''])
+endfunction
 
-  call s:log('foo')
-  call complete(col('.') - strwidth(s:GetTypingWord()),['asdf'])
+function! s:CompleteAdd(...)
+  if !exists('g:easycomplete_menuitems')
+    let g:easycomplete_menuitems = []
+  endif
   for item in g:easycomplete_menuitems
     call complete_add(item)
   endfor
-  let g:easycomplete_menuitems= complete_info().items
-  call popup_show(popup_findinfo())
-  call easycomplete#AsyncRun('s:Foo2', [""])
-  call feedkeys("\<C-P>\<C-P>")
+
+  if type(get(a:000,0)) == type([]) && len(get(a:000, 0)) > 0
+    for item in get(a:000, 0)
+      call complete_add(item)
+    endfor
+  elseif type(get(a:000,0)) == type({}) || type(get(a:000, 0)) == type("")
+    call complete_add(get(a:000, 0))
+  endif
+  let g:easycomplete_menuitems = get(complete_info(), "items")
 endfunction
 
-function! s:Foo2(...)
-  if complete_check()
-    call feedkeys("\<C-E>")
+function! s:ShowCompletePopup()
+  if s:NotInsertMode()
+    return
   endif
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
-  endif
-
-  call s:log('foo')
-  call complete(col('.') - strwidth(s:GetTypingWord()),['iiiass'])
-  for item in g:easycomplete_menuitems
-    call complete_add(item)
-  endfor
-  call complete_add("8")
-  call complete_add("7")
-  call complete_add("6")
-  call complete_add("5")
-  call complete_add("4")
-  call complete_add("3")
-  call complete_add("2")
-  call popup_show(popup_findinfo())
-  call feedkeys("\<C-P>\<C-P>")
-
+  call s:SendKeys("\<C-P>")
 endfunction
 
 function! easycomplete#UpdateCompleteInfo()
@@ -845,6 +785,19 @@ function! s:ShowCompleteInfo(info)
     call popup_show(id)
   endif
 endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
+endfunction
+
+function! s:NotInsertMode()
+  return call('easycomplete#util#NotInsertMode', a:000)
+endfunction
+
 
 function! s:log(msg)
   echohl MoreMsg

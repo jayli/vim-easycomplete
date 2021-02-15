@@ -18,9 +18,6 @@ let g:tsuquyomi_is_available = 0
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
     autocmd!
-    " BufWinEnter
-    " Syntax
-    " VimEnter
     autocmd SourcePost * call easycomplete#Enable()
   augroup END
 else " 通过 :packadd 手动加载
