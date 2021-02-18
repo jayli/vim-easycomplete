@@ -15,6 +15,9 @@ function! easycomplete#Enable()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
+  set completeopt-=longest
+  " set completeopt-=noinsert
+  set cpoptions+=B
 
   " <C-X><C-U><C-N> 函数回调
   let &completefunc = 'easycomplete#CompleteFunc'
@@ -63,21 +66,29 @@ function! s:BindingTypingCommand()
     exec 'inoremap <buffer><silent>' . key . ' ' . key . '<C-R>=easycomplete#typing()<CR>'
     let l:cursor = l:cursor + 1
   endwhile
+  inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
 
   " autocmd CursorHoldI * call easycomplete#startTsServer()
 endfunction
 
+function! easycomplete#backing()
+  call s:CompleteAdd([])
+  call s:SendKeys("\<C-N>\<C-P>")
+  return ""
+endfunction
+
 function! easycomplete#typing()
-  " call s:log(pumvisible())
-  " call s:log('-------------------')
+  call s:log(pumvisible())
+  call s:log(complete_info())
+  call s:log('-------------------')
 
   if pumvisible()
     return ''
   endif
 
   " let g:_easycomplete_popup_timer = easycomplete#util#AsyncRun('s:HandleCompleteResult', [g:typing_key])
-  " call s:SendKeys("\<C-X>\<C-U>")
-  return "\<C-X>\<C-U>"
+  call s:SendKeys("\<C-X>\<C-U>")
+  return ""
 
 endfunction
 
@@ -662,6 +673,7 @@ endfunction
 "   ./Foo       [File]
 "   ./b/        [Dir]
 function! easycomplete#CompleteFunc( findstart, base )
+  call s:log('call c-x c-u')
   if a:findstart
     " 第一次调用，定位当前关键字的起始位置
     let start = col('.') - 1
@@ -684,7 +696,7 @@ function! easycomplete#CompleteHandler()
     return
   endif
   call s:log(s:GetTypingWord())
-  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteInit()
   call s:CompleteAdd([
         \ 'abcdefghijklmnopqrstuvwxyz',
         \ "kkkkkkkkkk",
@@ -693,7 +705,7 @@ function! easycomplete#CompleteHandler()
         \ "io98",
         \ "xkid"
         \ ])
-  call s:ShowCompletePopup()
+  " call s:ShowCompletePopup()
   call s:AsyncRun('g:Foo')
 endfunction
 
@@ -708,9 +720,9 @@ function! g:Foo(...)
     return
   endif
   call s:log(s:GetTypingWord())
-  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteInit()
   call s:CompleteAdd("asdf")
-  call s:ShowCompletePopup()
+  " call s:ShowCompletePopup()
   call s:AsyncRun('g:Foo2')
 endfunction
 
@@ -725,9 +737,9 @@ function! g:Foo2(...)
     return
   endif
   call s:log(s:GetTypingWord())
-  call s:CompleteInit(s:GetTypingWord())
+  call s:CompleteInit()
   call s:CompleteAdd(["1","2","3","4","5","6"])
-  call s:ShowCompletePopup()
+  " call s:ShowCompletePopup()
 endfunction
 
 function! s:CompleteSet()
@@ -737,16 +749,17 @@ function! s:CompleteSet()
   " let g:easycomplete_menuitems = []
 endfunction
 
-function! s:CompleteInit(base)
-  if !exists('a:base')
+function! s:CompleteInit(...)
+  if !exists('a:1')
     let l:word = s:GetTypingWord()
   else
     let l:word = a:base
   endif
-  call complete(col('.') - strwidth(l:word), [''])
+  call complete(col('.') - strwidth(l:word), [""])
 endfunction
 
 function! s:CompleteAdd(...)
+  " TODO complete_add 需要被优化一下，实际上没用
   if !exists('g:easycomplete_menuitems')
     let g:easycomplete_menuitems = []
   endif
@@ -761,7 +774,19 @@ function! s:CompleteAdd(...)
   elseif type(get(a:000,0)) == type({}) || type(get(a:000, 0)) == type("")
     call complete_add(get(a:000, 0))
   endif
-  let g:easycomplete_menuitems = get(complete_info(), "items")
+  let g:easycomplete_menuitems = s:CompleteFilter(get(complete_info(), "items"))
+  call complete(col('.') - strwidth(s:GetTypingWord()), g:easycomplete_menuitems)
+endfunction
+
+function! s:CompleteFilter(raw_menu_list)
+  let arr = []
+  let word = s:GetTypingWord()
+  for item in a:raw_menu_list
+    if strwidth(matchstr(item.word, word)) >= 1
+      call add(arr, item)
+    endif
+  endfor
+  return arr
 endfunction
 
 function! s:ShowCompletePopup()
