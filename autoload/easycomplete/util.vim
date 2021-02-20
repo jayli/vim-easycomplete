@@ -27,7 +27,7 @@ function! easycomplete#util#AsyncRun(...)
 
   let method = a:1
   let args = exists('a:2') ? a:2 : []
-  let g:_easycomplete_popup_timer = timer_start(1000, { -> easycomplete#util#call(method, args)})
+  let g:_easycomplete_popup_timer = timer_start(1, { -> easycomplete#util#call(method, args)})
   return g:_easycomplete_popup_timer
 endfunction
 
@@ -49,6 +49,10 @@ endfunction
 
 function! easycomplete#util#NotInsertMode()
   return mode()[0] != 'i' ? 1 : 0
+endfunction
+
+function! easycomplete#util#Sendkeys(keys)
+  call feedkeys( a:keys, 'in' )
 endfunction
 
 function! s:log(msg)

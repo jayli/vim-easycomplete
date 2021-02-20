@@ -16,6 +16,7 @@ function! easycomplete#Enable()
   set completeopt+=menuone
   set completeopt+=noselect
   set completeopt-=longest
+  set updatetime=300
   " set completeopt-=noinsert
   set cpoptions+=B
 
@@ -68,31 +69,82 @@ function! s:BindingTypingCommand()
   endwhile
   inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
 
-  " autocmd CursorHoldI * call easycomplete#startTsServer()
+  " autocmd CursorHoldI * call easycomplete#CursorHoldI()
+endfunction
+
+function! s:SetupCompleteCache()
+  let g:easycomplete_menucache = {}
+  let g:easycomplete_menucache["_#_1"] = 1  " 行号
+  let g:easycomplete_menucache["_#_2"] = 1  " 列号
+endfunction
+
+function! s:ResetCompleteCache()
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  let start_pos = col('.') - strwidth(s:GetTypingWord())
+  if g:easycomplete_menucache["_#_1"] != line('.') || g:easycomplete_menucache["_#_2"] != start_pos
+    let g:easycomplete_menucache = {}
+  endif
+  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
+  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
+endfunction
+
+function! s:AddCompleteCache(word, menulist)
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  let start_pos = col('.') - strwidth(a:word)
+  if g:easycomplete_menucache["_#_1"] == line('.') && g:easycomplete_menucache["_#_2"] == start_pos
+    let g:easycomplete_menucache[a:word] = a:menulist
+  else
+    let g:easycomplete_menucache = {}
+  endif
+  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
+  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
 endfunction
 
 function! easycomplete#backing()
-  call s:CompleteAdd([])
-  call s:SendKeys("\<C-N>\<C-P>")
-  return ""
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  call s:ResetCompleteCache()
+
+  call s:StopAsyncRun()
+  if has_key(g:easycomplete_menucache, s:GetTypingWord())
+    call s:AsyncRun('easycomplete#backingTimerHandler')
+  else
+    call s:SendKeys("\<C-X>\<C-U>")
+  endif
+  return ''
 endfunction
 
-function! easycomplete#typing()
-  call s:log(pumvisible())
-  call s:log(complete_info())
-  call s:log('-------------------')
-
+function! easycomplete#backingTimerHandler()
   if pumvisible()
     return ''
   endif
 
-  " let g:_easycomplete_popup_timer = easycomplete#util#AsyncRun('s:HandleCompleteResult', [g:typing_key])
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+    return ''
+  endif
+
+  call s:CompleteAdd(get(g:easycomplete_menucache, s:GetTypingWord()))
+  return ''
+endfunction
+
+function! easycomplete#typing()
+  call s:log(s:GetTypingWord())
+  if pumvisible()
+    return ''
+  endif
   call s:SendKeys("\<C-X>\<C-U>")
   return ""
 
 endfunction
-
-
 
 
 function! s:CompleteRunning()
@@ -140,10 +192,12 @@ endfunction
 function! s:GetTypingWord()
   let start = col('.') - 1
   let line = getline('.')
+  let width = 0
   while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
     let start = start - 1
+    let width = width + 1
   endwhile
-  let word = strpart(line, start, col('.') - 1)
+  let word = strpart(line, start, width)
   return word
 endfunction
 
@@ -695,7 +749,6 @@ function! easycomplete#CompleteHandler()
   if strwidth(s:GetTypingWord()) == 0
     return
   endif
-  call s:log(s:GetTypingWord())
   call s:CompleteInit()
   call s:CompleteAdd([
         \ 'abcdefghijklmnopqrstuvwxyz',
@@ -719,7 +772,6 @@ function! g:Foo(...)
   if strwidth(s:GetTypingWord()) == 0
     return
   endif
-  call s:log(s:GetTypingWord())
   call s:CompleteInit()
   call s:CompleteAdd("asdf")
   " call s:ShowCompletePopup()
@@ -736,7 +788,6 @@ function! g:Foo2(...)
   if strwidth(s:GetTypingWord()) == 0
     return
   endif
-  call s:log(s:GetTypingWord())
   call s:CompleteInit()
   call s:CompleteAdd(["1","2","3","4","5","6"])
   " call s:ShowCompletePopup()
@@ -760,9 +811,17 @@ endfunction
 
 function! s:CompleteAdd(...)
   " TODO complete_add 需要被优化一下，实际上没用
+
+  " 单词匹配表
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  " 当前匹配
   if !exists('g:easycomplete_menuitems')
     let g:easycomplete_menuitems = []
   endif
+
   for item in g:easycomplete_menuitems
     call complete_add(item)
   endfor
@@ -775,7 +834,9 @@ function! s:CompleteAdd(...)
     call complete_add(get(a:000, 0))
   endif
   let g:easycomplete_menuitems = s:CompleteFilter(get(complete_info(), "items"))
-  call complete(col('.') - strwidth(s:GetTypingWord()), g:easycomplete_menuitems)
+  let start_pos = col('.') - strwidth(s:GetTypingWord())
+  call complete(start_pos, g:easycomplete_menuitems)
+  call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
 endfunction
 
 function! s:CompleteFilter(raw_menu_list)
@@ -803,7 +864,6 @@ function! easycomplete#UpdateCompleteInfo()
 endfunction
 
 function! s:ShowCompleteInfo(info)
-  call s:log('222');
   let id = popup_findinfo()
   if id
     call popup_settext(id, 'async info: ')
