@@ -136,7 +136,73 @@ function! easycomplete#backingTimerHandler()
   return ''
 endfunction
 
+" copy of asyncomplete
+function! easycomplete#context() abort
+  let l:ret = {'bufnr':bufnr('%'), 'curpos':getcurpos(), 'changedtick':b:changedtick}
+  let l:ret['lnum'] = l:ret['curpos'][1]
+  let l:ret['col'] = l:ret['curpos'][2]
+  let l:ret['filetype'] = &filetype
+  let l:ret['filepath'] = expand('%:p')
+  let l:ret['typed'] = strpart(getline(l:ret['lnum']),0,l:ret['col']-1)
+  return l:ret
+endfunction
+
+" copy of asyncomplete
+function! easycomplete#complete(name, ctx, startcol, items, ...) abort
+
+  call easycomplete#log(string(a:ctx))
+    let l:refresh = a:0 > 0 ? a:1 : 0
+    let l:ctx = easycomplete#context()
+    " 这段没看懂是什么意思
+    " if !has_key(s:matches, a:name) || l:ctx['lnum'] != a:ctx['lnum'] " TODO: handle more context changes
+    "     " call s:update_pum()
+    "     call s:StopAsyncRun()
+    "     call s:AsyncRun('easycomplete#_HackHandler', [items])
+    "     return
+    " endif
+
+    " TODO 不确定是否沿用这个数据结构
+    " let l:matches = s:matches[a:name]
+    " let l:matches['items'] = s:normalize_items(a:items)
+    " let l:matches['refresh'] = l:refresh
+    " let l:matches['startcol'] = a:startcol
+    " let l:matches['status'] = 'success'
+
+    " call s:update_pum()
+    call s:StopAsyncRun()
+    call s:AsyncRun('easycomplete#_HackHandler', [a:items])
+endfunction
+
+function! easycomplete#_HackHandler(items)
+  call s:CompleteInit()
+  call s:CompleteAdd(a:items)
+endfunction
+
+function! s:normalize_items(items) abort
+    if len(a:items) > 0 && type(a:items[0]) ==# type('')
+        let l:items = []
+        for l:item in a:items
+            let l:items += [{'word': l:item }]
+        endfor
+        return l:items
+    else
+        return a:items
+    endif
+endfunction
+
 function! easycomplete#typing()
+  " call asyncomplete#_force_refresh()
+  let opt = easycomplete#sources#buffer#get_source_options({
+        \ 'name': 'buffer',
+        \ 'allowlist': ['*'],
+        \ 'blocklist': ['go'],
+        \ 'completor': function('easycomplete#sources#buffer#completor'),
+        \ 'config': {
+        \    'max_buffer_size': 5000000,
+        \  },
+        \ })
+  call easycomplete#sources#buffer#completor(opt,easycomplete#context())
+  return ""
   call s:log(s:GetTypingWord())
   if pumvisible()
     return ''
