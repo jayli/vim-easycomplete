@@ -7,10 +7,10 @@
 
 " 初始化入口
 function! easycomplete#Enable()
-  if exists("g:easy_complete_loaded")
+  if exists("g:easycomplete_loaded")
     return
   endif
-  let g:easy_complete_loaded = 1
+  let g:easycomplete_loaded = 1
 
   set completeopt-=menu
   set completeopt+=menuone
@@ -74,8 +74,8 @@ endfunction
 
 function! s:SetupCompleteCache()
   let g:easycomplete_menucache = {}
-  let g:easycomplete_menucache["_#_1"] = 1  " 行号
-  let g:easycomplete_menucache["_#_2"] = 1  " 列号
+  let g:easycomplete_menucache["_#_1"] = 1  " 当前输入单词行号
+  let g:easycomplete_menucache["_#_2"] = 1  " 当前输入单词列号
 endfunction
 
 function! s:ResetCompleteCache()
@@ -151,26 +151,26 @@ endfunction
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
 
   call easycomplete#log(string(a:ctx))
-    let l:refresh = a:0 > 0 ? a:1 : 0
-    let l:ctx = easycomplete#context()
-    " 这段没看懂是什么意思
-    " if !has_key(s:matches, a:name) || l:ctx['lnum'] != a:ctx['lnum'] " TODO: handle more context changes
-    "     " call s:update_pum()
-    "     call s:StopAsyncRun()
-    "     call s:AsyncRun('easycomplete#_HackHandler', [items])
-    "     return
-    " endif
+  let l:refresh = a:0 > 0 ? a:1 : 0
+  let l:ctx = easycomplete#context()
+  " 这段没看懂是什么意思
+  " if !has_key(s:matches, a:name) || l:ctx['lnum'] != a:ctx['lnum'] " TODO: handle more context changes
+  "     " call s:update_pum()
+  "     call s:StopAsyncRun()
+  "     call s:AsyncRun('easycomplete#_HackHandler', [items])
+  "     return
+  " endif
 
-    " TODO 不确定是否沿用这个数据结构
-    " let l:matches = s:matches[a:name]
-    " let l:matches['items'] = s:normalize_items(a:items)
-    " let l:matches['refresh'] = l:refresh
-    " let l:matches['startcol'] = a:startcol
-    " let l:matches['status'] = 'success'
+  " TODO 不确定是否沿用这个数据结构
+  " let l:matches = s:matches[a:name]
+  " let l:matches['items'] = s:normalize_items(a:items)
+  " let l:matches['refresh'] = l:refresh
+  " let l:matches['startcol'] = a:startcol
+  " let l:matches['status'] = 'success'
 
-    " call s:update_pum()
-    call s:StopAsyncRun()
-    call s:AsyncRun('easycomplete#_HackHandler', [a:items])
+  " call s:update_pum()
+  call s:StopAsyncRun()
+  call s:AsyncRun('easycomplete#_HackHandler', [a:items])
 endfunction
 
 function! easycomplete#_HackHandler(items)
@@ -201,7 +201,8 @@ function! easycomplete#typing()
         \    'max_buffer_size': 5000000,
         \  },
         \ })
-  call easycomplete#sources#buffer#completor(opt,easycomplete#context())
+  call s:log(string(opt))
+  call easycomplete#sources#buffer#completor(opt, easycomplete#context())
   return ""
   call s:log(s:GetTypingWord())
   if pumvisible()
