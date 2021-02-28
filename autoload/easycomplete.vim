@@ -148,6 +148,7 @@ function! easycomplete#context() abort
 endfunction
 
 " copy of asyncomplete
+" TODO here jayli
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
 
   call easycomplete#log(string(a:ctx))
