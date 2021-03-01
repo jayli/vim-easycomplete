@@ -27,7 +27,7 @@ function! easycomplete#util#AsyncRun(...)
 
   let method = a:1
   let args = exists('a:2') ? a:2 : []
-  let g:_easycomplete_popup_timer = timer_start(1, { -> easycomplete#util#call(method, args)})
+  let g:_easycomplete_popup_timer = timer_start(0, { -> easycomplete#util#call(method, args)})
   return g:_easycomplete_popup_timer
 endfunction
 

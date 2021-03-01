@@ -3,6 +3,7 @@ let s:last_word = ''
 let g:asyncomplete_buffer_clear_cache = get(g:, 'asyncomplete_buffer_clear_cache', 1)
 
 function! easycomplete#sources#buffer#completor(opt, ctx)
+    call easycomplete#log(a:opt)
     let l:typed = a:ctx['typed']
 
     call s:refresh_keyword_incremental(l:typed)
@@ -22,7 +23,8 @@ function! easycomplete#sources#buffer#completor(opt, ctx)
     let l:startcol = l:col - l:kwlen
 
     " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
-    call easycomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
+    " call easycomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
+    call easycomplete#CompleteAdd(l:matches)
 endfunction
 
 function! easycomplete#sources#buffer#get_source_options(opts)

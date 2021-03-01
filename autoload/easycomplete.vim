@@ -12,6 +12,7 @@ function! easycomplete#Enable()
   endif
   let g:easycomplete_loaded = 1
 
+  call s:Init()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
@@ -48,6 +49,23 @@ function! easycomplete#Enable()
         \ ], easycomplete#util#filetype()) >= 0
     call s:BindingTypingCommand()
   endif
+endfunction
+
+function! s:Init()
+  let l:arr = {
+        \ "g:easycomplete_loaded": 0,
+        \ "g:easycomplete_source": {},
+        \ "g:easycomplete_menucache": {},
+        \ "g:typing_key": 0,
+        \ "g:easycomplete_menuitems": [],
+        \ }
+  for item in keys(l:arr)
+    if !exists(item)
+      call execute("let " . item . " = " . string(l:arr[item]))
+    endif
+  endfor
+
+  call s:SetupCompleteCache()
 endfunction
 
 function! easycomplete#nill() abort
@@ -138,7 +156,11 @@ endfunction
 
 " copy of asyncomplete
 function! easycomplete#context() abort
-  let l:ret = {'bufnr':bufnr('%'), 'curpos':getcurpos(), 'changedtick':b:changedtick}
+  let l:ret = {
+        \ 'bufnr':bufnr('%'),
+        \ 'curpos':getcurpos(),
+        \ 'changedtick':b:changedtick
+        \ }
   let l:ret['lnum'] = l:ret['curpos'][1]
   let l:ret['col'] = l:ret['curpos'][2]
   let l:ret['filetype'] = &filetype
@@ -148,10 +170,8 @@ function! easycomplete#context() abort
 endfunction
 
 " copy of asyncomplete
-" TODO here jayli
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
 
-  call easycomplete#log(string(a:ctx))
   let l:refresh = a:0 > 0 ? a:1 : 0
   let l:ctx = easycomplete#context()
   " 这段没看懂是什么意思
@@ -180,40 +200,62 @@ function! easycomplete#_HackHandler(items)
 endfunction
 
 function! s:normalize_items(items) abort
-    if len(a:items) > 0 && type(a:items[0]) ==# type('')
-        let l:items = []
-        for l:item in a:items
-            let l:items += [{'word': l:item }]
-        endfor
-        return l:items
-    else
-        return a:items
-    endif
+  if len(a:items) > 0 && type(a:items[0]) ==# type('')
+    let l:items = []
+    for l:item in a:items
+      let l:items += [{'word': l:item }]
+    endfor
+    return l:items
+  else
+    return a:items
+  endif
 endfunction
 
 function! easycomplete#typing()
-  " call asyncomplete#_force_refresh()
-  let opt = easycomplete#sources#buffer#get_source_options({
-        \ 'name': 'buffer',
-        \ 'allowlist': ['*'],
-        \ 'blocklist': ['go'],
-        \ 'completor': function('easycomplete#sources#buffer#completor'),
-        \ 'config': {
-        \    'max_buffer_size': 5000000,
-        \  },
-        \ })
-  call s:log(string(opt))
-  call easycomplete#sources#buffer#completor(opt, easycomplete#context())
-  return ""
-  call s:log(s:GetTypingWord())
+  " " call asyncomplete#_force_refresh()
+  " let opt = easycomplete#sources#buffer#get_source_options({
+  "       \ 'name': 'buffer',
+  "       \ 'allowlist': ['*'],
+  "       \ 'blocklist': ['go'],
+  "       \ 'completor': function('easycomplete#sources#buffer#completor'),
+  "       \ 'config': {
+  "       \    'max_buffer_size': 5000000,
+  "       \  },
+  "       \ })
+  " " call s:log(string(opt))
+  " call easycomplete#sources#buffer#completor(opt, easycomplete#context())
+  " return ""
+  " call s:log(s:GetTypingWord())
   if pumvisible()
     return ''
   endif
   call s:SendKeys("\<C-X>\<C-U>")
   return ""
-
 endfunction
 
+" call easycomplete#register_source(easycomplete#sources#buffer#get_source_options({
+"     \ 'name': 'buffer',
+"     \ 'allowlist': ['*'],
+"     \ 'blocklist': ['go'],
+"     \ 'completor': function('easycomplete#sources#buffer#completor'),
+"     \ 'config': {
+"     \    'max_buffer_size': 5000000,
+"     \  },
+"     \ }))
+function! easycomplete#register_source(opt)
+  if !has_key(opt, "name")
+    return
+  endif
+  let l:ret = a:opt
+  let g:easycomplete_source['name'] = l:ret
+endfunction
+
+" TODO here jayli
+" 依次执行安装完了的每个匹配器，依次调用每个匹配器的 completor 函数
+" 每个 completor 函数中再调用 CompleteAdd
+function! s:CompleteGeneratorExec(...)
+
+endfunction
 
 function! s:CompleteRunning()
   if !exists('g:_easycomplete_popup_timer') || g:_easycomplete_popup_timer == -1
@@ -818,16 +860,15 @@ function! easycomplete#CompleteHandler()
     return
   endif
   call s:CompleteInit()
-  call s:CompleteAdd([
-        \ 'abcdefghijklmnopqrstuvwxyz',
-        \ "kkkkkkkkkk",
-        \ "jjjjjjjj",
-        \ "ikn",
-        \ "io98",
-        \ "xkid"
-        \ ])
-  " call s:ShowCompletePopup()
-  call s:AsyncRun('g:Foo')
+  " call s:CompleteAdd([
+  "       \ 'abcdefghijklmnopqrstuvwxyz',
+  "       \ "kkkkkkkkkk",
+  "       \ "jjjjjjjj",
+  "       \ "ikn",
+  "       \ "io98",
+  "       \ "xkid"
+  "       \ ])
+  " call s:AsyncRun('g:Foo')
 endfunction
 
 function! g:Foo(...)
@@ -877,7 +918,7 @@ function! s:CompleteInit(...)
   call complete(col('.') - strwidth(l:word), [""])
 endfunction
 
-function! s:CompleteAdd(...)
+function! easycomplete#CompleteAdd(...)
   " TODO complete_add 需要被优化一下，实际上没用
 
   " 单词匹配表
@@ -905,6 +946,10 @@ function! s:CompleteAdd(...)
   let start_pos = col('.') - strwidth(s:GetTypingWord())
   call complete(start_pos, g:easycomplete_menuitems)
   call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
+endfunction
+
+function! s:CompleteAdd(...)
+  return call('easycomplete#CompleteAdd', a:000)
 endfunction
 
 function! s:CompleteFilter(raw_menu_list)
