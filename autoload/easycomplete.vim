@@ -12,7 +12,14 @@ function! easycomplete#Enable()
   endif
   let g:easycomplete_loaded = 1
 
-  call s:Init()
+  if !exists("g:easycomplete_source")
+    let g:easycomplete_source  = {}
+  endif
+  let g:easycomplete_menucache = {}
+  let g:typing_key             = 0
+  let g:easycomplete_menuitems = []
+  call s:SetupCompleteCache()
+
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
@@ -49,23 +56,6 @@ function! easycomplete#Enable()
         \ ], easycomplete#util#filetype()) >= 0
     call s:BindingTypingCommand()
   endif
-endfunction
-
-function! s:Init()
-  let l:arr = {
-        \ "g:easycomplete_loaded": 0,
-        \ "g:easycomplete_source": {},
-        \ "g:easycomplete_menucache": {},
-        \ "g:typing_key": 0,
-        \ "g:easycomplete_menuitems": [],
-        \ }
-  for item in keys(l:arr)
-    if !exists(item)
-      call execute("let " . item . " = " . string(l:arr[item]))
-    endif
-  endfor
-
-  call s:SetupCompleteCache()
 endfunction
 
 function! easycomplete#nill() abort
@@ -165,7 +155,19 @@ function! easycomplete#context() abort
   let l:ret['col'] = l:ret['curpos'][2]
   let l:ret['filetype'] = &filetype
   let l:ret['filepath'] = expand('%:p')
-  let l:ret['typed'] = strpart(getline(l:ret['lnum']),0,l:ret['col']-1)
+  let line = getline(l:ret['lnum'])
+  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1)
+
+  " let word = s:GetTypingWord()
+  let start = l:ret['col'] - 1
+  let width = 0
+  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
+    let start = start - 1
+    let width = width + 1
+  endwhile
+  let word = strpart(line, start, width)
+
+  let l:ret['typing'] = word
   return l:ret
 endfunction
 
@@ -242,19 +244,30 @@ endfunction
 "     \    'max_buffer_size': 5000000,
 "     \  },
 "     \ }))
-function! easycomplete#register_source(opt)
-  if !has_key(opt, "name")
+function! easycomplete#registerSource(opt)
+  if !has_key(a:opt, "name")
     return
   endif
-  let l:ret = a:opt
-  let g:easycomplete_source['name'] = l:ret
+  if !exists("g:easycomplete_source")
+    let g:easycomplete_source = {}
+  endif
+  let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
-" TODO here jayli
 " 依次执行安装完了的每个匹配器，依次调用每个匹配器的 completor 函数
 " 每个 completor 函数中再调用 CompleteAdd
-function! s:CompleteGeneratorExec(...)
-
+function! s:CompletorCalling(...)
+  let l:ctx = easycomplete#context()
+  for item in keys(g:easycomplete_source)
+    let l:opt = get(g:easycomplete_source, item)
+    let b:completor = get(l:opt, "completor")
+    if type(b:completor) == 2 " 是函数
+      call b:completor(l:opt, l:ctx)
+    endif
+    if type(b:completor) == type("string") " 是字符串
+      call call(b:completor, [l:opt, l:ctx])
+    endif
+  endfor
 endfunction
 
 function! s:CompleteRunning()
@@ -300,15 +313,7 @@ function! s:GetTypingKey()
 endfunction
 
 function! s:GetTypingWord()
-  let start = col('.') - 1
-  let line = getline('.')
-  let width = 0
-  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
-    let start = start - 1
-    let width = width + 1
-  endwhile
-  let word = strpart(line, start, width)
-  return word
+  return easycomplete#util#GetTypingWord()
 endfunction
 
 " 根据 vim-snippets 整理出目前支持的语言种类和缩写
@@ -837,13 +842,13 @@ endfunction
 "   ./Foo       [File]
 "   ./b/        [Dir]
 function! easycomplete#CompleteFunc( findstart, base )
-  call s:log('call c-x c-u')
   if a:findstart
     " 第一次调用，定位当前关键字的起始位置
     let start = col('.') - 1
     return start
   endif
 
+  call s:log('call c-x c-u')
   " 第二次调用，给出匹配列表
   call s:StopAsyncRun()
   call s:AsyncRun('easycomplete#CompleteHandler')
@@ -860,6 +865,7 @@ function! easycomplete#CompleteHandler()
     return
   endif
   call s:CompleteInit()
+  call s:CompletorCalling()
   " call s:CompleteAdd([
   "       \ 'abcdefghijklmnopqrstuvwxyz',
   "       \ "kkkkkkkkkk",
@@ -949,7 +955,7 @@ function! easycomplete#CompleteAdd(...)
 endfunction
 
 function! s:CompleteAdd(...)
-  return call('easycomplete#CompleteAdd', a:000)
+  return call("easycomplete#CompleteAdd", a:000)
 endfunction
 
 function! s:CompleteFilter(raw_menu_list)

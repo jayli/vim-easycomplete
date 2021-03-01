@@ -1,15 +1,15 @@
-augroup asyncomplete#sources#nextword#augroup
+augroup easycomplete#sources#nextword#augroup
     autocmd!
     autocmd VimLeave * call s:stop_nextword()
 augroup END
 
-function! asyncomplete#sources#nextword#get_source_options(opt) abort
+function! easycomplete#sources#nextword#get_source_options(opt) abort
     if !exists('a:opt["args"]')
         let a:opt['args'] = ['-n', '10000']
     endif
 
     if !exists('s:nextword_job')
-        let s:nextword_job = async#job#start(['nextword'] + a:opt['args'], {'on_stdout': function('s:on_event')})
+        let s:nextword_job = 1 " async#job#start(['nextword'] + a:opt['args'], {'on_stdout': function('s:on_event')})
         if s:nextword_job <= 0
             echoerr "nextword launch failed"
         endif
@@ -19,7 +19,7 @@ function! asyncomplete#sources#nextword#get_source_options(opt) abort
     return a:opt
 endfunction
 
-function! asyncomplete#sources#nextword#completor(opt, ctx) abort
+function! easycomplete#sources#nextword#completor(opt, ctx) abort
     if s:nextword_job <= 0
         return
     endif
@@ -27,7 +27,7 @@ function! asyncomplete#sources#nextword#completor(opt, ctx) abort
     let l:typed = s:get_typed_string(a:ctx)
     let s:ctx = a:ctx
     let s:opt = a:opt
-    call async#job#send(s:nextword_job, l:typed . "\n")
+    " call async#job#send(s:nextword_job, l:typed . "\n")
 endfunction
 
 function! s:get_typed_string(ctx)
@@ -50,7 +50,7 @@ function! s:on_event(job_id, data, event)
     let l:startcol = strridx(s:ctx['typed'], " ") + 2
     let l:candidates = split(a:data[0], " ")
     let l:items = s:generate_items(l:candidates)
-    call asyncomplete#complete(s:opt['name'], s:ctx, l:startcol, l:items)
+    call easycomplete#complete(s:opt['name'], s:ctx, l:startcol, l:items)
 endfunction
 
 function! s:generate_items(candidates)

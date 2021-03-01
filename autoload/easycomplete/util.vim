@@ -55,6 +55,18 @@ function! easycomplete#util#Sendkeys(keys)
   call feedkeys( a:keys, 'in' )
 endfunction
 
+function! easycomplete#util#GetTypingWord()
+  let start = col('.') - 1
+  let line = getline('.')
+  let width = 0
+  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
+    let start = start - 1
+    let width = width + 1
+  endwhile
+  let word = strpart(line, start, width)
+  return word
+endfunction
+
 function! s:log(msg)
   call easycomplete#log(a:msg)
 endfunction

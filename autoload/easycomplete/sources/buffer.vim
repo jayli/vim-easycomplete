@@ -3,7 +3,8 @@ let s:last_word = ''
 let g:asyncomplete_buffer_clear_cache = get(g:, 'asyncomplete_buffer_clear_cache', 1)
 
 function! easycomplete#sources#buffer#completor(opt, ctx)
-    call easycomplete#log(a:opt)
+    " call easycomplete#log(a:opt)
+    " call easycomplete#log(a:ctx)
     let l:typed = a:ctx['typed']
 
     call s:refresh_keyword_incremental(l:typed)
