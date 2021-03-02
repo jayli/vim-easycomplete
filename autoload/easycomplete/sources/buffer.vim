@@ -41,7 +41,7 @@ function! s:should_ignore(opt) abort
     if l:max_buffer_size != -1
         let l:buffer_size = line2byte(line('$') + 1)
         if l:buffer_size > l:max_buffer_size
-            call easycomplete#log('easycomplete#sources#buffer ignoring buffer autocomplete due to large size' . l:buffer_size)
+            " call easycomplete#log('easycomplete#sources#buffer ignoring buffer autocomplete due to large size' . l:buffer_size)
             return 1
         endif
     endif
@@ -68,7 +68,7 @@ function! s:refresh_keywords() abort
             let s:words[l:word] = 1
         endif
     endfor
-    call easycomplete#log('asyncomplete#buffer s:refresh_keywords() complete')
+    " call easycomplete#log('asyncomplete#buffer s:refresh_keywords() complete')
 endfunction
 
 function! s:refresh_keyword_incremental(typed) abort

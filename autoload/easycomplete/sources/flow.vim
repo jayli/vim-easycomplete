@@ -23,7 +23,7 @@ function! easycomplete#sources#flow#completor(opt, ctx) abort
         \ 'on_exit': function('s:handler', [a:opt, a:ctx, l:params]),
         \ })
 
-  call easycomplete#log(l:cmd)
+  " call easycomplete#log(l:cmd)
 
   if l:jobid <= 0
     call delete(l:tempfile)
@@ -36,7 +36,7 @@ function! s:handler(opt, ctx, params, id, data, event) abort
   elseif a:event ==? 'exit'
     if a:data == 0
       let l:res = json_decode(a:params['stdout_buffer'])
-      call easycomplete#log(l:res)
+      " call easycomplete#log(l:res)
       if !empty(l:res) && !empty(l:res['result'])
 
         let l:config = get(a:opt, 'config', {})
@@ -59,7 +59,7 @@ function! s:handler(opt, ctx, params, id, data, event) abort
     endif
     call delete(a:params['file'])
   elseif a:event ==? 'stdout'
-    call easycomplete#log(a:data)
+    " call easycomplete#log(a:data)
   endif
 endfunction
 

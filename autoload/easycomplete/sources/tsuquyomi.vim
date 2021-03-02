@@ -5,6 +5,11 @@ let g:loaded_autoload_easycomplete_sources_tsuquyomi = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+" augroup easycomplete#sources#tsuquyomi#augroup
+"     autocmd!
+"     autocmd BufWinEnter * call easycomplete#sources#tsuquyomi#StartTss()
+" augroup END
+
 " Copied from https://github.com/yami-beta/easycomplete-omni.vim
 " ORIGINAL LICENCE: MIT
 " ORIGINAL AUTHOR: Takahiro Abe
@@ -19,25 +24,44 @@ endfunction
 " ORIGINAL AUTHOR: Takahiro Abe
 " MODIFIED BY: ishitaku5522
 function! easycomplete#sources#tsuquyomi#completor(opt, ctx) abort
-  try
-    let l:col = a:ctx['col']
-    let l:typed = a:ctx['typed']
 
-    let l:startcol = s:safe_tsuquyomifunc(1, '')
-    if l:startcol < 0
-      return
-    elseif l:startcol > l:col
-      let l:startcol = l:col
-    endif
-    let l:base = l:typed[l:startcol : l:col]
-    let l:matches = s:safe_tsuquyomifunc(0, l:base)
-    call easycomplete#log(l:matches)
-
-    " call easycomplete#complete(a:opt['name'], a:ctx, l:startcol + 1, l:matches)
-  catch
-    call easycomplete#log('tsuquyomi error ' . v:exception)
-  endtry
+  " jayli
+  call s:StartTss()
+  call tsuquyomi#complete(0, a:ctx['typing'])
+  " let alist = tsuquyomi#tsClient#tsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  " call easycomplete#log(alist)
 endfunction
+
+function! easycomplete#sources#tsuquyomi#StartTss()
+  call s:StartTss()
+endfunction
+
+function! s:StartTss()
+  if !exists('s:tsq')
+    let s:tsq = {'job':0}
+  endif
+  if type(s:tsq['job']) == 8 && job_info(s:tsq['job']).status == 'run'
+    return 'existing'
+  endif
+  let l:cmd = "tsserver --locale en" " substitute(tsuquyomi#config#tsscmd(), '\\', '\\\\', 'g').' '.tsuquyomi#config#tssargs()
+  call easycomplete#log(l:cmd)
+  try
+    let s:tsq['job'] = job_start(l:cmd, {
+      \ 'out_cb': {ch, msg -> tsuquyomi#tsClient#handleMessage(ch, msg)},
+      \ })
+
+    let s:tsq['channel'] = job_getchannel(s:tsq['job'])
+
+    let out = ch_readraw(s:tsq['channel'])
+    let st = tsuquyomi#tsClient#statusTss()
+  catch
+    return 0
+  endtry
+  return 1
+endfunction
+
+
+"---------------------------------------------------------------------------------------------------
 
 " Copied from https://github.com/Quramy/tsuquyomi
 " ORIGINAL LICENCE: MIT

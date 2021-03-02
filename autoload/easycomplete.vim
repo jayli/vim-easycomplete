@@ -44,7 +44,7 @@ function! easycomplete#Enable()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
-  " let g:tsuquyomi_is_available = 1
+  let g:tsuquyomi_is_available = 1
   " call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
   let g:easycomplete_tsserver_stopped = 0
 
@@ -204,7 +204,7 @@ endfunction
 
 function! easycomplete#typing()
   " TODO 这里 pumvisible 为 0 ，不知为何
-  call s:log('easycomplete#typing ' . s:GetTypingWord() . ' ' . pumvisible())
+  " call s:log('easycomplete#typing ' . s:GetTypingWord() . ' ' . pumvisible())
   if pumvisible()
     return ''
   endif
@@ -238,6 +238,7 @@ function! s:CompletorCalling(...)
   for item in keys(g:easycomplete_source)
     call s:CallCompeltorByName(item, l:ctx)
   endfor
+  " call tsuquyomi#complete(0, l:ctx['typing'])
   " call s:log('after complete calling ' . s:GetTypingWord() . ' ' . pumvisible())
 endfunction
 
