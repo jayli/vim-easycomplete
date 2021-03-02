@@ -21,13 +21,14 @@ function! easycomplete#util#filetype()
 endfunction
 
 " 运行一个全局的 Timer，只在 complete 的时候用
-" method 必须是一个全局方法
-" method, args
+" 参数：method, args, timer
+" method 必须是一个全局方法,
+" timer 为空则默认为0
 function! easycomplete#util#AsyncRun(...)
-
   let method = a:1
   let args = exists('a:2') ? a:2 : []
-  let g:_easycomplete_popup_timer = timer_start(0, { -> easycomplete#util#call(method, args)})
+  let delay = exists('a:3') ? a:3 : 0
+  let g:_easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(method, args)})
   return g:_easycomplete_popup_timer
 endfunction
 

@@ -487,6 +487,7 @@ function! s:GetWrappedBufKeywordList(keywordList)
   return wrappedList
 endfunction
 
+
 " 将字典简单词表转换为补全浮窗所需的列表格式
 " 比如字典原始列表为 ['abc','def'] ，输出为
 " => [{"word":'abc',"kind":"[ID]","menu":"common.dict"}...]

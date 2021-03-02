@@ -158,76 +158,49 @@ function! easycomplete#context() abort
   let line = getline(l:ret['lnum'])
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1)
 
-  " let word = s:GetTypingWord()
+  " let word = s:GetTypingWord() " {{{
   let start = l:ret['col'] - 1
   let width = 0
   while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
     let start = start - 1
     let width = width + 1
   endwhile
+  " }}}
   let word = strpart(line, start, width)
 
   let l:ret['typing'] = word
+  let l:ret['startcol'] = l:ret['col'] - width
   return l:ret
 endfunction
 
 " copy of asyncomplete
+" 格式上方便兼容 asyncomplete 使用
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
-
-  let l:refresh = a:0 > 0 ? a:1 : 0
-  let l:ctx = easycomplete#context()
-  " 这段没看懂是什么意思
-  " if !has_key(s:matches, a:name) || l:ctx['lnum'] != a:ctx['lnum'] " TODO: handle more context changes
-  "     " call s:update_pum()
-  "     call s:StopAsyncRun()
-  "     call s:AsyncRun('easycomplete#_HackHandler', [items])
-  "     return
-  " endif
-
-  " TODO 不确定是否沿用这个数据结构
-  " let l:matches = s:matches[a:name]
-  " let l:matches['items'] = s:normalize_items(a:items)
-  " let l:matches['refresh'] = l:refresh
-  " let l:matches['startcol'] = a:startcol
-  " let l:matches['status'] = 'success'
-
   " call s:update_pum()
-  call s:StopAsyncRun()
-  call s:AsyncRun('easycomplete#_HackHandler', [a:items])
+  let l:ctx = easycomplete#context()
+  if a:ctx["lnum"] != l:ctx["lnum"] || a:ctx["col"] != l:ctx["col"]
+    call s:CloseCompletionMenu()
+    " call s:SendKeys("\<C-X>\<C-U>")
+    call s:CallCompeltorByName(a:name, l:ctx)
+    return
+  endif
+  call easycomplete#CompleteAdd(a:items)
 endfunction
 
-function! easycomplete#_HackHandler(items)
-  call s:CompleteInit()
-  call s:CompleteAdd(a:items)
-endfunction
-
-function! s:normalize_items(items) abort
-  if len(a:items) > 0 && type(a:items[0]) ==# type('')
-    let l:items = []
-    for l:item in a:items
-      let l:items += [{'word': l:item }]
-    endfor
-    return l:items
-  else
-    return a:items
+function! s:CallCompeltorByName(name, ctx)
+  let l:opt = get(g:easycomplete_source, a:name)
+  let b:completor = get(l:opt, "completor")
+  if type(b:completor) == 2 " 是函数
+    call b:completor(l:opt, a:ctx)
+  endif
+  if type(b:completor) == type("string") " 是字符串
+    call call(b:completor, [l:opt, a:ctx])
   endif
 endfunction
 
 function! easycomplete#typing()
-  " " call asyncomplete#_force_refresh()
-  " let opt = easycomplete#sources#buffer#get_source_options({
-  "       \ 'name': 'buffer',
-  "       \ 'allowlist': ['*'],
-  "       \ 'blocklist': ['go'],
-  "       \ 'completor': function('easycomplete#sources#buffer#completor'),
-  "       \ 'config': {
-  "       \    'max_buffer_size': 5000000,
-  "       \  },
-  "       \ })
-  " " call s:log(string(opt))
-  " call easycomplete#sources#buffer#completor(opt, easycomplete#context())
-  " return ""
-  " call s:log(s:GetTypingWord())
+  " TODO 这里 pumvisible 为 0 ，不知为何
+  call s:log('easycomplete#typing ' . s:GetTypingWord() . ' ' . pumvisible())
   if pumvisible()
     return ''
   endif
@@ -259,15 +232,9 @@ endfunction
 function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
   for item in keys(g:easycomplete_source)
-    let l:opt = get(g:easycomplete_source, item)
-    let b:completor = get(l:opt, "completor")
-    if type(b:completor) == 2 " 是函数
-      call b:completor(l:opt, l:ctx)
-    endif
-    if type(b:completor) == type("string") " 是字符串
-      call call(b:completor, [l:opt, l:ctx])
-    endif
+    call s:CallCompeltorByName(item, l:ctx)
   endfor
+  " call s:log('after complete calling ' . s:GetTypingWord() . ' ' . pumvisible())
 endfunction
 
 function! s:CompleteRunning()
@@ -495,161 +462,6 @@ function! g:GetSnippets(scopes, trigger) abort
   return {}
 endfunction
 
-" 读取缓冲区词表和字典词表，两者合并输出大词表
-function! s:GetKeywords(base)
-  let bufKeywordList        = s:GetBufKeywordsList()
-  let wrappedBufKeywordList = s:GetWrappedBufKeywordList(bufKeywordList)
-  return s:MenuArrayDistinct(extend(
-        \       wrappedBufKeywordList,
-        \       s:GetWrappedDictKeywordList()
-        \   ),
-        \   a:base)
-endfunction
-
-"popup 菜单内关键词去重，只做buff和dict里的keyword去重
-"传入的 list 不应包含 snippet 缩写
-"base 是要匹配的原始字符串
-function! s:MenuArrayDistinct(menuList, base)
-  if empty(a:menuList) || len(a:menuList) == 0
-    return []
-  endif
-
-  let menulist_tmp = []
-  for item in a:menuList
-    call add(menulist_tmp, item.word)
-  endfor
-
-  let menulist_filter = uniq(filter(menulist_tmp,
-        \ 'matchstrpos(v:val, "'.a:base.'")[1] == 0'))
-
-  "[word1,word2,word3...]
-  let menulist_assetlist = []
-  "[{word:word1,kind..},{word:word2,kind..}..]
-  let menulist_result = []
-
-  for item in a:menuList
-    let word = get(item, "word")
-    if index(menulist_assetlist, word) >= 0
-      continue
-    elseif index(menulist_filter, word) >= 0
-      call add(menulist_result,deepcopy(item))
-      call add(menulist_assetlist, word)
-    endif
-  endfor
-
-  return menulist_result
-endfunction
-
-" 获取当前所有 buff 内的关键词列表
-function! s:GetBufKeywordsList()
-  let tmpkeywords = []
-  for buf in getbufinfo()
-    let lines = getbufline(buf.bufnr, 1 ,"$")
-    for line in lines
-      call extend(tmpkeywords, split(line,'[^A-Za-z0-9_#]'))
-    endfor
-  endfor
-
-  let keywordList = s:ArrayDistinct(tmpkeywords)
-  let keywordFormedList = []
-  for v in keywordList
-    call add(keywordFormedList, v)
-  endfor
-
-  return keywordFormedList
-endfunction
-
-" 将 Buff 关键词简单列表转换为补全浮窗所需的列表格式
-" 比如原始简单列表是 ['abc','def','efd'] ，输出为
-" => [{"word":"abc","kind":"[ID]"},{"word":"def","kind":"[ID]"}...]
-function! s:GetWrappedBufKeywordList(keywordList)
-  if empty(a:keywordList) || len(a:keywordList) == 0
-    return []
-  endif
-
-  let wrappedList = []
-  for word_str in a:keywordList
-    call add(wrappedList,{"word":word_str,"kind":"[ID]"})
-  endfor
-  return wrappedList
-endfunction
-
-" 将字典简单词表转换为补全浮窗所需的列表格式
-" 比如字典原始列表为 ['abc','def'] ，输出为
-" => [{"word":'abc',"kind":"[ID]","menu":"common.dict"}...]
-function! s:GetWrappedDictKeywordList()
-  if exists("b:globalDictKeywords")
-    return b:globalDictKeywords
-  endif
-  let b:globalDictKeywords = []
-
-  " 如果当前 Buff 所读取的字典目录存在
-  if !empty(&dictionary)
-    let dictsFiles   = split(&dictionary,",")
-    let dictkeywords = []
-    let dictFile = ""
-    for onedict in dictsFiles
-      try
-        let lines = readfile(onedict)
-      catch /.*/
-        "echoe "关键词字典不存在!请删除该字典配置 ".
-        "           \ "dictionary-=".onedict
-        continue
-      endtry
-
-      " jayli
-      if dictFile == ""
-        let dictFile = substitute(onedict,"^.\\+[\\/]","","g")
-        let dictFile = substitute(dictFile,".txt","","g")
-      endif
-      let filename         = dictFile
-      let localdicts       = []
-      let localWrappedList = []
-
-      if empty(lines)
-        continue
-      endif
-
-      for line in lines
-        call extend(localdicts, split(line,'[^A-Za-z0-9_#]'))
-      endfor
-
-      let localdicts = s:ArrayDistinct(localdicts)
-
-      for item in localdicts
-        call add (dictkeywords, {
-              \   "word" : item ,
-              \   "kind" : "[ID]",
-              \   "menu" : filename
-              \ })
-      endfor
-    endfor
-
-    let b:globalDictKeywords = dictkeywords
-    return dictkeywords
-  else
-    return []
-  endif
-endfunction
-
-" List 去重，类似 uniq，纯数字要去掉
-function! s:ArrayDistinct( list )
-  if empty(a:list)
-    return []
-  else
-    let tmparray = []
-    let uniqlist = uniq(a:list)
-    for item in uniqlist
-      if !empty(item) &&
-            \ !str2nr(item) &&
-            \ len(item) != 1
-        call add(tmparray,item)
-      endif
-    endfor
-    return tmparray
-  endif
-endfunction
-
 " 关闭补全浮窗
 function! s:CloseCompletionMenu()
   if pumvisible()
@@ -841,7 +653,7 @@ endfunction
 "   function    [ID]    node.dict
 "   ./Foo       [File]
 "   ./b/        [Dir]
-function! easycomplete#CompleteFunc( findstart, base )
+function! easycomplete#CompleteFunc(findstart, base)
   if a:findstart
     " 第一次调用，定位当前关键字的起始位置
     let start = col('.') - 1
@@ -851,7 +663,7 @@ function! easycomplete#CompleteFunc( findstart, base )
   call s:log('call c-x c-u')
   " 第二次调用，给出匹配列表
   call s:StopAsyncRun()
-  call s:AsyncRun('easycomplete#CompleteHandler')
+  call s:AsyncRun('easycomplete#CompleteHandler', [], 100)
   return v:none
 endfunction
 
