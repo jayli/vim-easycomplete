@@ -123,9 +123,13 @@ function! easycomplete#backing()
 
   call s:StopAsyncRun()
   if has_key(g:easycomplete_menucache, s:GetTypingWord())
-    call s:AsyncRun('easycomplete#backingTimerHandler')
+    call s:AsyncRun('easycomplete#backingTimerHandler', [], 500)
+    " call easycomplete#backingTimerHandler()
   else
-    call s:SendKeys("\<C-X>\<C-U>")
+    " TODO 回退的逻辑优化
+    " " call s:SendKeys("\<C-X>\<C-U>")
+    " call s:StopAsyncRun()
+    " call easycomplete#CompleteHandler()
   endif
   return ''
 endfunction

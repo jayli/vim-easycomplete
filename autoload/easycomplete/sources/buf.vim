@@ -12,7 +12,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " 这里异步和非异步都可以
   " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
-  call timer_start(5, { -> easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)})
+  call timer_start(0, { -> easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)})
 endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
