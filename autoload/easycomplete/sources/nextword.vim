@@ -59,6 +59,6 @@ endfunction
 
 function! s:stop_nextword()
     if exists('s:nextword_job') && s:nextword_job > 0
-        call async#job#stop(s:nextword_job)
+        call easycomplete#job#stop(s:nextword_job)
     endif
 endfunction

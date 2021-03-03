@@ -24,6 +24,7 @@ function! easycomplete#Enable()
   set completeopt+=menuone
   set completeopt+=noselect
   set completeopt-=longest
+  "set completeopt+=popup
   set updatetime=300
   " set completeopt-=noinsert
   set cpoptions+=B
@@ -41,6 +42,7 @@ function! easycomplete#Enable()
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
   call easycomplete#ui#SetScheme()
+  " 执行每个lsp的构造函数，做全局初始化
   call s:ConstructorCalling()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
@@ -69,7 +71,7 @@ endfunction
 
 function! s:BindingTypingCommand()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.'
   let l:cursor = 0
   while l:cursor < strwidth(l:key_liststr)
     let key = l:key_liststr[l:cursor]
@@ -77,6 +79,7 @@ function! s:BindingTypingCommand()
     let l:cursor = l:cursor + 1
   endwhile
   inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
+  "inoremap <buffer><silent> . .<C-R>=easycomplete#typing()<CR>
 
   " autocmd CursorHoldI * call easycomplete#CursorHoldI()
 endfunction
@@ -162,19 +165,9 @@ function! easycomplete#context() abort
   let l:ret['filepath'] = expand('%:p')
   let line = getline(l:ret['lnum'])
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1)
-
-  " let word = s:GetTypingWord() " {{{
-  let start = l:ret['col'] - 1
-  let width = 0
-  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
-    let start = start - 1
-    let width = width + 1
-  endwhile
-  " }}}
-  let word = strpart(line, start, width)
-
-  let l:ret['typing'] = word
-  let l:ret['startcol'] = l:ret['col'] - width
+  let l:ret['char'] = strpart(line, l:ret['col']-2, l:ret['col']-1)
+  let l:ret['typing'] = s:GetTypingWord()
+  let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing'])
   return l:ret
 endfunction
 
@@ -184,9 +177,11 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   " call s:update_pum()
   let l:ctx = easycomplete#context()
   if a:ctx["lnum"] != l:ctx["lnum"] || a:ctx["col"] != l:ctx["col"]
-    call s:CloseCompletionMenu()
-    " call s:SendKeys("\<C-X>\<C-U>")
-    call s:CallCompeltorByName(a:name, l:ctx)
+    if s:CompleteSourceReady(a:name)
+      call s:CloseCompletionMenu()
+      " call s:SendKeys("\<C-X>\<C-U>")
+      call s:CallCompeltorByName(a:name, l:ctx)
+    endif
     return
   endif
   call easycomplete#CompleteAdd(a:items)
@@ -209,6 +204,9 @@ endfunction
 
 function! s:CallCompeltorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
+  if empty(l:opt) || empty(get(l:opt, "completor"))
+    return
+  endif
   let b:completor = get(l:opt, "completor")
   if type(b:completor) == 2 " 是函数
     call b:completor(l:opt, a:ctx)
@@ -253,15 +251,37 @@ endfunction
 function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
   for item in keys(g:easycomplete_source)
-    call s:CallCompeltorByName(item, l:ctx)
+    if s:CompleteSourceReady(item)
+      call s:CallCompeltorByName(item, l:ctx)
+    endif
   endfor
 endfunction
 
 function! s:ConstructorCalling(...)
   let l:ctx = easycomplete#context()
   for item in keys(g:easycomplete_source)
-    call s:CallConstructorByName(item, l:ctx)
+    if s:CompleteSourceReady(item)
+      call s:CallConstructorByName(item, l:ctx)
+    endif
   endfor
+endfunction
+
+function! s:CompleteSourceReady(name)
+  if has_key(g:easycomplete_source, a:name)
+    let completor_source = get(g:easycomplete_source, a:name)
+    if has_key(completor_source, 'whitelist')
+      let whitelist = get(completor_source, 'whitelist')
+      if index(whitelist, &filetype) >= 0 || index(whitelist, "*") >= 0
+        return 1
+      else
+        return 0
+      endif
+    else
+      return 1
+    endif
+  else
+    return 0
+  endif
 endfunction
 
 function! s:CompleteRunning()
@@ -681,10 +701,33 @@ endfunction
 "   ./Foo       [File]
 "   ./b/        [Dir]
 function! easycomplete#CompleteFunc(findstart, base)
-  if a:findstart
-    " 第一次调用，定位当前关键字的起始位置
-    let start = col('.') - 1
-    return start
+  " TODO 实际没用上
+  let l:line_str = getline('.')
+  let l:line = line('.')
+  let l:offset = col('.')
+
+  " search backwards for start of identifier (iskeyword pattern)
+  let l:start = l:offset
+  while l:start > 0 && l:line_str[l:start-2] =~ "\\k"
+    let l:start -= 1
+  endwhile
+
+  if(a:findstart)
+    return l:start - 1
+  endif
+  call s:CloseCompletionMenu()
+
+  " 过滤非法的'.'点匹配
+  let l:ctx = easycomplete#context()
+  if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
+        \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
+    call s:CloseCompletionMenu()
+    return v:none
+  endif
+
+  if strlen(l:ctx['typed']) == 1 && l:ctx['char'] ==# '.'
+    call s:CloseCompletionMenu()
+    return v:none
   endif
 
   call s:log('call c-x c-u')
@@ -700,7 +743,8 @@ function! easycomplete#CompleteHandler()
   if s:NotInsertMode()
     return
   endif
-  if strwidth(s:GetTypingWord()) == 0
+  let l:ctx = easycomplete#context()
+  if strwidth(l:ctx['typing']) == 0 && l:ctx['char'] != '.'
     return
   endif
   call s:CompleteInit()
@@ -771,10 +815,12 @@ function! easycomplete#CompleteAdd(...)
     call s:SetupCompleteCache()
   endif
 
+
   " 当前匹配
   if !exists('g:easycomplete_menuitems')
     let g:easycomplete_menuitems = []
   endif
+
 
   for item in g:easycomplete_menuitems
     call complete_add(item)
@@ -800,6 +846,9 @@ endfunction
 function! s:CompleteFilter(raw_menu_list)
   let arr = []
   let word = s:GetTypingWord()
+  if empty(word)
+    return a:raw_menu_list
+  endif
   for item in a:raw_menu_list
     if strwidth(matchstr(item.word, word)) >= 1
       call add(arr, item)
@@ -840,7 +889,6 @@ endfunction
 function! s:NotInsertMode()
   return call('easycomplete#util#NotInsertMode', a:000)
 endfunction
-
 
 function! s:log(msg)
   echohl MoreMsg
