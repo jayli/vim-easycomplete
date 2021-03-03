@@ -5,10 +5,41 @@ let g:loaded_autoload_easycomplete_sources_tsuquyomi = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-" augroup easycomplete#sources#tsuquyomi#augroup
-"     autocmd!
-"     autocmd BufWinEnter * call easycomplete#sources#tsuquyomi#StartTss()
-" augroup END
+let s:request_seq = 1
+
+let s:ignore_response_conditions = []
+" ignore events configFileDiag triggered by reload event. See also #99
+call add(s:ignore_response_conditions, '"type":"event","event":"configFileDiag"')
+call add(s:ignore_response_conditions, '"type":"event","event":"telemetry"')
+call add(s:ignore_response_conditions, '"type":"event","event":"projectsUpdatedInBackground"')
+call add(s:ignore_response_conditions, '"type":"event","event":"setTypings"')
+call add(s:ignore_response_conditions, '"type":"event","event":"syntaxDiag"')
+call add(s:ignore_response_conditions, '"type":"event","event":"semanticDiag"')
+call add(s:ignore_response_conditions, '"type":"event","event":"suggestionDiag"')
+call add(s:ignore_response_conditions, '"type":"event","event":"typingsInstallerPid"')
+call add(s:ignore_response_conditions, 'npm notice created a lockfile')
+
+" ### Async variables
+let s:callbacks = {}
+let s:ctx_list = {}
+let s:notify_callback = {}
+let s:quickfix_list = []
+" ### }}}
+
+augroup easycomplete#sources#tsuquyomi#augroup
+  autocmd!
+  autocmd BufRead * call easycomplete#sources#tsuquyomi#init()
+augroup END
+
+function! easycomplete#sources#tsuquyomi#init()
+  call easycomplete#util#AsyncRun('easycomplete#sources#tsuquyomi#tsOpen', [], 1)
+endfunction
+
+function! easycomplete#sources#tsuquyomi#tsOpen()
+  call s:StartTss()
+  call s:TsOpen(easycomplete#context()['filepath'])
+endfunction
+
 
 " Copied from https://github.com/yami-beta/easycomplete-omni.vim
 " ORIGINAL LICENCE: MIT
@@ -19,6 +50,14 @@ function! easycomplete#sources#tsuquyomi#get_source_options(opts) abort
         \}, a:opts)
 endfunction
 
+function! easycomplete#sources#tsuquyomi#constructor(opt, ctx)
+  call s:registerCallback('easycomplete#sources#tsuquyomi#diagnosticsCallback', 'diagnostics')
+endfunction
+
+function! easycomplete#sources#tsuquyomi#diagnosticsCallback(item)
+  " do nothing
+endfunction
+
 " Forked from https://github.com/yami-beta/easycomplete-omni.vim
 " ORIGINAL LICENCE: MIT
 " ORIGINAL AUTHOR: Takahiro Abe
@@ -26,10 +65,70 @@ endfunction
 function! easycomplete#sources#tsuquyomi#completor(opt, ctx) abort
 
   " jayli
-  call s:StartTss()
-  call tsuquyomi#complete(0, a:ctx['typing'])
+  call s:restoreCtx(a:ctx)
+  call s:TsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  " call tsuquyomi#complete(0, a:ctx['typing'])
   " let alist = tsuquyomi#tsClient#tsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
   " call easycomplete#log(alist)
+endfunction
+
+function! s:nSort(a, b)
+    return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
+endfunction
+
+function! s:restoreCtx(ctx)
+  " 删除多余的 ctx
+  let arr = []
+  for item in keys(s:ctx_list)
+    call add(arr, str2nr(item))
+  endfor
+  let sorted_arr = reverse(sort(arr, "s:nSort"))
+  let new_dict = {}
+  let index = 0
+  while index < 10 && index < len(sorted_arr)
+    let t_index = string(sorted_arr[index])
+    let new_dict[t_index] = get(s:ctx_list, t_index)
+    let index = index + 1
+  endwhile
+  let s:ctx_list = new_dict
+  let s:ctx_list[string(s:request_seq)] = a:ctx
+endfunction
+
+function! s:getCtxByRequestSeq(seq)
+  return get(s:ctx_list, string(a:seq))
+endfunction
+
+function! s:SendAsyncRequest(line)
+  call s:StartTss()
+  " call easycomplete#log(a:line)
+  call ch_sendraw(s:tsq['channel'], a:line . "\n")
+endfunction
+
+function! s:SendCommandAsyncResponse(cmd, args)
+  let l:input = json_encode({'command': a:cmd, 'arguments': a:args, 'type': 'request', 'seq': s:request_seq})
+  call s:SendAsyncRequest(l:input)
+  let s:request_seq = s:request_seq + 1
+endfunction
+
+function! s:SendCommandOneWay(cmd, args)
+  call s:SendCommandAsyncResponse(a:cmd, a:args)
+endfunction
+
+
+" Fetch keywards to complete from TSServer.
+" PARAM: {string} file File name.
+" PARAM: {string} line The line number of location to complete.
+" PARAM: {string} offset The col number of location to complete.
+" PARAM: {string} prefix Prefix to filter result set.
+" RETURNS: {list} A List of completion info Dictionary.
+"   e.g. :
+"     [
+"       {'name': 'close', 'kindModifiers': 'declare', 'kind': 'function'},
+"       {'name': 'clipboardData', 'kindModifiers': 'declare', 'kind': 'var'}
+"     ]
+function! s:TsCompletions(file, line, offset, prefix)
+  let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
+  call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
 
 function! easycomplete#sources#tsuquyomi#StartTss()
@@ -44,200 +143,84 @@ function! s:StartTss()
     return 'existing'
   endif
   let l:cmd = "tsserver --locale en" " substitute(tsuquyomi#config#tsscmd(), '\\', '\\\\', 'g').' '.tsuquyomi#config#tssargs()
-  call easycomplete#log(l:cmd)
   try
     let s:tsq['job'] = job_start(l:cmd, {
-      \ 'out_cb': {ch, msg -> tsuquyomi#tsClient#handleMessage(ch, msg)},
+      \ 'out_cb': {ch, msg -> easycomplete#sources#tsuquyomi#handleMessage(ch, msg)},
       \ })
-
     let s:tsq['channel'] = job_getchannel(s:tsq['job'])
-
     let out = ch_readraw(s:tsq['channel'])
-    let st = tsuquyomi#tsClient#statusTss()
+    " let st = tsuquyomi#tsClient#statusTss()
   catch
     return 0
   endtry
   return 1
 endfunction
 
-
-"---------------------------------------------------------------------------------------------------
-
-" Copied from https://github.com/Quramy/tsuquyomi
-" ORIGINAL LICENCE: MIT
-" ORIGINAL FILE: autoload/tsuquyomi.vim
-" ORIGINAL AUTHOR: Quramy <yosuke.kurami@gmail.com>
-function! s:flush()
-  if tsuquyomi#bufManager#isDirty(expand('%:p'))
-    let file_name = expand('%:p')
-    call tsuquyomi#bufManager#saveTmp(file_name)
-    call tsuquyomi#tsClient#tsReload(file_name, tsuquyomi#bufManager#tmpfile(file_name))
-    call tsuquyomi#bufManager#setDirty(file_name, 0)
-  endif
+function! s:TsOpen(file)
+  let l:args = {'file': a:file}
+  call s:SendCommandOneWay('open', l:args)
 endfunction
 
-" Copied from https://github.com/Quramy/tsuquyomi
-" ORIGINAL LICENCE: MIT
-" ORIGINAL FILE: autoload/tsuquyomi.vim
-" ORIGINAL AUTHOR: Quramy <yosuke.kurami@gmail.com>
-function! s:checkOpenAndMessage(filelist)
-  if tsuquyomi#tsClient#statusTss() == 'dead'
-    return [[], a:filelist]
-  endif
-  let opened = []
-  let not_opend = []
-  for file in a:filelist
-    if tsuquyomi#bufManager#isOpened(file)
-      call add(opened, file)
-    else
-      call add(not_opend, file)
-    endif
-  endfor
-  if len(not_opend)
-    for file in not_opend
-      if tsuquyomi#bufManager#isNotOpenable(file)
-        echom '[Tsuquyomi] The buffer "'.file.'" is not valid filepath, so tusuqoymi cannot open this buffer.'
-        return [opened, not_opend]
-      endif
-    endfor
-    echom '[Tsuquyomi] Buffers ['.join(not_opend, ', ').'] are not opened by TSServer. Please exec command ":TsuquyomiOpen '.join(not_opend).'" and retry.'
-  endif
-  return [opened, not_opend]
-endfunction
-
-" Copied from https://github.com/Quramy/tsuquyomi
-" ORIGINAL LICENCE: MIT
-" ORIGINAL FILE: autoload/tsuquyomi.vim
-" ORIGINAL AUTHOR: Quramy <yosuke.kurami@gmail.com>
-function! s:sortTextComparator(entry1, entry2)
-  if a:entry1.sortText < a:entry2.sortText
-    return -1
-  elseif a:entry1.sortText > a:entry2.sortText
-    return 1
-  else
-    return 0
-  endif
-endfunction
-
-function! s:complete_add(item) abort
-  let a:item['menu'] = '[tsuquyomi]'
-  call add(s:candidates, a:item)
-endfunction
-
-" Forked from https://github.com/Quramy/tsuquyomi
-" ORIGINAL LICENCE: MIT
-" ORIGINAL FILE: autoload/tsuquyomi.vim
-" ORIGINAL AUTHOR: Quramy <yosuke.kurami@gmail.com>
-" MODIFIED BY: ishitaku5522
-function! s:safe_tsuquyomifunc(findstart, base)
-  if len(s:checkOpenAndMessage([expand('%:p')])[1])
+function! easycomplete#sources#tsuquyomi#handleMessage(ch, msg)
+  if type(a:msg) != 1 || a:msg == ''
+    " Not a string or blank message.
     return
   endif
-
-  let s:candidates = []
-
-  let l:line_str = getline('.')
-  let l:line = line('.')
-  let l:offset = col('.')
-
-  " search backwards for start of identifier (iskeyword pattern)
-  let l:start = l:offset
-  while l:start > 0 && l:line_str[l:start-2] =~ "\\k"
-    let l:start -= 1
-  endwhile
-
-  if(a:findstart)
-    call tsuquyomi#perfLogger#record('before_flush')
-    call s:flush()
-    call tsuquyomi#perfLogger#record('after_flush')
-    return l:start - 1
-  else
-    let l:file = expand('%:p')
-    let l:res_dict = {'words': []}
-    call tsuquyomi#perfLogger#record('before_tsCompletions')
-    " By default the result list will be sorted by the 'name' properly alphabetically
-    let l:alpha_sorted_res_list = tsuquyomi#tsClient#tsCompletions(l:file, l:line, l:start, a:base)
-    call tsuquyomi#perfLogger#record('after_tsCompletions')
-
-    let is_javascript = (&filetype == 'javascript') || (&filetype == 'jsx') || (&filetype == 'javascript.jsx')
-    if is_javascript
-      " Sort the result list according to how TypeScript suggests entries to be sorted
-      let l:res_list = sort(copy(l:alpha_sorted_res_list), 's:sortTextComparator')
-    else
-      let l:res_list = l:alpha_sorted_res_list
-    endif
-
-    let enable_menu = stridx(&completeopt, 'menu') != -1
-    let length = strlen(a:base)
-    if enable_menu
-      call tsuquyomi#perfLogger#record('start_menu')
-      if g:tsuquyomi_completion_preview
-        let [has_info, siginfo] = tsuquyomi#getSignatureHelp(l:file, l:line, l:start)
-      else
-        let [has_info, siginfo] = [0, '']
-      endif
-
-      let size = g:tsuquyomi_completion_chunk_size
-      let j = 0
-      while j * size < len(l:res_list)
-        let entries = []
-        let items = []
-        let upper = min([(j + 1) * size, len(l:res_list)])
-        for i in range(j * size, upper - 1)
-          let info = l:res_list[i]
-          if !length
-                \ || !g:tsuquyomi_completion_case_sensitive && info.name[0:length - 1] == a:base
-                \ || g:tsuquyomi_completion_case_sensitive && info.name[0:length - 1] ==# a:base
-            let l:item = {'word': info.name, 'kind': info.kind }
-            if has_info
-              let l:item.info = siginfo
-            endif
-            if is_javascript && info.kind == 'warning'
-              let l:item.kind = '' " Make display cleaner by not showing 'warning' as the type
-            endif
-            if !g:tsuquyomi_completion_detail
-              call s:complete_add(l:item)
-            else
-              " if file is TypeScript, then always add to entries list to
-              " fetch details. Or in the case of JavaScript, avoid adding to
-              " entries list if ScriptElementKind is 'warning'. Because those
-              " entries are just random identifiers that occur in the file.
-              if !is_javascript || info.kind != 'warning'
-                call add(entries, info.name)
-              endif
-              call add(items, l:item)
-            endif
-          endif
-        endfor
-        if g:tsuquyomi_completion_detail
-          call tsuquyomi#perfLogger#record('before_completeMenu'.j)
-          let menus = tsuquyomi#makeCompleteMenu(l:file, l:line, l:start, entries)
-          call tsuquyomi#perfLogger#record('after_completeMenu'.j)
-          let idx = 0
-          for kind in menus
-            let items[idx].kind = kind
-            let items[idx].info = kind
-            call s:complete_add(items[idx])
-            let idx = idx + 1
-          endfor
-          " For JavaScript completion, there are entries whose
-          " ScriptElementKind is 'warning'. tsserver won't have any details
-          " returned for them, but they still need to be added at the end.
-          for i in range(idx, len(items) - 1)
-            call s:complete_add(items[i])
-          endfor
-        endif
-        " if complete_check()
-        "   break
-        " endif
-        let j = j + 1
-      endwhile
-      return s:candidates
-    else
-      return filter(map(l:res_list, 'v:val.name'), 'stridx(v:val, a:base) == 0')
-    endif
-
+  let l:res_item = substitute(a:msg, 'Content-Length: \d\+', '', 'g')
+  if l:res_item == ''
+    " Ignore content-length.
+    return
   endif
+  " Ignore messages.
+  let l:to_be_ignored = 0
+  for ignore_reg in s:ignore_response_conditions
+    let l:to_be_ignored = l:to_be_ignored || (l:res_item =~ ignore_reg)
+    if l:to_be_ignored
+      return
+    endif
+  endfor
+  let l:item = json_decode(l:res_item)
+  let l:eventName = s:getEventType(l:item)
+
+  " 执行 event 的回调
+  if l:eventName != 0
+    if(has_key(s:callbacks, l:eventName))
+      let Callback = function(s:callbacks[l:eventName], [l:item])
+      call Callback()
+    endif
+  endif
+
+  " 执行 response complete 的回调
+  if get(l:item, 'type') ==# 'response'
+        \ && get(l:item, 'command') ==# 'completions'
+        \ && get(l:item, 'success') ==# v:true
+
+    let l:raw_list = get(l:item, 'body')
+    let l:request_req = get(l:item, 'request_seq')
+    let l:menu_list = map(l:raw_list, '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
+    let l:ctx = s:getCtxByRequestSeq(l:request_req)
+    call easycomplete#complete('tsuquyomi', l:ctx, l:ctx['startcol'], l:menu_list)
+  endif
+endfunction
+
+function! s:registerCallback(callback, eventName)
+  let s:callbacks[a:eventName] = a:callback
+endfunction
+
+function! s:getEventType(item)
+  if type(a:item) == v:t_dict
+    \ && has_key(a:item, 'type')
+    \ && a:item.type ==# 'event'
+    \ && (a:item.event ==# 'syntaxDiag'
+      \ || a:item.event ==# 'semanticDiag'
+      \ || a:item.event ==# 'requestCompleted')
+    return 'diagnostics'
+  endif
+  return 0
+endfunction
+
+function! s:log(msg)
+  call easycomplete#log(a:msg)
 endfunction
 
 let &cpo = s:save_cpo

@@ -41,6 +41,7 @@ function! easycomplete#Enable()
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
   call easycomplete#ui#SetScheme()
+  call s:ConstructorCalling()
 
   " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
   " 放到最后启动，避免影响vim打开速度
@@ -191,6 +192,21 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   call easycomplete#CompleteAdd(a:items)
 endfunction
 
+function! s:CallConstructorByName(name, ctx)
+  let l:opt = get(g:easycomplete_source, a:name)
+  let b:constructor = get(l:opt, "constructor")
+  if b:constructor == 0
+    return
+  endif
+  if type(b:constructor) == 2 " 是函数
+    call b:constructor(l:opt, a:ctx)
+  endif
+  if type(b:constructor) == type("string") " 是字符串
+    call call(b:constructor, [l:opt, a:ctx])
+  endif
+
+endfunction
+
 function! s:CallCompeltorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   let b:completor = get(l:opt, "completor")
@@ -229,6 +245,7 @@ function! easycomplete#registerSource(opt)
     let g:easycomplete_source = {}
   endif
   let g:easycomplete_source[a:opt["name"]] = a:opt
+  " call s:CallConstructorByName(a:opt["name"], easycomplete#context())
 endfunction
 
 " 依次执行安装完了的每个匹配器，依次调用每个匹配器的 completor 函数
@@ -238,8 +255,13 @@ function! s:CompletorCalling(...)
   for item in keys(g:easycomplete_source)
     call s:CallCompeltorByName(item, l:ctx)
   endfor
-  " call tsuquyomi#complete(0, l:ctx['typing'])
-  " call s:log('after complete calling ' . s:GetTypingWord() . ' ' . pumvisible())
+endfunction
+
+function! s:ConstructorCalling(...)
+  let l:ctx = easycomplete#context()
+  for item in keys(g:easycomplete_source)
+    call s:CallConstructorByName(item, l:ctx)
+  endfor
 endfunction
 
 function! s:CompleteRunning()
