@@ -14,7 +14,6 @@
 "                :h EasyComplete
 
 " hack for tsserver initialize speed
-let g:tsuquyomi_is_available = 0
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
     autocmd!
@@ -24,3 +23,21 @@ else " 通过 :packadd 手动加载
   call easycomplete#Enable()
 endif
 
+call easycomplete#registerSource({
+    \ 'name': 'buf',
+    \ 'completor': 'easycomplete#sources#buf#completor',
+    \ })
+
+call easycomplete#registerSource(easycomplete#sources#tsuquyomi#get_source_options({
+    \ 'name': 'tsuquyomi',
+    \ 'whitelist': ['javascript','typescript','javascript.jsx'],
+    \ 'completor': function('easycomplete#sources#tsuquyomi#completor'),
+    \ 'constructor' :function('easycomplete#sources#tsuquyomi#constructor')
+    \  }))
+
+call easycomplete#registerSource(easycomplete#sources#nextword#get_source_options({
+    \   'name': 'nextword',
+    \   'allowlist': ['*'],
+    \   'args': ['-n', '10000'],
+    \   'completor': function('easycomplete#sources#nextword#completor')
+    \   }))
