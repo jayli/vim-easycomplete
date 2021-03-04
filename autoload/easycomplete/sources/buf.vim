@@ -3,6 +3,10 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " call easycomplete#log(a:opt)
   let l:typing = a:ctx['typing']
 
+  if a:ctx['char'] ==# '.'
+    return
+  endif
+
   if strlen(l:typing) == 0
     return
   endif

@@ -45,12 +45,6 @@ function! easycomplete#Enable()
   " 执行每个lsp的构造函数，做全局初始化
   call s:ConstructorCalling()
 
-  " :TsuquyomiOpen 命令启动 tsserver, 这个过程很耗时
-  " 放到最后启动，避免影响vim打开速度
-  let g:tsuquyomi_is_available = 1
-  " call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
-  let g:easycomplete_tsserver_stopped = 0
-
   " Binding Maping 过滤条件
   if index([
         \   'typescript','javascript',
@@ -730,10 +724,15 @@ function! easycomplete#CompleteFunc(findstart, base)
     return v:none
   endif
 
+  " if l:ctx['char'] ==# '.'
+  "   call s:CompleteInit()
+  "   call s:ResetCompleteCache()
+  " endif
+
   call s:log('call c-x c-u')
   " 第二次调用，给出匹配列表
   call s:StopAsyncRun()
-  call s:AsyncRun('easycomplete#CompleteHandler', [], 100)
+  call s:AsyncRun('easycomplete#CompleteHandler', [], 1)
   return v:none
 endfunction
 
@@ -802,7 +801,7 @@ function! s:CompleteInit(...)
   if !exists('a:1')
     let l:word = s:GetTypingWord()
   else
-    let l:word = a:base
+    let l:word = a:1
   endif
   call complete(col('.') - strwidth(l:word), [""])
 endfunction
@@ -844,6 +843,7 @@ function! s:CompleteAdd(...)
 endfunction
 
 function! s:CompleteFilter(raw_menu_list)
+  " call s:log(a:raw_menu_list)
   let arr = []
   let word = s:GetTypingWord()
   if empty(word)

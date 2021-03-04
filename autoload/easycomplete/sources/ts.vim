@@ -33,6 +33,7 @@ endfunction
 function! easycomplete#sources#ts#tsOpen()
   call s:startTsserver()
   call s:tsserverOpen(easycomplete#context()['filepath'])
+  call s:configTsserver()
 endfunction
 
 function! easycomplete#sources#ts#getConfig(opts) abort
@@ -91,6 +92,8 @@ function! s:sendAsyncRequest(line)
   call s:startTsserver()
   " call ch_sendraw(s:tsq['channel'], a:line . "\n")
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
+  " call easycomplete#log('--easycomplete--')
+  " call easycomplete#log(a:line)
 endfunction
 
 function! s:sendCommandAsyncResponse(cmd, args)
@@ -144,6 +147,27 @@ function! s:startTsserver()
   endif
 endfunction
 
+function! s:configTsserver()
+  let l:file = expand('%:p')
+  let l:hostInfo = &viminfo
+  let l:formatOptions = { }
+  let l:extraFileExtensions = []
+  if exists('&shiftwidth')
+    let l:formatOptions.baseIndentSize = &shiftwidth
+    let l:formatOptions.indentSize = &shiftwidth
+  endif
+  if exists('&expandtab')
+    let l:formatOptions.convertTabsToSpaces = &expandtab
+  endif
+  let l:args = {
+        \ 'file': l:file,
+        \ 'hostInfo': l:hostInfo,
+        \ 'formatOptions': l:formatOptions,
+        \ 'extraFileExtensions': l:extraFileExtensions
+        \ }
+  call s:sendCommandOneWay('configure', l:args)
+endfunction
+
 function! s:handleMessage(job_id, data, event)
   if a:event != 'stdout'
     return
@@ -164,6 +188,7 @@ function! easycomplete#sources#ts#handleMessage(msg)
   try
     let l:res_item = json_decode(a:msg)
   catch
+    echom a:msg
     echom 'tsserver response error'
     return
   endtry
@@ -194,9 +219,25 @@ function! easycomplete#sources#ts#handleMessage(msg)
         \ && get(l:item, 'success') ==# v:true
     let l:raw_list = get(l:item, 'body')
     let l:request_req = get(l:item, 'request_seq')
-    let l:menu_list = map(l:raw_list, '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
+    let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+          \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
     let l:ctx = s:getCtxByRequestSeq(l:request_req)
     call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
+  endif
+endfunction
+
+function! s:sortTextComparator(entry1, entry2)
+  if a:entry1.sortText < a:entry2.sortText
+    return -1
+  elseif a:entry1.sortText > a:entry2.sortText
+    return 1
+  else
+    if a:entry1.name > a:entry2.name
+      return -1
+    else
+      return 1
+    endif
+    return 0
   endif
 endfunction
 
