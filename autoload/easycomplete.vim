@@ -302,7 +302,7 @@ endfunction
 
 function! s:StartTSServer()
   if exists('g:easycomplete_tsserver_stopped') && g:easycomplete_tsserver_stopped == 1
-    call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
+    " call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
     let g:easycomplete_tsserver_stopped = 0
   else
     " Do Nothing
