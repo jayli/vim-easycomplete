@@ -724,12 +724,11 @@ function! easycomplete#CompleteFunc(findstart, base)
     return v:none
   endif
 
-  " if l:ctx['char'] ==# '.'
-  "   call s:CompleteInit()
-  "   call s:ResetCompleteCache()
-  " endif
+  if l:ctx['char'] == '.'
+    call s:CompleteInit()
+    call s:ResetCompleteCache()
+  endif
 
-  call s:log('call c-x c-u')
   " 第二次调用，给出匹配列表
   call s:StopAsyncRun()
   call s:AsyncRun('easycomplete#CompleteHandler', [], 1)
@@ -891,6 +890,8 @@ function! s:NotInsertMode()
 endfunction
 
 function! s:log(msg)
+  setlocal ch=10
+  setlocal cmdwinheight=10
   echohl MoreMsg
   echom '>>> '. string(a:msg)
   echohl NONE

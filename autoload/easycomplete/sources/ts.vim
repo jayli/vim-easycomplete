@@ -6,13 +6,14 @@ let g:easycomplete_sources_ts = 1
 augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufReadPost * call easycomplete#sources#ts#init()
-  autocmd VimLeave * call easycomplete#sources#ts#stopTsserver()
+  autocmd VimLeave * call easycomplete#sources#ts#destory()
   autocmd TextChanged,TextChangedI * call easycomplete#sources#ts#tsReload()
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
   let s:callbacks = {}
   let s:ctx_list = {}
+  let s:buf_info_map = {}
   let s:notify_callback = {}
   let s:quickfix_list = []
   let s:request_seq = 1
@@ -29,6 +30,11 @@ augroup END
 
 function! easycomplete#sources#ts#init()
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
+endfunction
+
+function! easycomplete#sources#ts#destory()
+  call s:stopTsserver()
+  call s:delTmpFiles()
 endfunction
 
 function! easycomplete#sources#ts#tsOpen()
@@ -62,7 +68,7 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
   call s:tsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
 endfunction
 
-function! easycomplete#sources#ts#stopTsserver()
+function! s:stopTsserver()
   if exists('s:tsq') && get(s:tsq, 'job') > 0
     call easycomplete#job#stop(get(s:tsq, 'job'))
   endif
@@ -97,9 +103,8 @@ endfunction
 
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
-  " call ch_sendraw(s:tsq['channel'], a:line . "\n")
-  call easycomplete#log('--easycomplete--')
-  call easycomplete#log(a:line)
+  " call easycomplete#log('--easycomplete--')
+  " call easycomplete#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
@@ -256,13 +261,53 @@ endfunction
 
 function! s:tsserverReload()
   let l:file = easycomplete#context()['filepath']
-
-
-  " jayli TODO 重写这段逻辑
-  call tsuquyomi#bufManager#saveTmp(l:file)
-
-  let l:args = {'file': l:file, 'tmpfile': tsuquyomi#bufManager#tmpfile(l:file)}
+  call s:saveTmp(l:file)
+  let l:args = {'file': l:file, 'tmpfile': s:getTmpFile(l:file)}
   call s:sendCommandOneWay('reload', l:args)
+endfunction
+
+function! s:saveTmp(file_name)
+  let tmpfile = s:getTmpFile(a:file_name)
+  call writefile(getbufline(a:file_name, 1, '$'), tmpfile)
+  return 1
+endfunction
+
+function! s:getTmpFile(file_name)
+  let name = s:normalize(a:file_name)
+  if !has_key(s:buf_info_map, name)
+    let s:buf_info_map[name] = {}
+  endif
+  if !has_key(s:buf_info_map[name], 'tmpfile')
+    let tmpfile = tempname()
+    let s:buf_info_map[name].tmpfile = tmpfile
+    return tmpfile
+  else
+    return s:buf_info_map[name].tmpfile
+  endif
+endfunction
+
+function! s:delTmpFiles()
+  if !exists('s:buf_info_map')
+    return
+  endif
+  for name in keys(s:buf_info_map)
+    call s:delTmp(name)
+  endfor
+endfunction
+
+function! s:delTmp(file_name)
+  let name = s:normalize(a:file_name)
+  if !has_key(s:buf_info_map, name)
+    return
+  endif
+  if has_key(s:buf_info_map[name], 'tmpfile')
+    let tmpfile = s:buf_info_map[name].tmpfile
+    call delete(tmpfile)
+  endif
+endfunction
+
+function! s:normalize(buf_name)
+  return substitute(a:buf_name, '\\', '/', 'g')
 endfunction
 
 function! s:registerCallback(callback, eventName)
