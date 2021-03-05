@@ -731,7 +731,7 @@ function! easycomplete#CompleteFunc(findstart, base)
 
   " 第二次调用，给出匹配列表
   call s:StopAsyncRun()
-  call s:AsyncRun('easycomplete#CompleteHandler', [], 1)
+  call s:AsyncRun('easycomplete#CompleteHandler', [], 0)
   return v:none
 endfunction
 
