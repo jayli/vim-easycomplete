@@ -40,7 +40,13 @@ endfunction
 
 function! easycomplete#util#call(method, args) abort
   try
-    call call(a:method, a:args)
+    if type(a:method) == 2 " 是函数
+      let TmpCallback = function(a:method, a:args)
+      call TmpCallback()
+    endif
+    if type(a:method) == type("string") " 是字符串
+      call call(a:method, a:args)
+    endif
     let g:_easycomplete_popup_timer = -1
     redraw
   catch /.*/

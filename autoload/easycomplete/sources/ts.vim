@@ -164,7 +164,7 @@ function! s:startTsserver()
   endif
 
   if get(s:tsq, 'job') == 0
-    let s:tsq['job'] = easycomplete#job#start(l:cmd, {'on_stdout': function('s:handleMessage')})
+    let s:tsq['job'] = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
     if s:tsq['job'] <= 0
       echoerr "tsserver launch failed"
     endif
@@ -192,16 +192,16 @@ function! s:configTsserver()
   call s:sendCommandOneWay('configure', l:args)
 endfunction
 
-function! s:handleMessage(job_id, data, event)
+function! s:stdOutCallback(job_id, data, event)
   if a:event != 'stdout'
     return
   endif
   if len(a:data) >=3
-    call easycomplete#sources#ts#handleMessage(a:data[2])
+    call s:messageHandler(a:data[2])
   endif
 endfunction
 
-function! easycomplete#sources#ts#handleMessage(msg)
+function! s:messageHandler(msg)
   if type(a:msg) != 1 || empty(a:msg)
     " Not a string or blank message.
     return
