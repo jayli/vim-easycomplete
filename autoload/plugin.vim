@@ -5,9 +5,9 @@ function! plugin#init()
       \ 'completor': 'easycomplete#sources#buf#completor',
       \ })
 
-      " \ 'whitelist': ['javascript','typescript','javascript.jsx'],
   call easycomplete#RegisterSource(easycomplete#sources#ts#getConfig({
       \ 'name': 'ts',
+      \ 'whitelist': ['javascript','typescript','javascript.jsx'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor')
       \  }))

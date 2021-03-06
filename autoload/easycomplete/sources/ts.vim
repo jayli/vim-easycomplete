@@ -123,8 +123,8 @@ endfunction
 
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
-  " call easycomplete#log('--easycomplete--')
-  " call easycomplete#log(a:line)
+  " call log#log('--easycomplete--')
+  " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 

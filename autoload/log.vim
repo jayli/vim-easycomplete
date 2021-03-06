@@ -7,15 +7,19 @@ augroup log#Config
   let s:debugger.original_bufinfo = getbufinfo(bufnr(''))
   let s:debugger.original_winid = bufwinid(bufnr(""))
   let s:debugger.log_bufinfo = 0
-  let s:debugger.log_winid = 0
+  let s:debugger.log_winid = -20
   let s:debugger.log_winnr = 0
 augroup END
 
-function! log#log()
+augroup log#Augroup
+  autocmd!
+  autocmd QuitPre * call log#quit()
+augroup END
+
+function! log#log(msg)
   call s:initLogWindow()
-
-
-
+  call s:printLog([string(a:msg)])
+  call s:scrollLogWinToBottom()
 endfunction
 
 function! s:logRunning()
@@ -50,6 +54,16 @@ function! s:emptyLogWindow()
   endif
 endfunction " }}}
 
+function! log#quit()
+  if get(s:debugger, 'log_winid') == bufwinid(bufnr(""))
+    call execute(':q!', 'silent!')
+  endif
+  if get(s:debugger, 'original_winid') == bufwinid(bufnr(""))
+    call s:closeLogWindow()
+    call feedkeys("\<S-ZZ>")
+  endif
+endfunction
+
 function! s:closeLogWindow()
   call s:gotoLogWindow()
   call execute(':q!', 'silent!')
@@ -57,9 +71,10 @@ endfunction
 
 function! s:printLog(content)
   if s:logRunning()
-    let bufnr = get(g:debugger,'log_bufinfo')[0].bufnr
+    let bufnr = get(s:debugger,'log_bufinfo')[0].bufnr
+    echom bufnr
     call s:renderLog(bufnr, a:content)
-    let g:debugger.log_bufinfo = getbufinfo(bufnr)
+    let s:debugger.log_bufinfo = getbufinfo(bufnr)
   endif
 endfunction
 
@@ -67,7 +82,7 @@ function! s:renderLog(buf, content)
   if empty(a:content)
     return
   endif
-  let l:content = [""] + a:content
+  let l:content = a:content
   let bufnr = a:buf
   let buf_oldlnum = len(getbufline(bufnr,0,'$'))
   call setbufvar(bufnr, '&modifiable', 1)
@@ -77,13 +92,25 @@ function! s:renderLog(buf, content)
     call setbufline(bufnr, ix, item)
   endfor
   call setbufvar(bufnr, '&modifiable', 0)
+  call feedkeys("\<ESC>","n")
   call s:gotoLogWindow()
-  call execute('redraw','silent!')
+  call s:gotoOriginalWindow()
 endfunction
 
 function! s:scrollLogWinToBottom()
-  call setwinvar(g:debugger.log_winnr, "move",
-        \ len(getbufline(get(g:debugger,'log_bufinfo')[0].bufnr ,0,'$')))
+  let m = mode()
+  if index(['i','ic','ix'], m) >= 0
+    call feedkeys("\<ESC>","n")
+  endif
+  call s:gotoLogWindow()
+  normal! G
+  call s:gotoOriginalWindow()
+  if index(['i','ic','ix'], m) >= 0
+    call feedkeys("a","n")
+    call execute('redraw','silent!')
+  endif
+  " call setwinvar(s:debugger.log_winnr, "move",
+  "       \ len(getbufline(get(s:debugger,'log_bufinfo')[0].bufnr ,0,'$')))
 endfunction
 
 function! s:deletebufline(bn, fl, ll)
@@ -95,7 +122,7 @@ function! s:deletebufline(bn, fl, ll)
     call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
     call g:gotoWindow(current_winid)
   endif
-endfunction " }}}
+endfunction
 
 function! s:gotoWindow(winid) abort
   if a:winid == bufwinid(bufnr(""))
@@ -107,14 +134,14 @@ function! s:gotoWindow(winid) abort
       break
     endif
   endfor
-endfunction 
+endfunction
 
 function! s:gotoWinnr(winnr) abort
   let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
         \ : 'wincmd ' . a:winnr
   noautocmd execute cmd
   call execute('redraw','silent!')
-endfunction 
+endfunction
 
 function! s:gotoOriginalWindow()
   call s:gotoWindow(s:debugger.original_winid)
