@@ -11,7 +11,8 @@ augroup easycomplete#sources#ts#augroup
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
-  let s:callbacks = {}
+  let s:event_callbacks = {}
+  let s:response_callbacks = {}
   let s:ctx_list = {}
   let s:buf_info_map = {}
   let s:notify_callback = {}
@@ -54,12 +55,23 @@ function! easycomplete#sources#ts#getConfig(opts) abort
         \}, a:opts)
 endfunction
 
+" TODO 优化代码结构
 function! easycomplete#sources#ts#constructor(opt, ctx)
-  call s:registerCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
+  call s:registEventCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
+  call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
 endfunction
 
 function! easycomplete#sources#ts#diagnosticsCallback(item)
   " TODO
+endfunction
+
+function! easycomplete#sources#ts#completeCallback(item)
+  let l:raw_list = get(a:item, 'body')
+  let l:request_req = get(a:item, 'request_seq')
+  let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+        \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
+  let l:ctx = s:getCtxByRequestSeq(l:request_req)
+  call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
@@ -213,29 +225,38 @@ function! easycomplete#sources#ts#handleMessage(msg)
     return
   endif
 
-
   let l:item = l:res_item
   let l:eventName = s:getTsserverEventType(l:item)
+  let l:responseName = s:getTsserverResponseType(l:item)
 
   " 执行 event 的回调
   if l:eventName != 0
-    if(has_key(s:callbacks, l:eventName))
-      let Callback = function(s:callbacks[l:eventName], [l:item])
-      call Callback()
+    if(has_key(s:event_callbacks, l:eventName))
+      let EventCallback = function(s:event_callbacks[l:eventName], [l:item])
+      call EventCallback()
+    endif
+    return
+  endif
+
+  " 执行 response 的回调
+  if !empty(l:responseName)
+    if(has_key(s:response_callbacks, l:responseName))
+      let ResponseCallback = function(s:response_callbacks[l:responseName], [l:item])
+      call ResponseCallback()
     endif
   endif
 
   " 执行 response complete 的回调
-  if get(l:item, 'type') ==# 'response'
-        \ && get(l:item, 'command') ==# 'completions'
-        \ && get(l:item, 'success') ==# v:true
-    let l:raw_list = get(l:item, 'body')
-    let l:request_req = get(l:item, 'request_seq')
-    let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
-          \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
-    let l:ctx = s:getCtxByRequestSeq(l:request_req)
-    call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
-  endif
+  " if get(l:item, 'type') ==# 'response'
+  "       \ && get(l:item, 'command') ==# 'completions'
+  "       \ && get(l:item, 'success') ==# v:true
+  "   let l:raw_list = get(l:item, 'body')
+  "   let l:request_req = get(l:item, 'request_seq')
+  "   let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+  "         \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
+  "   let l:ctx = s:getCtxByRequestSeq(l:request_req)
+  "   call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
+  " endif
 endfunction
 
 function! s:sortTextComparator(entry1, entry2)
@@ -310,8 +331,22 @@ function! s:normalize(buf_name)
   return substitute(a:buf_name, '\\', '/', 'g')
 endfunction
 
-function! s:registerCallback(callback, eventName)
-  let s:callbacks[a:eventName] = a:callback
+function! s:registEventCallback(callback, eventName)
+  let s:event_callbacks[a:eventName] = a:callback
+endfunction
+
+function! s:registResponseCallback(callback, responseName)
+  let s:response_callbacks[a:responseName] = a:callback
+endfunction
+
+function! s:getTsserverResponseType(item)
+  if type(a:item) == v:t_dict
+    \ && has_key(a:item, 'type')
+    \ && get(a:item, 'type') ==# 'response'
+  "       \ && get(l:item, 'success') ==# v:true
+    return get(a:item, 'command')
+  endif
+  return 0
 endfunction
 
 function! s:getTsserverEventType(item)

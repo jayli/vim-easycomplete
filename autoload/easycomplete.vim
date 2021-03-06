@@ -18,7 +18,6 @@ function! easycomplete#Enable()
   let g:easycomplete_menucache = {}
   let g:typing_key             = 0
   let g:easycomplete_menuitems = []
-  call s:SetupCompleteCache()
 
   set completeopt-=menu
   set completeopt+=menuone
@@ -42,7 +41,10 @@ function! easycomplete#Enable()
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
 
   call easycomplete#ui#SetScheme()
-  " 执行每个lsp的构造函数，做全局初始化
+
+  call plugin#init()
+  " 全局初始化
+  call s:SetupCompleteCache()
   call s:ConstructorCalling()
 
   " Binding Maping 过滤条件
