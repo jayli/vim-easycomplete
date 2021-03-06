@@ -25,16 +25,16 @@ endfunction
 " method 必须是一个全局方法,
 " timer 为空则默认为0
 function! easycomplete#util#AsyncRun(...)
-  let method = a:1
+  let Method = a:1
   let args = exists('a:2') ? a:2 : []
   let delay = exists('a:3') ? a:3 : 0
-  let g:_easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(method, args)})
-  return g:_easycomplete_popup_timer
+  let g:easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(Method, args)})
+  return g:easycomplete_popup_timer
 endfunction
 
 function! easycomplete#util#StopAsyncRun()
-  if exists('g:_easycomplete_popup_timer') && g:_easycomplete_popup_timer > 0
-    call timer_stop(g:_easycomplete_popup_timer)
+  if exists('g:easycomplete_popup_timer') && g:easycomplete_popup_timer > 0
+    call timer_stop(g:easycomplete_popup_timer)
   endif
 endfunction
 
@@ -47,7 +47,7 @@ function! easycomplete#util#call(method, args) abort
     if type(a:method) == type("string") " 是字符串
       call call(a:method, a:args)
     endif
-    let g:_easycomplete_popup_timer = -1
+    let g:easycomplete_popup_timer = -1
     redraw
   catch /.*/
     return 0

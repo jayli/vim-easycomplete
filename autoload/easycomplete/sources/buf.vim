@@ -16,7 +16,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " 这里异步和非异步都可以
   " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
-  call timer_start(100, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
+  call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
   " call timer_start(1, { -> easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)})
 
 endfunction

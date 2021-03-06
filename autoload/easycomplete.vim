@@ -29,7 +29,7 @@ function! easycomplete#Enable()
   set cpoptions+=B
 
   " <C-X><C-U><C-N> 函数回调
-  let &completefunc = 'easycomplete#CompleteFunc'
+  let &completefunc = 'easycomplete#completeFunc'
   " let &completefunc = 'tsuquyomi#complete'
   " let &completefunc = 'easycomplete#nill'
   " 插入模式下的回车事件监听
@@ -39,6 +39,7 @@ function! easycomplete#Enable()
   " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
   inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
+  " autocmd TextChangedI * call easycomplete#typing()
 
   call easycomplete#ui#SetScheme()
 
@@ -129,7 +130,7 @@ function! easycomplete#backing()
     " TODO 回退的逻辑优化
     " " call s:SendKeys("\<C-X>\<C-U>")
     " call s:StopAsyncRun()
-    " call easycomplete#CompleteHandler()
+    " call s:completeHandler()
   endif
   return ''
 endfunction
@@ -195,7 +196,6 @@ function! s:CallConstructorByName(name, ctx)
   if type(b:constructor) == type("string") " 是字符串
     call call(b:constructor, [l:opt, a:ctx])
   endif
-
 endfunction
 
 function! s:CallCompeltorByName(name, ctx)
@@ -213,13 +213,37 @@ function! s:CallCompeltorByName(name, ctx)
 endfunction
 
 function! easycomplete#typing()
-  " TODO 这里 pumvisible 为 0 ，不知为何
-  " call s:log('easycomplete#typing ' . s:GetTypingWord() . ' ' . pumvisible())
   if pumvisible()
-    return ''
+    return ""
   endif
-  call s:SendKeys("\<C-X>\<C-U>")
+  call s:doComplete()
+  " call s:SendKeys("\<C-X>\<C-U>")
   return ""
+endfunction
+
+function! s:doComplete()
+  " call s:CloseCompletionMenu()
+  " 过滤非法的'.'点匹配
+  let l:ctx = easycomplete#context()
+  if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
+        \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
+    call s:CloseCompletionMenu()
+    return v:none
+  endif
+
+  if strlen(l:ctx['typed']) == 1 && l:ctx['char'] ==# '.'
+    call s:CloseCompletionMenu()
+    return v:none
+  endif
+
+  if l:ctx['char'] == '.'
+    call s:CompleteInit()
+    call s:ResetCompleteCache()
+  endif
+
+  call s:StopAsyncRun()
+  call s:AsyncRun(function('s:completeHandler'), [], 0)
+  return v:none
 endfunction
 
 " call easycomplete#register_source(easycomplete#sources#buffer#get_source_options({
@@ -281,11 +305,11 @@ function! s:CompleteSourceReady(name)
 endfunction
 
 function! s:CompleteRunning()
-  if !exists('g:_easycomplete_popup_timer') || g:_easycomplete_popup_timer == -1
+  if !exists('g:easycomplete_popup_timer') || g:easycomplete_popup_timer == -1
     return 0
   endif
 
-  let l:timer = timer_info(g:_easycomplete_popup_timer)
+  let l:timer = timer_info(g:easycomplete_popup_timer)
   " try
     return string(l:timer) != "[]"
   " catch /.*/
@@ -696,7 +720,7 @@ endfunction
 "   function    [ID]    node.dict
 "   ./Foo       [File]
 "   ./b/        [Dir]
-function! easycomplete#CompleteFunc(findstart, base)
+function! easycomplete#completeFunc(findstart, base)
   " TODO 实际没用上
   let l:line_str = getline('.')
   let l:line = line('.')
@@ -711,34 +735,13 @@ function! easycomplete#CompleteFunc(findstart, base)
   if(a:findstart)
     return l:start - 1
   endif
-  call s:CloseCompletionMenu()
 
-  " 过滤非法的'.'点匹配
-  let l:ctx = easycomplete#context()
-  if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
-        \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
-    call s:CloseCompletionMenu()
-    return v:none
-  endif
-
-  if strlen(l:ctx['typed']) == 1 && l:ctx['char'] ==# '.'
-    call s:CloseCompletionMenu()
-    return v:none
-  endif
-
-  if l:ctx['char'] == '.'
-    call s:CompleteInit()
-    call s:ResetCompleteCache()
-  endif
-
-  " 第二次调用，给出匹配列表
-  call s:StopAsyncRun()
-  call s:AsyncRun('easycomplete#CompleteHandler', [], 0)
+  call s:doComplete()
   return v:none
 endfunction
 
-function! easycomplete#CompleteHandler()
-  call s:CompleteSet()
+function! s:completeHandler()
+  call s:completeStopChecking()
   call s:StopAsyncRun()
   if s:NotInsertMode()
     return
@@ -749,53 +752,12 @@ function! easycomplete#CompleteHandler()
   endif
   call s:CompleteInit()
   call s:CompletorCalling()
-  " call s:CompleteAdd([
-  "       \ 'abcdefghijklmnopqrstuvwxyz',
-  "       \ "kkkkkkkkkk",
-  "       \ "jjjjjjjj",
-  "       \ "ikn",
-  "       \ "io98",
-  "       \ "xkid"
-  "       \ ])
-  " call s:AsyncRun('g:Foo')
 endfunction
 
-function! g:Foo(...)
-  call s:CompleteSet()
-  call s:StopAsyncRun()
-  if s:NotInsertMode()
-    return
-  endif
-
-  if strwidth(s:GetTypingWord()) == 0
-    return
-  endif
-  call s:CompleteInit()
-  call s:CompleteAdd("asdf")
-  " call s:ShowCompletePopup()
-  call s:AsyncRun('g:Foo2')
-endfunction
-
-function! g:Foo2(...)
-  call s:CompleteSet()
-  call s:StopAsyncRun()
-  if s:NotInsertMode()
-    return
-  endif
-
-  if strwidth(s:GetTypingWord()) == 0
-    return
-  endif
-  call s:CompleteInit()
-  call s:CompleteAdd(["1","2","3","4","5","6"])
-  " call s:ShowCompletePopup()
-endfunction
-
-function! s:CompleteSet()
+function! s:completeStopChecking()
   if complete_check()
     call feedkeys("\<C-E>")
   endif
-  " let g:easycomplete_menuitems = []
 endfunction
 
 function! s:CompleteInit(...)
@@ -804,39 +766,66 @@ function! s:CompleteInit(...)
   else
     let l:word = a:1
   endif
-  call complete(col('.') - strwidth(l:word), [""])
+  " 这一步会让 complete popup 闪烁一下
+  " call complete(col('.') - strwidth(l:word), [""])
+  let g:easycomplete_menuitems = []
+  
+  " 由于 complete menu 是异步构造的，所以从敲入字符到 complete 呈现之间有一个
+  " 时间，为了避免这个时间造成 complete 闪烁，这里设置了一个”视觉残留“时间
+  if exists('g:easycomplete_visual_delay') && g:easycomplete_visual_delay > 0
+    call timer_stop(g:easycomplete_visual_delay)
+  endif
+  let g:easycomplete_visual_delay = timer_start(100, function("s:completeMenuResetHandler"))
 endfunction
 
-function! easycomplete#CompleteAdd(...)
-  " TODO complete_add 需要被优化一下，实际上没用
+function! s:completeMenuResetHandler(...)
+  if !exists("g:easycomplete_menuitems") || empty(g:easycomplete_menuitems)
+    call s:CloseCompletionMenu()
+  endif
+endfunction
 
+function! easycomplete#CompleteAdd(menu_list)
   " 单词匹配表
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
-
 
   " 当前匹配
   if !exists('g:easycomplete_menuitems')
     let g:easycomplete_menuitems = []
   endif
 
+  let g:easycomplete_menuitems = g:easycomplete_menuitems + s:normalizeMenulist(a:menu_list)
 
-  for item in g:easycomplete_menuitems
-    call complete_add(item)
-  endfor
-
-  if type(get(a:000,0)) == type([]) && len(get(a:000, 0)) > 0
-    for item in get(a:000, 0)
-      call complete_add(item)
-    endfor
-  elseif type(get(a:000,0)) == type({}) || type(get(a:000, 0)) == type("")
-    call complete_add(get(a:000, 0))
-  endif
-  let g:easycomplete_menuitems = s:CompleteFilter(get(complete_info(), "items"))
   let start_pos = col('.') - strwidth(s:GetTypingWord())
   call complete(start_pos, g:easycomplete_menuitems)
   call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
+endfunction
+
+
+function! s:normalizeMenulist(arr)
+  if empty(a:arr)
+    return []
+  endif
+  let l:menu_list = []
+
+  for item in a:arr
+    if type(item) == type("")
+      let l:menu_item = { 'word': item,
+            \ 'menu': '',
+            \ 'user_data': '',
+            \ 'info': '',
+            \ 'kind': '',
+            \ 'abbr': '' }
+      call add(l:menu_list, l:menu_item)
+    endif
+    if type(item) == type({})
+      call add(l:menu_list, extend({'word': '', 'menu': '', 'user_data': '',
+            \                       'info': '', 'kind': '', 'abbr': ''},
+            \ item ))
+    endif
+  endfor
+  return l:menu_list
 endfunction
 
 function! s:CompleteAdd(...)
