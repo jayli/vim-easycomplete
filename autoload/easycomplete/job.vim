@@ -130,7 +130,7 @@ function! s:job_start(cmd, opts) abort
   " options shared by both vim and neovim
   let l:jobopt = {}
   if has_key(a:opts, 'cwd')
-    let l:jobopt.cwd = a:opts.cwd 
+    let l:jobopt.cwd = a:opts.cwd
   endif
 
   if l:jobtype == s:job_type_nvimjob

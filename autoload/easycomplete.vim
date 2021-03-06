@@ -5,33 +5,23 @@
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
 
-" 初始化入口
-function! easycomplete#Enable()
-  if exists("g:easycomplete_loaded")
-    return
-  endif
-  let g:easycomplete_loaded = 1
+if get(g:, 'easycomplete_loaded')
+  finish
+endif
+let g:easycomplete_loaded = 1
 
-  if !exists("g:easycomplete_source")
-    let g:easycomplete_source  = {}
-  endif
+augroup easycomplete#initLocalVars
+  " 安装的插件
+  let g:easycomplete_source  = {}
+  " complete 匹配过的单词的存储
   let g:easycomplete_menucache = {}
+  " 当前敲入的字符存储
   let g:typing_key             = 0
+  " 当前 complete 匹配完成的存储
   let g:easycomplete_menuitems = []
+augroup END
 
-  set completeopt-=menu
-  set completeopt+=menuone
-  set completeopt+=noselect
-  set completeopt-=longest
-  "set completeopt+=popup
-  set updatetime=300
-  " set completeopt-=noinsert
-  set cpoptions+=B
-
-  " <C-X><C-U><C-N> 函数回调
-  let &completefunc = 'easycomplete#completeFunc'
-  " let &completefunc = 'tsuquyomi#complete'
-  " let &completefunc = 'easycomplete#nill'
+augroup easycomplete#auMapping
   " 插入模式下的回车事件监听
   inoremap <expr> <CR> TypeEnterWithPUM()
   " 插入模式下 Tab 和 Shift-Tab 的监听
@@ -39,36 +29,32 @@ function! easycomplete#Enable()
   " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
   inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
   inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
-  " autocmd TextChangedI * call easycomplete#typing()
+augroup END
 
-  call easycomplete#ui#SetScheme()
+" 初始化入口
+function! easycomplete#Enable()
+  set completeopt-=menu
+  set completeopt+=menuone
+  set completeopt+=noselect
+  set completeopt-=longest
+  set updatetime=300
+  set cpoptions+=B
 
+  call ui#setScheme()
   call plugin#init()
   " 全局初始化
   call s:SetupCompleteCache()
   call s:ConstructorCalling()
-
-  " Binding Maping 过滤条件
-  if index([
-        \   'typescript','javascript',
-        \   'javascript.jsx','go',
-        \   'python','vim'
-        \ ], easycomplete#util#filetype()) >= 0
-    call s:BindingTypingCommand()
-  endif
+  call s:BindingTypingCommand()
 endfunction
 
 function! easycomplete#nill() abort
   return v:none " DO NOTHING
 endfunction
 
-function! s:CompleteAsync()
-  call s:SendKeys("\<C-X>\<C-U>\<C-P>")
-endfunction
-
 function! s:BindingTypingCommand()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>'
   let l:cursor = 0
   while l:cursor < strwidth(l:key_liststr)
     let key = l:key_liststr[l:cursor]
@@ -76,8 +62,6 @@ function! s:BindingTypingCommand()
     let l:cursor = l:cursor + 1
   endwhile
   inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
-  "inoremap <buffer><silent> . .<C-R>=easycomplete#typing()<CR>
-
   " autocmd CursorHoldI * call easycomplete#CursorHoldI()
 endfunction
 
@@ -124,18 +108,18 @@ function! easycomplete#backing()
 
   call s:StopAsyncRun()
   if has_key(g:easycomplete_menucache, s:GetTypingWord())
-    call s:AsyncRun('easycomplete#backingTimerHandler', [], 500)
-    " call easycomplete#backingTimerHandler()
+    call s:AsyncRun(function('s:BackingTimerHandler'), [], 500)
   else
     " TODO 回退的逻辑优化
     " " call s:SendKeys("\<C-X>\<C-U>")
+    " call s:DoComplete()
     " call s:StopAsyncRun()
-    " call s:completeHandler()
+    " call s:CompleteHandler()
   endif
   return ''
 endfunction
 
-function! easycomplete#backingTimerHandler()
+function! s:BackingTimerHandler()
   if pumvisible()
     return ''
   endif
@@ -168,15 +152,12 @@ function! easycomplete#context() abort
   return l:ret
 endfunction
 
-" copy of asyncomplete
 " 格式上方便兼容 asyncomplete 使用
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
-  " call s:update_pum()
   let l:ctx = easycomplete#context()
   if a:ctx["lnum"] != l:ctx["lnum"] || a:ctx["col"] != l:ctx["col"]
     if s:CompleteSourceReady(a:name)
       call s:CloseCompletionMenu()
-      " call s:SendKeys("\<C-X>\<C-U>")
       call s:CallCompeltorByName(a:name, l:ctx)
     endif
     return
@@ -188,7 +169,7 @@ function! s:CallConstructorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   let b:constructor = get(l:opt, "constructor")
   if b:constructor == 0
-    return
+    return v:none
   endif
   if type(b:constructor) == 2 " 是函数
     call b:constructor(l:opt, a:ctx)
@@ -201,7 +182,7 @@ endfunction
 function! s:CallCompeltorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   if empty(l:opt) || empty(get(l:opt, "completor"))
-    return
+    return v:none
   endif
   let b:completor = get(l:opt, "completor")
   if type(b:completor) == 2 " 是函数
@@ -216,13 +197,13 @@ function! easycomplete#typing()
   if pumvisible()
     return ""
   endif
-  call s:doComplete()
+  call s:DoComplete()
   " call s:SendKeys("\<C-X>\<C-U>")
   return ""
 endfunction
 
-function! s:doComplete()
-  " call s:CloseCompletionMenu()
+" Complete 跟指调用起点
+function! s:DoComplete()
   " 过滤非法的'.'点匹配
   let l:ctx = easycomplete#context()
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -242,11 +223,12 @@ function! s:doComplete()
   endif
 
   call s:StopAsyncRun()
-  call s:AsyncRun(function('s:completeHandler'), [], 0)
+  call s:AsyncRun(function('s:CompleteHandler'), [], 0)
   return v:none
 endfunction
 
-" call easycomplete#register_source(easycomplete#sources#buffer#get_source_options({
+" 代码样板
+" call easycomplete#RegisterSource(easycomplete#sources#buffer#get_source_options({
 "     \ 'name': 'buffer',
 "     \ 'allowlist': ['*'],
 "     \ 'blocklist': ['go'],
@@ -255,7 +237,7 @@ endfunction
 "     \    'max_buffer_size': 5000000,
 "     \  },
 "     \ }))
-function! easycomplete#registerSource(opt)
+function! easycomplete#RegisterSource(opt)
   if !has_key(a:opt, "name")
     return
   endif
@@ -304,41 +286,6 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
-function! s:CompleteRunning()
-  if !exists('g:easycomplete_popup_timer') || g:easycomplete_popup_timer == -1
-    return 0
-  endif
-
-  let l:timer = timer_info(g:easycomplete_popup_timer)
-  " try
-    return string(l:timer) != "[]"
-  " catch /.*/
-  "   return 0
-  " endtry
-endfunction
-
-function! s:StopTSServer()
-  if exists('g:easycomplete_tsserver_stopped') && g:easycomplete_tsserver_stopped == 1
-    " Do Nothing
-  else
-    call tsuquyomi#stopServer()
-    let g:easycomplete_tsserver_stopped = 1
-  endif
-endfunction
-
-function! s:StartTSServer()
-  if exists('g:easycomplete_tsserver_stopped') && g:easycomplete_tsserver_stopped == 1
-    " call tsuquyomi#config#initBuffer({ 'pattern': '*.js,*.jsx,*.ts' })
-    let g:easycomplete_tsserver_stopped = 0
-  else
-    " Do Nothing
-  endif
-endfunction
-
-function! easycomplete#startTsServer()
-  call s:StartTSServer()
-endfunction
-
 function! s:GetTypingKey()
   if exists('g:typing_key') && g:typing_key != ""
     return g:typing_key
@@ -371,6 +318,8 @@ function! easycomplete#CleverTab()
     " Hack for Golang
     " 唤醒easycomplete菜单
     setlocal completeopt+=noinsert
+    call s:DoComplete()
+    return ""
     return "\<C-X>\<C-U>"
   elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
@@ -389,9 +338,13 @@ function! easycomplete#CleverTab()
     " let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
     " 如果只匹配一个，也还是给出提示
+    call s:DoComplete()
+    return ""
     return "\<C-X>\<C-U>"
   else
     " 正常逻辑下都唤醒easycomplete菜单
+    call s:DoComplete()
+    return ""
     return "\<C-X>\<C-U>"
   endif
 endfunction
@@ -736,12 +689,12 @@ function! easycomplete#completeFunc(findstart, base)
     return l:start - 1
   endif
 
-  call s:doComplete()
+  call s:DoComplete()
   return v:none
 endfunction
 
-function! s:completeHandler()
-  call s:completeStopChecking()
+function! s:CompleteHandler()
+  call s:CompleteStopChecking()
   call s:StopAsyncRun()
   if s:NotInsertMode()
     return
@@ -754,7 +707,7 @@ function! s:completeHandler()
   call s:CompletorCalling()
 endfunction
 
-function! s:completeStopChecking()
+function! s:CompleteStopChecking()
   if complete_check()
     call feedkeys("\<C-E>")
   endif
@@ -775,10 +728,10 @@ function! s:CompleteInit(...)
   if exists('g:easycomplete_visual_delay') && g:easycomplete_visual_delay > 0
     call timer_stop(g:easycomplete_visual_delay)
   endif
-  let g:easycomplete_visual_delay = timer_start(100, function("s:completeMenuResetHandler"))
+  let g:easycomplete_visual_delay = timer_start(100, function("s:CompleteMenuResetHandler"))
 endfunction
 
-function! s:completeMenuResetHandler(...)
+function! s:CompleteMenuResetHandler(...)
   if !exists("g:easycomplete_menuitems") || empty(g:easycomplete_menuitems)
     call s:CloseCompletionMenu()
   endif
@@ -795,7 +748,7 @@ function! easycomplete#CompleteAdd(menu_list)
     let g:easycomplete_menuitems = []
   endif
 
-  let g:easycomplete_menuitems = g:easycomplete_menuitems + s:normalizeMenulist(a:menu_list)
+  let g:easycomplete_menuitems = g:easycomplete_menuitems + s:NormalizeMenulist(a:menu_list)
 
   let start_pos = col('.') - strwidth(s:GetTypingWord())
   call complete(start_pos, g:easycomplete_menuitems)
@@ -803,7 +756,7 @@ function! easycomplete#CompleteAdd(menu_list)
 endfunction
 
 
-function! s:normalizeMenulist(arr)
+function! s:NormalizeMenulist(arr)
   if empty(a:arr)
     return []
   endif
@@ -854,20 +807,6 @@ function! s:ShowCompletePopup()
   call s:SendKeys("\<C-P>")
 endfunction
 
-function! easycomplete#UpdateCompleteInfo()
-  let item = v:event.completed_item
-  let info = {"word":"1","menu":"sdf","kind":"sdfsdf"}
-  call s:ShowCompleteInfo(info)
-endfunction
-
-function! s:ShowCompleteInfo(info)
-  let id = popup_findinfo()
-  if id
-    call popup_settext(id, 'async info: ')
-    call popup_show(id)
-  endif
-endfunction
-
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)
 endfunction
@@ -881,8 +820,6 @@ function! s:NotInsertMode()
 endfunction
 
 function! s:log(msg)
-  setlocal ch=10
-  setlocal cmdwinheight=10
   echohl MoreMsg
   echom '>>> '. string(a:msg)
   echohl NONE

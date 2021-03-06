@@ -1,6 +1,6 @@
 
 
-augroup easycomplete#log#Config
+augroup log#Config
   let s:debugger = {}
   let s:debugger.status = 'stop'
   let s:debugger.original_winnr = winnr()
@@ -11,7 +11,7 @@ augroup easycomplete#log#Config
   let s:debugger.log_winnr = 0
 augroup END
 
-function! easycomplete#log#log()
+function! log#log()
   call s:initLogWindow()
 
 

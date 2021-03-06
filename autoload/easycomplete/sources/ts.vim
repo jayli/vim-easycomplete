@@ -66,7 +66,15 @@ function! easycomplete#sources#ts#diagnosticsCallback(item)
 endfunction
 
 function! easycomplete#sources#ts#completeCallback(item)
+  if empty(a:item)
+    return
+  endif
+
   let l:raw_list = get(a:item, 'body')
+  if empty(l:raw_list)
+    return
+  endif
+
   let l:request_req = get(a:item, 'request_seq')
   let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
         \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
