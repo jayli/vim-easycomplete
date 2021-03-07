@@ -2,6 +2,7 @@
 
 augroup log#Config
   let s:debugger = {}
+  let s:debugger.logfile = 0
   let s:debugger.status = 'stop'
   let s:debugger.original_winnr = winnr()
   let s:debugger.original_bufinfo = getbufinfo(bufnr(''))
@@ -9,108 +10,113 @@ augroup log#Config
   let s:debugger.log_bufinfo = 0
   let s:debugger.log_winid = -20
   let s:debugger.log_winnr = 0
+  let s:debugger.log_term_winid = 0
+
 augroup END
 
 augroup log#Augroup
   autocmd!
   autocmd QuitPre * call log#quit()
+
+  command! -nargs=0 -complete=command CleanLog call log#clean()
 augroup END
 
+" 多参数适配
 function! log#log(msg)
-  call s:initLogWindow()
-  call s:printLog([string(a:msg)])
-  call s:scrollLogWinToBottom()
+  if executable('tail')
+    call s:InitLogFile()
+    call s:InitLogWindow()
+    call s:AppendLog(a:msg)
+  else
+    call s:log(a:msg)
+  endif
 endfunction
 
-function! s:logRunning()
+function! s:LogRunning()
   return argc(s:debugger.log_winid) == -1 ? 0 : 1
 endfunction
 
-function! s:initLogWindow()
+function! s:InitLogWindow()
   let s:debugger.original_bufinfo = getbufinfo(bufnr(''))
   let s:debugger.original_winid = bufwinid(bufnr(""))
-
-  if s:logRunning()
+  if s:LogRunning()
     return
   endif
-
   call execute("vertical botright new")
   call execute("setlocal nonu")
+  call term_start("tail -f " . get(s:debugger, 'logfile'),{
+      \ 'term_finish': 'close',
+      \ 'term_name':'log_debugger_window_name',
+      \ 'vertical':'1',
+      \ 'curwin':'1'
+      \ })
+  let s:debugger.log_term_winid = bufwinid('log_debugger_window_name')
   let s:debugger.log_winnr = winnr()
   let s:debugger.log_bufinfo = getbufinfo(bufnr(''))
   let s:debugger.log_winid = bufwinid(bufnr(""))
-
-  let log_bufnr = get(s:debugger,'log_bufinfo')[0].bufnr
-  call setbufvar(log_bufnr, '&modifiable', 0)
-  call s:gotoOriginalWindow()
+  call s:AppendLog("use <C-C> here to close log window")
+  call s:GotoOriginalWindow()
 endfunction
 
-function! s:emptyLogWindow()
-  if s:logRunning()
-    let log_bufnr = get(s:debugger,'log_bufinfo')[0].bufnr
-    call setbufvar(log_bufnr, '&modifiable', 1)
-    call s:deletebufline(log_bufnr, 1, len(getbufline(log_bufnr, 0,'$')))
-    call setbufvar(localvar_bufnr, '&modifiable', 0)
-  endif
-endfunction " }}}
+function! s:EmptyLogWindow()
+  call s:CloseLogWindow()
+  call s:DelLogFile()
+  call log#log("")
+endfunction
+
+function! log#clean()
+  call s:EmptyLogWindow()
+endfunction
 
 function! log#quit()
   if get(s:debugger, 'log_winid') == bufwinid(bufnr(""))
-    call execute(':q!', 'silent!')
+    call term_sendkeys("log_debugger_window_name","\<C-C>")
   endif
   if get(s:debugger, 'original_winid') == bufwinid(bufnr(""))
-    call s:closeLogWindow()
+    call s:CloseLogWindow()
     call feedkeys("\<S-ZZ>")
   endif
+  call s:DelLogFile()
 endfunction
 
-function! s:closeLogWindow()
-  call s:gotoLogWindow()
+function! s:CloseLogWindow()
+  call s:GotoLogWindow()
   call execute(':q!', 'silent!')
 endfunction
 
-function! s:printLog(content)
-  if s:logRunning()
-    let bufnr = get(s:debugger,'log_bufinfo')[0].bufnr
-    echom bufnr
-    call s:renderLog(bufnr, a:content)
-    let s:debugger.log_bufinfo = getbufinfo(bufnr)
-  endif
-endfunction
-
-function! s:renderLog(buf, content)
+function! s:AppendLog(content)
   if empty(a:content)
     return
   endif
-  let l:content = a:content
-  let bufnr = a:buf
-  let buf_oldlnum = len(getbufline(bufnr,0,'$'))
-  call setbufvar(bufnr, '&modifiable', 1)
-  let ix = buf_oldlnum
-  for item in l:content
-    let ix = ix + 1
-    call setbufline(bufnr, ix, item)
-  endfor
-  call setbufvar(bufnr, '&modifiable', 0)
-  call feedkeys("\<ESC>","n")
-  call s:gotoLogWindow()
-  call s:gotoOriginalWindow()
+
+  if type(a:content) == type([])
+    let l:content = a:content
+  else
+    let l:content = [a:content]
+  endif
+  call map(l:content, { key, val -> string(val)})
+  if s:LogRunning()
+    let l:logfile = get(s:debugger, "logfile")
+    call writefile(l:content, l:logfile, "a")
+  endif
 endfunction
 
-function! s:scrollLogWinToBottom()
-  let m = mode()
-  if index(['i','ic','ix'], m) >= 0
-    call feedkeys("\<ESC>","n")
+function! s:InitLogFile()
+  let l:logfile = get(s:debugger, 'logfile')
+  if !empty(l:logfile) 
+    return l:logfile
   endif
-  call s:gotoLogWindow()
-  normal! G
-  call s:gotoOriginalWindow()
-  if index(['i','ic','ix'], m) >= 0
-    call feedkeys("a","n")
-    call execute('redraw','silent!')
+  let s:debugger.logfile = tempname()
+  call writefile([""], s:debugger.logfile, "a")
+  return s:debugger.logfile
+endfunction
+
+function! s:DelLogFile()
+  let l:logfile = get(s:debugger, 'logfile')
+  if !empty(l:logfile)
+    call delete(l:logfile)
+    let s:debugger.logfile = 0
   endif
-  " call setwinvar(s:debugger.log_winnr, "move",
-  "       \ len(getbufline(get(s:debugger,'log_bufinfo')[0].bufnr ,0,'$')))
 endfunction
 
 function! s:deletebufline(bn, fl, ll)
@@ -118,37 +124,48 @@ function! s:deletebufline(bn, fl, ll)
     call deletebufline(a:bn, a:fl, a:ll)
   else
     let current_winid = bufwinid(bufnr(""))
-    call s:gotoWindow(bufwinid(a:bn))
+    call s:GotoWindow(bufwinid(a:bn))
+    call setbufvar(a:bn, '&modifiable', 0)
     call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
-    call g:gotoWindow(current_winid)
+    call setbufvar(a:bn, '&modifiable', 1)
+    call s:GotoWindow(current_winid)
   endif
 endfunction
 
-function! s:gotoWindow(winid) abort
+function! s:GotoWindow(winid) abort
   if a:winid == bufwinid(bufnr(""))
     return
   endif
   for window in range(1, winnr('$'))
-    call s:gotoWinnr(window)
+    call s:GotoWinnr(window)
     if a:winid == bufwinid(bufnr(""))
       break
     endif
   endfor
 endfunction
 
-function! s:gotoWinnr(winnr) abort
+function! s:GotoWinnr(winnr) abort
   let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
         \ : 'wincmd ' . a:winnr
   noautocmd execute cmd
   call execute('redraw','silent!')
 endfunction
 
-function! s:gotoOriginalWindow()
-  call s:gotoWindow(s:debugger.original_winid)
+function! s:GotoOriginalWindow()
+  call s:GotoWindow(s:debugger.original_winid)
 endfunction
 
-function! s:gotoLogWindow()
-  call s:gotoWindow(s:debugger.log_winid)
+function! s:GotoLogWindow()
+  call s:GotoWindow(s:debugger.log_term_winid)
 endfunction
 
-
+function! s:log(...)
+  let l:args = a:000
+  let l:res = ""
+  for item in l:args
+    l:res = l:res . " " . string(item)
+  endfor
+  echohl MoreMsg
+  echom '>>> '. l:res
+  echohl NONE
+endfunction

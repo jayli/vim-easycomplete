@@ -41,6 +41,9 @@ endfunction
 function! s:GetBufKeywordsList(base)
   let tmpkeywords = []
   for buf in getbufinfo()
+    if !(bufloaded(buf['bufnr']) && empty(getbufvar(buf['bufnr'], '&buftype')))
+      continue
+    endif
     let lines = getbufline(buf.bufnr, 1 ,"$")
     for line in lines
       call extend(tmpkeywords, split(line,'[^A-Za-z0-9_#]'))
