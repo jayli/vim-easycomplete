@@ -140,15 +140,15 @@ function! easycomplete#context() abort
         \ 'curpos':getcurpos(),
         \ 'changedtick':b:changedtick
         \ }
-  let l:ret['lnum'] = l:ret['curpos'][1]
-  let l:ret['col'] = l:ret['curpos'][2]
-  let l:ret['filetype'] = &filetype
-  let l:ret['filepath'] = expand('%:p')
-  let line = getline(l:ret['lnum'])
-  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1)
-  let l:ret['char'] = strpart(line, l:ret['col']-2, l:ret['col']-1)
-  let l:ret['typing'] = s:GetTypingWord()
-  let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing'])
+  let l:ret['lnum'] = l:ret['curpos'][1] " 行
+  let l:ret['col'] = l:ret['curpos'][2] " 列
+  let l:ret['filetype'] = &filetype " 文件类型
+  let l:ret['filepath'] = expand('%:p') " 文件路径
+  let line = getline(l:ret['lnum']) " 当前行
+  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标之前的行内容
+  let l:ret['char'] = strpart(line, l:ret['col']-2, l:ret['col']-1) " 当前敲入字符
+  let l:ret['typing'] = s:GetTypingWord() " 当前敲入的完整字符
+  let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 当前完整字符的起始列位置
   return l:ret
 endfunction
 
@@ -754,7 +754,6 @@ function! easycomplete#CompleteAdd(menu_list)
   call complete(start_pos, g:easycomplete_menuitems)
   call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
 endfunction
-
 
 function! s:NormalizeMenulist(arr)
   if empty(a:arr)

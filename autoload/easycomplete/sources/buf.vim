@@ -1,6 +1,5 @@
 
 function! easycomplete#sources#buf#completor(opt, ctx)
-  " call easycomplete#log(a:opt)
   let l:typing = a:ctx['typing']
 
   if a:ctx['char'] ==# '.'
@@ -11,14 +10,11 @@ function! easycomplete#sources#buf#completor(opt, ctx)
     return
   endif
 
-  " let keywords_result = s:GetKeywords(l:typing)
-
   " 这里异步和非异步都可以
   " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
-  call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
-  " call timer_start(1, { -> easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)})
-
+  " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
+  call easycomplete#util#AsyncRun(function('s:CompleteHandler'), [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
 endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
@@ -32,7 +28,7 @@ function! s:GetKeywords(base)
         \   a:base)
 endfunction
 
-function! easycomplete#sources#buf#asyncHandler(typing, name, ctx, startcol)
+function! s:CompleteHandler(typing, name, ctx, startcol)
   let keywords_result = s:GetKeywords(a:typing)
   call easycomplete#complete(a:name, a:ctx, a:startcol, keywords_result)
 endfunction
@@ -57,12 +53,8 @@ function! s:GetBufKeywordsList(base)
   if count(keywordList, a:base) == 1
     call remove(keywordList, index(keywordList, a:base))
   endif
-  " let keywordFormedList = []
-  " for v in keywordList
-  "   call add(keywordFormedList, v)
-  " endfor
 
-  return keywordList 
+  return keywordList
 endfunction
 
 " 将 Buff 关键词简单列表转换为补全浮窗所需的列表格式
