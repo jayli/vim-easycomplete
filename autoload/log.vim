@@ -1,4 +1,14 @@
-
+" log#log() authored by jayli bachi@taobao.com
+" Useage
+"   - Command
+"     - Log {stn} : show low at window
+"     - CleanLog  : Clean the log window
+"     - CloseLog  : Close the log window
+"   - API
+"     - log#log(...): print logs
+"   - Global config
+"     - g:vim_log_enabled = 1   enable log at side window
+"     - g:vim_log_enabled = 0   disable log printing
 
 augroup log#Config
   let s:debugger = {}
@@ -11,6 +21,14 @@ augroup log#Config
   let s:debugger.log_winid = -20
   let s:debugger.log_winnr = 0
   let s:debugger.log_term_winid = 0
+  let s:debugger.init_msg = [
+        \ " ____________________________________",
+        \ "|                                    |",
+        \ "|                                    |",
+        \ "| Use <C-C> here to close log window |",
+        \ "| Authored by Jayli bachi@taobao.com |",
+        \ "|                                    |",
+        \ "|____________________________________|"]
 
 augroup END
 
@@ -19,16 +37,37 @@ augroup log#Augroup
   autocmd QuitPre * call log#quit()
 
   command! -nargs=0 -complete=command CleanLog call log#clean()
+  command! -nargs=0 -complete=command CloseLog call log#close()
+  command! -nargs=1 -complete=command Log call log#log(<args>)
 augroup END
 
 " 多参数适配
-function! log#log(msg)
+function! log#log(...)
+  if !exists('g:vim_log_enabled')
+    let g:vim_log_enabled = 1
+  endif
+
+  if g:vim_log_enabled != 1
+    return
+  endif
+
+  let l:args = a:000
+  let l:res = ""
+  if empty(a:000)
+    let l:res = ""
+  elseif len(a:000) == 1
+    let l:res = a:1
+  else
+    for item in l:args
+      let l:res = l:res . " " . json_encode(item)
+    endfor
+  endif
   if executable('tail')
     call s:InitLogFile()
     call s:InitLogWindow()
-    call s:AppendLog(a:msg)
+    call s:AppendLog(l:res)
   else
-    call s:log(a:msg)
+    call call(s:log, a:000)
   endif
 endfunction
 
@@ -42,7 +81,7 @@ function! s:InitLogWindow()
   if s:LogRunning()
     return
   endif
-  call execute("vertical botright new")
+  call execute("vertical botright new filetype=help buftype=nofile")
   call execute("setlocal nonu")
   call term_start("tail -f " . get(s:debugger, 'logfile'),{
       \ 'term_finish': 'close',
@@ -50,22 +89,29 @@ function! s:InitLogWindow()
       \ 'vertical':'1',
       \ 'curwin':'1'
       \ })
+  exec 'setl statusline=%1*\ Normal\ %*%5*\ Log\ Window\ %*\ %r%f[%M]%=Depth\ :\ %L\ '
   let s:debugger.log_term_winid = bufwinid('log_debugger_window_name')
   let s:debugger.log_winnr = winnr()
   let s:debugger.log_bufinfo = getbufinfo(bufnr(''))
   let s:debugger.log_winid = bufwinid(bufnr(""))
-  call s:AppendLog("use <C-C> here to close log window")
+  call s:AppendLog(copy(get(s:debugger, 'init_msg')))
   call s:GotoOriginalWindow()
 endfunction
 
 function! s:EmptyLogWindow()
   call s:CloseLogWindow()
   call s:DelLogFile()
-  call log#log("")
+  call log#log()
 endfunction
 
 function! log#clean()
   call s:EmptyLogWindow()
+endfunction
+
+function! log#close()
+  if s:LogRunning()
+    call s:CloseLogWindow()
+  endif
 endfunction
 
 function! log#quit()
@@ -73,15 +119,19 @@ function! log#quit()
     call term_sendkeys("log_debugger_window_name","\<C-C>")
   endif
   if get(s:debugger, 'original_winid') == bufwinid(bufnr(""))
-    call s:CloseLogWindow()
-    call feedkeys("\<S-ZZ>")
+    if s:LogRunning()
+      call s:CloseLogWindow()
+      call feedkeys("\<S-ZZ>")
+    endif
   endif
   call s:DelLogFile()
 endfunction
 
 function! s:CloseLogWindow()
-  call s:GotoLogWindow()
-  call execute(':q!', 'silent!')
+  if s:LogRunning()
+    call s:GotoLogWindow()
+    call execute(':q!', 'silent!')
+  endif
 endfunction
 
 function! s:AppendLog(content)
@@ -94,7 +144,7 @@ function! s:AppendLog(content)
   else
     let l:content = [a:content]
   endif
-  call map(l:content, { key, val -> string(val)})
+  call map(l:content, { key, val -> '>>> ' . val})
   if s:LogRunning()
     let l:logfile = get(s:debugger, "logfile")
     call writefile(l:content, l:logfile, "a")
@@ -103,7 +153,7 @@ endfunction
 
 function! s:InitLogFile()
   let l:logfile = get(s:debugger, 'logfile')
-  if !empty(l:logfile) 
+  if !empty(l:logfile)
     return l:logfile
   endif
   let s:debugger.logfile = tempname()
@@ -116,19 +166,6 @@ function! s:DelLogFile()
   if !empty(l:logfile)
     call delete(l:logfile)
     let s:debugger.logfile = 0
-  endif
-endfunction
-
-function! s:deletebufline(bn, fl, ll)
-  if exists("deletebufline")
-    call deletebufline(a:bn, a:fl, a:ll)
-  else
-    let current_winid = bufwinid(bufnr(""))
-    call s:GotoWindow(bufwinid(a:bn))
-    call setbufvar(a:bn, '&modifiable', 0)
-    call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
-    call setbufvar(a:bn, '&modifiable', 1)
-    call s:GotoWindow(current_winid)
   endif
 endfunction
 
