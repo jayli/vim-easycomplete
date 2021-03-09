@@ -15,6 +15,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
   " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
   call easycomplete#util#AsyncRun(function('s:CompleteHandler'), [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
+  return v:true
 endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
@@ -55,17 +56,6 @@ function! s:GetBufKeywordsList(base)
   endif
 
   return keywordList
-endfunction
-
-" 将 Buff 关键词简单列表转换为补全浮窗所需的列表格式
-" 比如原始简单列表是 ['abc','def','efd'] ，输出为
-" => [{"word":"abc","kind":"[ID]"},{"word":"def","kind":"[ID]"}...]
-function! s:GetWrappedBufKeywordList(keywordList)
-  if empty(a:keywordList) || len(a:keywordList) == 0
-    return []
-  endif
-
-  return map(a:keywordList, '{"word":v:val,"dup":1,"icase":1,"menu": "[buf]"}')
 endfunction
 
 " 将字典简单词表转换为补全浮窗所需的列表格式

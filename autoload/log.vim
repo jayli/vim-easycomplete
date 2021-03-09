@@ -1,4 +1,4 @@
-" log#log() authored by jayli bachi@taobao.com
+" Log log#log() authored by jayli bachi@taobao.com
 " Useage
 "   - Command
 "     - Log {stn} : show low at window
@@ -56,7 +56,11 @@ function! log#log(...)
   if empty(a:000)
     let l:res = ""
   elseif len(a:000) == 1
-    let l:res = a:1
+    if index([2,7], type(a:000))
+      let l:res = string(a:1)
+    else
+      let l:res = a:1
+    endif
   else
     for item in l:args
       let l:res = l:res . " " . json_encode(item)

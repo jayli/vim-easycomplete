@@ -37,7 +37,6 @@ function! easycomplete#Enable()
   set completeopt+=menuone
   set completeopt+=noselect
   set completeopt-=longest
-  set updatetime=300
   set cpoptions+=B
 
   call ui#setScheme()
@@ -112,7 +111,7 @@ function! easycomplete#backing()
   else
     " TODO 回退的逻辑优化
     " " call s:SendKeys("\<C-X>\<C-U>")
-    " call s:DoComplete()
+    " call s:DoComplete(v:true)
     " call s:StopAsyncRun()
     " call s:CompleteHandler()
   endif
@@ -146,7 +145,7 @@ function! easycomplete#context() abort
   let l:ret['filepath'] = expand('%:p') " 文件路径
   let line = getline(l:ret['lnum']) " 当前行
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标之前的行内容
-  let l:ret['char'] = strpart(line, l:ret['col']-2, l:ret['col']-1) " 当前敲入字符
+  let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " 当前敲入字符
   let l:ret['typing'] = s:GetTypingWord() " 当前敲入的完整字符
   let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 当前完整字符的起始列位置
   return l:ret
@@ -197,13 +196,14 @@ function! easycomplete#typing()
   if pumvisible()
     return ""
   endif
-  call s:DoComplete()
+  call s:DoComplete(v:false)
   " call s:SendKeys("\<C-X>\<C-U>")
   return ""
 endfunction
 
-" Complete 跟指调用起点
-function! s:DoComplete()
+" Complete 跟指调用起点, force: 是否立即调用还是延迟调用
+" 一般在 : / . 时立即调用，在首次敲击字符时延迟调用
+function! s:DoComplete(force)
   " 过滤非法的'.'点匹配
   let l:ctx = easycomplete#context()
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -212,18 +212,27 @@ function! s:DoComplete()
     return v:none
   endif
 
-  if strlen(l:ctx['typed']) == 1 && l:ctx['char'] ==# '.'
+  " 孤立的点和冒号，什么也不做
+  if strlen(l:ctx['typed']) == 1 && (l:ctx['char'] ==# '.' || l:ctx['char'] ==# ':')
     call s:CloseCompletionMenu()
     return v:none
   endif
 
+  " 点号，终止连续匹配
   if l:ctx['char'] == '.'
     call s:CompleteInit()
     call s:ResetCompleteCache()
   endif
 
+  " 判断是否是单词的首次按键，是则有一个延迟
+  if index([':','.','/'], l:ctx['char']) >= 0 || a:force == v:true
+    let word_first_type_delay = 0
+  else
+    let word_first_type_delay = 150
+  endif
+
   call s:StopAsyncRun()
-  call s:AsyncRun(function('s:CompleteHandler'), [], 0)
+  call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:none
 endfunction
 
@@ -254,7 +263,12 @@ function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
   for item in keys(g:easycomplete_source)
     if s:CompleteSourceReady(item)
-      call s:CallCompeltorByName(item, l:ctx)
+      let l:cprst = s:CallCompeltorByName(item, l:ctx)
+      if l:cprst == v:false " 继续串行执行的指令
+        continue
+      else
+        break " 返回 false 时中断后续执行
+      endif
     endif
   endfor
 endfunction
@@ -318,7 +332,7 @@ function! easycomplete#CleverTab()
     " Hack for Golang
     " 唤醒easycomplete菜单
     setlocal completeopt+=noinsert
-    call s:DoComplete()
+    call s:DoComplete(v:true)
     return ""
     return "\<C-X>\<C-U>"
   elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
@@ -338,12 +352,12 @@ function! easycomplete#CleverTab()
     " let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
 
     " 如果只匹配一个，也还是给出提示
-    call s:DoComplete()
+    call s:DoComplete(v:true)
     return ""
     return "\<C-X>\<C-U>"
   else
     " 正常逻辑下都唤醒easycomplete菜单
-    call s:DoComplete()
+    call s:DoComplete(v:true)
     return ""
     return "\<C-X>\<C-U>"
   endif
@@ -489,138 +503,6 @@ function! s:CloseCompletionMenu()
   endif
 endfunction
 
-" 判断当前是否正在输入一个地址path
-" base 原本想传入当前文件名字，实际上传不进来，这里也没用到
-function! easycomplete#TypingAPath(findstart, base)
-  " 这里不清楚为什么
-  " 输入 ./a/b/c ，./a/b/  两者得到的prefx都为空
-  " 前者应该得到 c
-  " 这里只能临时将base透传进来表示文件名
-  let line  = getline('.')
-  let coln  = col('.') - 1
-  let prefx = ' ' . line[0:coln - 1]
-
-  " Hack: 第二次进来 getline('.')时把光标所在的字符吃掉了，原因不明
-  " 所以这里临时存一下 line 的值
-  if exists('l:tmp_line_str') && a:findstart == 1
-    let l:tmp_line_str = line
-  elseif exists('l:tmp_line_str') && a:findstart == 0
-    let line = l:tmp_line_str
-    unlet l:tmp_line_str
-  endif
-
-  " 需要注意，参照上一个注释，fpath和spath只是path，没有filename
-  " 从正在输入的一整行字符(行首到光标)中匹配出一个path出来
-  " TODO 正则不严格，需要优化，下面这几个情况匹配要正确
-  "   \ a <Tab>  => done
-  "   \<Tab> => done
-  "   xxxss \ xxxss<Tab> => done
-  "   "/<tab>" => 不起作用, fixed at 2019-09-28
-  let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-        \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
-
-  " 兼容单个 '/' 匹配的情况
-  let spath = s:GetPathName( substitute(fpath,"^[\\.\\/].*\\/","./","g") )
-  " 清除对 '\' 的路径识别
-  let fpath = s:GetPathName(fpath)
-
-  let pathDict                 = {}
-  let pathDict.line            = line
-  let pathDict.prefx           = prefx
-  " fname 暂没用上，放这里备用
-  let pathDict.fname           = s:GetFileName(prefx)
-  let pathDict.fpath           = fpath " fullpath
-  let pathDict.spath           = spath " shortpath
-  let pathDict.full_path_start = coln - len(fpath) + 2
-  if trim(pathDict.fname) == ''
-    let pathDict.short_path_start = coln - len(spath) + 2
-  else
-    let pathDict.short_path_start = coln - len(pathDict.fname)
-  endif
-
-  " 排除掉输入注释的情况
-  " 因为如果输入'//'紧跟<Tab>不应该出<C-X><C-U><C-N>出补全菜单
-  if len(fpath) == 0 || match(prefx,"\\(\\/\\/\\|\\/\\*\\)") >= 0
-    let pathDict.isPath = 0
-  else
-    let pathDict.isPath = 1
-  endif
-
-  return pathDict
-endfunction
-
-" 根据输入的 path 匹配出结果，返回的是一个List ['f1','f2','d1','d2']
-" 查询条件实际上是用 base 来做的，typing_path 里无法包含当前敲入的filename
-" ./ => 基于当前 bufpath 查询
-" ../../ => 当前buf文件所在的目录向上追溯2次查询
-" /a/b/c => 直接从根查询
-" TODO ~/ 的支持
-function! s:GetDirAndFiles(typing_path, base)
-  let fpath   = a:typing_path.fpath
-  let fname   = bufname('%')
-  let bufpath = s:GetPathName(fname)
-
-  if len(fpath) > 0 && fpath[0] == "."
-    let path = simplify(bufpath . fpath)
-  else
-    let path = simplify(fpath)
-  endif
-
-  if a:base == ""
-    " 查找目录下的文件和目录
-    let result_list = systemlist('ls '. path .
-          \ " 2>/dev/null")
-  else
-    " 这里没考虑Cygwin的情况
-    let result_list = systemlist('ls '. s:GetPathName(path) .
-          \ " 2>/dev/null")
-    " 使用filter过滤，没有使用grep过滤，以便后续性能调优
-    " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
-    " 只有首次点击<Tab>时能忽略大小写，
-    " 应该在del跟随和tab时都忽略大小写才对
-    let result_list = filter(result_list,
-          \ 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
-  endif
-
-  return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path))
-endfunction
-
-" 将某个目录下查找出的列表 List 的每项识别出目录和文件
-" 并转换成补全浮窗所需的展示格式
-function! s:GetWrappedFileAndDirsList(rlist, fpath)
-  if len(a:rlist) == 0
-    return []
-  endif
-
-  let result_with_kind = []
-
-  for item in a:rlist
-    let localfile = simplify(a:fpath . '/' . item)
-    if isdirectory(localfile)
-      call add(result_with_kind, {"word": item . "/", "kind" : "[Dir]"})
-    else
-      call add(result_with_kind, {"word": item , "kind" : "[File]"})
-    endif
-  endfor
-
-  return result_with_kind
-endfunction
-
-" 从一个完整的 path 串中得到 FileName
-" 输入的 Path 串可以带有文件名
-function! s:GetFileName(path)
-  let path  = simplify(a:path)
-  let fname = matchstr(path,"\\([\\/]\\)\\@<=[^\\/]\\+$")
-  return fname
-endfunction
-
-" 同上
-function! s:GetPathName(path)
-  let path =  simplify(a:path)
-  let pathname = matchstr(path,"^.*\\/")
-  return pathname
-endfunction
-
 " 根据词根返回语法匹配的结果，每个语言都需要单独处理
 function! s:GetSyntaxCompletionResult(base) abort
   let syntax_complete = []
@@ -660,39 +542,6 @@ function! s:IsTsSyntaxCompleteReady()
   endif
 endfunction
 
-" 补全菜单展示逻辑入口，光标跟随或者<Tab>键呼出
-" 由于性能问题，推荐<Tab>键呼出
-" 菜单格式说明（参照 YouCompleteMe 的菜单格式）
-" 目前包括四类：当前缓冲区keywords，字典keywords，代码片段缩写，目录查找
-" 其中目录查找和其他三类不混排（同样参照 YouCompleteMe的逻辑）
-" 补全菜单格式样例 =>
-"   Function    [JS]    javascript function PH (a,b)
-"   fun         [ID]
-"   Funny       [ID]
-"   Function    [ID]    common.dict
-"   function    [ID]    node.dict
-"   ./Foo       [File]
-"   ./b/        [Dir]
-function! easycomplete#completeFunc(findstart, base)
-  " TODO 实际没用上
-  let l:line_str = getline('.')
-  let l:line = line('.')
-  let l:offset = col('.')
-
-  " search backwards for start of identifier (iskeyword pattern)
-  let l:start = l:offset
-  while l:start > 0 && l:line_str[l:start-2] =~ "\\k"
-    let l:start -= 1
-  endwhile
-
-  if(a:findstart)
-    return l:start - 1
-  endif
-
-  call s:DoComplete()
-  return v:none
-endfunction
-
 function! s:CompleteHandler()
   call s:CompleteStopChecking()
   call s:StopAsyncRun()
@@ -700,9 +549,22 @@ function! s:CompleteHandler()
     return
   endif
   let l:ctx = easycomplete#context()
-  if strwidth(l:ctx['typing']) == 0 && l:ctx['char'] != '.'
+  if strwidth(l:ctx['typing']) == 0 && index([':','.','/'], l:ctx['char']) < 0
     return
   endif
+
+  call s:ExecuCompleteCalling()
+  " if index([':','.','/'], l:ctx['char']) >= 0
+  "   call s:ExecuCompleteCalling()
+  " else
+  "   if exists('g:easycomplete_start_delay') && g:easycomplete_start_delay > 0
+  "     call timer_stop(g:easycomplete_start_delay)
+  "   endif
+  "   let g:easycomplete_start_delay = timer_start(400, function("s:ExecuCompleteCalling"))
+  " endif
+endfunction
+
+function! s:ExecuCompleteCalling(...)
   call s:CompleteInit()
   call s:CompletorCalling()
 endfunction
@@ -722,7 +584,7 @@ function! s:CompleteInit(...)
   " 这一步会让 complete popup 闪烁一下
   " call complete(col('.') - strwidth(l:word), [""])
   let g:easycomplete_menuitems = []
-  
+
   " 由于 complete menu 是异步构造的，所以从敲入字符到 complete 呈现之间有一个
   " 时间，为了避免这个时间造成 complete 闪烁，这里设置了一个”视觉残留“时间
   if exists('g:easycomplete_visual_delay') && g:easycomplete_visual_delay > 0
@@ -785,7 +647,6 @@ function! s:CompleteAdd(...)
 endfunction
 
 function! s:CompleteFilter(raw_menu_list)
-  " call s:log(a:raw_menu_list)
   let arr = []
   let word = s:GetTypingWord()
   if empty(word)

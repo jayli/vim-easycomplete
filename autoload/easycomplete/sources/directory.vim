@@ -1,25 +1,22 @@
 
 function! easycomplete#sources#directory#completor(opt, ctx)
-  " TODO 这里不执行 jayli
-  call log#log(typing_path)
-  let typing_path = s:TypingAPath(a:ctx)
+  let l:typing_path = s:TypingAPath(a:ctx)
 
-  if !typing_path.isPath
+  if !l:typing_path.isPath
     return
   endif
 
-  let spath_start = typing_path.short_path_start
+  let spath_start = l:typing_path.short_path_start
 
   " 查找目录
-  let result = s:GetDirAndFiles(typing_path, a:ctx['typing'])
+  let result = s:GetDirAndFiles(l:typing_path, a:ctx['typing'])
   if len(result) == 0
-    " call s:CloseCompletionMenu()
     if strwidth(a:ctx['char'])) != 1
       call feedkeys("\<Tab>", "in")
     endif
-    return v:none
   endif
   call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], result)
+  return v:false
 endfunction
 
 " 关闭补全浮窗
@@ -61,8 +58,27 @@ function! s:GetDirAndFiles(typing_path, base)
     let result_list = filter(result_list,
           \ 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
   endif
-
   return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path))
+endfunction
+
+" 将某个目录下查找出的列表 List 的每项识别出目录和文件
+" 并转换成补全浮窗所需的展示格式
+function! s:GetWrappedFileAndDirsList(rlist, fpath)
+  if len(a:rlist) == 0
+    return []
+  endif
+
+  let result_with_kind = []
+  for item in a:rlist
+    let localfile = simplify(a:fpath . '/' . item)
+    if isdirectory(localfile)
+      call add(result_with_kind, {"word": item . "/", "menu" : "[Dir]"})
+    else
+      call add(result_with_kind, {"word": item , "menu" : "[File]"})
+    endif
+  endfor
+
+  return result_with_kind
 endfunction
 
 " 判断当前是否正在输入一个地址path

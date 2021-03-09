@@ -77,15 +77,31 @@ function! easycomplete#sources#ts#completeCallback(item)
 
   let l:request_req = get(a:item, 'request_seq')
   let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
-        \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
+        \ function("s:CompleteMenuMap"))
   let l:ctx = s:getCtxByRequestSeq(l:request_req)
   call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
 endfunction
 
+function! s:CompleteMenuMap(key, val)
+  let is_func = (a:val.kind ==# "method")
+  let val_name = a:val.name
+  return {
+        \ "abbr": val_name,
+        \ "dup": 1,
+        \ "icase": 1,
+        \ "menu": "[ts]",
+        \ "kind": a:val.kind,
+        \ "word": is_func ? val_name . "(" : val_name
+        \ }
+endfunction
+
 function! easycomplete#sources#ts#completor(opt, ctx) abort
   call s:restoreCtx(a:ctx)
-  " call s:log(222)
+  if a:ctx['char'] == "/"
+    return v:true
+  endif
   call s:tsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  return v:true
 endfunction
 
 function! s:stopTsserver()
@@ -125,7 +141,6 @@ function! s:sendAsyncRequest(line)
   call s:startTsserver()
   " call log#log('--easycomplete--')
   " call log#log({"a":1},[1,2,3],"sfsdf",v:none,12, 'sss', a:line)
-  " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
@@ -254,18 +269,6 @@ function! s:messageHandler(msg)
       call ResponseCallback()
     endif
   endif
-
-  " 执行 response complete 的回调
-  " if get(l:item, 'type') ==# 'response'
-  "       \ && get(l:item, 'command') ==# 'completions'
-  "       \ && get(l:item, 'success') ==# v:true
-  "   let l:raw_list = get(l:item, 'body')
-  "   let l:request_req = get(l:item, 'request_seq')
-  "   let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
-  "         \ '{"word":v:val.name,"dup":1,"icase":1,"menu": "[ts]", "kind":v:val.kind}')
-  "   let l:ctx = s:getCtxByRequestSeq(l:request_req)
-  "   call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
-  " endif
 endfunction
 
 function! s:sortTextComparator(entry1, entry2)
