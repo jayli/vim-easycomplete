@@ -3,7 +3,7 @@ function! easycomplete#sources#directory#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
 
   if !l:typing_path.isPath
-    return
+    return v:true
   endif
 
   let spath_start = l:typing_path.short_path_start
@@ -16,6 +16,7 @@ function! easycomplete#sources#directory#completor(opt, ctx)
     endif
   endif
   call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], result)
+  " 展开目录时，中断其他complete逻辑
   return v:false
 endfunction
 

@@ -19,5 +19,11 @@ function! plugin#init()
       \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
 
+  call easycomplete#RegisterSource({
+      \ 'name': 'snips',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#snips#completor',
+      \  })
+
 endfunction
 

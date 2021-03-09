@@ -36,6 +36,7 @@ function! easycomplete#Enable()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
+  " set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
 
@@ -181,14 +182,14 @@ endfunction
 function! s:CallCompeltorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   if empty(l:opt) || empty(get(l:opt, "completor"))
-    return v:none
+    return v:true
   endif
   let b:completor = get(l:opt, "completor")
   if type(b:completor) == 2 " 是函数
-    call b:completor(l:opt, a:ctx)
+    return b:completor(l:opt, a:ctx)
   endif
   if type(b:completor) == type("string") " 是字符串
-    call call(b:completor, [l:opt, a:ctx])
+    return call(b:completor, [l:opt, a:ctx])
   endif
 endfunction
 
@@ -228,7 +229,7 @@ function! s:DoComplete(force)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:force == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 150
+    let word_first_type_delay = 110
   endif
 
   call s:StopAsyncRun()
@@ -264,7 +265,7 @@ function! s:CompletorCalling(...)
   for item in keys(g:easycomplete_source)
     if s:CompleteSourceReady(item)
       let l:cprst = s:CallCompeltorByName(item, l:ctx)
-      if l:cprst == v:false " 继续串行执行的指令
+      if l:cprst == v:true " 继续串行执行的指令
         continue
       else
         break " 返回 false 时中断后续执行
@@ -288,15 +289,15 @@ function! s:CompleteSourceReady(name)
     if has_key(completor_source, 'whitelist')
       let whitelist = get(completor_source, 'whitelist')
       if index(whitelist, &filetype) >= 0 || index(whitelist, "*") >= 0
-        return 1
+        return v:true
       else
-        return 0
+        return v:false
       endif
     else
-      return 1
+      return v:true
     endif
   else
-    return 0
+    return v:false
   endif
 endfunction
 
@@ -553,18 +554,6 @@ function! s:CompleteHandler()
     return
   endif
 
-  call s:ExecuCompleteCalling()
-  " if index([':','.','/'], l:ctx['char']) >= 0
-  "   call s:ExecuCompleteCalling()
-  " else
-  "   if exists('g:easycomplete_start_delay') && g:easycomplete_start_delay > 0
-  "     call timer_stop(g:easycomplete_start_delay)
-  "   endif
-  "   let g:easycomplete_start_delay = timer_start(400, function("s:ExecuCompleteCalling"))
-  " endif
-endfunction
-
-function! s:ExecuCompleteCalling(...)
   call s:CompleteInit()
   call s:CompletorCalling()
 endfunction

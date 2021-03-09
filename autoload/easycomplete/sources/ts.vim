@@ -89,9 +89,10 @@ function! s:CompleteMenuMap(key, val)
         \ "abbr": val_name,
         \ "dup": 1,
         \ "icase": 1,
-        \ "menu": "[ts]",
-        \ "kind": a:val.kind,
-        \ "word": is_func ? val_name . "(" : val_name
+        \ "kind": exists('a:val.kind') ? a:val.kind[0] : "",
+        \ "menu": "[TS]",
+        \ "word": is_func ? val_name . "(" : val_name,
+        \ "info": "sdf"
         \ }
 endfunction
 

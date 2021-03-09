@@ -3,11 +3,11 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   let l:typing = a:ctx['typing']
 
   if a:ctx['char'] ==# '.'
-    return
+    return v:true
   endif
 
   if strlen(l:typing) == 0
-    return
+    return v:true
   endif
 
   " 这里异步和非异步都可以
@@ -21,7 +21,7 @@ endfunction
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(base)
   let bufKeywordList        = s:GetBufKeywordsList(a:base)
-  let wrappedBufKeywordList = map(bufKeywordList, '{"word":v:val,"dup":1,"icase":1,"menu": "[buf]"}')
+  let wrappedBufKeywordList = map(bufKeywordList, '{"word":v:val,"dup":1,"icase":1,"menu": "[buf]", "info": "sdf"}')
   return s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
         \       s:GetWrappedDictKeywordList()
