@@ -5,9 +5,8 @@ let g:easycomplete_sources_ts = 1
 
 augroup easycomplete#sources#ts#augroup
   autocmd!
-  autocmd BufReadPost * call easycomplete#sources#ts#init()
-  autocmd VimLeave * call easycomplete#sources#ts#destory()
-  autocmd TextChanged,TextChangedI * call easycomplete#sources#ts#tsReload()
+  autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
+  autocmd TextChanged,TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#tsReload()
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -28,10 +27,6 @@ augroup easycomplete#sources#ts#initIgnoreConditions
   " ignore events configFileDiag triggered by reload event. See also #99
   " call add(s:ignore_response_conditions, 'npm notice created a lockfile')
 augroup END
-
-function! easycomplete#sources#ts#init()
-  call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
-endfunction
 
 function! easycomplete#sources#ts#destory()
   call s:stopTsserver()
@@ -59,6 +54,7 @@ endfunction
 function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:registEventCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
   call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
+  call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
 endfunction
 
 function! easycomplete#sources#ts#diagnosticsCallback(item)
@@ -74,6 +70,7 @@ function! easycomplete#sources#ts#completeCallback(item)
   if empty(l:raw_list)
     return
   endif
+
 
   let l:request_req = get(a:item, 'request_seq')
   let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
@@ -141,7 +138,7 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
   " call log#log('--easycomplete--')
-  " call log#log({"a":1},[1,2,3],"sfsdf",v:none,12, 'sss', a:line)
+  " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
@@ -289,6 +286,7 @@ endfunction
 
 function! s:tsserverOpen()
   let l:file = easycomplete#context()['filepath']
+  " call log#log("tsserver open", l:file)
   let l:args = {'file': l:file}
   call s:sendCommandOneWay('open', l:args)
 endfunction

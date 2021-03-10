@@ -1,9 +1,6 @@
 
 function! easycomplete#sources#snips#completor(opt, ctx)
 
-  return v:true
-
-
   let l:typing = a:ctx['typing']
   if index(['.','/',':'], a:ctx['char']) >= 0
     return v:true

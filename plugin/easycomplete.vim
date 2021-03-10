@@ -17,10 +17,19 @@ augroup END
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
     autocmd!
-    autocmd SourcePost * call easycomplete#Enable()
+    autocmd BufReadPost * call easycomplete#Enable()
   augroup END
 else " 通过 :packadd 手动加载
   call easycomplete#Enable()
 endif
 
+augroup EasyCompleteMapping
+  " 插入模式下的回车事件监听
+  inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
+  " 插入模式下 Tab 和 Shift-Tab 的监听
+  " inoremap <Tab> <C-R>=CleverTab()<CR>
+  " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
+  inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
+  inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
+augroup END
 

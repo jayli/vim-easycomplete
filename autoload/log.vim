@@ -11,17 +11,17 @@
 "     - g:vim_log_enabled = 0   disable log printing
 
 augroup log#Config
-  let s:debugger = {}
-  let s:debugger.logfile = 0
-  let s:debugger.status = 'stop'
-  let s:debugger.original_winnr = winnr()
-  let s:debugger.original_bufinfo = getbufinfo(bufnr(''))
-  let s:debugger.original_winid = bufwinid(bufnr(""))
-  let s:debugger.log_bufinfo = 0
-  let s:debugger.log_winid = -20
-  let s:debugger.log_winnr = 0
-  let s:debugger.log_term_winid = 0
-  let s:debugger.init_msg = [
+  let g:debugger = {}
+  let g:debugger.logfile = 0
+  let g:debugger.status = 'stop'
+  let g:debugger.original_winnr = winnr()
+  let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
+  let g:debugger.original_winid = bufwinid(bufnr(""))
+  let g:debugger.log_bufinfo = 0
+  let g:debugger.log_winid = -20
+  let g:debugger.log_winnr = 0
+  let g:debugger.log_term_winid = 0
+  let g:debugger.init_msg = [
         \ " ____________________________________",
         \ "|                                    |",
         \ "|                                    |",
@@ -76,29 +76,32 @@ function! log#log(...)
 endfunction
 
 function! s:LogRunning()
-  return argc(s:debugger.log_winid) == -1 ? 0 : 1
+  return argc(g:debugger.log_winid) == -1 ? 0 : 1
 endfunction
 
 function! s:InitLogWindow()
-  let s:debugger.original_bufinfo = getbufinfo(bufnr(''))
-  let s:debugger.original_winid = bufwinid(bufnr(""))
+  let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
+  let g:debugger.original_winid = bufwinid(bufnr(""))
   if s:LogRunning()
     return
   endif
+  if pumvisible()
+    call popup_clear()
+  endif
   call execute("vertical botright new filetype=help buftype=nofile")
   call execute("setlocal nonu")
-  call term_start("tail -f " . get(s:debugger, 'logfile'),{
+  call term_start("tail -f " . get(g:debugger, 'logfile'),{
       \ 'term_finish': 'close',
       \ 'term_name':'log_debugger_window_name',
       \ 'vertical':'1',
       \ 'curwin':'1'
       \ })
   exec 'setl statusline=%1*\ Normal\ %*%5*\ Log\ Window\ %*\ %r%f[%M]%=Depth\ :\ %L\ '
-  let s:debugger.log_term_winid = bufwinid('log_debugger_window_name')
-  let s:debugger.log_winnr = winnr()
-  let s:debugger.log_bufinfo = getbufinfo(bufnr(''))
-  let s:debugger.log_winid = bufwinid(bufnr(""))
-  call s:AppendLog(copy(get(s:debugger, 'init_msg')))
+  let g:debugger.log_term_winid = bufwinid('log_debugger_window_name')
+  let g:debugger.log_winnr = winnr()
+  let g:debugger.log_bufinfo = getbufinfo(bufnr(''))
+  let g:debugger.log_winid = bufwinid(bufnr(""))
+  call s:AppendLog(copy(get(g:debugger, 'init_msg')))
   call s:GotoOriginalWindow()
 endfunction
 
@@ -119,10 +122,10 @@ function! log#close()
 endfunction
 
 function! log#quit()
-  if get(s:debugger, 'log_winid') == bufwinid(bufnr(""))
+  if get(g:debugger, 'log_winid') == bufwinid(bufnr(""))
     call term_sendkeys("log_debugger_window_name","\<C-C>")
   endif
-  if get(s:debugger, 'original_winid') == bufwinid(bufnr(""))
+  if get(g:debugger, 'original_winid') == bufwinid(bufnr(""))
     if s:LogRunning()
       call s:CloseLogWindow()
       call feedkeys("\<S-ZZ>")
@@ -150,26 +153,26 @@ function! s:AppendLog(content)
   endif
   call map(l:content, { key, val -> '>>> ' . val})
   if s:LogRunning()
-    let l:logfile = get(s:debugger, "logfile")
+    let l:logfile = get(g:debugger, "logfile")
     call writefile(l:content, l:logfile, "a")
   endif
 endfunction
 
 function! s:InitLogFile()
-  let l:logfile = get(s:debugger, 'logfile')
+  let l:logfile = get(g:debugger, 'logfile')
   if !empty(l:logfile)
     return l:logfile
   endif
-  let s:debugger.logfile = tempname()
-  call writefile([""], s:debugger.logfile, "a")
-  return s:debugger.logfile
+  let g:debugger.logfile = tempname()
+  call writefile([""], g:debugger.logfile, "a")
+  return g:debugger.logfile
 endfunction
 
 function! s:DelLogFile()
-  let l:logfile = get(s:debugger, 'logfile')
+  let l:logfile = get(g:debugger, 'logfile')
   if !empty(l:logfile)
     call delete(l:logfile)
-    let s:debugger.logfile = 0
+    let g:debugger.logfile = 0
   endif
 endfunction
 
@@ -193,11 +196,11 @@ function! s:GotoWinnr(winnr) abort
 endfunction
 
 function! s:GotoOriginalWindow()
-  call s:GotoWindow(s:debugger.original_winid)
+  call s:GotoWindow(g:debugger.original_winid)
 endfunction
 
 function! s:GotoLogWindow()
-  call s:GotoWindow(s:debugger.log_term_winid)
+  call s:GotoWindow(g:debugger.log_term_winid)
 endfunction
 
 function! s:log(...)

@@ -5,12 +5,12 @@
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
 
-if get(g:, 'easycomplete_loaded')
+if get(g:, 'easycomplete_script_loaded')
   finish
 endif
-let g:easycomplete_loaded = 1
+let g:easycomplete_script_loaded = 1
 
-augroup easycomplete#initLocalVars
+function! s:InitLocalVars()
   " 安装的插件
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储
@@ -19,33 +19,32 @@ augroup easycomplete#initLocalVars
   let g:typing_key             = 0
   " 当前 complete 匹配完成的存储
   let g:easycomplete_menuitems = []
-augroup END
 
-augroup easycomplete#auMapping
-  " 插入模式下的回车事件监听
-  inoremap <expr> <CR> TypeEnterWithPUM()
-  " 插入模式下 Tab 和 Shift-Tab 的监听
-  " inoremap <Tab> <C-R>=CleverTab()<CR>
-  " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
-  inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
-  inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
-augroup END
-
-" 初始化入口
-function! easycomplete#Enable()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
   " set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
+endfunction
 
-  call ui#setScheme()
+" 初始化入口
+function! easycomplete#Enable()
+  if exists("b:easycomplete_loaded_done")
+    return
+  endif
+  let b:easycomplete_loaded_done= 1
+
+  call s:InitLocalVars()
   call plugin#init()
-  " 全局初始化
-  call s:SetupCompleteCache()
   call s:ConstructorCalling()
+  call s:SetupCompleteCache()
   call s:BindingTypingCommand()
+  call ui#setScheme()
+endfunction
+
+function! s:SnipSupports()
+  return exists("g:UltiSnipsEditSplit")
 endfunction
 
 function! easycomplete#nill() abort
@@ -202,9 +201,9 @@ function! easycomplete#typing()
   return ""
 endfunction
 
-" Complete 跟指调用起点, force: 是否立即调用还是延迟调用
+" Complete 跟指调用起点, immediately: 是否立即调用还是延迟调用
 " 一般在 : / . 时立即调用，在首次敲击字符时延迟调用
-function! s:DoComplete(force)
+function! s:DoComplete(immediately)
   " 过滤非法的'.'点匹配
   let l:ctx = easycomplete#context()
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -226,7 +225,7 @@ function! s:DoComplete(force)
   endif
 
   " 判断是否是单词的首次按键，是则有一个延迟
-  if index([':','.','/'], l:ctx['char']) >= 0 || a:force == v:true
+  if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
     let word_first_type_delay = 110
@@ -319,23 +318,14 @@ endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
+  " call log#log('tab clicked')
   setlocal completeopt-=noinsert
   if pumvisible()
     return "\<C-N>"
-  elseif exists("g:snipMate") && exists('b:snip_state')
+  elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
     " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
-    let jump = b:snip_state.jump_stop(0)
-    if type(jump) == 1 " 返回字符串
-      " 等同于 return "\<C-R>=snipMate#TriggerSnippet()\<CR>"
-      return jump
-    endif
-  elseif &filetype == "go" && strpart(getline('.'), col('.') - 2, 1) == "."
-    " Hack for Golang
-    " 唤醒easycomplete菜单
-    setlocal completeopt+=noinsert
-    call s:DoComplete(v:true)
+    call UltiSnips#JumpForwards()
     return ""
-    return "\<C-X>\<C-U>"
   elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
         \ len(s:StringTrim(getline('.'))) == 0
@@ -345,22 +335,13 @@ function! easycomplete#CleverTab()
     "   空行
     return "\<Tab>"
   elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
-        \ "\\(\\w\\|\\/\\|\\.\\)$") < 0
-    " 如果正在输入一个非字母，也不是'/'或'.'
+        \ "\\(\\w\\|\\/\\|\\.\\|\\:\\)$") < 0
+    " 如果正在输入一个非字母，也不是'/'或'.'或者':'
     return "\<Tab>"
-  elseif exists("g:snipMate")
-    " let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-    " let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
-
-    " 如果只匹配一个，也还是给出提示
-    call s:DoComplete(v:true)
-    return ""
-    return "\<C-X>\<C-U>"
   else
     " 正常逻辑下都唤醒easycomplete菜单
     call s:DoComplete(v:true)
     return ""
-    return "\<C-X>\<C-U>"
   endif
 endfunction
 
@@ -372,27 +353,17 @@ endfunction
 
 " 回车事件的行为，如果补全浮窗内点击回车，要判断是否
 " 插入 snipmete 展开后的代码，否则还是默认回车事件
-function! TypeEnterWithPUM()
+function! easycomplete#TypeEnterWithPUM()
   " 如果浮窗存在且 snipMate 已安装
-  if pumvisible() && exists("g:snipMate")
+  if pumvisible() && s:SnipSupports()
     " 得到当前光标处已匹配的单词
-    let word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-    " 根据单词查找 snippets 中的匹配项
-    let list = snipMate#GetSnippetsForWordBelowCursor(word, 1)
-    " 关闭浮窗
-
-    " 1. 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
-    if snipMate#CanBeTriggered() && !empty(list)
+    let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+    " 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
+    if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
-      call feedkeys( "\<Plug>snipMateNextOrTrigger" )
+      let key_str = "\\" . g:UltiSnipsExpandTrigger
+      call eval('feedkeys("'.key_str.'")')
       return ""
-    endif
-
-    " 2. 如果安装了 jedi，回车补全单词
-    if &filetype == "python" &&
-          \ exists("g:jedi#auto_initialization") &&
-          \ g:jedi#auto_initialization == 1
-      return "\<C-Y>"
     endif
   endif
   if pumvisible()
@@ -401,69 +372,11 @@ function! TypeEnterWithPUM()
   return "\<CR>"
 endfunction
 
-" 将 snippets 原始格式做简化，用作浮窗提示展示用
-" 主要将原有格式里的占位符替换成单个单词，比如下面是原始串
-" ${1:obj}.ajaxSend(function (${1:request, settings}) {
-" 替换为=>
-" obj.ajaxSend(function (request, settings) {
-function! s:GetSnippetSimplified(snippet_str)
-  let pfx_len = match(a:snippet_str,"${[0-9]:")
-  if !empty(a:snippet_str) && pfx_len < 0
-    return a:snippet_str
-  endif
-
-  let simplified_str = substitute(a:snippet_str,"\${[0-9]:\\(.\\{\-}\\)}","\\1", "g")
-  return simplified_str
-endfunction
-
 " 插入模式下模拟按键点击
 function! s:SendKeys( keys )
   call feedkeys( a:keys, 'in' )
 endfunction
 
-" 将Buff关键字和Snippets做合并
-" keywords is List
-" snippets is Dict
-function! s:MixinBufKeywordAndSnippets(keywords,snippets)
-  if empty(a:snippets) || len(a:snippets) == 0
-    return a:keywords
-  endif
-
-  let snipabbr_list = []
-  for [k,v] in items(a:snippets)
-    let snip_obj  = s:GetSnip(v)
-    let snip_body = s:MenuStringTrim(get(snip_obj,'snipbody'))
-    let menu_kind = s:StringTrim(s:GetLangTypeRawStr(get(snip_obj,'langtype')))
-    " kind 内以尖括号表示语言类型
-    " let menu_kind = substitute(menu_kind,"\\[\\(\\w\\+\\)\\]","\<\\1\>","g")
-    call add(snipabbr_list, {"word": k , "menu": snip_body, "kind": menu_kind})
-  endfor
-
-  call extend(snipabbr_list , a:keywords)
-  return snipabbr_list
-endfunction
-
-" 从一个完整的SnipObject中得到Snippet最有用的两个信息
-" 一个是snip原始代码片段，一个是语言类型
-function! s:GetSnip(snipobj)
-  let errmsg    = "[Unknown snippet]"
-  let snip_body = ""
-  let lang_type = ""
-
-  if empty(a:snipobj)
-    let snip_body = errmsg
-  else
-    let v = values(a:snipobj)
-    let k = keys(a:snipobj)
-    if !empty(v[0]) && !empty(k[0])
-      let snip_body = v[0][0]
-      let lang_type = split(k[0], "\\s")[0]
-    else
-      let snip_body = errmsg
-    endif
-  endif
-  return {"snipbody":snip_body,"langtype":lang_type}
-endfunction
 
 " 相当于 trim，去掉首尾的空字符
 function! s:StringTrim(str)
@@ -475,71 +388,10 @@ function! s:StringTrim(str)
   return ""
 endfunction
 
-" 弹窗内需要展示的代码提示片段的 'Trim'
-function! s:MenuStringTrim(localstr)
-  let default_length = 28
-  let simplifed_result = s:GetSnippetSimplified(a:localstr)
-
-  if !empty(simplifed_result) && len(simplifed_result) > default_length
-    let trim_str = simplifed_result[:default_length] . ".."
-  else
-    let trim_str = simplifed_result
-  endif
-
-  return split(trim_str,"[\n]")[0]
-endfunction
-
-" 如果 vim-snipmate 已经安装，用这个插件的方法取 snippets
-function! g:GetSnippets(scopes, trigger) abort
-  if exists("g:snipMate")
-    return snipMate#GetSnippets(a:scopes, a:trigger)
-  endif
-  return {}
-endfunction
-
 " 关闭补全浮窗
 function! s:CloseCompletionMenu()
   if pumvisible()
     call s:SendKeys( "\<ESC>a" )
-  endif
-endfunction
-
-" 根据词根返回语法匹配的结果，每个语言都需要单独处理
-function! s:GetSyntaxCompletionResult(base) abort
-  let syntax_complete = []
-  " 处理 Javascript 语法匹配
-  if s:IsTsSyntaxCompleteReady()
-    call tsuquyomi#complete(0, a:base)
-    " tsuquyomi#complete 这里先创建菜单再 complete_add 进去
-    " 所以这里 ts_comp_result 总是空
-    let syntax_complete = []
-  endif
-  " 处理 Go 语法匹配
-  if s:IsGoSyntaxCompleteReady()
-    if !exists("g:g_syntax_completions")
-      let g:g_syntax_completions = [1,[]]
-    endif
-    let syntax_complete = g:g_syntax_completions[1]
-  endif
-  return syntax_complete
-endfunction
-
-function! s:IsGoSyntaxCompleteReady()
-  if &filetype == "go" && exists("g:go_loaded_install")
-    return 1
-  else
-    return 0
-  endif
-endfunction
-
-function! s:IsTsSyntaxCompleteReady()
-  if exists('g:loaded_tsuquyomi') && exists('g:tsuquyomi_is_available') &&
-        \ g:loaded_tsuquyomi == 1 &&
-        \ g:tsuquyomi_is_available == 1 &&
-        \ &filetype =~ "^\\(typescript\\|javascript\\)"
-    return 1
-  else
-    return 0
   endif
 endfunction
 
