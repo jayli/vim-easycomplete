@@ -55,7 +55,7 @@ function! easycomplete#util#call(method, args) abort
 endfunction
 
 function! easycomplete#util#NotInsertMode()
-  return mode()[0] != 'i' ? 1 : 0
+  return mode()[0] != 'i' ? v:true : v:false
 endfunction
 
 function! easycomplete#util#Sendkeys(keys)
