@@ -10,7 +10,10 @@
 "     - g:vim_log_enabled = 1   enable log at side window
 "     - g:vim_log_enabled = 0   disable log printing
 
-augroup log#Config
+function! s:InitCommand()
+  if exists("g:debugger")
+    return
+  endif
   let g:debugger = {}
   let g:debugger.logfile = 0
   let g:debugger.status = 'stop'
@@ -30,23 +33,21 @@ augroup log#Config
         \ "|                                    |",
         \ "|____________________________________|"]
 
-augroup END
-
-augroup log#Augroup
   autocmd!
   autocmd QuitPre * call log#quit()
 
   command! -nargs=0 -complete=command CleanLog call log#clean()
   command! -nargs=0 -complete=command CloseLog call log#close()
   command! -nargs=1 -complete=command Log call log#log(<args>)
-augroup END
+
+endfunction
 
 " 多参数适配
 function! log#log(...)
   if !exists('g:vim_log_enabled')
     let g:vim_log_enabled = 1
   endif
-
+  call s:InitCommand()
   if g:vim_log_enabled != 1
     return
   endif

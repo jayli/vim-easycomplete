@@ -23,7 +23,8 @@ function! s:InitLocalVars()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
-  " set completeopt+=popup
+  set completepopup=height:10,width:60,highlight:Pmenu,border:off,align:menu
+  set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
 endfunction
@@ -44,7 +45,12 @@ function! easycomplete#Enable()
 endfunction
 
 function! s:SnipSupports()
-  return exists("g:UltiSnipsEditSplit")
+  try
+    call funcref("UltiSnips#RefreshSnippets")
+  catch /^Vim\%((\a\+)\)\=:E700/
+    return v:false
+  endtry
+  return v:true
 endfunction
 
 function! easycomplete#nill() abort
@@ -61,7 +67,6 @@ function! s:BindingTypingCommand()
     let l:cursor = l:cursor + 1
   endwhile
   inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
-  " autocmd CursorHoldI * call easycomplete#CursorHoldI()
 endfunction
 
 function! s:SetupCompleteCache()
@@ -326,7 +331,7 @@ function! easycomplete#CleverTab()
     " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
     call UltiSnips#JumpForwards()
     return ""
-  elseif getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
+  elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
         \ len(s:StringTrim(getline('.'))) == 0
     " 判断空行的三个条件

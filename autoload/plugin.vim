@@ -34,7 +34,8 @@ endfunction
 "         \ "pos":"topleft",
 "         \ "maxwidth": 30,
 "         \ "border": [1, 1, 1, 1],
-"         \ 'borderchars': [' ',' ',' ',' ',' ',' ',' ',' '],
 "         \ "moved": "word",
 "         \ })
-"   call winbufnr(winid)
+" "  call winbufnr(winid)
+"
+" call popup_create('hello', {})

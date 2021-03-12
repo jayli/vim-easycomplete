@@ -89,7 +89,7 @@ function! s:CompleteMenuMap(key, val)
         \ "kind": exists('a:val.kind') ? a:val.kind[0] : "",
         \ "menu": "[TS]",
         \ "word": is_func ? val_name . "(" : val_name,
-        \ "info": "sdf"
+        \ "info": "msg->" . rand()
         \ }
 endfunction
 

@@ -21,7 +21,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
          \ 'word' : trigger,
          \ 'kind' : 'S',
          \ 'menu' : '[S]' . ' '. description,
-         \ 'info' : "sdfdsfdsfs"
+         \ 'info' : "sdfdsfdsfs" . rand()
          \ })
    endfor
 
