@@ -54,11 +54,31 @@ endfunction
 function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:registEventCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
   call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
+  call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
 endfunction
 
 function! easycomplete#sources#ts#diagnosticsCallback(item)
   " TODO
+endfunction
+
+function! easycomplete#sources#ts#EntryDetailsCallback(item)
+  let l:menu_details = get(a:item, 'body')
+
+  echom l:menu_details
+  " call log#log('---')
+
+  let l:request_req = get(a:item, 'request_seq')
+  let l:ctx = s:getCtxByRequestSeq(l:request_req)
+  if exists("g:easycomplete_menu_list") && !empty("g:easycomplete_menu_list")
+    " jayli todo here 这里调用感觉会慢一些
+    call s:DoComplete(l:ctx, g:easycomplete_menu_list)
+  endif
+  let g:easycomplete_menu_list = []
+endfunction
+
+function! s:DoComplete(ctx, menu_list)
+  call easycomplete#complete('ts', a:ctx, a:ctx['startcol'], a:menu_list)
 endfunction
 
 function! easycomplete#sources#ts#completeCallback(item)
@@ -71,12 +91,20 @@ function! easycomplete#sources#ts#completeCallback(item)
     return
   endif
 
-
   let l:request_req = get(a:item, 'request_seq')
-  let l:menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+  let g:easycomplete_menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
         \ function("s:CompleteMenuMap"))
   let l:ctx = s:getCtxByRequestSeq(l:request_req)
-  call easycomplete#complete('ts', l:ctx, l:ctx['startcol'], l:menu_list)
+  " jayli 
+  " call s:DoComplete(l:ctx, g:easycomplete_menu_list)
+
+  let l:entries= map(copy(g:easycomplete_menu_list), function("s:EntriesMap"))
+  let s:request_seq = s:request_seq - 1
+  call s:tsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
+endfunction
+
+function! s:EntriesMap(key, val)
+  return a:val.abbr
 endfunction
 
 function! s:CompleteMenuMap(key, val)
@@ -137,7 +165,8 @@ endfunction
 
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
-  " call log#log('--easycomplete--')
+  " 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
+  call log#log('--easycomplete--')
   " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
@@ -166,6 +195,7 @@ endfunction
 function! s:tsCompletions(file, line, offset, prefix)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
   " call tsuquyomi#complete(0, easycomplete#context()['typing'])
+
   call s:sendCommandAsyncResponse('completions', l:args)
 endfunction
 
