@@ -62,19 +62,71 @@ function! easycomplete#sources#ts#diagnosticsCallback(item)
   " TODO
 endfunction
 
+"     [{
+"       'name': 'DOMError',
+"       'kind': 'var',
+"       'kindModifier': 'declare',
+"       'displayParts': [
+"         {'kind': 'keyword', 'text': 'interface'},
+"         {'kind': 'space', 'text': ' '},
+"         ...
+"         {'kind': 'lineBreak', 'text': '\n'},
+"         ...
+"       ]
+"     }, ...]
 function! easycomplete#sources#ts#EntryDetailsCallback(item)
+  if !exists("g:easycomplete_menu_list") || empty("g:easycomplete_menu_list")
+    return
+  endif
+
   let l:menu_details = get(a:item, 'body')
 
-  echom l:menu_details
-  " call log#log('---')
+  " TODO jayli here
+  let idx = 0
+  for menu in l:menu_details
+    " call s:log(menu.name)
+    " call s:log(g:easycomplete_menu_list[idx].abbr)
+    let g:easycomplete_menu_list[idx].info = s:NormalizeEntryDetail(menu)
+    let idx = idx + 1
+  endfor
+
+  call s:log(l:menu_details)
 
   let l:request_req = get(a:item, 'request_seq')
   let l:ctx = s:getCtxByRequestSeq(l:request_req)
-  if exists("g:easycomplete_menu_list") && !empty("g:easycomplete_menu_list")
-    " jayli todo here 这里调用感觉会慢一些
-    call s:DoComplete(l:ctx, g:easycomplete_menu_list)
-  endif
+  " jayli todo here 这里调用感觉会慢一些
+  call s:DoComplete(l:ctx, g:easycomplete_menu_list)
   let g:easycomplete_menu_list = []
+endfunction
+
+function! s:NormalizeEntryDetail(item)
+  let l:title = ""
+  let l:desp_str = ""
+  let l:documentation = ""
+
+  let l:title = join([
+        \ get(a:item, 'kindModifiers'),
+        \ get(a:item, 'name'),
+        \ get(a:item, 'kind'),
+        \ get(a:item, 'name')], " ")
+
+  if !empty(get(a:item, "displayParts")) && len(get(a:item, "displayParts")) > 0
+    let l:desp_list = []
+    for dis_item in get(a:item, "displayParts")
+      call add(l:desp_list, dis_item.text)
+    endfor
+    let l:desp_str = "\n" . join(l:desp_list, "")
+  endif
+
+  if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
+    let l:doc_list = []
+    for document_item in get(a:item, "documentation")
+      call add(l:doc_list, document_item.text)
+    endfor
+    let l:documentation = "\n---------\n" . join(l:doc_list, "")
+  endif
+
+  return l:title . l:desp_str . l:documentation
 endfunction
 
 function! s:DoComplete(ctx, menu_list)

@@ -23,7 +23,8 @@ function! s:InitLocalVars()
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
-  set completepopup=height:10,width:60,highlight:Pmenu,border:off,align:menu
+  " TODO width 不管用？
+  set completepopup=width:60,highlight:Pmenu,border:off,align:menu
   set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
