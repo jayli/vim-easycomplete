@@ -6,7 +6,7 @@ let g:easycomplete_sources_ts = 1
 augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
-  autocmd TextChanged,TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#tsReload()
+  autocmd TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#tsReload()
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -17,6 +17,8 @@ augroup easycomplete#sources#ts#initLocalVars
   let s:notify_callback = {}
   let s:quickfix_list = []
   let s:request_seq = 1
+  let b:tsserver_reloading = 0
+  let s:menu_flag = "[TS]"
 augroup END
 
 augroup easycomplete#sources#ts#initIgnoreConditions
@@ -40,8 +42,10 @@ function! easycomplete#sources#ts#tsOpen()
 endfunction
 
 function! easycomplete#sources#ts#tsReload()
+  " call log#log('easycomplete#sources#ts#tsReload', rand())
   " TODO 设置callback模式
   call s:tsserverReload()
+  call easycomplete#typing()
 endfunction
 
 function! easycomplete#sources#ts#getConfig(opts) abort
@@ -54,8 +58,13 @@ endfunction
 function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:registEventCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
   call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
+  call s:registResponseCallback('easycomplete#sources#ts#tsReloadingCallback', 'reload')
   call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
+endfunction
+
+function! easycomplete#sources#ts#tsReloadingCallback(item)
+  let b:tsserver_reloading = 0
 endfunction
 
 function! easycomplete#sources#ts#diagnosticsCallback(item)
@@ -75,28 +84,45 @@ endfunction
 "       ]
 "     }, ...]
 function! easycomplete#sources#ts#EntryDetailsCallback(item)
-  if !exists("g:easycomplete_menu_list") || empty("g:easycomplete_menu_list")
+  if !pumvisible()
     return
   endif
 
   let l:menu_details = get(a:item, 'body')
-
-  " TODO jayli here
   let idx = 0
-  for menu in l:menu_details
-    " call s:log(menu.name)
-    " call s:log(g:easycomplete_menu_list[idx].abbr)
-    let g:easycomplete_menu_list[idx].info = s:NormalizeEntryDetail(menu)
+  for item in l:menu_details
+    let l:info = s:NormalizeEntryDetail(item)
+    call easycomplete#SetMenuInfo(get(item, "name"), l:info, s:menu_flag)
     let idx = idx + 1
   endfor
+endfunction
 
-  call s:log(l:menu_details)
+" job complete 回调
+function! easycomplete#sources#ts#completeCallback(item)
+  if empty(a:item)
+    return
+  endif
+
+  let l:raw_list = get(a:item, 'body')
+  if empty(l:raw_list)
+    return
+  endif
 
   let l:request_req = get(a:item, 'request_seq')
+  let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+        \ function("s:CompleteMenuMap"))
   let l:ctx = s:getCtxByRequestSeq(l:request_req)
-  " jayli todo here 这里调用感觉会慢一些
-  call s:DoComplete(l:ctx, g:easycomplete_menu_list)
-  let g:easycomplete_menu_list = []
+  " 显示 completemenu
+  call s:DoComplete(l:ctx, l:easycomplete_menu_list)
+  " 取 entries details
+  let l:entries= map(copy(l:easycomplete_menu_list), function("s:EntriesMap"))
+  if !empty(l:entries) && type(l:entries) == type([])
+    call s:tsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
+  endif
+endfunction
+
+function! s:DoComplete(ctx, menu_list)
+  call easycomplete#complete('ts', a:ctx, a:ctx['startcol'], a:menu_list)
 endfunction
 
 function! s:NormalizeEntryDetail(item)
@@ -129,32 +155,6 @@ function! s:NormalizeEntryDetail(item)
   return l:title . l:desp_str . l:documentation
 endfunction
 
-function! s:DoComplete(ctx, menu_list)
-  call easycomplete#complete('ts', a:ctx, a:ctx['startcol'], a:menu_list)
-endfunction
-
-function! easycomplete#sources#ts#completeCallback(item)
-  if empty(a:item)
-    return
-  endif
-
-  let l:raw_list = get(a:item, 'body')
-  if empty(l:raw_list)
-    return
-  endif
-
-  let l:request_req = get(a:item, 'request_seq')
-  let g:easycomplete_menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
-        \ function("s:CompleteMenuMap"))
-  let l:ctx = s:getCtxByRequestSeq(l:request_req)
-  " jayli 
-  " call s:DoComplete(l:ctx, g:easycomplete_menu_list)
-
-  let l:entries= map(copy(g:easycomplete_menu_list), function("s:EntriesMap"))
-  let s:request_seq = s:request_seq - 1
-  call s:tsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
-endfunction
-
 function! s:EntriesMap(key, val)
   return a:val.abbr
 endfunction
@@ -167,9 +167,9 @@ function! s:CompleteMenuMap(key, val)
         \ "dup": 1,
         \ "icase": 1,
         \ "kind": exists('a:val.kind') ? a:val.kind[0] : "",
-        \ "menu": "[TS]",
+        \ "menu": s:menu_flag,
         \ "word": is_func ? val_name . "(" : val_name,
-        \ "info": "msg->" . rand()
+        \ "info": ""
         \ }
 endfunction
 
@@ -178,7 +178,8 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
   if a:ctx['char'] == "/"
     return v:true
   endif
-  call s:tsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  call s:FireTsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  " call log#log('--docomplete--',a:ctx["char"], a:ctx["typing"])
   return v:true
 endfunction
 
@@ -217,8 +218,8 @@ endfunction
 
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
-  " 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  call log#log('--easycomplete--')
+  " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
+  " call log#log('--easycomplete--')
   " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
@@ -244,11 +245,27 @@ endfunction
 "       {'name': 'close', 'kindModifiers': 'declare', 'kind': 'function'},
 "       {'name': 'clipboardData', 'kindModifiers': 'declare', 'kind': 'var'}
 "     ]
-function! s:tsCompletions(file, line, offset, prefix)
+function! s:FireTsCompletions(file, line, offset, prefix)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
-  " call tsuquyomi#complete(0, easycomplete#context()['typing'])
 
+  " shoule wait for reload done
+  " call log#log("complete fired", rand(), l:args)
+  call s:WaitForReloadDone()
   call s:sendCommandAsyncResponse('completions', l:args)
+endfunction
+
+function! s:WaitForReloadDone()
+  " 50 * 5 = 250ms
+  let l:count_time = 50
+  let l:cursor = 0
+  while l:cursor <= l:count_time
+    if b:tsserver_reloading == 0
+      break
+    endif
+    sleep 5ms
+    let l:cursor = l:cursor + 1
+  endwhile
+  " call log#log('sleep')
 endfunction
 
 function! s:tsCompletionEntryDetails(file, line, offset, entryNames)
@@ -343,6 +360,7 @@ function! s:messageHandler(msg)
   endif
 
   " 执行 response 的回调
+  " call log#log("responseName", l:responseName)
   if !empty(l:responseName)
     if(has_key(s:response_callbacks, l:responseName))
       let ResponseCallback = function(s:response_callbacks[l:responseName], [l:item])
@@ -378,6 +396,7 @@ function! s:tsserverReload()
   call s:saveTmp(l:file)
   let l:args = {'file': l:file, 'tmpfile': s:getTmpFile(l:file)}
   call s:sendCommandOneWay('reload', l:args)
+  let b:tsserver_reloading = 1
 endfunction
 
 function! s:saveTmp(file_name)

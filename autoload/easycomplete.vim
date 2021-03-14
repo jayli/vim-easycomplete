@@ -15,8 +15,11 @@ function! s:InitLocalVars()
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储
   let g:easycomplete_menucache = {}
-  " 当前敲入的字符存储
-  let g:typing_key             = 0
+  " 当前敲入的字符存储，保存回车和退格（回车和退格时不应该做 complete 动作）
+  let b:typing_key             = 0
+
+  " 当前是否正在敲入 <BS>
+  let b:backing = 0
   " 当前 complete 匹配完成的存储
   let g:easycomplete_menuitems = []
 
@@ -25,7 +28,8 @@ function! s:InitLocalVars()
   set completeopt+=noselect
   " TODO width 不管用？
   set completepopup=width:60,highlight:Pmenu,border:off,align:menu
-  set completeopt+=popup
+  set completeopt+=popuphidden
+  " set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
 endfunction
@@ -38,10 +42,15 @@ function! easycomplete#Enable()
   let b:easycomplete_loaded_done= 1
 
   call s:InitLocalVars()
-  call plugin#init()
-  call s:ConstructorCalling()
-  call s:SetupCompleteCache()
+  " 一定是 typing 的绑定在前，每个插件重写的command在后
   call s:BindingTypingCommand()
+  " 初始化每个语言的插件配置
+  call plugin#init()
+  " 每个插件根据文件类型来调用初始化函数
+  call s:ConstructorCalling()
+  " 初始化 complete 缓存
+  call s:SetupCompleteCache()
+  " 设置 Pmenu 样式
   call ui#setScheme()
 endfunction
 
@@ -58,16 +67,19 @@ function! easycomplete#nill() abort
   return v:none " DO NOTHING
 endfunction
 
-function! s:BindingTypingCommand()
+function! easycomplete#GetBindingKeys()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>'
-  let l:cursor = 0
-  while l:cursor < strwidth(l:key_liststr)
-    let key = l:key_liststr[l:cursor]
-    exec 'inoremap <buffer><silent>' . key . ' ' . key . '<C-R>=easycomplete#typing()<CR>'
-    let l:cursor = l:cursor + 1
-  endwhile
+  return l:key_liststr
+endfunction
+
+function! s:BindingTypingCommand()
   inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
+
+  augroup easycomplete#augroup
+    autocmd!
+    autocmd TextChangedI * call easycomplete#typing()
+  augroup END
 endfunction
 
 function! s:SetupCompleteCache()
@@ -104,10 +116,27 @@ function! s:AddCompleteCache(word, menulist)
   let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
 endfunction
 
+function! s:ResetBackingSt()
+  let b:backing = 0
+endfunction
+
+function! s:SetBackingSt()
+  let b:backing = 1
+  call s:AsyncRun(function('s:ResetBackingSt'), [], 90)
+  return ''
+endfunction
+
+function! easycomplete#IsBacking()
+  return b:backing ? v:true : v:false
+endfunction
+
 function! easycomplete#backing()
+  return s:SetBackingSt()
+
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
+
 
   call s:ResetCompleteCache()
 
@@ -199,11 +228,19 @@ function! s:CallCompeltorByName(name, ctx)
 endfunction
 
 function! easycomplete#typing()
+  if easycomplete#IsBacking()
+    return ""
+  endif
+
+  let l:char = easycomplete#context()["char"]
+  if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) < 0
+    return
+  endif
+
   if pumvisible()
     return ""
   endif
   call s:DoComplete(v:false)
-  " call s:SendKeys("\<C-X>\<C-U>")
   return ""
 endfunction
 
@@ -306,25 +343,58 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
-function! s:GetTypingKey()
-  if exists('g:typing_key') && g:typing_key != ""
-    return g:typing_key
-  endif
-  return "\<Tab>"
-endfunction
-
 function! s:GetTypingWord()
   return easycomplete#util#GetTypingWord()
 endfunction
 
-" 根据 vim-snippets 整理出目前支持的语言种类和缩写
-function! s:GetLangTypeRawStr(lang)
-  return language_alias#GetLangTypeRawStr(a:lang)
+function! easycomplete#UpdateCompleteInfo()
+  let item = v:event.completed_item
+  let info = s:GetInfoByCompleteItem(item)
+  call s:ShowCompleteInfo(info)
+  " Start fetching info for the item then call ShowCompleteInfo(info)
+endfunction
+
+function! s:GetInfoByCompleteItem(item)
+  let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
+  let info = ""
+  for item in g:easycomplete_menuitems
+    let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
+    if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
+      let info = get(item, "info")
+      break
+    endif
+  endfor
+  return info
+endfunction
+
+function! s:ShowCompleteInfo(info)
+  " call s:log(a:info)
+  " call s:log(popup_findinfo())
+  let id = popup_findinfo()
+  if empty(id)
+    let id = popup_create('', {})
+    call popup_clear()
+  endif
+  if empty(a:info)
+    call popup_hide(id)
+    return
+  endif
+  call popup_settext(id, a:info)
+  call popup_show(id)
+endfunction
+
+function! easycomplete#SetMenuInfo(name, info, menu_flag)
+  for item in g:easycomplete_menuitems
+    let t_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
+    if t_name ==# a:name && get(item, "menu") ==# a:menu_flag
+      let item.info = a:info
+      break
+    endif
+  endfor
 endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
-  " call log#log('tab clicked')
   setlocal completeopt-=noinsert
   if pumvisible()
     return "\<C-N>"
@@ -505,13 +575,6 @@ function! s:CompleteFilter(raw_menu_list)
     endif
   endfor
   return arr
-endfunction
-
-function! s:ShowCompletePopup()
-  if s:NotInsertMode()
-    return
-  endif
-  call s:SendKeys("\<C-P>")
 endfunction
 
 function! s:AsyncRun(...)
