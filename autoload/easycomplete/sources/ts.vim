@@ -42,9 +42,19 @@ function! easycomplete#sources#ts#tsOpen()
 endfunction
 
 function! easycomplete#sources#ts#tsReload()
-  " call log#log('easycomplete#sources#ts#tsReload', rand())
-  " TODO 设置callback模式
-  call s:tsserverReload()
+  " 需要劫持 typing 动作的标准做法: 重写 TextChangedI 方法，在触发typing动作之
+  " 前加上 TsServerReload 的动作
+  if !easycomplete#FireCondition()
+    return
+  endif
+  call easycomplete#util#StopAsyncRun()
+  call easycomplete#util#AsyncRun(function('s:TsserverReloadAndDoTyping'), [], 30)
+endfunction
+
+function! s:TsserverReloadAndDoTyping()
+  call s:TsserverReload()
+  " TODO 这里用了 sleep 等待 Tsserverreload 成功，需要改成callback模式
+  " 目前性能问题不明显，凑合用
   call easycomplete#typing()
 endfunction
 
@@ -219,19 +229,19 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  " call log#log('--easycomplete--')
-  " call log#log(a:line)
+  call log#log('--easycomplete--')
+  call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
-function! s:sendCommandAsyncResponse(cmd, args)
+function! s:SendCommandAsyncResponse(cmd, args)
   let l:input = json_encode({'command': a:cmd, 'arguments': a:args, 'type': 'request', 'seq': s:request_seq})
   call s:sendAsyncRequest(l:input)
   let s:request_seq = s:request_seq + 1
 endfunction
 
-function! s:sendCommandOneWay(cmd, args)
-  call s:sendCommandAsyncResponse(a:cmd, a:args)
+function! s:SendCommandOneWay(cmd, args)
+  call s:SendCommandAsyncResponse(a:cmd, a:args)
 endfunction
 
 " Fetch keywards to complete from TSServer.
@@ -251,7 +261,7 @@ function! s:FireTsCompletions(file, line, offset, prefix)
   " shoule wait for reload done
   " call log#log("complete fired", rand(), l:args)
   call s:WaitForReloadDone()
-  call s:sendCommandAsyncResponse('completions', l:args)
+  call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
 
 function! s:WaitForReloadDone()
@@ -270,7 +280,7 @@ endfunction
 
 function! s:tsCompletionEntryDetails(file, line, offset, entryNames)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'entryNames': a:entryNames}
-  call s:sendCommandAsyncResponse('completionEntryDetails', l:args)
+  call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
 endfunction
 
 function! s:startTsserver()
@@ -310,7 +320,7 @@ function! s:configTsserver()
         \ 'formatOptions': l:formatOptions,
         \ 'extraFileExtensions': l:extraFileExtensions
         \ }
-  call s:sendCommandOneWay('configure', l:args)
+  call s:SendCommandOneWay('configure', l:args)
 endfunction
 
 function! s:stdOutCallback(job_id, data, event)
@@ -388,14 +398,14 @@ function! s:tsserverOpen()
   let l:file = easycomplete#context()['filepath']
   " call log#log("tsserver open", l:file)
   let l:args = {'file': l:file}
-  call s:sendCommandOneWay('open', l:args)
+  call s:SendCommandOneWay('open', l:args)
 endfunction
 
-function! s:tsserverReload()
+function! s:TsserverReload()
   let l:file = easycomplete#context()['filepath']
   call s:saveTmp(l:file)
   let l:args = {'file': l:file, 'tmpfile': s:getTmpFile(l:file)}
-  call s:sendCommandOneWay('reload', l:args)
+  call s:SendCommandOneWay('reload', l:args)
   let b:tsserver_reloading = 1
 endfunction
 

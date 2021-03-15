@@ -18,8 +18,8 @@ function! s:InitLocalVars()
   " 当前敲入的字符存储，保存回车和退格（回车和退格时不应该做 complete 动作）
   let b:typing_key             = 0
 
-  " 当前是否正在敲入 <BS>
-  let b:backing = 0
+  " 当前是否正在敲入 <BS> 或者 <CR>
+  let b:backing_or_cr = 0
   " 当前 complete 匹配完成的存储
   let g:easycomplete_menuitems = []
 
@@ -78,6 +78,7 @@ function! s:BindingTypingCommand()
 
   augroup easycomplete#augroup
     autocmd!
+    " autocmd TextChangedI * call easycomplete#typing()
     autocmd TextChangedI * call easycomplete#typing()
   augroup END
 endfunction
@@ -116,30 +117,29 @@ function! s:AddCompleteCache(word, menulist)
   let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
 endfunction
 
-function! s:ResetBackingSt()
-  let b:backing = 0
+function! s:ResetBacking()
+  let b:backing_or_cr = 0
 endfunction
 
-function! s:SetBackingSt()
-  let b:backing = 1
-  call s:AsyncRun(function('s:ResetBackingSt'), [], 90)
+function! s:SetBacking()
+  let b:backing_or_cr = 1
+  call s:StopAsyncRun()
+  call s:AsyncRun(function('s:ResetBacking'), [], 90)
   return ''
 endfunction
 
 function! easycomplete#IsBacking()
-  return b:backing ? v:true : v:false
+  return b:backing_or_cr ? v:true : v:false
 endfunction
 
 function! easycomplete#backing()
-  return s:SetBackingSt()
+  return s:SetBacking()
 
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
 
-
   call s:ResetCompleteCache()
-
   call s:StopAsyncRun()
   if has_key(g:easycomplete_menucache, s:GetTypingWord())
     call s:AsyncRun(function('s:BackingTimerHandler'), [], 500)
@@ -227,20 +227,28 @@ function! s:CallCompeltorByName(name, ctx)
   endif
 endfunction
 
-function! easycomplete#typing()
+function! easycomplete#FireCondition()
   if easycomplete#IsBacking()
-    return ""
+    return v:false
   endif
-
   let l:char = easycomplete#context()["char"]
   if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) < 0
-    return
+    return v:false
+  endif
+  return v:true
+endfunction
+
+function! easycomplete#typing()
+  if !easycomplete#FireCondition()
+    return ""
   endif
 
   if pumvisible()
     return ""
   endif
   call s:DoComplete(v:false)
+  " call s:StopAsyncRun()
+  " call s:AsyncRun(function('s:DoComplete'), [v:false], 50)
   return ""
 endfunction
 
@@ -371,12 +379,9 @@ function! s:ShowCompleteInfo(info)
   " call s:log(a:info)
   " call s:log(popup_findinfo())
   let id = popup_findinfo()
-  if empty(id)
-    let id = popup_create('', {})
+  if empty(a:info) || s:StringTrim(a:info) ==# ""
+    " call popup_hide(id)
     call popup_clear()
-  endif
-  if empty(a:info)
-    call popup_hide(id)
     return
   endif
   call popup_settext(id, a:info)
@@ -443,6 +448,7 @@ function! easycomplete#TypeEnterWithPUM()
     endif
   endif
   if pumvisible()
+    call s:SetBacking()
     return "\<C-Y>"
   endif
   return "\<CR>"
@@ -527,11 +533,32 @@ function! easycomplete#CompleteAdd(menu_list)
     let g:easycomplete_menuitems = []
   endif
 
+  " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
+  " jayli
   let g:easycomplete_menuitems = g:easycomplete_menuitems + s:NormalizeMenulist(a:menu_list)
+  let g:easycomplete_menuitems = map(sort(g:easycomplete_menuitems, "s:sortTextComparator"), 
+        \ function("s:PrepareMenuInfo"))
 
   let start_pos = col('.') - strwidth(s:GetTypingWord())
   call complete(start_pos, g:easycomplete_menuitems)
+  call popup_clear()
   call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
+endfunction
+
+function! s:sortTextComparator(entry1, entry2)
+  if a:entry1.word > a:entry2.word
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:PrepareMenuInfo(key, val)
+  if !exists("a:val.info") || (exists("a:val.info") && strlen(a:val.info) == 0)
+    let a:val.info = " "
+    return a:val
+  endif
+  return a:val
 endfunction
 
 function! s:NormalizeMenulist(arr)

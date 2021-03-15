@@ -21,7 +21,7 @@ endfunction
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(base)
   let bufKeywordList        = s:GetBufKeywordsList(a:base)
-  let wrappedBufKeywordList = map(bufKeywordList, '{"word":v:val,"dup":1,"icase":1,"menu": "[buf]", "info": "sdf"}')
+  let wrappedBufKeywordList = map(bufKeywordList, '{"word":v:val,"dup":1,"icase":1,"menu": "[buf]", "info": "-"}')
   return s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
         \       s:GetWrappedDictKeywordList()
