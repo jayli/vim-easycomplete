@@ -229,8 +229,8 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:startTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  call log#log('--easycomplete--')
-  call log#log(a:line)
+  " call log#log('--easycomplete--')
+  " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
