@@ -6,7 +6,7 @@ let g:easycomplete_sources_ts = 1
 augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
-  autocmd TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#tsReload()
+  autocmd TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#typing()
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -41,10 +41,13 @@ function! easycomplete#sources#ts#tsOpen()
   call s:configTsserver()
 endfunction
 
-function! easycomplete#sources#ts#tsReload()
+function! easycomplete#sources#ts#typing()
   " 需要劫持 typing 动作的标准做法: 重写 TextChangedI 方法，在触发typing动作之
   " 前加上 TsServerReload 的动作
   if !easycomplete#FireCondition()
+    return
+  endif
+  if pumvisible()
     return
   endif
   call easycomplete#util#StopAsyncRun()
@@ -99,6 +102,9 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
   endif
 
   let l:menu_details = get(a:item, 'body')
+  if type(l:menu_details) != type([]) || empty(l:menu_details)
+    return
+  endif
   let idx = 0
   for item in l:menu_details
     let l:info = s:NormalizeEntryDetail(item)
@@ -275,7 +281,6 @@ function! s:WaitForReloadDone()
     sleep 5ms
     let l:cursor = l:cursor + 1
   endwhile
-  " call log#log('sleep')
 endfunction
 
 function! s:tsCompletionEntryDetails(file, line, offset, entryNames)

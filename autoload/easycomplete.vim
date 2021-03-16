@@ -17,6 +17,8 @@ function! s:InitLocalVars()
   let g:easycomplete_menucache = {}
   " 当前敲入的字符存储，保存回车和退格（回车和退格时不应该做 complete 动作）
   let b:typing_key             = 0
+  " pum 展开时记录 v:event.completed_item
+  let b:completed_item = {}
 
   " 当前是否正在敲入 <BS> 或者 <CR>
   let b:backing_or_cr = 0
@@ -28,8 +30,8 @@ function! s:InitLocalVars()
   set completeopt+=noselect
   " TODO width 不管用？
   set completepopup=width:60,highlight:Pmenu,border:off,align:menu
-  set completeopt+=popuphidden
-  " set completeopt+=popup
+  " set completeopt+=popuphidden
+  set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
 endfunction
@@ -80,7 +82,27 @@ function! s:BindingTypingCommand()
     autocmd!
     " autocmd TextChangedI * call easycomplete#typing()
     autocmd TextChangedI * call easycomplete#typing()
+    autocmd CursorHoldI * call easycomplete#HoldI()
   augroup END
+endfunction
+
+function! easycomplete#HoldI()
+  call easycomplete#ResetCompletedItem()
+endfunction
+
+function! easycomplete#ResetCompletedItem()
+  if pumvisible()
+    return
+  endif
+  let b:completed_item = {}
+endfunction
+
+function! easycomplete#SetCompletedItem(item)
+  let b:completed_item = a:item
+endfunction
+
+function! easycomplete#GetCompletedItem()
+  return b:completed_item
 endfunction
 
 function! s:SetupCompleteCache()
@@ -246,6 +268,7 @@ function! easycomplete#typing()
   if pumvisible()
     return ""
   endif
+  call s:StopAsyncRun()
   call s:DoComplete(v:false)
   " call s:StopAsyncRun()
   " call s:AsyncRun(function('s:DoComplete'), [v:false], 50)
@@ -261,6 +284,10 @@ function! s:DoComplete(immediately)
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
     call s:CloseCompletionMenu()
     return v:none
+  endif
+
+  if complete_check()
+    call s:CloseCompletionMenu()
   endif
 
   " 孤立的点和冒号，什么也不做
@@ -357,9 +384,14 @@ endfunction
 
 function! easycomplete#UpdateCompleteInfo()
   let item = v:event.completed_item
+  if empty(item)
+    call popup_clear()
+    return
+  endif
   let info = s:GetInfoByCompleteItem(item)
   call s:ShowCompleteInfo(info)
   " Start fetching info for the item then call ShowCompleteInfo(info)
+  call easycomplete#SetCompletedItem(item)
 endfunction
 
 function! s:GetInfoByCompleteItem(item)
@@ -368,7 +400,9 @@ function! s:GetInfoByCompleteItem(item)
   for item in g:easycomplete_menuitems
     let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
     if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
-      let info = get(item, "info")
+      if has_key(item, "info")
+        let info = get(item, "info")
+      endif
       break
     endif
   endfor
@@ -400,7 +434,7 @@ endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
-  setlocal completeopt-=noinsert
+  " setlocal completeopt-=noinsert
   if pumvisible()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
@@ -429,16 +463,18 @@ endfunction
 " CleverShiftTab 逻辑判断，无补全菜单情况下输出<Tab>
 " Shift-Tab 在插入模式下输出为 Tab，仅为我个人习惯
 function! easycomplete#CleverShiftTab()
-  return pumvisible()?"\<C-P>":"\<Tab>"
+  return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
 
 " 回车事件的行为，如果补全浮窗内点击回车，要判断是否
 " 插入 snipmete 展开后的代码，否则还是默认回车事件
 function! easycomplete#TypeEnterWithPUM()
   " 如果浮窗存在且 snipMate 已安装
-  if pumvisible() && s:SnipSupports()
-    " 得到当前光标处已匹配的单词
-    let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+  let l:item = easycomplete#GetCompletedItem()
+  " 得到当前光标处已匹配的单词
+  let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+  if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word ) ||
+        \ ( pumvisible() && s:SnipSupports() && empty(l:item) )
     " 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
     if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
@@ -475,6 +511,7 @@ function! s:CloseCompletionMenu()
   if pumvisible()
     call s:SendKeys( "\<ESC>a" )
   endif
+  call easycomplete#ResetCompletedItem()
 endfunction
 
 function! s:CompleteHandler()
@@ -535,17 +572,21 @@ function! easycomplete#CompleteAdd(menu_list)
 
   " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
   " jayli
+  let typing_word = s:GetTypingWord()
   let g:easycomplete_menuitems = g:easycomplete_menuitems + s:NormalizeMenulist(a:menu_list)
   let g:easycomplete_menuitems = map(sort(g:easycomplete_menuitems, "s:sortTextComparator"), 
         \ function("s:PrepareMenuInfo"))
+  let g:easycomplete_menuitems = filter(g:easycomplete_menuitems,
+        \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
-  let start_pos = col('.') - strwidth(s:GetTypingWord())
+  let start_pos = col('.') - strwidth(typing_word)
   call complete(start_pos, g:easycomplete_menuitems)
   call popup_clear()
-  call s:AddCompleteCache(s:GetTypingWord(), g:easycomplete_menuitems)
+  call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
 endfunction
 
 function! s:sortTextComparator(entry1, entry2)
+  " return v:true
   if a:entry1.word > a:entry2.word
     return v:true
   else
@@ -554,7 +595,8 @@ function! s:sortTextComparator(entry1, entry2)
 endfunction
 
 function! s:PrepareMenuInfo(key, val)
-  if !exists("a:val.info") || (exists("a:val.info") && strlen(a:val.info) == 0)
+  " 这里用一个空格来占位 info, 用来初始化 popup window
+  if !exists("a:val.info") || (has_key(a:val,"info") && strlen(a:val.info) == 0)
     let a:val.info = " "
     return a:val
   endif

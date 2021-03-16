@@ -28,9 +28,7 @@ augroup EasyCompleteMapping
   " 插入模式下的回车事件监听
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
   " 插入模式下 Tab 和 Shift-Tab 的监听
-  " inoremap <Tab> <C-R>=CleverTab()<CR>
-  " inoremap <S-Tab> <C-R>=CleverShiftTab()<CR>
-  inoremap <silent> <Plug>EasyCompTabTrigger  <C-R>=easycomplete#CleverTab()<CR>
-  inoremap <silent> <Plug>EasyCompShiftTabTrigger  <C-R>=easycomplete#CleverShiftTab()<CR>
+  inoremap <silent><expr> <Plug>EasyCompTabTrigger  easycomplete#CleverTab()
+  inoremap <silent><expr> <Plug>EasyCompShiftTabTrigger  easycomplete#CleverShiftTab()
 augroup END
 
