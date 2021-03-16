@@ -29,7 +29,7 @@ function! s:InitLocalVars()
   set completeopt+=menuone
   set completeopt+=noselect
   " TODO width 不管用？
-  set completepopup=width:60,highlight:Pmenu,border:off,align:menu
+  set completepopup=width:90,highlight:Pmenu,border:off,align:menu
   " set completeopt+=popuphidden
   set completeopt+=popup
   set completeopt-=longest
@@ -76,7 +76,7 @@ function! easycomplete#GetBindingKeys()
 endfunction
 
 function! s:BindingTypingCommand()
-  inoremap <buffer><silent> <BS> <BS><C-R>=easycomplete#backing()<CR>
+  inoremap <buffer><silent><expr> <BS> easycomplete#backing()
 
   augroup easycomplete#augroup
     autocmd!
@@ -88,6 +88,7 @@ endfunction
 
 function! easycomplete#HoldI()
   call easycomplete#ResetCompletedItem()
+  call s:ResetCompleteCache()
 endfunction
 
 function! easycomplete#ResetCompletedItem()
@@ -95,6 +96,14 @@ function! easycomplete#ResetCompletedItem()
     return
   endif
   let b:completed_item = {}
+endfunction
+
+" 判断当前是否在complete menu 中光标移动在内高亮某一项
+function! easycomplete#CompleteCursored()
+  if !pumvisible()
+    return v:false
+  endif
+  return empty(b:completed_item) ? v:false : v:true
 endfunction
 
 function! easycomplete#SetCompletedItem(item)
@@ -147,7 +156,7 @@ function! s:SetBacking()
   let b:backing_or_cr = 1
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:ResetBacking'), [], 90)
-  return ''
+  return "\<BS>"
 endfunction
 
 function! easycomplete#IsBacking()
@@ -157,22 +166,22 @@ endfunction
 function! easycomplete#backing()
   return s:SetBacking()
 
-  if !exists('g:easycomplete_menucache')
-    call s:SetupCompleteCache()
-  endif
+  " if !exists('g:easycomplete_menucache')
+  "   call s:SetupCompleteCache()
+  " endif
 
-  call s:ResetCompleteCache()
-  call s:StopAsyncRun()
-  if has_key(g:easycomplete_menucache, s:GetTypingWord())
-    call s:AsyncRun(function('s:BackingTimerHandler'), [], 500)
-  else
-    " TODO 回退的逻辑优化
-    " " call s:SendKeys("\<C-X>\<C-U>")
-    " call s:DoComplete(v:true)
-    " call s:StopAsyncRun()
-    " call s:CompleteHandler()
-  endif
-  return ''
+  " call s:ResetCompleteCache()
+  " call s:StopAsyncRun()
+  " if has_key(g:easycomplete_menucache, s:GetTypingWord())
+  "   call s:AsyncRun(function('s:BackingTimerHandler'), [], 500)
+  " else
+  "   " TODO 回退的逻辑优化
+  "   " " call s:SendKeys("\<C-X>\<C-U>")
+  "   " call s:DoComplete(v:true)
+  "   " call s:StopAsyncRun()
+  "   " call s:CompleteHandler()
+  " endif
+  " return ''
 endfunction
 
 function! s:BackingTimerHandler()
@@ -398,6 +407,9 @@ function! s:GetInfoByCompleteItem(item)
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
   let info = ""
   for item in g:easycomplete_menuitems
+    if type(item) != type({})
+      continue
+    endif
     let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
     if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
       if has_key(item, "info")
@@ -413,12 +425,28 @@ function! s:ShowCompleteInfo(info)
   " call s:log(a:info)
   " call s:log(popup_findinfo())
   let id = popup_findinfo()
-  if empty(a:info) || s:StringTrim(a:info) ==# ""
-    " call popup_hide(id)
+  let winid = id
+  let bufnr = winbufnr(id)
+  call setbufvar(bufnr, "&filetype", &filetype)
+  " TODO 这个限制宽度的设置不管用
+  call setbufvar(bufnr, '&wrap', 1)
+  call popup_setoptions(id, {'maxwidth': 30})
+  call popup_move(id,{'maxwidth': 30})
+  if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "")
     call popup_clear()
     return
   endif
-  call popup_settext(id, a:info)
+  if type(a:info) == type([]) && empty(a:info)
+    call popup_clear()
+    return
+  endif
+  " call popup_settext(id, a:info)
+  if type(a:info) == type("")
+    call popup_settext(id, a:info)
+  endif
+  if type(a:info) == type([])
+    call popup_settext(id, a:info)
+  endif
   call popup_show(id)
 endfunction
 
@@ -435,6 +463,7 @@ endfunction
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
   " setlocal completeopt-=noinsert
+  call s:StopAsyncRun()
   if pumvisible()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
@@ -570,16 +599,25 @@ function! easycomplete#CompleteAdd(menu_list)
     let g:easycomplete_menuitems = []
   endif
 
+  if easycomplete#CompleteCursored()
+    call feedkeys("\<C-E>")
+  endif
+
   " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
   " jayli
   let typing_word = s:GetTypingWord()
   let g:easycomplete_menuitems = g:easycomplete_menuitems + s:NormalizeMenulist(a:menu_list)
-  let g:easycomplete_menuitems = map(sort(g:easycomplete_menuitems, "s:sortTextComparator"), 
+  if type(g:easycomplete_menuitems) != type([]) || empty(g:easycomplete_menuitems)
+    return
+  endif
+  let g:easycomplete_menuitems = map(sort(copy(g:easycomplete_menuitems), "s:sortTextComparator"), 
         \ function("s:PrepareMenuInfo"))
   let g:easycomplete_menuitems = filter(g:easycomplete_menuitems,
         \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
   let start_pos = col('.') - strwidth(typing_word)
+  " 如果要给completemenu 补充数据，而这时又已经开始了tab下拉选中的action，先回
+  " 退到原始状态，c-e
   call complete(start_pos, g:easycomplete_menuitems)
   call popup_clear()
   call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
@@ -587,16 +625,19 @@ endfunction
 
 function! s:sortTextComparator(entry1, entry2)
   " return v:true
-  if a:entry1.word > a:entry2.word
-    return v:true
-  else
-    return v:false
+  if has_key(a:entry1, "word") && has_key(a:entry2, "word")
+    if a:entry1.word > a:entry2.word
+      return v:true
+    else
+      return v:false
+    endif
   endif
+  return v:false
 endfunction
 
 function! s:PrepareMenuInfo(key, val)
   " 这里用一个空格来占位 info, 用来初始化 popup window
-  if !exists("a:val.info") || (has_key(a:val,"info") && strlen(a:val.info) == 0)
+  if !exists("a:val.info") || (has_key(a:val,"info") && empty(a:val.info) == 0)
     let a:val.info = " "
     return a:val
   endif

@@ -143,8 +143,8 @@ endfunction
 
 function! s:NormalizeEntryDetail(item)
   let l:title = ""
-  let l:desp_str = ""
-  let l:documentation = ""
+  let l:desp_list = []
+  let l:doc_list = []
 
   let l:title = join([
         \ get(a:item, 'kindModifiers'),
@@ -154,21 +154,37 @@ function! s:NormalizeEntryDetail(item)
 
   if !empty(get(a:item, "displayParts")) && len(get(a:item, "displayParts")) > 0
     let l:desp_list = []
+    let l:t_line = ""
     for dis_item in get(a:item, "displayParts")
-      call add(l:desp_list, dis_item.text)
+      if dis_item.text =~ "\\(\\r\\|\\n\\)"
+        call add(l:desp_list, l:t_line)
+        let l:t_line = ""
+      else 
+        let l:t_line  = l:t_line  . dis_item.text
+      endif
     endfor
-    let l:desp_str = "\n" . join(l:desp_list, "")
+    if !empty(l:t_line)
+      call add(l:desp_list, l:t_line)
+    endif
   endif
 
   if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
-    let l:doc_list = []
+    let l:doc_list = ["------------"]
+    let l:t_line = ""
     for document_item in get(a:item, "documentation")
-      call add(l:doc_list, document_item.text)
+      if document_item.text =~ "\\(\\r\\|\\n\\)"
+        call add(l:doc_list, l:t_line)
+        let l:t_line = ""
+      else 
+        let l:t_line = l:t_line . document_item.text
+      endif
     endfor
-    let l:documentation = "\n---------\n" . join(l:doc_list, "")
+    if !empty(l:t_line)
+      call add(l:doc_list, l:t_line)
+    endif
   endif
 
-  return l:title . l:desp_str . l:documentation
+  return [l:title] + l:desp_list + l:doc_list
 endfunction
 
 function! s:EntriesMap(key, val)
@@ -348,8 +364,10 @@ function! s:messageHandler(msg)
   try
     let l:res_item = json_decode(a:msg)
   catch
+    " TODO 出异常到这里，程序会报错
     echom a:msg
     echom 'tsserver response error'
+    call easycomplete#HoldI()
     return
   endtry
 
