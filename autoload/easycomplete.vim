@@ -80,18 +80,17 @@ function! s:BindingTypingCommand()
 
   augroup easycomplete#augroup
     autocmd!
-    " autocmd TextChangedI * call easycomplete#typing()
     autocmd TextChangedI * call easycomplete#typing()
     autocmd CursorHoldI * call easycomplete#HoldI()
   augroup END
 endfunction
 
 function! easycomplete#HoldI()
-  call easycomplete#ResetCompletedItem()
+  call s:ResetCompletedItem()
   call s:ResetCompleteCache()
 endfunction
 
-function! easycomplete#ResetCompletedItem()
+function! s:ResetCompletedItem()
   if pumvisible()
     return
   endif
@@ -152,7 +151,7 @@ function! s:ResetBacking()
   let b:backing_or_cr = 0
 endfunction
 
-function! s:SetBacking()
+function! s:backing()
   let b:backing_or_cr = 1
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:ResetBacking'), [], 90)
@@ -164,7 +163,7 @@ function! easycomplete#IsBacking()
 endfunction
 
 function! easycomplete#backing()
-  return s:SetBacking()
+  return s:backing()
 
   " if !exists('g:easycomplete_menucache')
   "   call s:SetupCompleteCache()
@@ -341,7 +340,6 @@ function! easycomplete#RegisterSource(opt)
     let g:easycomplete_source = {}
   endif
   let g:easycomplete_source[a:opt["name"]] = a:opt
-  " call s:CallConstructorByName(a:opt["name"], easycomplete#context())
 endfunction
 
 " 依次执行安装完了的每个匹配器，依次调用每个匹配器的 completor 函数
@@ -391,8 +389,9 @@ function! s:GetTypingWord()
   return easycomplete#util#GetTypingWord()
 endfunction
 
-function! easycomplete#UpdateCompleteInfo()
+function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
+  call easycomplete#SetCompletedItem(item)
   if empty(item)
     call popup_clear()
     return
@@ -400,7 +399,6 @@ function! easycomplete#UpdateCompleteInfo()
   let info = s:GetInfoByCompleteItem(item)
   call s:ShowCompleteInfo(info)
   " Start fetching info for the item then call ShowCompleteInfo(info)
-  call easycomplete#SetCompletedItem(item)
 endfunction
 
 function! s:GetInfoByCompleteItem(item)
@@ -422,16 +420,14 @@ function! s:GetInfoByCompleteItem(item)
 endfunction
 
 function! s:ShowCompleteInfo(info)
-  " call s:log(a:info)
-  " call s:log(popup_findinfo())
   let id = popup_findinfo()
   let winid = id
   let bufnr = winbufnr(id)
   call setbufvar(bufnr, "&filetype", &filetype)
   " TODO 这个限制宽度的设置不管用
-  call setbufvar(bufnr, '&wrap', 1)
-  call popup_setoptions(id, {'maxwidth': 30})
-  call popup_move(id,{'maxwidth': 30})
+  " call setbufvar(bufnr, '&wrap', 1)
+  " call popup_setoptions(id, {'maxwidth': 30})
+  " call popup_move(id,{'maxwidth': 30})
   if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "")
     call popup_clear()
     return
@@ -440,13 +436,7 @@ function! s:ShowCompleteInfo(info)
     call popup_clear()
     return
   endif
-  " call popup_settext(id, a:info)
-  if type(a:info) == type("")
-    call popup_settext(id, a:info)
-  endif
-  if type(a:info) == type([])
-    call popup_settext(id, a:info)
-  endif
+  call popup_settext(id, a:info)
   call popup_show(id)
 endfunction
 
@@ -462,8 +452,9 @@ endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
-  " setlocal completeopt-=noinsert
-  call s:StopAsyncRun()
+  setlocal completeopt-=noinsert
+  " call s:StopAsyncRun()
+  call s:backing()
   if pumvisible()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
@@ -513,7 +504,7 @@ function! easycomplete#TypeEnterWithPUM()
     endif
   endif
   if pumvisible()
-    call s:SetBacking()
+    call s:backing()
     return "\<C-Y>"
   endif
   return "\<CR>"
@@ -540,7 +531,7 @@ function! s:CloseCompletionMenu()
   if pumvisible()
     call s:SendKeys( "\<ESC>a" )
   endif
-  call easycomplete#ResetCompletedItem()
+  call s:ResetCompletedItem()
 endfunction
 
 function! s:CompleteHandler()
@@ -637,9 +628,8 @@ endfunction
 
 function! s:PrepareMenuInfo(key, val)
   " 这里用一个空格来占位 info, 用来初始化 popup window
-  if !exists("a:val.info") || (has_key(a:val,"info") && empty(a:val.info) == 0)
+  if !exists("a:val.info") || (has_key(a:val,"info") && empty(a:val.info))
     let a:val.info = " "
-    return a:val
   endif
   return a:val
 endfunction

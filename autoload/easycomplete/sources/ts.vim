@@ -6,7 +6,6 @@ let g:easycomplete_sources_ts = 1
 augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
-  autocmd TextChangedI *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#typing()
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -39,26 +38,6 @@ function! easycomplete#sources#ts#tsOpen()
   call s:startTsserver()
   call s:tsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
   call s:configTsserver()
-endfunction
-
-function! easycomplete#sources#ts#typing()
-  " 需要劫持 typing 动作的标准做法: 重写 TextChangedI 方法，在触发typing动作之
-  " 前加上 TsServerReload 的动作
-  if !easycomplete#FireCondition()
-    return
-  endif
-  if pumvisible()
-    return
-  endif
-  call easycomplete#util#StopAsyncRun()
-  call easycomplete#util#AsyncRun(function('s:TsserverReloadAndDoTyping'), [], 30)
-endfunction
-
-function! s:TsserverReloadAndDoTyping()
-  call s:TsserverReload()
-  " TODO 这里用了 sleep 等待 Tsserverreload 成功，需要改成callback模式
-  " 目前性能问题不明显，凑合用
-  call easycomplete#typing()
 endfunction
 
 function! easycomplete#sources#ts#getConfig(opts) abort
@@ -206,12 +185,13 @@ function! s:CompleteMenuMap(key, val)
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
+  call s:TsserverReload()
   call s:restoreCtx(a:ctx)
   if a:ctx['char'] == "/"
     return v:true
   endif
   call s:FireTsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
-  " call log#log('--docomplete--',a:ctx["char"], a:ctx["typing"])
+  " 返回 true 让其他插件的 completor 继续执行
   return v:true
 endfunction
 
@@ -281,7 +261,6 @@ function! s:FireTsCompletions(file, line, offset, prefix)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
 
   " shoule wait for reload done
-  " call log#log("complete fired", rand(), l:args)
   call s:WaitForReloadDone()
   call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
@@ -365,7 +344,7 @@ function! s:messageHandler(msg)
     let l:res_item = json_decode(a:msg)
   catch
     " TODO 出异常到这里，程序会报错
-    echom a:msg
+    " echom a:msg
     echom 'tsserver response error'
     call easycomplete#HoldI()
     return

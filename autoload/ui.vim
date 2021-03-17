@@ -3,7 +3,7 @@
 " 默认为 light
 function! ui#setScheme()
   if !exists("g:easycomplete_scheme")
-    let g:easycomplete_scheme = "rider"
+    let g:easycomplete_scheme = "dark"
   endif
 
   " hi Pmenu      ctermfg=111 ctermbg=235
