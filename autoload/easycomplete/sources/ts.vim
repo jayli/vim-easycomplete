@@ -30,14 +30,14 @@ augroup easycomplete#sources#ts#initIgnoreConditions
 augroup END
 
 function! easycomplete#sources#ts#destory()
-  call s:stopTsserver()
-  call s:delTmpFiles()
+  call s:StopTsserver()
+  call s:DelTmpFiles()
 endfunction
 
-function! easycomplete#sources#ts#tsOpen()
-  call s:startTsserver()
-  call s:tsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
-  call s:configTsserver()
+function! easycomplete#sources#ts#TsOpen()
+  call s:StartTsserver()
+  call s:TsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
+  call s:ConfigTsserver()
 endfunction
 
 function! easycomplete#sources#ts#getConfig(opts) abort
@@ -52,7 +52,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
   call s:registResponseCallback('easycomplete#sources#ts#tsReloadingCallback', 'reload')
   call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
-  call easycomplete#util#AsyncRun('easycomplete#sources#ts#tsOpen', [], 5)
+  call easycomplete#util#AsyncRun('easycomplete#sources#ts#TsOpen', [], 5)
 endfunction
 
 function! easycomplete#sources#ts#tsReloadingCallback(item)
@@ -195,7 +195,7 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
   return v:true
 endfunction
 
-function! s:stopTsserver()
+function! s:StopTsserver()
   if exists('s:tsq') && get(s:tsq, 'job') > 0
     call easycomplete#job#stop(get(s:tsq, 'job'))
   endif
@@ -229,7 +229,7 @@ function! s:getCtxByRequestSeq(seq)
 endfunction
 
 function! s:sendAsyncRequest(line)
-  call s:startTsserver()
+  call s:StartTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
   " call log#log('--easycomplete--')
   " call log#log(a:line)
@@ -283,7 +283,7 @@ function! s:tsCompletionEntryDetails(file, line, offset, entryNames)
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
 endfunction
 
-function! s:startTsserver()
+function! s:StartTsserver()
   if !exists('s:tsq')
     let s:tsq = {'job':0}
   endif
@@ -302,7 +302,7 @@ function! s:startTsserver()
   endif
 endfunction
 
-function! s:configTsserver()
+function! s:ConfigTsserver()
   let l:file = expand('%:p')
   let l:hostInfo = &viminfo
   let l:formatOptions = { }
@@ -396,9 +396,8 @@ function! s:sortTextComparator(entry1, entry2)
   endif
 endfunction
 
-function! s:tsserverOpen()
+function! s:TsserverOpen()
   let l:file = easycomplete#context()['filepath']
-  " call log#log("tsserver open", l:file)
   let l:args = {'file': l:file}
   call s:SendCommandOneWay('open', l:args)
 endfunction
@@ -431,7 +430,7 @@ function! s:getTmpFile(file_name)
   endif
 endfunction
 
-function! s:delTmpFiles()
+function! s:DelTmpFiles()
   if !exists('s:buf_info_map')
     return
   endif

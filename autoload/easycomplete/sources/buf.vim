@@ -3,10 +3,12 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   let l:typing = a:ctx['typing']
 
   if a:ctx['char'] ==# '.'
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
 
   if strlen(l:typing) == 0
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
 

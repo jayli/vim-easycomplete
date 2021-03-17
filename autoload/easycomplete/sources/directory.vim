@@ -3,21 +3,32 @@ function! easycomplete#sources#directory#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
 
   if !l:typing_path.isPath
+    " 这里是告诉引擎，该插件匹配结束，匹配了个空
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
 
-  let spath_start = l:typing_path.short_path_start
+  call easycomplete#util#AsyncRun(
+        \ function('s:CompleteHandler'),
+        \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path], 
+        \ 10 )
+  " 展开目录时，中断其他complete逻辑
+  " 终端其他 complete 逻辑，设计上的问题，这里要用异步调 easycomplete#complete
+  " 方法
+  return v:false
+endfunction
+
+function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
+  let spath_start = a:typing_path.short_path_start
 
   " 查找目录
-  let result = s:GetDirAndFiles(l:typing_path, a:ctx['typing'])
+  let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
   if len(result) == 0
     if strwidth(a:ctx['char'])) != 1
       call feedkeys("\<Tab>", "in")
     endif
   endif
-  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], result)
-  " 展开目录时，中断其他complete逻辑
-  return v:false
+  call easycomplete#complete(a:name, a:ctx, a:startcol, result)
 endfunction
 
 " 关闭补全浮窗

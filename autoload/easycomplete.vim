@@ -13,11 +13,25 @@ let g:easycomplete_script_loaded = 1
 function! s:InitLocalVars()
   " 安装的插件
   let g:easycomplete_source  = {}
-  " complete 匹配过的单词的存储
+  " complete 匹配过的单词的存储，用来后退时回显completemenu
   let g:easycomplete_menucache = {}
-  " 当前敲入的字符存储，保存回车和退格（回车和退格时不应该做 complete 动作）
-  let b:typing_key             = 0
+
+  " 暂存正在异步执行的每个 completor 任务，有返回后置标志位 done
+  " 用来避免多个 completor 返回时机不一带来的闪烁问题
+  " [
+  "   {
+  "     "ctx": {},
+  "     "name": "ts",
+  "     "condition": 0
+  "     "done" : 0
+  "   }
+  " ]
+  let g:easycomplete_complete_taskqueue = []
+
+  " 当前敲入的字符存储
+  let b:typing_key = 0
   " pum 展开时记录 v:event.completed_item
+  " 用来判断是否正在滑选completemenu中的项
   let b:completed_item = {}
 
   " 当前是否正在敲入 <BS> 或者 <CR>
@@ -30,7 +44,6 @@ function! s:InitLocalVars()
   set completeopt+=noselect
   " TODO width 不管用？
   set completepopup=width:90,highlight:Pmenu,border:off,align:menu
-  " set completeopt+=popuphidden
   set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
@@ -71,7 +84,7 @@ endfunction
 
 function! easycomplete#GetBindingKeys()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>_'
   return l:key_liststr
 endfunction
 
@@ -216,17 +229,28 @@ function! easycomplete#context() abort
   return l:ret
 endfunction
 
+function! s:SameCtx(ctx1, ctx2)
+  if a:ctx1["lnum"] == a:ctx2["lnum"] && a:ctx1["col"] == a:ctx2["col"]
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 " 格式上方便兼容 asyncomplete 使用
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   let l:ctx = easycomplete#context()
-  if a:ctx["lnum"] != l:ctx["lnum"] || a:ctx["col"] != l:ctx["col"]
+  " 返回时的ctx不是typing时的ctx
+  if !s:SameCtx(a:ctx, l:ctx)
     if s:CompleteSourceReady(a:name)
-      call s:CloseCompletionMenu()
-      call s:CallCompeltorByName(a:name, l:ctx)
+      " call s:CloseCompletionMenu()
+      " call easycomplete#HoldI()
+      " call s:CallCompeltorByName(a:name, l:ctx)
     endif
     return
   endif
-  call easycomplete#CompleteAdd(a:items)
+  call s:SetCompleteTaskQueue(a:name, l:ctx, 1, 1)
+  call s:CompleteAdd(a:items)
 endfunction
 
 function! s:CallConstructorByName(name, ctx)
@@ -314,12 +338,18 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 110
+    let word_first_type_delay = 250
   endif
 
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:none
+endfunction
+
+function! s:CompleteMenuDistinct(menu_list)
+  " 如果语法 complete 和 buf complete 有重复，保留语法结果
+
+
 endfunction
 
 " 代码样板
@@ -346,12 +376,14 @@ endfunction
 " 每个 completor 函数中再调用 CompleteAdd
 function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
+  call s:ResetCompleteTaskQueue()
   for item in keys(g:easycomplete_source)
     if s:CompleteSourceReady(item)
       let l:cprst = s:CallCompeltorByName(item, l:ctx)
       if l:cprst == v:true " 继续串行执行的指令
         continue
       else
+        call s:LetCompleteTaskQueueAllDone()
         break " 返回 false 时中断后续执行
       endif
     endif
@@ -496,6 +528,7 @@ function! easycomplete#TypeEnterWithPUM()
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word ) ||
         \ ( pumvisible() && s:SnipSupports() && empty(l:item) )
     " 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
+    call s:log('插入代码片段')
     if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
       let key_str = "\\" . g:UltiSnipsExpandTrigger
@@ -562,7 +595,6 @@ function! s:CompleteInit(...)
     let l:word = a:1
   endif
   " 这一步会让 complete popup 闪烁一下
-  " call complete(col('.') - strwidth(l:word), [""])
   let g:easycomplete_menuitems = []
 
   " 由于 complete menu 是异步构造的，所以从敲入字符到 complete 呈现之间有一个
@@ -597,24 +629,48 @@ function! easycomplete#CompleteAdd(menu_list)
   " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
   " jayli
   let typing_word = s:GetTypingWord()
-  let g:easycomplete_menuitems = g:easycomplete_menuitems + s:NormalizeMenulist(a:menu_list)
-  if type(g:easycomplete_menuitems) != type([]) || empty(g:easycomplete_menuitems)
+  let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")
+  let menuitems = g:easycomplete_menuitems + new_menulist
+  if type(menuitems) != type([]) || empty(menuitems)
     return
   endif
-  let g:easycomplete_menuitems = map(sort(copy(g:easycomplete_menuitems), "s:sortTextComparator"), 
+  let menuitems = map(sort(copy(menuitems), "s:SortTextComparatorByAlphabet"),
         \ function("s:PrepareMenuInfo"))
-  let g:easycomplete_menuitems = filter(g:easycomplete_menuitems,
+  let menuitems = filter(menuitems,
         \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
   let start_pos = col('.') - strwidth(typing_word)
   " 如果要给completemenu 补充数据，而这时又已经开始了tab下拉选中的action，先回
   " 退到原始状态，c-e
-  call complete(start_pos, g:easycomplete_menuitems)
+  try
+    call s:complete(start_pos, menuitems)
+  catch /^Vim\%((\a\+)\)\=:E730/
+    return v:none
+  endtry
+  let g:easycomplete_menuitems = menuitems
   call popup_clear()
   call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
 endfunction
 
-function! s:sortTextComparator(entry1, entry2)
+function! s:complete(start_pos, menuitems)
+  if s:CheckCompleteTastQueueAllDone()
+    " call complete(a:start_pos, a:menuitems)
+    call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
+  endif
+endfunction
+
+function! s:SortTextComparatorByLength(entry1, entry2)
+  if has_key(a:entry1, "word") && has_key(a:entry2, "word")
+    if strlen(a:entry1.word) > strlen(a:entry2.word)
+      return v:true
+    else
+      return v:false
+    endif
+  endif
+  return v:false
+endfunction
+
+function! s:SortTextComparatorByAlphabet(entry1, entry2)
   " return v:true
   if has_key(a:entry1, "word") && has_key(a:entry2, "word")
     if a:entry1.word > a:entry2.word
@@ -676,6 +732,56 @@ function! s:CompleteFilter(raw_menu_list)
   endfor
   return arr
 endfunction
+
+" ----------------------------------------------------------------------
+"  TaskQueue: 每次匹配时，依次请求每个插件的 completor 方法
+"  以最后一个返回匹配结果的时间点为准来执行 complete()
+"  依次来避免每个 completor 方法返回时机不一带来的闪烁
+"
+"  这里的设计有缺陷，判断是否最后一个completor结果返回时，如果存在强制中
+"  断的completor，这个判断会不准确，所以务必确保每个 completor 中的回调
+"  easycomplete#complete 时必须要异步，手动让 easycomplete#complete 的函
+"  数执行时机延迟到判断条件设置完毕之后，在写插件的时候有点费解，先只能这样
+" ----------------------------------------------------------------------
+function! s:ResetCompleteTaskQueue()
+  let g:easycomplete_complete_taskqueue = []
+  let l:ctx = easycomplete#context()
+  for name in keys(g:easycomplete_source)
+    if s:CompleteSourceReady(name)
+      call s:SetCompleteTaskQueue(name, l:ctx, 1, 0)
+    else
+      call s:SetCompleteTaskQueue(name, l:ctx, 0, 0)
+    endif
+  endfor
+endfunction
+
+function! s:SetCompleteTaskQueue(name, ctx, condition, done)
+  call filter(g:easycomplete_complete_taskqueue, 'v:val.name != "'.a:name.'"')
+  call add(g:easycomplete_complete_taskqueue, {
+        \ "name" : a:name,
+        \ "ctx" : a:ctx,
+        \ "condition": a:condition,
+        \ "done" : a:done
+        \ })
+endfunction
+
+function! s:CheckCompleteTastQueueAllDone()
+  let flag = v:true
+  for item in g:easycomplete_complete_taskqueue
+    if item.condition == 1 && item.done == 0
+      let flag = v:false
+      break
+    endif
+  endfor
+  return flag
+endfunction
+
+function! s:LetCompleteTaskQueueAllDone()
+  for item in g:easycomplete_complete_taskqueue
+    let item.done = 1
+  endfor
+endfunction
+
 
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)
