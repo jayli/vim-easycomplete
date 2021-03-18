@@ -47,6 +47,11 @@ function! s:InitLocalVars()
   set completeopt+=popup
   set completeopt-=longest
   set cpoptions+=B
+
+  " UltiSnips 也用了 tab 键，重写写避免冲突
+  " let g:UltiSnipsExpandTrigger = "<c-l>"
+  " if g:UltiSnipsExpandTrigger == "<tab>"
+  " endif
 endfunction
 
 " 初始化入口
@@ -90,7 +95,15 @@ function! easycomplete#GetBindingKeys()
 endfunction
 
 function! s:BindingTypingCommand()
-  inoremap <buffer><silent><expr> <BS> easycomplete#backing()
+  inoremap <silent><expr> <BS> easycomplete#backing()
+  if s:SnipSupports() && g:UltiSnipsExpandTrigger == "<tab>"
+    " 如果安装了 ultisnips ，因为 ultisnips 默认绑定 tab
+    " 跟这里有冲突，因此需要先解除掉tab绑定
+    iunmap <Tab>
+  endif
+  inoremap <silent><expr> <Tab>  easycomplete#CleverTab()
+  inoremap <silent><expr> <S-Tab>  easycomplete#CleverShiftTab()
+  inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 
   augroup easycomplete#augroup
     autocmd!
@@ -498,7 +511,9 @@ function! easycomplete#CleverTab()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
     " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
-    call UltiSnips#JumpForwards()
+    " call UltiSnips#JumpForwards()
+    call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
+    " call UltiSnips#ExpandSnippetOrJump()
     return ""
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
@@ -535,11 +550,11 @@ function! easycomplete#TypeEnterWithPUM()
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word ) ||
         \ ( pumvisible() && s:SnipSupports() && empty(l:item) )
     " 优先判断是否前缀可被匹配 && 是否完全匹配到 snippet
-    call s:log('插入代码片段')
     if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
-      let key_str = "\\" . g:UltiSnipsExpandTrigger
-      call eval('feedkeys("'.key_str.'")')
+      " let key_str = "\\" . g:UltiSnipsExpandTrigger
+      " call eval('feedkeys("'.key_str.'")')
+      call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
       return ""
     endif
   endif

@@ -6,13 +6,18 @@
 "                :h EasyComplete
 
 " hack for tsserver initialize speed
+"
+if get(g:, 'easycomplete_plugin_init')
+  finish
+endif
+let g:easycomplete_plugin_init = 1
 
-augroup FileTypeChecking
-  let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
-  if ext ==# "ts"
-    finish
-  endif
-augroup END
+" augroup FileTypeChecking
+"   let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
+"   if ext ==# "ts"
+"     finish
+"   endif
+" augroup END
 
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart
@@ -23,12 +28,4 @@ if has('vim_starting') " vim 启动时加载
 else " 通过 :packadd 手动加载
   call easycomplete#Enable()
 endif
-
-augroup EasyCompleteMapping
-  " 插入模式下的回车事件监听
-  inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
-  " 插入模式下 Tab 和 Shift-Tab 的监听
-  inoremap <silent><expr> <Plug>EasyCompTabTrigger  easycomplete#CleverTab()
-  inoremap <silent><expr> <Plug>EasyCompShiftTabTrigger  easycomplete#CleverShiftTab()
-augroup END
 
