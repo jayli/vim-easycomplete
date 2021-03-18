@@ -20,7 +20,8 @@
 
 ### 配置
 
-使用 <kbd>Tab</kbd> 键呼出补全菜单，用 <kbd>Shift-Tab</kbd> 在插入模式下输入 Tab。
+什么都不用配置，使用 <kbd>Tab</kbd> 键呼出补全菜单，用 <kbd>Shift-Tab</kbd> 在插入模式下输入 Tab。
+
 ### 使用
 
 JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig.json`，也可以不配
