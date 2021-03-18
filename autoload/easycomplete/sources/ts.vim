@@ -7,7 +7,9 @@ augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
   command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
+  " TODO 这种不是用标准的 tag 来实现的，需要改进
   nnoremap <c-]> :call easycomplete#sources#ts#GotoDefinition()<CR>
+  nnoremap <c-t> :bprevious<CR>
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -62,8 +64,15 @@ endfunction
 function! easycomplete#sources#ts#DefinationCallback(item)
   " TODO here jayli
   let l:definition_info = get(a:item, 'body')
-  call log#log(l:definition_info)
+  if empty(l:definition_info)
+    return
+  endif
+  let defination = l:definition_info[0]
+  let filename = defination.file
+  let start = defination.contextStart
+  " call log#log(l:definition_info)
   echom l:definition_info
+  execute 'edit +call\ cursor('.start.line.','.start.offset.') '.fnameescape(filename)
 endfunction
 
 function! easycomplete#sources#ts#TsReloadingCallback(item)
@@ -246,8 +255,8 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:StartTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  call log#log('--easycomplete--')
-  call log#log(a:line)
+  " call log#log('--easycomplete--')
+  " call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
@@ -307,7 +316,7 @@ endfunction
 "     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
 function! s:GotoDefinition(file, line, offset)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
-  call log#log(l:args)
+  " call log#log(l:args)
   call s:SendCommandAsyncResponse('definition', l:args)
 endfunction
 
