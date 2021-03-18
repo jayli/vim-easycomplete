@@ -107,6 +107,10 @@ function! easycomplete#sources#ts#completeCallback(item)
   let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
         \ function("s:CompleteMenuMap"))
   let l:ctx = s:getCtxByRequestSeq(l:request_req)
+  " 如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作
+  if !easycomplete#CheckContextSequence(l:ctx)
+    return
+  endif
   " 显示 completemenu
   call s:DoComplete(l:ctx, l:easycomplete_menu_list)
   " 取 entries details

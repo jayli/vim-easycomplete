@@ -1,6 +1,6 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
-" Description:  整合了字典、代码展开和语法补全的提示插件
+" Description:  The extreme simple complete plugin for vim
 "
 "               更多信息：
 "                   <https://github.com/jayli/vim-easycomplete>
@@ -11,13 +11,13 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! s:InitLocalVars()
-  " 安装的插件
+  " 全局存储安装的插件
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储，用来后退时回显completemenu
   let g:easycomplete_menucache = {}
 
   " 暂存正在异步执行的每个 completor 任务，有返回后置标志位 done
-  " 用来避免多个 completor 返回时机不一带来的闪烁问题
+  " 用来处理多个 completor 返回时机保持一致的问题
   " [
   "   {
   "     "ctx": {},
@@ -56,6 +56,7 @@ function! easycomplete#Enable()
   endif
   let b:easycomplete_loaded_done= 1
 
+  " 初始化全局变量
   call s:InitLocalVars()
   " 一定是 typing 的绑定在前，每个插件重写的command在后
   call s:BindingTypingCommand()
@@ -99,8 +100,12 @@ function! s:BindingTypingCommand()
 endfunction
 
 function! easycomplete#HoldI()
+  " 重置当前选中的 complete item
   call s:ResetCompletedItem()
+  " 重置 complete menu 全量缓存
   call s:ResetCompleteCache()
+  " 重置当前每个插件的 docomplete 的状态
+  call s:ResetCompleteTaskQueue()
 endfunction
 
 function! s:ResetCompletedItem()
@@ -230,11 +235,19 @@ function! easycomplete#context() abort
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
-  if a:ctx1["lnum"] == a:ctx2["lnum"] && a:ctx1["col"] == a:ctx2["col"]
+  if a:ctx1["lnum"] == a:ctx2["lnum"]
+        \ && a:ctx1["col"] == a:ctx2["col"]
+        \ && a:ctx1["typing"] ==# a:ctx2["typing"]
     return v:true
   else
     return v:false
   endif
+endfunction
+
+" 异步回来的complete menu携带的 ctx 和当前光标所在的 ctx 比较
+" 如果发生变化则返回 false，如果是一致的则返回true
+function! easycomplete#CheckContextSequence(ctx)
+  return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
 " 格式上方便兼容 asyncomplete 使用
@@ -338,18 +351,12 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 250
+    let word_first_type_delay = 200
   endif
 
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:none
-endfunction
-
-function! s:CompleteMenuDistinct(menu_list)
-  " 如果语法 complete 和 buf complete 有重复，保留语法结果
-
-
 endfunction
 
 " 代码样板
