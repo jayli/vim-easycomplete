@@ -6,6 +6,8 @@ let g:easycomplete_sources_ts = 1
 augroup easycomplete#sources#ts#augroup
   autocmd!
   autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
+  command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
+  nnoremap <c-]> :call easycomplete#sources#ts#GotoDefinition()<CR>
 augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
@@ -47,19 +49,28 @@ function! easycomplete#sources#ts#getConfig(opts) abort
 endfunction
 
 " TODO 优化代码结构
+" regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
-  call s:registEventCallback('easycomplete#sources#ts#diagnosticsCallback', 'diagnostics')
-  call s:registResponseCallback('easycomplete#sources#ts#completeCallback', 'completions')
-  call s:registResponseCallback('easycomplete#sources#ts#tsReloadingCallback', 'reload')
+  call s:registEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
+  call s:registResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
+  call s:registResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
+  call s:registResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#TsOpen', [], 5)
 endfunction
 
-function! easycomplete#sources#ts#tsReloadingCallback(item)
+function! easycomplete#sources#ts#DefinationCallback(item)
+  " TODO here jayli
+  let l:definition_info = get(a:item, 'body')
+  call log#log(l:definition_info)
+  echom l:definition_info
+endfunction
+
+function! easycomplete#sources#ts#TsReloadingCallback(item)
   let b:tsserver_reloading = 0
 endfunction
 
-function! easycomplete#sources#ts#diagnosticsCallback(item)
+function! easycomplete#sources#ts#DiagnosticsCallback(item)
   " TODO
 endfunction
 
@@ -93,7 +104,7 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
 endfunction
 
 " job complete 回调
-function! easycomplete#sources#ts#completeCallback(item)
+function! easycomplete#sources#ts#CompleteCallback(item)
   if empty(a:item)
     return
   endif
@@ -116,7 +127,7 @@ function! easycomplete#sources#ts#completeCallback(item)
   " 取 entries details
   let l:entries= map(copy(l:easycomplete_menu_list), function("s:EntriesMap"))
   if !empty(l:entries) && type(l:entries) == type([])
-    call s:tsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
+    call s:TsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
   endif
 endfunction
 
@@ -235,8 +246,8 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:StartTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  " call log#log('--easycomplete--')
-  " call log#log(a:line)
+  call log#log('--easycomplete--')
+  call log#log(a:line)
   call easycomplete#job#send(s:tsq['job'], a:line . "\n")
 endfunction
 
@@ -282,9 +293,28 @@ function! s:WaitForReloadDone()
   endwhile
 endfunction
 
-function! s:tsCompletionEntryDetails(file, line, offset, entryNames)
+function! s:TsCompletionEntryDetails(file, line, offset, entryNames)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'entryNames': a:entryNames}
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
+endfunction
+
+" Fetch location where the symbol at cursor(line, offset) in file is defined.
+" PARAM: {string} file File name.
+" PARAM: {int} line The line number of location to complete.
+" PARAM: {int} offset The col number of location to complete.
+" RETURNS: {list<dict>} A list of dictionaries of definition location.
+"   e.g. :
+"     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
+function! s:GotoDefinition(file, line, offset)
+  let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
+  call log#log(l:args)
+  call s:SendCommandAsyncResponse('definition', l:args)
+endfunction
+
+function! easycomplete#sources#ts#GotoDefinition()
+  echom "goto definition"
+  let l:ctx = easycomplete#context()
+  call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
 endfunction
 
 function! s:StartTsserver()
@@ -341,9 +371,6 @@ function! s:messageHandler(msg)
     " Not a string or blank message.
     return
   endif
-  if easycomplete#util#NotInsertMode()
-    return
-  endif
   try
     let l:res_item = json_decode(a:msg)
   catch
@@ -362,9 +389,15 @@ function! s:messageHandler(msg)
     return
   endif
 
+
   let l:item = l:res_item
   let l:eventName = s:getTsserverEventType(l:item)
   let l:responseName = s:getTsserverResponseType(l:item)
+
+  " normal 模式下只处理 definition 事件，其他事件均在插入模式下处理
+  if easycomplete#util#NotInsertMode() && l:responseName !=# 'definition'
+    return
+  endif
 
   " 执行 event 的回调
   if l:eventName != 0
