@@ -32,10 +32,10 @@ function! s:InitLocalVars()
   let b:typing_key = 0
   " pum 展开时记录 v:event.completed_item
   " 用来判断是否正在滑选completemenu中的项
-  let b:completed_item = {}
+  let g:easycomplete_completed_item = {}
 
   " 当前是否正在敲入 <BS> 或者 <CR>
-  let b:backing_or_cr = 0
+  let g:easycomplete_backing_or_cr = 0
   " 当前 complete 匹配完成的存储
   let g:easycomplete_menuitems = []
 
@@ -56,6 +56,7 @@ endfunction
 
 " 初始化入口
 function! easycomplete#Enable()
+  " 加载每个 Buffer 时执行，buffer 的文件类型不同，插件理论上需要重新装载
   if exists("b:easycomplete_loaded_done")
     return
   endif
@@ -125,7 +126,7 @@ function! s:ResetCompletedItem()
   if pumvisible()
     return
   endif
-  let b:completed_item = {}
+  let g:easycomplete_completed_item = {}
 endfunction
 
 " 判断当前是否在complete menu 中光标移动在内高亮某一项
@@ -133,15 +134,15 @@ function! easycomplete#CompleteCursored()
   if !pumvisible()
     return v:false
   endif
-  return empty(b:completed_item) ? v:false : v:true
+  return empty(g:easycomplete_completed_item) ? v:false : v:true
 endfunction
 
 function! easycomplete#SetCompletedItem(item)
-  let b:completed_item = a:item
+  let g:easycomplete_completed_item = a:item
 endfunction
 
 function! easycomplete#GetCompletedItem()
-  return b:completed_item
+  return g:easycomplete_completed_item
 endfunction
 
 function! s:SetupCompleteCache()
@@ -179,18 +180,18 @@ function! s:AddCompleteCache(word, menulist)
 endfunction
 
 function! s:ResetBacking()
-  let b:backing_or_cr = 0
+  let g:easycomplete_backing_or_cr = 0
 endfunction
 
 function! s:backing()
-  let b:backing_or_cr = 1
+  let g:easycomplete_backing_or_cr = 1
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:ResetBacking'), [], 90)
   return "\<BS>"
 endfunction
 
 function! easycomplete#IsBacking()
-  return b:backing_or_cr ? v:true : v:false
+  return g:easycomplete_backing_or_cr ? v:true : v:false
 endfunction
 
 function! easycomplete#backing()

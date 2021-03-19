@@ -202,9 +202,8 @@ function! s:job_stop(jobid) abort
 endfunction
 
 function! s:job_send(jobid, data, opts) abort
-  " TODO jayli here 打开多文件时，jobs 就莫名其妙消失了？
-  echom 333333333
-  echom get(s:jobs, a:jobid)
+  " INFO 在一个window里切换 buffer 时，job 会停止
+  " Added by jayli
   let l:jobinfo = s:jobs[a:jobid]
   let l:close_stdin = get(a:opts, 'close_stdin', 0)
   if l:jobinfo.type == s:job_type_nvimjob
@@ -348,6 +347,20 @@ function! easycomplete#job#pid(jobid) abort
   return s:job_pid(a:jobid)
 endfunction
 
+function! easycomplete#job#status(jobid)
+  if has_key(s:jobs, a:jobid)
+    let l:jobinfo = s:jobs[a:jobid]
+    if has_key(l:jobinfo, "job")
+      return job_info(l:jobinfo.job).status
+    endif
+  endif
+  return "dead"
+endfunction
+
+function! easycomplete#job#jobs()
+  return s:jobs
+endfunction
+
 function! easycomplete#job#connect(addr, opts) abort
   let s:jobidseq = s:jobidseq + 1
   let l:jobid = s:jobidseq
@@ -373,6 +386,10 @@ function! easycomplete#job#connect(addr, opts) abort
         \ 'buffer': ''
         \}
   return l:jobid
+endfunction
+
+function! s:log(msg)
+  call easycomplete#log(a:msg)
 endfunction
 " }}}
 

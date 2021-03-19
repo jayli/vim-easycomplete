@@ -5,6 +5,7 @@ let g:easycomplete_sources_ts = 1
 
 
 augroup easycomplete#sources#ts#initLocalVars
+  let s:tsq_job = 0 " 当前运行的 job 指针
   let s:event_callbacks = {}
   let s:response_callbacks = {}
   let s:ctx_list = {}
@@ -30,12 +31,6 @@ function! easycomplete#sources#ts#destory()
   call s:DelTmpFiles()
 endfunction
 
-function! easycomplete#sources#ts#TsOpen()
-  call s:StartTsserver()
-  call s:TsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
-  call s:ConfigTsserver()
-endfunction
-
 function! easycomplete#sources#ts#getConfig(opts) abort
   return extend({
         \ 'refresh_pattern': '\%(\k\|\.\)',
@@ -49,6 +44,10 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   augroup easycomplete#sources#ts#augroup
     autocmd!
     autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
+    " TODO 因为e出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
+    " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
+    " InsertEnter 来勉强实现，这里的 init 会执行的比较频繁，可能会有性能问题
+    autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     " goto definition 方法需要抽到配置里去
     command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
     " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
@@ -60,7 +59,13 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:registResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
   call s:registResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
-  call easycomplete#util#AsyncRun('easycomplete#sources#ts#TsOpen', [], 5)
+  call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
+endfunction
+
+function! easycomplete#sources#ts#init()
+  call s:StartTsserver()
+  call s:TsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
+  call s:ConfigTsserver()
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
@@ -222,8 +227,9 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
 endfunction
 
 function! s:StopTsserver()
-  if exists('s:tsq') && get(s:tsq, 'job') > 0
-    call easycomplete#job#stop(get(s:tsq, 'job'))
+  " if exists('s:tsq') && get(s:tsq, 'job') > 0
+  if s:tsq_job > 0
+    call easycomplete#job#stop(s:tsq_job)
   endif
 endfunction
 
@@ -257,9 +263,9 @@ endfunction
 function! s:sendAsyncRequest(line)
   call s:StartTsserver()
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  " call log#log('--easycomplete--')
+  " call log#log('--easycomplete--sendrequest---')
   " call log#log(a:line)
-  call easycomplete#job#send(s:tsq['job'], a:line . "\n")
+  call easycomplete#job#send(s:tsq_job, a:line . "\n")
 endfunction
 
 function! s:SendCommandAsyncResponse(cmd, args)
@@ -318,7 +324,7 @@ endfunction
 "     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
 function! s:GotoDefinition(file, line, offset)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
-  call s:log(l:args)
+  " call s:log(l:args)
   call s:SendCommandAsyncResponse('definition', l:args)
 endfunction
 
@@ -328,20 +334,31 @@ function! easycomplete#sources#ts#GotoDefinition()
   call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
 endfunction
 
+function! s:TsServerIsRunning()
+  if s:tsq_job <= 0
+    return v:false
+  endif
+  let job_status = easycomplete#job#status(s:tsq_job)
+  return job_status == 'run' ? v:true : v:false
+endfunction
+
 function! s:StartTsserver()
-  if !exists('s:tsq')
-    let s:tsq = {'job':0}
-  endif
+  if !s:TsServerIsRunning()
+    let l:cmd = "tsserver --locale en"
+    if !executable("tsserver")
+      echom '[easycomplete] tsserver is not installed. Try "npm -g install typescript".'
+      return 0
+    endif
 
-  let l:cmd = "tsserver --locale en"
-  if !executable("tsserver")
-    echom '[easycomplete] tsserver is not installed. Try "npm -g install typescript".'
-    return 0
-  endif
+    " call s:log(s:tsq)
+    " call s:log("starttsserver")
+    let job_status = easycomplete#job#status(s:tsq_job)
 
-  if get(s:tsq, 'job') == 0
-    let s:tsq['job'] = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
-    if s:tsq['job'] <= 0
+    " call s:log("job status: " . job_status)
+
+    " TODO here e 进去再回来时候，需要重新执行 init
+    let s:tsq_job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
+    if s:tsq_job <= 0
       echoerr "tsserver launch failed"
     endif
   endif
@@ -392,6 +409,7 @@ function! s:messageHandler(msg)
     return
   endtry
 
+
   " Ignore messages.
   if type(l:res_item) != type({})
     return
@@ -399,7 +417,6 @@ function! s:messageHandler(msg)
   if has_key(l:res_item, 'event') && index(s:ignore_response_events, get(l:res_item, 'event')) >= 0
     return
   endif
-
 
   let l:item = l:res_item
   let l:eventName = s:getTsserverEventType(l:item)
