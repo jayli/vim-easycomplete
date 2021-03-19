@@ -3,14 +3,6 @@ if get(g:, 'easycomplete_sources_ts')
 endif
 let g:easycomplete_sources_ts = 1
 
-augroup easycomplete#sources#ts#augroup
-  autocmd!
-  autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
-  command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
-  " TODO 这种不是用标准的 tag 来实现的，需要改进
-  nnoremap <c-]> :call easycomplete#sources#ts#GotoDefinition()<CR>
-  nnoremap <c-t> :bprevious<CR>
-augroup END
 
 augroup easycomplete#sources#ts#initLocalVars
   let s:event_callbacks = {}
@@ -53,6 +45,16 @@ endfunction
 " TODO 优化代码结构
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
+
+  augroup easycomplete#sources#ts#augroup
+    autocmd!
+    autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
+    " goto definition 方法需要抽到配置里去
+    command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
+    " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
+    nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+  augroup END
+
   call s:registEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
   call s:registResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
   call s:registResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
@@ -70,9 +72,9 @@ function! easycomplete#sources#ts#DefinationCallback(item)
   let defination = l:definition_info[0]
   let filename = defination.file
   let start = defination.contextStart
-  " call log#log(l:definition_info)
-  echom l:definition_info
-  execute 'edit +call\ cursor('.start.line.','.start.offset.') '.fnameescape(filename)
+
+  call s:UpdateTagStack()
+  call s:location(fnameescape(filename), start.line, start.offset)
 endfunction
 
 function! easycomplete#sources#ts#TsReloadingCallback(item)
@@ -316,7 +318,7 @@ endfunction
 "     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
 function! s:GotoDefinition(file, line, offset)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
-  " call log#log(l:args)
+  call s:log(l:args)
   call s:SendCommandAsyncResponse('definition', l:args)
 endfunction
 
@@ -528,6 +530,53 @@ function! s:getTsserverEventType(item)
     return 'diagnostics'
   endif
   return 0
+endfunction
+
+function! s:location(path, line, col, ...) abort
+  normal! m'
+  let l:mods = a:0 ? a:1 : ''
+  let l:buffer = bufnr(a:path)
+  if l:mods ==# '' && &modified && !&hidden && l:buffer != bufnr('%')
+    let l:mods = &splitbelow ? 'rightbelow' : 'leftabove'
+  endif
+  if l:mods ==# ''
+    if l:buffer == bufnr('%')
+      let l:cmd = ''
+    else
+      let l:cmd = (l:buffer !=# -1 ? 'b ' . l:buffer : 'edit ' . fnameescape(a:path)) . ' | '
+    endif
+  else
+    let l:cmd = l:mods . ' ' . (l:buffer !=# -1 ? 'sb ' . l:buffer : 'split ' . fnameescape(a:path)) . ' | '
+  endif
+  execute l:cmd . 'call cursor('.a:line.','.a:col.')'
+endfunction
+
+function! s:UpdateTagStack() abort
+  let l:bufnr = bufnr('%')
+  let l:item = {'bufnr': l:bufnr, 'from': [l:bufnr, line('.'), col('.'), 0], 'tagname': expand('<cword>')}
+  let l:winid = win_getid()
+
+  let l:stack = gettagstack(l:winid)
+  if l:stack['length'] == l:stack['curidx']
+    " Replace the last items with item.
+    let l:action = 'r'
+    let l:stack['items'][l:stack['curidx']-1] = l:item
+  elseif l:stack['length'] > l:stack['curidx']
+    " Replace items after used items with item.
+    let l:action = 'r'
+    if l:stack['curidx'] > 1
+      let l:stack['items'] = add(l:stack['items'][:l:stack['curidx']-2], l:item)
+    else
+      let l:stack['items'] = [l:item]
+    endif
+  else
+    " Append item.
+    let l:action = 'a'
+    let l:stack['items'] = [l:item]
+  endif
+  let l:stack['curidx'] += 1
+
+  call settagstack(l:winid, l:stack, l:action)
 endfunction
 
 function! s:log(msg)

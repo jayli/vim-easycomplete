@@ -202,6 +202,9 @@ function! s:job_stop(jobid) abort
 endfunction
 
 function! s:job_send(jobid, data, opts) abort
+  " TODO jayli here 打开多文件时，jobs 就莫名其妙消失了？
+  echom 333333333
+  echom get(s:jobs, a:jobid)
   let l:jobinfo = s:jobs[a:jobid]
   let l:close_stdin = get(a:opts, 'close_stdin', 0)
   if l:jobinfo.type == s:job_type_nvimjob
