@@ -108,9 +108,27 @@ function! s:BindingTypingCommand()
 
   augroup easycomplete#augroup
     autocmd!
+    " typing 初始匹配
     autocmd TextChangedI * call easycomplete#typing()
+    " typing Complete 过程中的匹配
+    autocmd CompleteChanged * call easycomplete#util#AsyncRun("easycomplete#CompleteTyping",[],10)
     autocmd CursorHoldI * call easycomplete#HoldI()
   augroup END
+endfunction
+
+function! easycomplete#CompleteTyping()
+  return
+  call s:log('complete typing ' . s:GetTypingWord())
+  call s:StopAsyncRun()
+  call s:CloseCompletionMenu()
+  call complete(col('.'),["a","b"])
+  " call s:log(g:easycomplete_menuitems)
+  " call feedkeys("\<C-E>")
+  " call s:StopAsyncRun()
+  if empty( v:event.completed_item )
+    return
+  endif
+
 endfunction
 
 function! easycomplete#HoldI()
@@ -827,4 +845,3 @@ endfunction
 function! easycomplete#log(msg)
   call s:log(a:msg)
 endfunction
-
