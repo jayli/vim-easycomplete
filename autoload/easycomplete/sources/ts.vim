@@ -5,7 +5,19 @@ let g:easycomplete_sources_ts = 1
 
 
 augroup easycomplete#sources#ts#initLocalVars
-  let s:tsq_job = 0 " 当前运行的 job 指针
+  " 正在运行中的 job 指针
+  " {
+  "   "job": 1,
+  "   "opend_files": {
+  "     "1":[file1,file2,file3],
+  "     "2":[file1,file2]
+  "   }
+  " }
+  let s:tsq_job = {
+        \ "job": 0,
+        \ "opend_files":{}
+        \ }
+  let s:tsq_job_open_files = {}
   let s:event_callbacks = {}
   let s:response_callbacks = {}
   let s:ctx_list = {}
@@ -63,9 +75,12 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#ts#init()
+  " TSServer 在多个 buffer 间可以共享，一次创建多次使用，但每个 buffer
+  " 所对应的文件必须在 TSServer 中 open，每 enterbuf 时都需重新 open
+  " e 出来的 buf 在切换时会导致 TSServer 进程被杀掉，这样就需要重启 Tserver以
+  " 及重新给每个 buf 做 open 的动作，因此这里绑定了 InsertEnter 来做这个事情
   call s:StartTsserver()
-  call s:TsserverOpen() " open 完了再异步执行 config，需要绑定回调事件 TODO
-  call s:ConfigTsserver()
+  call s:TsserverOpen()
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
@@ -227,9 +242,8 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
 endfunction
 
 function! s:StopTsserver()
-  " if exists('s:tsq') && get(s:tsq, 'job') > 0
-  if s:tsq_job > 0
-    call easycomplete#job#stop(s:tsq_job)
+  if s:tsq_job.job > 0
+    call easycomplete#job#stop(s:tsq_job.job)
   endif
 endfunction
 
@@ -265,7 +279,7 @@ function! s:sendAsyncRequest(line)
   " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
   " call log#log('--easycomplete--sendrequest---')
   " call log#log(a:line)
-  call easycomplete#job#send(s:tsq_job, a:line . "\n")
+  call easycomplete#job#send(s:tsq_job.job, a:line . "\n")
 endfunction
 
 function! s:SendCommandAsyncResponse(cmd, args)
@@ -329,16 +343,15 @@ function! s:GotoDefinition(file, line, offset)
 endfunction
 
 function! easycomplete#sources#ts#GotoDefinition()
-  echom "goto definition"
   let l:ctx = easycomplete#context()
   call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
 endfunction
 
 function! s:TsServerIsRunning()
-  if s:tsq_job <= 0
+  if s:tsq_job.job <= 0
     return v:false
   endif
-  let job_status = easycomplete#job#status(s:tsq_job)
+  let job_status = easycomplete#job#status(s:tsq_job.job)
   return job_status == 'run' ? v:true : v:false
 endfunction
 
@@ -352,13 +365,13 @@ function! s:StartTsserver()
 
     " call s:log(s:tsq)
     " call s:log("starttsserver")
-    let job_status = easycomplete#job#status(s:tsq_job)
+    let job_status = easycomplete#job#status(s:tsq_job.job)
 
     " call s:log("job status: " . job_status)
 
     " TODO here e 进去再回来时候，需要重新执行 init
-    let s:tsq_job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
-    if s:tsq_job <= 0
+    let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
+    if s:tsq_job.job <= 0
       echoerr "tsserver launch failed"
     endif
   endif
@@ -462,13 +475,46 @@ function! s:sortTextComparator(entry1, entry2)
 endfunction
 
 function! s:TsserverOpen()
+  if s:TsServerOpenedFileAlready()
+    return
+  endif
   let l:file = easycomplete#context()['filepath']
   let l:args = {'file': l:file}
   call s:SendCommandOneWay('open', l:args)
+  call s:ConfigTsserver() " open 完了再异步执行 config，需要绑定回调事件 TODO
+  call s:SetTsServerOpenStatusOK()
 endfunction
 
+" 成功 Open 之后，把当前 Open 的 filename 记录起来
+function! s:SetTsServerOpenStatusOK()
+  let jobid = s:tsq_job.job
+  if !has_key(s:tsq_job.opend_files, string(jobid))
+    let s:tsq_job.opend_files[string(jobid)] = []
+  endif
+  call add(s:tsq_job.opend_files[string(jobid)], expand('%:p'))
+endfunction
+
+" 判断当前buf所在的文件是否已经在 tsserver 中 open 过了
+function! s:TsServerOpenedFileAlready()
+  if !s:TsServerIsRunning()
+    return v:false
+  endif
+
+  let jobid = s:tsq_job.job
+  let filename = expand('%:p')
+  if !has_key(s:tsq_job.opend_files, string(jobid))
+    return v:false
+  endif
+  if index(s:tsq_job.opend_files[string(jobid)], filename) >= 0
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+
 function! s:TsserverReload()
-  let l:file = easycomplete#context()['filepath']
+  let l:file = expand('%:p')
   call s:saveTmp(l:file)
   let l:args = {'file': l:file, 'tmpfile': s:getTmpFile(l:file)}
   call s:SendCommandOneWay('reload', l:args)
@@ -565,7 +611,9 @@ function! s:location(path, line, col, ...) abort
   else
     let l:cmd = l:mods . ' ' . (l:buffer !=# -1 ? 'sb ' . l:buffer : 'split ' . fnameescape(a:path)) . ' | '
   endif
-  execute l:cmd . 'call cursor('.a:line.','.a:col.')'
+  let full_cmd = l:cmd . 'call cursor('.a:line.','.a:col.')'
+  echom full_cmd
+  execute full_cmd
 endfunction
 
 function! s:UpdateTagStack() abort
