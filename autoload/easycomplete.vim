@@ -15,6 +15,18 @@ function! s:InitLocalVars()
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储，用来后退时回显completemenu
   let g:easycomplete_menucache = {}
+  " 当前 complete 匹配完成的存储，补 info 时补充到这里, CompleteDone 后置空
+  let g:easycomplete_menuitems = []
+  " pum 展开时记录 v:event.completed_item
+  " 用来判断是否正在滑选completemenu中的项
+  let g:easycomplete_completed_item = {}
+
+  " 只在敲入字符第一次匹配时去取 complete suggest items, 匹配菜单展开时的匹配
+  " 动作都交给 CompleteChanged 来完成，这时只对第一次匹配的结果做过滤，而不在
+  " 重新去取 complete suggestions
+  "
+  " 这样做参考了YCM，主要是性能考虑，避免频繁的 reload 和 suggestion 动作
+  let g:easycomplete_first_complete_hit = 0
 
   " 暂存正在异步执行的每个 completor 任务，有返回后置标志位 done
   " 用来处理多个 completor 返回时机保持一致的问题
@@ -30,15 +42,9 @@ function! s:InitLocalVars()
 
   " 当前敲入的字符存储
   let b:typing_key = 0
-  " pum 展开时记录 v:event.completed_item
-  " 用来判断是否正在滑选completemenu中的项
-  let g:easycomplete_completed_item = {}
 
   " 当前是否正在敲入 <BS> 或者 <CR>
   let g:easycomplete_backing_or_cr = 0
-  " 当前 complete 匹配完成的存储
-  let g:easycomplete_menuitems = []
-
   set completeopt-=menu
   set completeopt+=menuone
   set completeopt+=noselect
@@ -111,33 +117,45 @@ function! s:BindingTypingCommand()
     " typing 初始匹配
     autocmd TextChangedI * call easycomplete#typing()
     " typing Complete 过程中的匹配
-    autocmd CompleteChanged * call easycomplete#util#AsyncRun("easycomplete#CompleteTyping",[],10)
-    autocmd CursorHoldI * call easycomplete#HoldI()
+    autocmd CompleteChanged * call easycomplete#CompleteChanged()
+    autocmd CompleteDone * call easycomplete#CompleteDone()
+    autocmd CursorHoldI * call easycomplete#CursorHoldI()
   augroup END
 endfunction
 
-function! easycomplete#CompleteTyping()
-  return
-  call s:log('complete typing ' . s:GetTypingWord())
-  call s:StopAsyncRun()
-  call s:CloseCompletionMenu()
-  call complete(col('.'),["a","b"])
-  " call s:log(g:easycomplete_menuitems)
-  " call feedkeys("\<C-E>")
-  " call s:StopAsyncRun()
-  if empty( v:event.completed_item )
-    return
-  endif
-
+function! easycomplete#CompleteDone()
+  call s:flush()
 endfunction
 
-function! easycomplete#HoldI()
+function! easycomplete#CompleteChanged()
+  " 初始
+  if get(g:, 'easycomplete_first_complete_hit')
+    call s:log('complete typing ' . s:GetTypingWord())
+  endif
+  return
+  " TODO here jayli
+  call s:log('complete typing ' . s:GetTypingWord())
+  " call s:StopAsyncRun()
+  call s:CloseCompletionMenu()
+  call complete(col('.'),["a","b"])
+endfunction
+
+function! easycomplete#CursorHoldI()
+  call s:flush()
+endfunction
+
+" 重置全局变量
+function! s:flush()
   " 重置当前选中的 complete item
   call s:ResetCompletedItem()
   " 重置 complete menu 全量缓存
   call s:ResetCompleteCache()
   " 重置当前每个插件的 docomplete 的状态
   call s:ResetCompleteTaskQueue()
+  " 清空menuitems
+  let g:easycomplete_menuitems = []
+  " 重置 first_complete_hit 状态
+  let g:easycomplete_first_complete_hit = 0
 endfunction
 
 function! s:ResetCompletedItem()
@@ -289,7 +307,7 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if !s:SameCtx(a:ctx, l:ctx)
     if s:CompleteSourceReady(a:name)
       " call s:CloseCompletionMenu()
-      " call easycomplete#HoldI()
+      " call easycomplete#CursorHoldI()
       " call s:CallCompeltorByName(a:name, l:ctx)
     endif
     return
@@ -347,8 +365,6 @@ function! easycomplete#typing()
   endif
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
-  " call s:StopAsyncRun()
-  " call s:AsyncRun(function('s:DoComplete'), [v:false], 50)
   return ""
 endfunction
 
@@ -694,10 +710,21 @@ function! easycomplete#CompleteAdd(menu_list)
 endfunction
 
 function! s:complete(start_pos, menuitems)
+  " 这里的 menuitems 一定不为空
   if s:CheckCompleteTastQueueAllDone()
-    " call complete(a:start_pos, a:menuitems)
+    " 参照 YCM，这里 complete 一律用异步
+    "
+    " TODO 这里的实现不严谨，通过延迟来区分 TextChange 和 CompleteChange 这两
+    " 个事件，而且要让 CompleteChange 在 TextChange 第一次 complete 发生之后发
+    " 生，用了两个延时来区分 first_complete_hit 的状态
     call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
+    call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 10)
   endif
+endfunction
+
+function! s:SetFirstCompeleHit()
+  " 参照 g:easycomplete_first_complete_hit 定义注释
+  let g:easycomplete_first_complete_hit = 1
 endfunction
 
 function! s:SortTextComparatorByLength(entry1, entry2)
@@ -845,3 +872,4 @@ endfunction
 function! easycomplete#log(msg)
   call s:log(a:msg)
 endfunction
+
