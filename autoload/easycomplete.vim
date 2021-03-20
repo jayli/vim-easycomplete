@@ -123,35 +123,52 @@ function! s:BindingTypingCommand()
   augroup END
 endfunction
 
+" typing complete 过程中的匹配
+function! s:CompleteTypingMatch()
+  " 初始
+  if !get(g:, 'easycomplete_first_complete_hit') || !empty(v:event.completed_item)
+    return
+  endif
+  call s:log('complete typing ' . s:GetTypingWord())
+  " call s:StopAsyncRun()
+  " call s:CloseCompletionMenu()
+  call s:zizz()
+  " call s:SendKeys("\<C-e>")
+  " call complete(col('.'),[])
+  let word = s:GetTypingWord()
+  let all_menu = [{'word': 'Array', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'v', 'abbr': 'Array'}]
+  let tmp_menu = s:NormalizedCompleteMenuFilter(all_menu, word)
+  " TODO jayli here
+  " 这里有问题
+  " 打开注释，info 会丢掉
+  call add(tmp_menu, {'word': 'Array', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'v', 'abbr': 'Array'})
+  " 执行这一句会触发 completeDone 事件，会调用 s:flush 清空
+  " g:easycomplete_menuitems，导致 info 失效
+  " call s:AsyncRun(function('complete'), [col('.') - strlen(word), tmp_menu], 0)
+endfunction
+
+function! s:NormalizedCompleteMenuFilter(all_menu, word)
+  let result_menu_list = filter(copy(a:all_menu),
+        \ 'tolower(v:val.word) =~ "^'. tolower(a:word) . '"')
+  return result_menu_list
+endfunction
+
 function! easycomplete#CompleteDone()
   call s:flush()
 endfunction
 
-function! easycomplete#CompleteChanged()
-  " 初始
-  if get(g:, 'easycomplete_first_complete_hit')
-    call s:log('complete typing ' . s:GetTypingWord())
-  endif
-  return
-  " TODO here jayli
-  call s:log('complete typing ' . s:GetTypingWord())
-  " call s:StopAsyncRun()
-  call s:CloseCompletionMenu()
-  call complete(col('.'),["a","b"])
-endfunction
-
 function! easycomplete#CursorHoldI()
-  call s:flush()
-endfunction
-
-" 重置全局变量
-function! s:flush()
   " 重置当前选中的 complete item
   call s:ResetCompletedItem()
   " 重置 complete menu 全量缓存
   call s:ResetCompleteCache()
   " 重置当前每个插件的 docomplete 的状态
   call s:ResetCompleteTaskQueue()
+  " call s:flush()
+endfunction
+
+" 重置全局变量
+function! s:flush()
   " 清空menuitems
   let g:easycomplete_menuitems = []
   " 重置 first_complete_hit 状态
@@ -219,7 +236,8 @@ function! s:ResetBacking()
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-function! s:backing()
+" 设置一个什么也不做的标志位，90ms 后恢复
+function! s:zizz()
   let g:easycomplete_backing_or_cr = 1
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:ResetBacking'), [], 90)
@@ -231,7 +249,7 @@ function! easycomplete#IsBacking()
 endfunction
 
 function! easycomplete#backing()
-  return s:backing()
+  return s:zizz()
 
   " if !exists('g:easycomplete_menucache')
   "   call s:SetupCompleteCache()
@@ -240,7 +258,7 @@ function! easycomplete#backing()
   " call s:ResetCompleteCache()
   " call s:StopAsyncRun()
   " if has_key(g:easycomplete_menucache, s:GetTypingWord())
-  "   call s:AsyncRun(function('s:BackingTimerHandler'), [], 500)
+  "   call s:AsyncRun(function('s:zizzTimerHandler'), [], 500)
   " else
   "   " TODO 回退的逻辑优化
   "   " " call s:SendKeys("\<C-X>\<C-U>")
@@ -251,7 +269,7 @@ function! easycomplete#backing()
   " return ''
 endfunction
 
-function! s:BackingTimerHandler()
+function! s:zizzTimerHandler()
   if pumvisible()
     return ''
   endif
@@ -477,8 +495,10 @@ function! s:GetTypingWord()
 endfunction
 
 function! easycomplete#CompleteChanged()
+  " 判断光标是否在上下滑动，显示选中item的info
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
+  call s:CompleteTypingMatch()
   if empty(item)
     call popup_clear()
     return
@@ -541,7 +561,7 @@ endfunction
 function! easycomplete#CleverTab()
   setlocal completeopt-=noinsert
   " call s:StopAsyncRun()
-  call s:backing()
+  call s:zizz()
   if pumvisible()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
@@ -594,7 +614,7 @@ function! easycomplete#TypeEnterWithPUM()
     endif
   endif
   if pumvisible()
-    call s:backing()
+    call s:zizz()
     return "\<C-Y>"
   endif
   return "\<CR>"
@@ -679,6 +699,8 @@ function! easycomplete#CompleteAdd(menu_list)
     let g:easycomplete_menuitems = []
   endif
 
+  " 如果要给completemenu 补充数据，而这时又已经开始了tab下拉选中的action，先回
+  " 退到原始状态，c-e
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
@@ -697,8 +719,6 @@ function! easycomplete#CompleteAdd(menu_list)
         \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
   let start_pos = col('.') - strwidth(typing_word)
-  " 如果要给completemenu 补充数据，而这时又已经开始了tab下拉选中的action，先回
-  " 退到原始状态，c-e
   try
     call s:complete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
@@ -718,7 +738,7 @@ function! s:complete(start_pos, menuitems)
     " 个事件，而且要让 CompleteChange 在 TextChange 第一次 complete 发生之后发
     " 生，用了两个延时来区分 first_complete_hit 的状态
     call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
-    call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 10)
+    call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 40)
   endif
 endfunction
 

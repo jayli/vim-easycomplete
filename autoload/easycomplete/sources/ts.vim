@@ -418,7 +418,7 @@ function! s:messageHandler(msg)
     " TODO 出异常到这里，程序会报错
     " echom a:msg
     echom 'tsserver response error'
-    call easycomplete#HoldI()
+    call easycomplete#CursorHoldI()
     return
   endtry
 
