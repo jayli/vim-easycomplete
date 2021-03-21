@@ -54,6 +54,43 @@ function! easycomplete#util#call(method, args) abort
   endtry
 endfunction
 
+function! easycomplete#util#FuzzySearch(needle, haystack)
+  let tlen = strlen(a:haystack)
+  let qlen = strlen(a:needle)
+  if qlen > tlen
+    return v:false
+  endif
+  if qlen == tlen
+    return a:needle ==? a:haystack ? v:true : v:false
+  endif
+
+  let needle_ls = str2list(tolower(a:needle))
+  let haystack_ls = str2list(tolower(a:haystack))
+
+  let i = 0
+  let j = 0
+  let fallback = 0
+  while i < qlen
+    let nch = needle_ls[i]
+    let i += 1
+    let fallback = 0
+    while j < tlen
+      if haystack_ls[j] == nch
+        let j += 1
+        let fallback = 1
+        break
+      else
+        let j += 1
+      endif
+    endwhile
+    if fallback == 1
+      continue
+    endif
+    return v:false
+  endwhile
+  return v:true
+endfunction
+
 function! easycomplete#util#NotInsertMode()
   return mode()[0] != 'i' ? v:true : v:false
 endfunction

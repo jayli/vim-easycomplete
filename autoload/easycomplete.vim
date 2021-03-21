@@ -15,20 +15,21 @@ function! s:InitLocalVars()
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储，用来后退时回显completemenu
   let g:easycomplete_menucache = {}
-  " 当前 complete 匹配完成的存储，补 info 时补充到这里, CompleteDone 后置空
+  " 所有Complete动作都围绕它进行，当前complete 匹配完成的存储
+  " 补info时补充到这里, CompleteDone 后置空
   let g:easycomplete_menuitems = []
   " pum 展开时记录 v:event.completed_item
   " 用来判断是否正在滑选completemenu中的项
   let g:easycomplete_completed_item = {}
 
-  " hack，为了避免在 complete menu 中选择回到首项时触发 completeDone 事
+  " HACK: 为了避免在 complete menu 中选择回到首项时触发 completeDone 事
   " 件，需要保存 ctx，触发 completeDone 时比对 ctx 判断事件是否正确发生
+  " 只做临时变量的全局保存，不做功能性使用
   let g:easycomplete_firstcomplete_ctx = {}
 
   " 只在敲入字符第一次匹配时去取 complete suggest items, 匹配菜单展开时的匹配
   " 动作都交给 CompleteChanged 来完成，这时只对第一次匹配的结果做过滤，而不在
-  " 重新去取 complete suggestions
-  "
+  " 重新去取 complete suggestions.
   " 这样做参考了YCM，主要是性能考虑，避免频繁的 reload 和 suggestion 动作
   let g:easycomplete_first_complete_hit = 0
 
@@ -47,16 +48,18 @@ function! s:InitLocalVars()
   " 当前敲入的字符存储
   let b:typing_key = 0
 
-  " 当前是否正在敲入 <BS> 或者 <CR>
+  " 判断当前是否正在敲入 <BS> 或者 <CR>
+  " 实际上也用作 zizz 的一个标志位，除了 退格和回车，其他非 ASCII 按键带来的
+  " InputTextChange 行为也都用这个标志位了
   let g:easycomplete_backing_or_cr = 0
-  set completeopt-=menu
-  set completeopt+=menuone
-  set completeopt+=noselect
+  setlocal completeopt-=menu
+  setlocal completeopt+=menuone
+  setlocal completeopt+=noselect
   " TODO width 不管用？
-  set completepopup=width:90,highlight:Pmenu,border:off,align:menu
-  set completeopt+=popup
-  set completeopt-=longest
-  set cpoptions+=B
+  setlocal completepopup=width:90,highlight:Pmenu,border:off,align:menu
+  setlocal completeopt+=popup
+  setlocal completeopt-=longest
+  setlocal cpoptions+=B
 
   " UltiSnips 也用了 tab 键，重写写避免冲突
   " let g:UltiSnipsExpandTrigger = "<c-l>"
@@ -77,13 +80,13 @@ function! easycomplete#Enable()
   " 一定是 typing 的绑定在前，每个插件重写的command在后
   call s:BindingTypingCommand()
   " 初始化每个语言的插件配置
-  call plugin#init()
+  call easycomplete#plugin#init()
   " 每个插件根据文件类型来调用初始化函数
   call s:ConstructorCalling()
   " 初始化 complete 缓存
   call s:SetupCompleteCache()
   " 设置 Pmenu 样式
-  call ui#setScheme()
+  call easycomplete#ui#setScheme()
 endfunction
 
 function! s:SnipSupports()
@@ -154,7 +157,7 @@ function! s:CompleteTypingMatch()
 endfunction
 
 function! s:PrepareInfoPlaceHolder(key, val)
-  " 所有 Me.info 
+  " 所有 Me.info
   let a:val.info = "_"
   return a:val
 endfunction
@@ -174,22 +177,32 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
-" 原始 Complete 匹配逻辑，用来做视觉占位，避免异步 complete 中的 menu 闪烁
-function! s:NormalizedCompleteMenuFilter(all_menu, word)
-  let result_menu_list = filter(deepcopy(a:all_menu),
-        \ 'tolower(v:val.word) =~ "^'. tolower(a:word) . '"')
-  return result_menu_list
-endfunction
-
 " 自定义匹配逻辑，匹配逻辑参照 YCY 和 coc
 function! s:CustomCompleteMenuFilter(all_menu, word)
-  let normalized_matching_menu = s:NormalizedCompleteMenuFilter(a:all_menu, a:word)
-  return normalized_matching_menu + []
+  " 原始 Complete 匹配逻辑，用来做视觉占位，占位原有的位置
+  " 避免异步 complete 中的 menu 闪烁
+  let word = tolower(a:word)
+  let original_matching_menu = filter(deepcopy(a:all_menu),
+        \ 'tolower(v:val.word) =~ "^'. word . '"')
+
+  " 除了 占位用的menus之外的 menulist
+  let otherwise_matching_menu = filter(deepcopy(a:all_menu),
+        \ 'tolower(v:val.word) !~ "^'. word . '"')
+
+  let otherwise_fuzzymatching = []
+  for item in otherwise_matching_menu
+    if s:FuzzySearch(word, item.word)
+      call add(otherwise_fuzzymatching, item)
+    endif
+  endfor
+  return original_matching_menu + otherwise_fuzzymatching
+endfunction
+
+function! s:FuzzySearch(needle, haystack)
+  return call('easycomplete#util#FuzzySearch', [a:needle, a:haystack])
 endfunction
 
 function! easycomplete#CompleteDone()
-  " 需要处理一下
-
   if pumvisible() || empty(v:completed_item)
     return
   endif

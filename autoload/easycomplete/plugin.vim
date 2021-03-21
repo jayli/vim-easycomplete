@@ -1,5 +1,5 @@
 
-function! plugin#init()
+function! easycomplete#plugin#init()
   call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
