@@ -54,6 +54,67 @@ function! easycomplete#util#call(method, args) abort
   endtry
 endfunction
 
+function! easycomplete#util#location(path, line, col, ...) abort
+  normal! m'
+  let l:mods = a:0 ? a:1 : ''
+  let l:buffer = bufnr(a:path)
+  if l:mods ==# '' && &modified && !&hidden && l:buffer != bufnr('%')
+    let l:mods = &splitbelow ? 'rightbelow' : 'leftabove'
+  endif
+  if l:mods ==# ''
+    if l:buffer == bufnr('%')
+      let l:cmd = ''
+    else
+      let l:cmd = (l:buffer !=# -1 ? 'b ' . l:buffer : 'edit ' . fnameescape(a:path)) . ' | '
+    endif
+  else
+    let l:cmd = l:mods . ' ' . (l:buffer !=# -1 ? 'sb ' . l:buffer : 'split ' . fnameescape(a:path)) . ' | '
+  endif
+  let full_cmd = l:cmd . 'call cursor('.a:line.','.a:col.')'
+  execute full_cmd
+endfunction
+
+function! easycomplete#util#normalize(buf_name)
+  return substitute(a:buf_name, '\\', '/', 'g')
+endfunction
+
+function! easycomplete#util#UpdateTagStack() abort
+  let l:bufnr = bufnr('%')
+  let l:item = {'bufnr': l:bufnr, 'from': [l:bufnr, line('.'), col('.'), 0], 'tagname': expand('<cword>')}
+  let l:winid = win_getid()
+
+  let l:stack = gettagstack(l:winid)
+  if l:stack['length'] == l:stack['curidx']
+    " Replace the last items with item.
+    let l:action = 'r'
+    let l:stack['items'][l:stack['curidx']-1] = l:item
+  elseif l:stack['length'] > l:stack['curidx']
+    " Replace items after used items with item.
+    let l:action = 'r'
+    if l:stack['curidx'] > 1
+      let l:stack['items'] = add(l:stack['items'][:l:stack['curidx']-2], l:item)
+    else
+      let l:stack['items'] = [l:item]
+    endif
+  else
+    " Append item.
+    let l:action = 'a'
+    let l:stack['items'] = [l:item]
+  endif
+  let l:stack['curidx'] += 1
+
+  call settagstack(l:winid, l:stack, l:action)
+endfunction
+
+function! easycomplete#util#trim(str)
+  if !empty(a:str)
+    let a1 = substitute(a:str, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
+    let a1 = substitute(a:str, "^\\(.\\{\-}\\)\\s\\+$","\\1","g")
+    return a1
+  endif
+  return ""
+endfunction
+
 function! easycomplete#util#FuzzySearch(needle, haystack)
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)

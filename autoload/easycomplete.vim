@@ -3,7 +3,7 @@
 " Description:  The extreme simple complete plugin for vim
 "
 "               更多信息：
-"                   <https://github.com/jayli/vim-easycomplete>
+"               <https://github.com/jayli/vim-easycomplete>
 
 if get(g:, 'easycomplete_script_loaded')
   finish
@@ -11,6 +11,15 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! s:InitLocalVars()
+
+  if !exists("g:easycomplete_tab_trigger")
+    let g:easycomplete_tab_trigger = "<Tab>"
+  endif
+
+  if !exists("g:easycomplete_shift_tab_trigger")
+    let g:easycomplete_shift_tab_trigger = "<S-Tab>"
+  endif
+
   " 全局存储安装的插件
   let g:easycomplete_source  = {}
   " complete 匹配过的单词的存储，用来后退时回显completemenu
@@ -60,16 +69,12 @@ function! s:InitLocalVars()
   setlocal completeopt+=popup
   setlocal completeopt-=longest
   setlocal cpoptions+=B
-
-  " UltiSnips 也用了 tab 键，重写写避免冲突
-  " let g:UltiSnipsExpandTrigger = "<c-l>"
-  " if g:UltiSnipsExpandTrigger == "<tab>"
-  " endif
 endfunction
 
 " 初始化入口
 function! easycomplete#Enable()
-  " 加载每个 Buffer 时执行，buffer 的文件类型不同，插件理论上需要重新装载
+  " 加载每个 Buffer 时执行，buffer 的文件类型不同
+  " 插件理论上需要重新装载
   if exists("b:easycomplete_loaded_done")
     return
   endif
@@ -89,6 +94,7 @@ function! easycomplete#Enable()
   call easycomplete#ui#setScheme()
 endfunction
 
+" 判断是否安装了 vim-snippet
 function! s:SnipSupports()
   try
     call funcref("UltiSnips#RefreshSnippets")
@@ -110,43 +116,36 @@ endfunction
 
 function! s:BindingTypingCommand()
   inoremap <silent><expr> <BS> easycomplete#backing()
-  if s:SnipSupports() && g:UltiSnipsExpandTrigger == "<tab>"
+  if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger 
     " 如果安装了 ultisnips ，因为 ultisnips 默认绑定 tab
     " 跟这里有冲突，因此需要先解除掉tab绑定
-    iunmap <Tab>
+    exec "iunmap " . g:easycomplete_tab_trigger
   endif
-  inoremap <silent><expr> <Tab>  easycomplete#CleverTab()
-  inoremap <silent><expr> <S-Tab>  easycomplete#CleverShiftTab()
+  exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
+  exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 
   augroup easycomplete#augroup
     autocmd!
-    " typing 初始匹配
+    " typing 全局匹配，用来触发 FirstComplete
     autocmd TextChangedI * call easycomplete#typing()
-    " typing Complete 过程中的匹配
+    " typing Complete 过程中的匹配，用来触发 SecondComplete
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd CursorHoldI * call easycomplete#CursorHoldI()
   augroup END
 endfunction
 
-" typing complete 过程中的匹配
+" typing complete 过程中的匹配，用来触发 SecondComplete
 function! s:CompleteTypingMatch()
   " 初始
   if !get(g:, 'easycomplete_first_complete_hit')
     return
   endif
   let word = s:GetTypingWord()
-  " 加上这句 info 不生效，原因未知
-  " let all_menu = deepcopy(g:easycomplete_menuitems)
-  " 避免对 g:easycomplete_menuitems 直接操作
-  " TODO 这里把 info ' ' 丢掉了 jayli 导致 info popup 出不来 jayli
-  " 设置了 info ' ' 也 pop 不出来
-  " 看样子是 info 不能是数组
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " CompleteChanged 事件过程中不允许 complete() 方法改变正在匹配中的 menulist
-  " let res_menu = res_menu + [{"word":"aaaa","menu":"xx"}]
   let filtered_menu = map(filtered_menu,function("s:PrepareInfoPlaceHolder"))
   " 需要在 menulist 根据原匹配完成后再执行 complete()，因此这里必须需要异步
   call s:AsyncRun(function('s:SecondComplete'), [
@@ -157,7 +156,7 @@ function! s:CompleteTypingMatch()
 endfunction
 
 function! s:PrepareInfoPlaceHolder(key, val)
-  " 所有 Me.info
+  " 所有 Menu.info 的占位符
   let a:val.info = "_"
   return a:val
 endfunction
@@ -166,18 +165,17 @@ endfunction
 " SecondComplete: 第二次只做列表匹配，不再重新获取 suggestion
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = a:easycomplete_menuitems
-  " echom a:easycomplete_menuitems
+  " zizz 为了避免循环触发CompleteDone事件
+  call s:zizz()
   " 执行这一句会触发 completeDone 事件，会调用 s:flush 清空
   " g:easycomplete_menuitems，导致 info popup  失效
   " 因此这里在 complete 之后需要恢复原 easycomplete_menuitems
-  call s:zizz()
-  " call s:log('-------SecondComplete------------')
-  " call s:log(a:menuitems)
   call complete(a:start_pos, a:menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
 " 自定义匹配逻辑，匹配逻辑参照 YCY 和 coc
+" TODO 匹配速度优化
 function! s:CustomCompleteMenuFilter(all_menu, word)
   " 原始 Complete 匹配逻辑，用来做视觉占位，占位原有的位置
   " 避免异步 complete 中的 menu 闪烁
@@ -207,9 +205,6 @@ function! easycomplete#CompleteDone()
     return
   endif
 
-  " call log#log('easycomplete#CompleteDone')
-  " call log#log(v:completed_item)
-  " call log#log(complete_info())
   call s:flush()
 endfunction
 
@@ -343,7 +338,7 @@ function! s:zizzTimerHandler()
   return ''
 endfunction
 
-" copy of asyncomplete
+" 格式参照 asyncomplete
 function! easycomplete#context() abort
   let l:ret = {
         \ 'bufnr':bufnr('%'),
@@ -558,8 +553,6 @@ function! easycomplete#CompleteChanged()
   " 判断光标是否在上下滑动，显示选中item的info
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
-  " call s:log('--easycomplete#CompleteChanged')
-  " call s:log(item)
   " 由于 completechanged 会触发 complete()，complete() 又会触发 completechanged
   " 注意这里有一个无限递归的风险
   " 必须在 CompleteTypingMatch 中设置一个 zizz 标记，如果这里标记存在则终止调
@@ -573,7 +566,6 @@ function! easycomplete#CompleteChanged()
   endif
   let info = s:GetInfoByCompleteItem(copy(item))
   call s:ShowCompleteInfo(info)
-  " Start fetching info for the item then call ShowCompleteInfo(info)
 endfunction
 
 function! s:GetInfoByCompleteItem(item)
@@ -640,7 +632,6 @@ function! easycomplete#CleverTab()
     " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
     " call UltiSnips#JumpForwards()
     call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
-    " call UltiSnips#ExpandSnippetOrJump()
     return ""
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
@@ -697,15 +688,8 @@ function! s:SendKeys( keys )
   call feedkeys( a:keys, 'in' )
 endfunction
 
-
-" 相当于 trim，去掉首尾的空字符
 function! s:StringTrim(str)
-  if !empty(a:str)
-    let a1 = substitute(a:str, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
-    let a1 = substitute(a:str, "^\\(.\\{\-}\\)\\s\\+$","\\1","g")
-    return a1
-  endif
-  return ""
+  return easycomplete#util#trim(a:str)
 endfunction
 
 " 关闭补全浮窗
@@ -772,12 +756,12 @@ function! easycomplete#CompleteAdd(menu_list)
   endif
 
   " 如果要给completemenu 补充数据，而这时又已经开始了tab下拉选中的action，先回
-  " 退到原始状态，c-e
+  " 退到原始状态
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
 
-  " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
+  " 原始 complete suggestion 匹配typing word 的函数过滤，类似 coc 和 YCM
   let typing_word = s:GetTypingWord()
   let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")
   let menuitems = g:easycomplete_menuitems + new_menulist

@@ -3,7 +3,6 @@ if get(g:, 'easycomplete_sources_ts')
 endif
 let g:easycomplete_sources_ts = 1
 
-
 augroup easycomplete#sources#ts#initLocalVars
   " 正在运行中的 job 指针
   " {
@@ -34,8 +33,6 @@ augroup easycomplete#sources#ts#initIgnoreConditions
         \ "telemetry","projectsUpdatedInBackground",
         \ "setTypings","syntaxDiag","semanticDiag",
         \ "suggestionDiag","typingsInstallerPid"]
-  " ignore events configFileDiag triggered by reload event. See also #99
-  " call add(s:ignore_response_conditions, 'npm notice created a lockfile')
 augroup END
 
 function! easycomplete#sources#ts#destory()
@@ -49,7 +46,6 @@ function! easycomplete#sources#ts#getConfig(opts) abort
         \}, a:opts)
 endfunction
 
-" TODO 优化代码结构
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
 
@@ -84,7 +80,6 @@ function! easycomplete#sources#ts#init()
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
-  " TODO here jayli
   let l:definition_info = get(a:item, 'body')
   if empty(l:definition_info)
     return
@@ -276,9 +271,6 @@ endfunction
 
 function! s:sendAsyncRequest(line)
   call s:StartTsserver()
-  " TODO 加上这句，所有的.号后面直接可以很好的匹配，否则有时匹配不出来？
-  " call log#log('--easycomplete--sendrequest---')
-  " call log#log(a:line)
   call easycomplete#job#send(s:tsq_job.job, a:line . "\n")
 endfunction
 
@@ -338,7 +330,6 @@ endfunction
 "     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
 function! s:GotoDefinition(file, line, offset)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
-  " call s:log(l:args)
   call s:SendCommandAsyncResponse('definition', l:args)
 endfunction
 
@@ -363,13 +354,7 @@ function! s:StartTsserver()
       return 0
     endif
 
-    " call s:log(s:tsq)
-    " call s:log("starttsserver")
     let job_status = easycomplete#job#status(s:tsq_job.job)
-
-    " call s:log("job status: " . job_status)
-
-    " TODO here e 进去再回来时候，需要重新执行 init
     let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
     if s:tsq_job.job <= 0
       echoerr "tsserver launch failed"
@@ -416,12 +401,10 @@ function! s:messageHandler(msg)
     let l:res_item = json_decode(a:msg)
   catch
     " TODO 出异常到这里，程序会报错
-    " echom a:msg
     echom 'tsserver response error'
     call easycomplete#CursorHoldI()
     return
   endtry
-
 
   " Ignore messages.
   if type(l:res_item) != type({})
@@ -450,7 +433,6 @@ function! s:messageHandler(msg)
   endif
 
   " 执行 response 的回调
-  " call log#log("responseName", l:responseName)
   if !empty(l:responseName)
     if(has_key(s:response_callbacks, l:responseName))
       let ResponseCallback = function(s:response_callbacks[l:responseName], [l:item])
@@ -481,7 +463,8 @@ function! s:TsserverOpen()
   let l:file = easycomplete#context()['filepath']
   let l:args = {'file': l:file}
   call s:SendCommandOneWay('open', l:args)
-  call s:ConfigTsserver() " open 完了再异步执行 config，需要绑定回调事件 TODO
+  " TODO: open 比较耗时，需要 open 完了再异步执行 config，需要绑定回调事件
+  call s:ConfigTsserver()
   call s:SetTsServerOpenStatusOK()
 endfunction
 
@@ -511,7 +494,6 @@ function! s:TsServerOpenedFileAlready()
     return v:false
   endif
 endfunction
-
 
 function! s:TsserverReload()
   let l:file = expand('%:p')
@@ -562,7 +544,7 @@ function! s:delTmp(file_name)
 endfunction
 
 function! s:normalize(buf_name)
-  return substitute(a:buf_name, '\\', '/', 'g')
+  return easycomplete#util#normalize(a:buf_name)
 endfunction
 
 function! s:registEventCallback(callback, eventName)
@@ -595,53 +577,12 @@ function! s:getTsserverEventType(item)
   return 0
 endfunction
 
-function! s:location(path, line, col, ...) abort
-  normal! m'
-  let l:mods = a:0 ? a:1 : ''
-  let l:buffer = bufnr(a:path)
-  if l:mods ==# '' && &modified && !&hidden && l:buffer != bufnr('%')
-    let l:mods = &splitbelow ? 'rightbelow' : 'leftabove'
-  endif
-  if l:mods ==# ''
-    if l:buffer == bufnr('%')
-      let l:cmd = ''
-    else
-      let l:cmd = (l:buffer !=# -1 ? 'b ' . l:buffer : 'edit ' . fnameescape(a:path)) . ' | '
-    endif
-  else
-    let l:cmd = l:mods . ' ' . (l:buffer !=# -1 ? 'sb ' . l:buffer : 'split ' . fnameescape(a:path)) . ' | '
-  endif
-  let full_cmd = l:cmd . 'call cursor('.a:line.','.a:col.')'
-  echom full_cmd
-  execute full_cmd
+function! s:location(...) abort
+  return call('easycomplete#util#location', a:000)
 endfunction
 
 function! s:UpdateTagStack() abort
-  let l:bufnr = bufnr('%')
-  let l:item = {'bufnr': l:bufnr, 'from': [l:bufnr, line('.'), col('.'), 0], 'tagname': expand('<cword>')}
-  let l:winid = win_getid()
-
-  let l:stack = gettagstack(l:winid)
-  if l:stack['length'] == l:stack['curidx']
-    " Replace the last items with item.
-    let l:action = 'r'
-    let l:stack['items'][l:stack['curidx']-1] = l:item
-  elseif l:stack['length'] > l:stack['curidx']
-    " Replace items after used items with item.
-    let l:action = 'r'
-    if l:stack['curidx'] > 1
-      let l:stack['items'] = add(l:stack['items'][:l:stack['curidx']-2], l:item)
-    else
-      let l:stack['items'] = [l:item]
-    endif
-  else
-    " Append item.
-    let l:action = 'a'
-    let l:stack['items'] = [l:item]
-  endif
-  let l:stack['curidx'] += 1
-
-  call settagstack(l:winid, l:stack, l:action)
+  call easycomplete#util#UpdateTagStack()
 endfunction
 
 function! s:log(msg)

@@ -20,13 +20,13 @@
 
 ### 配置
 
-什么都不用配置
+什么都不用配置，默认 Tab 键唤醒补全，修改默认配置可以用`g:easycomplete_tab_trigger="<tab>"`来设置
 
 ### 使用
 
 使用 <kbd>Tab</kbd> 键呼出补全菜单，用 <kbd>Shift-Tab</kbd> 在插入模式下输入 Tab。
 
-使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样）
+使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样），如果是 JS Python 等语言，可以使用`:EasyCompleteGotoDefinition`
 
 JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig.json`，也可以不配
 
