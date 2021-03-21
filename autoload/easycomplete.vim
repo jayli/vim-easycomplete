@@ -140,13 +140,23 @@ function! s:CompleteTypingMatch()
   " TODO 这里把 info ' ' 丢掉了 jayli 导致 info popup 出不来 jayli
   " 设置了 info ' ' 也 pop 不出来
   " 看样子是 info 不能是数组
-  let all_menu = [] + g:easycomplete_menuitems
-  let res_menu = s:CustomCompleteMenuFilter(all_menu, word)
+  let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
+  let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " CompleteChanged 事件过程中不允许 complete() 方法改变正在匹配中的 menulist
   " let res_menu = res_menu + [{"word":"aaaa","menu":"xx"}]
-  let res_menu = map(res_menu,function("s:PrepareMenuInfo"))
+  let filtered_menu = map(filtered_menu,function("s:PrepareInfoPlaceHolder"))
   " 需要在 menulist 根据原匹配完成后再执行 complete()，因此这里必须需要异步
-  call s:AsyncRun(function('s:SecondComplete'), [col('.') - strlen(word), res_menu, all_menu], 0)
+  call s:AsyncRun(function('s:SecondComplete'), [
+        \   col('.') - strlen(word),
+        \   filtered_menu,
+        \   g_easycomplete_menuitems
+        \ ], 0)
+endfunction
+
+function! s:PrepareInfoPlaceHolder(key, val)
+  " 所有 Me.info 
+  let a:val.info = "_"
+  return a:val
 endfunction
 
 " FirstComplete: 第一次获取完整 suggestion 并做第一次匹配
@@ -158,15 +168,15 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   " g:easycomplete_menuitems，导致 info popup  失效
   " 因此这里在 complete 之后需要恢复原 easycomplete_menuitems
   call s:zizz()
-  call s:log('-------SecondComplete------------')
-  call s:log(a:menuitems)
+  " call s:log('-------SecondComplete------------')
+  " call s:log(a:menuitems)
   call complete(a:start_pos, a:menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
 " 原始 Complete 匹配逻辑，用来做视觉占位，避免异步 complete 中的 menu 闪烁
 function! s:NormalizedCompleteMenuFilter(all_menu, word)
-  let result_menu_list = filter(copy(a:all_menu),
+  let result_menu_list = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) =~ "^'. tolower(a:word) . '"')
   return result_menu_list
 endfunction
@@ -535,8 +545,8 @@ function! easycomplete#CompleteChanged()
   " 判断光标是否在上下滑动，显示选中item的info
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
-  call s:log('--easycomplete#CompleteChanged')
-  call s:log(item)
+  " call s:log('--easycomplete#CompleteChanged')
+  " call s:log(item)
   " 由于 completechanged 会触发 complete()，complete() 又会触发 completechanged
   " 注意这里有一个无限递归的风险
   " 必须在 CompleteTypingMatch 中设置一个 zizz 标记，如果这里标记存在则终止调
@@ -548,9 +558,7 @@ function! easycomplete#CompleteChanged()
     call popup_clear()
     return
   endif
-  let info = s:GetInfoByCompleteItem(item)
-  call s:log('-----------showinfo-----------')
-  call s:log(info)
+  let info = s:GetInfoByCompleteItem(copy(item))
   call s:ShowCompleteInfo(info)
   " Start fetching info for the item then call ShowCompleteInfo(info)
 endfunction
@@ -582,7 +590,12 @@ function! s:ShowCompleteInfo(info)
   " call setbufvar(bufnr, '&wrap', 1)
   " call popup_setoptions(id, {'maxwidth': 30})
   " call popup_move(id,{'maxwidth': 30})
-  if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "")
+
+  " Info 有三类
+  " 字符串:".."
+  " 数组:[...]
+  " 占位符号:"_"
+  if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "_")
     call popup_close(id)
     return
   endif
@@ -590,8 +603,6 @@ function! s:ShowCompleteInfo(info)
     call popup_close(id)
     return
   endif
-  call s:log(id)
-  call s:log(a:info)
   call popup_settext(id, a:info)
   call popup_show(id)
 endfunction
@@ -609,7 +620,6 @@ endfunction
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
   setlocal completeopt-=noinsert
-  " call s:StopAsyncRun()
   call s:zizz()
   if pumvisible()
     return "\<C-N>"
@@ -762,7 +772,7 @@ function! easycomplete#CompleteAdd(menu_list)
     return
   endif
   let menuitems = map(sort(copy(menuitems), "s:SortTextComparatorByAlphabet"),
-        \ function("s:PrepareMenuInfo"))
+        \ function("s:PrepareInfoPlaceHolder"))
   let menuitems = filter(menuitems,
         \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
@@ -817,25 +827,6 @@ function! s:SortTextComparatorByAlphabet(entry1, entry2)
     endif
   endif
   return v:false
-endfunction
-
-function! s:PrepareMenuInfo(key, val)
-  " 这里用一个空格来占位 info, 用来初始化 popup window
-  if !exists("a:val.info") || (has_key(a:val,"info") && empty(a:val.info))
-    " jayli
-    let a:val.info = "_"
-  endif
-  " Hack，原则上 info 不应该是 list，只能是字符串，这里在 SecondComplete 的时
-  " 候重新把 menuitems 过滤后渲染，会把各个语言的 Detail info 作为 list 附在
-  " menuitems 里来渲染，携带 list 类型的 info 都是来自
-  " g:easycomplete_menuitems，所以 list 类型的 info 在这里一律都置空，所
-  " 有来自语言lsp suggestion 的 info popup 全部动态创建
-  "
-  " So: 这个设置只给 CompleteTypingMatch 使用
-  " if type(a:val.info) == type([])
-  "   let a:val.info = " "
-  " endif
-  return a:val
 endfunction
 
 function! s:NormalizeMenulist(arr)
