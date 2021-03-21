@@ -21,6 +21,10 @@ function! s:InitLocalVars()
   " 用来判断是否正在滑选completemenu中的项
   let g:easycomplete_completed_item = {}
 
+  " hack，为了避免在 complete menu 中选择回到首项时触发 completeDone 事
+  " 件，需要保存 ctx，触发 completeDone 时比对 ctx 判断事件是否正确发生
+  let g:easycomplete_firstcomplete_ctx = {}
+
   " 只在敲入字符第一次匹配时去取 complete suggest items, 匹配菜单展开时的匹配
   " 动作都交给 CompleteChanged 来完成，这时只对第一次匹配的结果做过滤，而不在
   " 重新去取 complete suggestions
@@ -126,39 +130,59 @@ endfunction
 " typing complete 过程中的匹配
 function! s:CompleteTypingMatch()
   " 初始
-  if !get(g:, 'easycomplete_first_complete_hit') || !empty(v:event.completed_item)
+  if !get(g:, 'easycomplete_first_complete_hit')
     return
   endif
-  call s:zizz()
+  call s:log("CompleteTypingMatch")
   let word = s:GetTypingWord()
   " 加上这句 info 不生效，原因未知
   " let all_menu = deepcopy(g:easycomplete_menuitems)
-  let all_menu = []
-  let tmp_menu = s:NormalizedCompleteMenuFilter(all_menu, word)
-  call add(tmp_menu, {'word': 'Arrayi', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'xxx', 'abbr': 'Arrayi'})
+  " 避免对 g:easycomplete_menuitems 直接操作
+  " TODO 这里把 info ' ' 丢掉了 jayli 导致 info popup 出不来 jayli
+  let all_menu = [] + g:easycomplete_menuitems
+  let res_menu = s:NormalizedCompleteMenuFilter(all_menu, word)
   " CompleteChanged 事件过程中不允许 complete() 方法改变正在匹配中的 menulist
+  let res_menu = res_menu + [{"word":"aaaa","menu":"xx"}]
   " 需要在 menulist 根据原匹配完成后再执行 complete()，因此这里必须需要异步
-  call s:AsyncRun(function('s:SecondComplete'), [col('.') - strlen(word), tmp_menu, g:easycomplete_menuitems], 0)
+  call s:AsyncRun(function('s:SecondComplete'), [col('.') - strlen(word), res_menu, all_menu], 0)
 endfunction
 
 " FirstComplete: 第一次获取完整 suggestion 并做第一次匹配
 " SecondComplete: 第二次只做列表匹配，不再重新获取 suggestion
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
-  let tmp_menuitems = copy(a:easycomplete_menuitems)
+  let tmp_menuitems = a:easycomplete_menuitems
+  " echom a:easycomplete_menuitems
   " 执行这一句会触发 completeDone 事件，会调用 s:flush 清空
   " g:easycomplete_menuitems，导致 info popup  失效
   " 因此这里在 complete 之后需要恢复原 easycomplete_menuitems
+  call s:zizz()
   call complete(a:start_pos, a:menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
+" 原始 Complete 匹配逻辑，用来做视觉占位，避免异步 complete 中的 menu 闪烁
 function! s:NormalizedCompleteMenuFilter(all_menu, word)
   let result_menu_list = filter(copy(a:all_menu),
         \ 'tolower(v:val.word) =~ "^'. tolower(a:word) . '"')
   return result_menu_list
 endfunction
 
+" 自定义匹配逻辑，匹配逻辑参照 YCY 和 coc
+function! s:CustomCompleteMenuFilter(all_menu, word)
+  let normalized_matching_menu = s:NormalizedCompleteMenuFilter(a:all_menu, a:word)
+  return normalized_matching_menu + []
+endfunction
+
 function! easycomplete#CompleteDone()
+  " 需要处理一下
+
+  if pumvisible() || empty(v:completed_item)
+    return
+  endif
+
+  call log#log('easycomplete#CompleteDone')
+  call log#log(v:completed_item)
+  call log#log(complete_info())
   call s:flush()
 endfunction
 
@@ -241,16 +265,20 @@ function! s:ResetBacking()
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-" 设置一个什么也不做的标志位，90ms 后恢复
+" 设置一个什么也不做的标志位，50ms 后恢复
 function! s:zizz()
   let g:easycomplete_backing_or_cr = 1
   call s:StopAsyncRun()
-  call s:AsyncRun(function('s:ResetBacking'), [], 90)
+  call s:AsyncRun(function('s:ResetBacking'), [], 50)
   return "\<BS>"
 endfunction
 
-function! easycomplete#IsBacking()
+function s:zizzing()
   return g:easycomplete_backing_or_cr ? v:true : v:false
+endfunction
+
+function! easycomplete#IsBacking()
+  return s:zizzing()
 endfunction
 
 function! easycomplete#backing()
@@ -503,12 +531,21 @@ function! easycomplete#CompleteChanged()
   " 判断光标是否在上下滑动，显示选中item的info
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
-  call s:CompleteTypingMatch()
+  call s:log('--easycomplete#CompleteChanged')
+  call s:log(item)
+  " 由于 completechanged 会触发 complete()，complete() 又会触发 completechanged
+  " 注意这里有一个无限递归的风险
+  " 必须在 CompleteTypingMatch 中设置一个 zizz 标记，如果这里标记存在则终止调
+  " 用，防止无限递归
+  if empty(item) && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+    call s:CompleteTypingMatch()
+  endif
   if empty(item)
     call popup_clear()
     return
   endif
   let info = s:GetInfoByCompleteItem(item)
+  call s:log('-----------showinfo-----------')
   call s:ShowCompleteInfo(info)
   " Start fetching info for the item then call ShowCompleteInfo(info)
 endfunction
@@ -711,7 +748,6 @@ function! easycomplete#CompleteAdd(menu_list)
   endif
 
   " TODO 除了排序之外，还要添加一个匹配typing word 的函数过滤，类似 coc
-  " jayli
   let typing_word = s:GetTypingWord()
   let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")
   let menuitems = g:easycomplete_menuitems + new_menulist
@@ -744,6 +780,7 @@ function! s:FirstComplete(start_pos, menuitems)
     " 生，用了两个延时来区分 first_complete_hit 的状态
     call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
     call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 40)
+    let g:easycomplete_firstcomplete_ctx = easycomplete#context()
   endif
 endfunction
 
