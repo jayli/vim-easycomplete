@@ -8,9 +8,9 @@
 
 基于 vim-plug 安装
 
-  Plug 'SirVer/ultisnips'
-  Plug 'honza/vim-snippets'
-  Plug 'jayli/vim-easycomplete'
+    Plug 'SirVer/ultisnips'
+    Plug 'honza/vim-snippets'
+    Plug 'jayli/vim-easycomplete'
 
 其中 ultisnips 和 vim-snippets 是代码片段补全用的，推荐安装，不强制
 
