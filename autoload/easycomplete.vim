@@ -129,22 +129,27 @@ function! s:CompleteTypingMatch()
   if !get(g:, 'easycomplete_first_complete_hit') || !empty(v:event.completed_item)
     return
   endif
-  call s:log('complete typing ' . s:GetTypingWord())
-  " call s:StopAsyncRun()
-  " call s:CloseCompletionMenu()
   call s:zizz()
-  " call s:SendKeys("\<C-e>")
-  " call complete(col('.'),[])
   let word = s:GetTypingWord()
-  let all_menu = [{'word': 'Array', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'v', 'abbr': 'Array'}]
+  " 加上这句 info 不生效，原因未知
+  " let all_menu = deepcopy(g:easycomplete_menuitems)
+  let all_menu = []
   let tmp_menu = s:NormalizedCompleteMenuFilter(all_menu, word)
-  " TODO jayli here
-  " 这里有问题
-  " 打开注释，info 会丢掉
-  call add(tmp_menu, {'word': 'Array', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'v', 'abbr': 'Array'})
+  call add(tmp_menu, {'word': 'Arrayi', 'menu': '[TS]', 'user_data': '', 'info': ' ', 'kind': 'xxx', 'abbr': 'Arrayi'})
+  " CompleteChanged 事件过程中不允许 complete() 方法改变正在匹配中的 menulist
+  " 需要在 menulist 根据原匹配完成后再执行 complete()，因此这里必须需要异步
+  call s:AsyncRun(function('s:SecondComplete'), [col('.') - strlen(word), tmp_menu, g:easycomplete_menuitems], 0)
+endfunction
+
+" FirstComplete: 第一次获取完整 suggestion 并做第一次匹配
+" SecondComplete: 第二次只做列表匹配，不再重新获取 suggestion
+function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
+  let tmp_menuitems = copy(a:easycomplete_menuitems)
   " 执行这一句会触发 completeDone 事件，会调用 s:flush 清空
-  " g:easycomplete_menuitems，导致 info 失效
-  " call s:AsyncRun(function('complete'), [col('.') - strlen(word), tmp_menu], 0)
+  " g:easycomplete_menuitems，导致 info popup  失效
+  " 因此这里在 complete 之后需要恢复原 easycomplete_menuitems
+  call complete(a:start_pos, a:menuitems)
+  let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
 function! s:NormalizedCompleteMenuFilter(all_menu, word)
@@ -158,13 +163,7 @@ function! easycomplete#CompleteDone()
 endfunction
 
 function! easycomplete#CursorHoldI()
-  " 重置当前选中的 complete item
-  call s:ResetCompletedItem()
-  " 重置 complete menu 全量缓存
-  call s:ResetCompleteCache()
-  " 重置当前每个插件的 docomplete 的状态
-  call s:ResetCompleteTaskQueue()
-  " call s:flush()
+  call s:flush()
 endfunction
 
 " 重置全局变量
@@ -173,6 +172,12 @@ function! s:flush()
   let g:easycomplete_menuitems = []
   " 重置 first_complete_hit 状态
   let g:easycomplete_first_complete_hit = 0
+  " 重置当前选中的 complete item
+  call s:ResetCompletedItem()
+  " 重置 complete menu 全量缓存
+  call s:ResetCompleteCache()
+  " 重置当前每个插件的 docomplete 的状态
+  call s:ResetCompleteTaskQueue()
 endfunction
 
 function! s:ResetCompletedItem()
@@ -720,7 +725,7 @@ function! easycomplete#CompleteAdd(menu_list)
 
   let start_pos = col('.') - strwidth(typing_word)
   try
-    call s:complete(start_pos, menuitems)
+    call s:FirstComplete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
     return v:none
   endtry
@@ -729,7 +734,7 @@ function! easycomplete#CompleteAdd(menu_list)
   call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
 endfunction
 
-function! s:complete(start_pos, menuitems)
+function! s:FirstComplete(start_pos, menuitems)
   " 这里的 menuitems 一定不为空
   if s:CheckCompleteTastQueueAllDone()
     " 参照 YCM，这里 complete 一律用异步
