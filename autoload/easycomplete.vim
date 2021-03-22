@@ -116,7 +116,7 @@ endfunction
 
 function! s:BindingTypingCommand()
   inoremap <silent><expr> <BS> easycomplete#backing()
-  if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger 
+  if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
     " 如果安装了 ultisnips ，因为 ultisnips 默认绑定 tab
     " 跟这里有冲突，因此需要先解除掉tab绑定
     exec "iunmap " . g:easycomplete_tab_trigger
@@ -132,11 +132,14 @@ function! s:BindingTypingCommand()
     " typing Complete 过程中的匹配，用来触发 SecondComplete
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
-    autocmd CursorHoldI * call easycomplete#CursorHoldI()
+    autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
 endfunction
 
 " typing complete 过程中的匹配，用来触发 SecondComplete
+" TODO: 在 SecondComplete 过程中，typing 的字符不能首字母匹配出complet，并随之
+" 触发 completeDone，就不再触发CompleteChanged了，因此也无法触发 TypingMatch
+" 所以会丢失掉一部分 fuzzy match 的结果
 function! s:CompleteTypingMatch()
   " 初始
   if !get(g:, 'easycomplete_first_complete_hit')
@@ -183,9 +186,14 @@ function! s:CustomCompleteMenuFilter(all_menu, word)
   let original_matching_menu = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) =~ "^'. word . '"')
 
+  " call s:log('--------------')
+  " call s:log(original_matching_menu)
+
   " 除了 占位用的menus之外的 menulist
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) !~ "^'. word . '"')
+
+  " call s:log(otherwise_matching_menu)
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
@@ -201,6 +209,9 @@ function! s:FuzzySearch(needle, haystack)
 endfunction
 
 function! easycomplete#CompleteDone()
+  if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+    return
+  endif
   if pumvisible() || empty(v:completed_item)
     return
   endif
@@ -208,7 +219,11 @@ function! easycomplete#CompleteDone()
   call s:flush()
 endfunction
 
-function! easycomplete#CursorHoldI()
+function! easycomplete#InsertLeave()
+  call s:flush()
+endfunction
+
+function! easycomplete#flush()
   call s:flush()
 endfunction
 
@@ -292,11 +307,12 @@ function! s:zizz()
   let g:easycomplete_backing_or_cr = 1
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:ResetBacking'), [], 50)
+  " call timer_start(50, { -> easycomplete#util#call(function('s:ResetBacking'), [])})
   return "\<BS>"
 endfunction
 
 function s:zizzing()
-  return g:easycomplete_backing_or_cr ? v:true : v:false
+  return g:easycomplete_backing_or_cr == 1 ? v:true : v:false
 endfunction
 
 function! easycomplete#IsBacking()
@@ -358,6 +374,9 @@ function! easycomplete#context() abort
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
+  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+    return v:false
+  endif
   if a:ctx1["lnum"] == a:ctx2["lnum"]
         \ && a:ctx1["col"] == a:ctx2["col"]
         \ && a:ctx1["typing"] ==# a:ctx2["typing"]
@@ -366,6 +385,21 @@ function! s:SameCtx(ctx1, ctx2)
     return v:false
   endif
 endfunction
+
+" ctx1 前，ctx2 后
+function! s:SameBeginning(ctx1, ctx2)
+  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+    return v:false
+  endif
+  if a:ctx1["startcol"] == a:ctx2["startcol"]
+        \ && a:ctx1["lnum"] == a:ctx2["lnum"]
+        \ && match(a:ctx2["typing"], a:ctx1["typing"]) == 0
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 
 " 异步回来的complete menu携带的 ctx 和当前光标所在的 ctx 比较
 " 如果发生变化则返回 false，如果是一致的则返回true
@@ -475,6 +509,14 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 200
   endif
 
+  " 判断是否是 SecondComplete 中的完全模糊匹配
+  if !empty(g:easycomplete_menuitems)
+        \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
+        \ && s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
+    call s:CompleteTypingMatch()
+    return v:none
+  endif
+
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:none
@@ -557,7 +599,7 @@ function! easycomplete#CompleteChanged()
   " 注意这里有一个无限递归的风险
   " 必须在 CompleteTypingMatch 中设置一个 zizz 标记，如果这里标记存在则终止调
   " 用，防止无限递归
-  if empty(item) && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+  if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
@@ -625,12 +667,13 @@ endfunction
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
   setlocal completeopt-=noinsert
-  call s:zizz()
   if pumvisible()
+    call s:zizz()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
     " 代码已经完成展开时，编辑代码占位符，用tab进行占位符之间的跳转
     " call UltiSnips#JumpForwards()
+    call s:zizz()
     call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
     return ""
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
@@ -640,10 +683,12 @@ function! easycomplete#CleverTab()
     "   如果整行是空行
     "   前一个字符是空格
     "   空行
+    call s:zizz()
     return "\<Tab>"
   elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
         \ "\\(\\w\\|\\/\\|\\.\\|\\:\\)$") < 0
     " 如果正在输入一个非字母，也不是'/'或'.'或者':'
+    call s:zizz()
     return "\<Tab>"
   else
     " 正常逻辑下都唤醒easycomplete菜单
@@ -917,7 +962,6 @@ function! s:LetCompleteTaskQueueAllDone()
     let item.done = 1
   endfor
 endfunction
-
 
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)

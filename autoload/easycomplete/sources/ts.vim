@@ -402,7 +402,7 @@ function! s:messageHandler(msg)
   catch
     " TODO 出异常到这里，程序会报错
     echom 'tsserver response error'
-    call easycomplete#CursorHoldI()
+    call easycomplete#flush()
     return
   endtry
 

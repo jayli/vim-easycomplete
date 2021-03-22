@@ -34,16 +34,16 @@ function! s:InitCommand()
         \ "|____________________________________|"]
 
   autocmd!
-  autocmd QuitPre * call log#quit()
+  autocmd QuitPre * call easycomplete#log#quit()
 
-  command! -nargs=0 -complete=command CleanLog call log#clean()
-  command! -nargs=0 -complete=command CloseLog call log#close()
-  command! -nargs=1 -complete=command Log call log#log(<args>)
+  command! -nargs=0 -complete=command CleanLog call easycomplete#log#clean()
+  command! -nargs=0 -complete=command CloseLog call easycomplete#log#close()
+  command! -nargs=1 -complete=command Log call easycomplete#log#log(<args>)
 
 endfunction
 
 " 多参数适配
-function! log#log(...)
+function! easycomplete#log#log(...)
   if !exists('g:vim_log_enabled')
     let g:vim_log_enabled = 1
   endif
@@ -109,20 +109,20 @@ endfunction
 function! s:EmptyLogWindow()
   call s:CloseLogWindow()
   call s:DelLogFile()
-  call log#log()
+  call easycomplete#log#log()
 endfunction
 
-function! log#clean()
+function! easycomplete#log#clean()
   call s:EmptyLogWindow()
 endfunction
 
-function! log#close()
+function! easycomplete#log#close()
   if s:LogRunning()
     call s:CloseLogWindow()
   endif
 endfunction
 
-function! log#quit()
+function! easycomplete#log#quit()
   if get(g:debugger, 'log_winid') == bufwinid(bufnr(""))
     call term_sendkeys("log_debugger_window_name","\<C-C>")
   endif

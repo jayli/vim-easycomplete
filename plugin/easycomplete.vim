@@ -28,3 +28,4 @@ else " 通过 :packadd 手动加载
   call easycomplete#Enable()
 endif
 
+

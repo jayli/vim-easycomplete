@@ -116,6 +116,14 @@ function! easycomplete#util#trim(str)
 endfunction
 
 function! easycomplete#util#FuzzySearch(needle, haystack)
+  if !has("pythonx")
+    return easycomplete#util#FuzzySearchVim(a:needle, a:haystack)
+  else
+    return easycomplete#util#FuzzySearchPy(a:needle, a:haystack)
+  endif
+endfunction
+
+function! easycomplete#util#FuzzySearchVim(needle, haystack)
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)
   if qlen > tlen
@@ -150,6 +158,50 @@ function! easycomplete#util#FuzzySearch(needle, haystack)
     return v:false
   endwhile
   return v:true
+endfunction
+
+function! easycomplete#util#FuzzySearchPy(needle, haystack)
+  let needle = tolower(a:needle)
+  let haystack = tolower(a:haystack)
+pyx << EOF
+import vim
+needle = vim.eval("needle")
+haystack = vim.eval("haystack")
+
+def FuzzySearch(needle, haystack):
+  flag = 1
+  tlen = len(haystack)
+  qlen = len(needle)
+  if qlen > tlen:
+    return 0
+  elif qlen == tlen:
+    if needle == haystack:
+      return 1
+    else:
+      return 0
+  else:
+    needle_ls = list(needle)
+    haystack_ls = list(haystack)
+    j = 0
+    fallback = 0
+    for nch in needle_ls:
+      fallback = 0
+      while j < tlen:
+        if haystack_ls[j] == nch:
+          j += 1
+          fallback = 1
+          break
+        else:
+          j += 1
+      if fallback == 1:
+        continue
+      return 0
+    return 1
+
+flag = FuzzySearch(needle, haystack)
+vim.command("let ret = %s"%flag)
+EOF
+  return ret
 endfunction
 
 function! easycomplete#util#NotInsertMode()
