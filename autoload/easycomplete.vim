@@ -54,6 +54,9 @@ function! s:InitLocalVars()
   " ]
   let g:easycomplete_complete_taskqueue = []
 
+  " 默认 info popup 的 width
+  let g:easycomplete_popup_width = 70
+
   " 当前敲入的字符存储
   let b:typing_key = 0
 
@@ -65,7 +68,7 @@ function! s:InitLocalVars()
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
   " TODO width 不管用？
-  setlocal completepopup=width:90,highlight:Pmenu,border:off,align:menu
+  setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
   setlocal completeopt+=popup
   setlocal completeopt-=longest
   setlocal cpoptions+=B
@@ -650,8 +653,52 @@ function! s:ShowCompleteInfo(info)
     call popup_close(id)
     return
   endif
-  call popup_settext(id, a:info)
+  let popup_opts = popup_getoptions(id)
+  let width = popup_opts.maxwidth > g:easycomplete_popup_width ?
+        \ g:easycomplete_popup_width : popup_opts.maxwidth
+  let l:info = s:ModifyInfoByMaxwidth(a:info, width)
+  call popup_settext(id, l:info)
   call popup_show(id)
+endfunction
+
+function! s:ModifyInfoByMaxwidth(info, maxwidth)
+  if type(a:info) == type("")
+    if strlen(a:info) <= a:maxwidth
+      return a:info
+    endif
+    let span = a:maxwidth
+    let cursor = 0
+    let t_info = []
+    let t_line = ""
+
+    while cursor <= (strlen(a:info) - 1)
+      let t_line = t_line . a:info[cursor]
+      if (cursor + 1) % (span) == 0 && cursor != 0
+        call add(t_info, t_line)
+        let t_line = ""
+      endif
+      let cursor += 1
+    endwhile
+    if !empty(t_line)
+      call add(t_info, t_line)
+    endif
+    return t_info
+  endif
+
+  if type(a:info) == type([])
+    let t_info = []
+    for item in a:info
+      let modified_info_item = s:ModifyInfoByMaxwidth(item, a:maxwidth)
+      if type(modified_info_item) == type("")
+        call add(t_info, modified_info_item)
+      endif
+      if type(modified_info_item) == type([])
+        let t_info = t_info + modified_info_item
+      endif
+    endfor
+    return t_info
+  endif
+
 endfunction
 
 function! easycomplete#SetMenuInfo(name, info, menu_flag)
@@ -700,6 +747,7 @@ endfunction
 " CleverShiftTab 逻辑判断，无补全菜单情况下输出<Tab>
 " Shift-Tab 在插入模式下输出为 Tab，仅为我个人习惯
 function! easycomplete#CleverShiftTab()
+  call s:zizz()
   return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
 
