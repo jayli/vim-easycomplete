@@ -2,7 +2,7 @@
 
 ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-简单到爆的自动补全插件，代码补全依赖 vim-snippets，推荐安装
+简单到爆的自动补全插件，代码补全依赖 vim-snippets
 
 ![](https://gw.alicdn.com/imgextra/i1/O1CN014Du5i31rbI2jfH0q7_!!6000000005649-1-tps-687-307.gif)
 
@@ -14,11 +14,11 @@
     Plug 'honza/vim-snippets'
     Plug 'jayli/vim-easycomplete'
 
-其中 ultisnips 和 vim-snippets 是代码片段补全用的，推荐安装，不强制
+其中 ultisnips 和 vim-snippets 是代码片段补全用的（非强制）
 
-> - Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi`
-> - JS 补全需要安装 tsserver，`npm -g install typescript`
-> - Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
+> - JS/TS 补全需要安装 tsserver，`npm -g install typescript`
+> - Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi` （TODO）
+> - Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`（TODO）
 
 ### 配置
 
