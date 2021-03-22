@@ -12,6 +12,11 @@ if get(g:, 'easycomplete_plugin_init')
 endif
 let g:easycomplete_plugin_init = 1
 
+if v:version < 802
+  echom "EasyComplete requires vim version upper than 802"
+  finish
+endif
+
 " augroup FileTypeChecking
 "   let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
 "   if ext ==# "ts"
