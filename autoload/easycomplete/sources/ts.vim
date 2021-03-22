@@ -54,8 +54,8 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
     " TODO 因为e出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
-    " InsertEnter 来勉强实现，这里的 init 会执行的比较频繁，可能会有性能问题
-    autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
+    autocmd SafeState,InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     " goto definition 方法需要抽到配置里去
     command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
     " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
