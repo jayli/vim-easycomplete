@@ -24,7 +24,7 @@ endfunction
 function! s:GetKeywords(base)
   let bufKeywordList        = s:GetBufKeywordsList(a:base)
   let wrappedBufKeywordList = map(bufKeywordList,
-        \ '{"word":v:val,"dup":1,"icase":1,"kind":"w","menu": "[Buf]", "info": ""}')
+        \ '{"word":v:val,"dup":1,"icase":1,"kind":"w","equal":1,"menu": "[Buf]", "info": ""}')
   return s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
         \       s:GetWrappedDictKeywordList()
@@ -108,6 +108,7 @@ function! s:GetWrappedDictKeywordList()
       call add(dictkeywords, {
             \   "word" : item ,
             \   "kind" : "k",
+            \   "equal":1
             \   "menu" : "[KW]" 
             \ })
     endfor

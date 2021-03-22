@@ -17,12 +17,12 @@ if v:version < 802
   finish
 endif
 
-" augroup FileTypeChecking
-"   let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
-"   if ext ==# "ts"
-"     finish
-"   endif
-" augroup END
+augroup FileTypeChecking
+  let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
+  if ext ==# "ts"
+    finish
+  endif
+augroup END
 
 if has('vim_starting') " vim 启动时加载
   augroup EasyCompleteStart

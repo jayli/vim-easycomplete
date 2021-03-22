@@ -221,7 +221,8 @@ function! s:CompleteMenuMap(key, val)
         \ "kind": exists('a:val.kind') ? a:val.kind[0] : "",
         \ "menu": s:menu_flag,
         \ "word": is_func ? val_name . "(" : val_name,
-        \ "info": ""
+        \ "info": "",
+        \ "equal":1
         \ }
 endfunction
 

@@ -150,6 +150,7 @@ endfunction
 function! s:PrepareInfoPlaceHolder(key, val)
   " 所有 Menu.info 的占位符
   let a:val.info = "_"
+  let a:val.equal = 1
   return a:val
 endfunction
 
@@ -166,25 +167,16 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
-" 自定义匹配逻辑，匹配逻辑参照 YCY 和 coc
 function! s:CustomCompleteMenuFilter(all_menu, word)
-  " 原始 Complete 匹配逻辑，用来做视觉占位，占位原有的位置
-  " 避免异步 complete 中的 menu 闪烁
   let word = tolower(a:word)
-  let original_matching_menu = filter(deepcopy(a:all_menu),
-        \ 'tolower(v:val.word) =~ "^'. word . '"')
-
-  " 除了 占位用的menus之外的 menulist
-  let otherwise_matching_menu = filter(deepcopy(a:all_menu),
-        \ 'tolower(v:val.word) !~ "^'. word . '"')
-
-  let otherwise_fuzzymatching = []
-  for item in otherwise_matching_menu
+  let all_menu = deepcopy(a:all_menu)
+  let fuzzymatching = []
+  for item in all_menu
     if s:FuzzySearch(word, item.word)
-      call add(otherwise_fuzzymatching, item)
+      call add(fuzzymatching, item)
     endif
   endfor
-  return original_matching_menu + otherwise_fuzzymatching
+  return fuzzymatching
 endfunction
 
 function! s:FuzzySearch(needle, haystack)
@@ -539,7 +531,7 @@ endfunction
 
 "CleverTab tab 自动补全逻辑
 function! easycomplete#CleverTab()
-  setlocal completeopt-=noinsert
+  " setlocal completeopt-=noinsert
   if pumvisible()
     call s:zizz()
     return "\<C-N>"
@@ -758,11 +750,13 @@ function! s:NormalizeMenulist(arr)
             \ 'user_data': '',
             \ 'info': '',
             \ 'kind': '',
+            \ 'equal' : 1,
+            \ 'dup': 1,
             \ 'abbr': '' }
       call add(l:menu_list, l:menu_item)
     endif
     if type(item) == type({})
-      call add(l:menu_list, extend({'word': '', 'menu': '', 'user_data': '',
+      call add(l:menu_list, extend({'word': '', 'menu': '', 'user_data': '', 'equal': 1, 'dup': 1,
             \                       'info': '', 'kind': '', 'abbr': ''},
             \ item ))
     endif
