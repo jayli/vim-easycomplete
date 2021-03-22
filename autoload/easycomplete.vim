@@ -129,12 +129,14 @@ endfunction
 " TODO: 在 SecondComplete 过程中，typing 的字符不能首字母匹配出complet，并随之
 " 触发 completeDone，就不再触发CompleteChanged了，因此也无法触发 TypingMatch
 " 所以会丢失掉一部分 fuzzy match 的结果
-function! s:CompleteTypingMatch()
+" 唯一的参数是传入要匹配的单词 word, 留空的话去当前 typingword
+function! s:CompleteTypingMatch(...)
   " 初始
   if !get(g:, 'easycomplete_first_complete_hit')
     return
   endif
-  let word = s:GetTypingWord()
+
+  let word = exists('a:1') ? a:1 : s:GetTypingWord()
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " CompleteChanged 事件过程中不允许 complete() 方法改变正在匹配中的 menulist
@@ -223,24 +225,13 @@ function! easycomplete#IsBacking()
 endfunction
 
 function! easycomplete#backing()
-  return s:zizz()
-
-  " if !exists('g:easycomplete_menucache')
-  "   call s:SetupCompleteCache()
-  " endif
-
-  " call s:ResetCompleteCache()
-  " call s:StopAsyncRun()
-  " if has_key(g:easycomplete_menucache, s:GetTypingWord())
-  "   call s:AsyncRun(function('s:zizzTimerHandler'), [], 500)
-  " else
-  "   " TODO 回退的逻辑优化
-  "   " " call s:SendKeys("\<C-X>\<C-U>")
-  "   " call s:DoComplete(v:true)
-  "   " call s:StopAsyncRun()
-  "   " call s:CompleteHandler()
-  " endif
-  " return ''
+  call s:zizz()
+  call s:SendKeys("\<BS>")
+  if s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
+        \ && !empty(g:easycomplete_menuitems)
+    call s:CompleteTypingMatch()
+  endif
+  return ""
 endfunction
 
 " 格式参照 asyncomplete
