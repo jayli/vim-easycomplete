@@ -4,6 +4,8 @@
 
 简单到爆的自动补全插件，代码补全依赖 vim-snippets，推荐安装
 
+![](https://gw.alicdn.com/imgextra/i1/O1CN014Du5i31rbI2jfH0q7_!!6000000005649-1-tps-687-307.gif)
+
 ### 安装
 
 基于 vim-plug 安装
