@@ -207,6 +207,16 @@ endfunction
 
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
   if type(a:info) == type("")
+    " 构造分割线
+    if a:info =~ "^-\\+$"
+      let num = 1
+      let info_line = ""
+      while num <= a:maxwidth
+        let info_line = info_line . "-"
+        let num += 1
+      endwhile
+      return info_line
+    endif
     if strlen(a:info) <= a:maxwidth
       return a:info
     endif

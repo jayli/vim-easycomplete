@@ -10,7 +10,7 @@ function! easycomplete#sources#directory#completor(opt, ctx)
 
   call easycomplete#util#AsyncRun(
         \ function('s:CompleteHandler'),
-        \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path], 
+        \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path],
         \ 10 )
   " 展开目录时，中断其他complete逻辑
   " 终端其他 complete 逻辑，设计上的问题，这里要用异步调 easycomplete#complete
@@ -34,7 +34,7 @@ endfunction
 " 关闭补全浮窗
 function! s:CloseCompletionMenu()
   if pumvisible()
-    call feedkeys("\<ESC>a", 'in' )
+    call feedkeys("\<ESC>a", 'in')
   endif
 endfunction
 

@@ -170,15 +170,22 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
 endfunction
 
 function! s:CustomCompleteMenuFilter(all_menu, word)
+  " 原始 Complete 匹配逻辑，用来做视觉占位，占位原有的位置
   let word = tolower(a:word)
-  let all_menu = deepcopy(a:all_menu)
-  let fuzzymatching = []
-  for item in all_menu
+  let original_matching_menu = sort(filter(deepcopy(a:all_menu),
+        \ 'tolower(v:val.word) =~ "^'. word . '"'), "s:SortTextComparatorByLength")
+
+  " 除了 占位用的menus之外的 menulist
+  let otherwise_matching_menu = filter(deepcopy(a:all_menu),
+        \ 'tolower(v:val.word) !~ "^'. word . '"')
+
+  let otherwise_fuzzymatching = []
+  for item in otherwise_matching_menu
     if s:FuzzySearch(word, item.word)
-      call add(fuzzymatching, item)
+      call add(otherwise_fuzzymatching, item)
     endif
   endfor
-  return fuzzymatching
+  return original_matching_menu + otherwise_fuzzymatching
 endfunction
 
 function! s:FuzzySearch(needle, haystack)
@@ -227,7 +234,11 @@ endfunction
 function! easycomplete#backing()
   call s:zizz()
   call s:SendKeys("\<BS>")
-  if s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
+  let ctx = easycomplete#context()
+  if ctx["typing"] == ""
+    return ""
+  endif
+  if s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
         \ && !empty(g:easycomplete_menuitems)
     call s:CompleteTypingMatch()
   endif
@@ -316,6 +327,10 @@ endfunction
 
 function! easycomplete#typing()
   if !easycomplete#FireCondition()
+    return ""
+  endif
+
+  if s:zizzing()
     return ""
   endif
 
@@ -603,7 +618,6 @@ function! s:CloseCompletionMenu()
 endfunction
 
 function! s:CompleteHandler()
-  call s:CompleteStopChecking()
   call s:StopAsyncRun()
   if s:NotInsertMode()
     return
@@ -615,12 +629,6 @@ function! s:CompleteHandler()
 
   call s:CompleteInit()
   call s:CompletorCalling()
-endfunction
-
-function! s:CompleteStopChecking()
-  if complete_check()
-    call feedkeys("\<C-E>")
-  endif
 endfunction
 
 function! s:CompleteInit(...)
@@ -978,6 +986,10 @@ endfunction
 
 function! easycomplete#log(msg)
   call s:log(a:msg)
+endfunction
+
+function! s:loglog(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
 
 " 全局 API
