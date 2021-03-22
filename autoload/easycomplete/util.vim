@@ -116,10 +116,11 @@ function! easycomplete#util#trim(str)
 endfunction
 
 function! easycomplete#util#FuzzySearch(needle, haystack)
-  if !has("pythonx")
-    return easycomplete#util#FuzzySearchVim(a:needle, a:haystack)
-  else
+  " 优先调用 python 的实现，速度更快
+  if has("pythonx")
     return easycomplete#util#FuzzySearchPy(a:needle, a:haystack)
+  else
+    return easycomplete#util#FuzzySearchVim(a:needle, a:haystack)
   endif
 endfunction
 
@@ -202,6 +203,45 @@ flag = FuzzySearch(needle, haystack)
 vim.command("let ret = %s"%flag)
 EOF
   return ret
+endfunction
+
+function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
+  if type(a:info) == type("")
+    if strlen(a:info) <= a:maxwidth
+      return a:info
+    endif
+    let span = a:maxwidth
+    let cursor = 0
+    let t_info = []
+    let t_line = ""
+
+    while cursor <= (strlen(a:info) - 1)
+      let t_line = t_line . a:info[cursor]
+      if (cursor + 1) % (span) == 0 && cursor != 0
+        call add(t_info, t_line)
+        let t_line = ""
+      endif
+      let cursor += 1
+    endwhile
+    if !empty(t_line)
+      call add(t_info, t_line)
+    endif
+    return t_info
+  endif
+
+  if type(a:info) == type([])
+    let t_info = []
+    for item in a:info
+      let modified_info_item = easycomplete#util#ModifyInfoByMaxwidth(item, a:maxwidth)
+      if type(modified_info_item) == type("")
+        call add(t_info, modified_info_item)
+      endif
+      if type(modified_info_item) == type([])
+        let t_info = t_info + modified_info_item
+      endif
+    endfor
+    return t_info
+  endif
 endfunction
 
 function! easycomplete#util#NotInsertMode()

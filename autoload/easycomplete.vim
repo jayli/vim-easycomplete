@@ -97,20 +97,6 @@ function! easycomplete#Enable()
   call easycomplete#ui#setScheme()
 endfunction
 
-" 判断是否安装了 vim-snippet
-function! s:SnipSupports()
-  try
-    call funcref("UltiSnips#RefreshSnippets")
-  catch /^Vim\%((\a\+)\)\=:E700/
-    return v:false
-  endtry
-  return v:true
-endfunction
-
-function! easycomplete#nill() abort
-  return v:none " DO NOTHING
-endfunction
-
 function! easycomplete#GetBindingKeys()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>_'
@@ -181,7 +167,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
 endfunction
 
 " 自定义匹配逻辑，匹配逻辑参照 YCY 和 coc
-" TODO 匹配速度优化
 function! s:CustomCompleteMenuFilter(all_menu, word)
   " 原始 Complete 匹配逻辑，用来做视觉占位，占位原有的位置
   " 避免异步 complete 中的 menu 闪烁
@@ -189,14 +174,9 @@ function! s:CustomCompleteMenuFilter(all_menu, word)
   let original_matching_menu = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) =~ "^'. word . '"')
 
-  " call s:log('--------------')
-  " call s:log(original_matching_menu)
-
   " 除了 占位用的menus之外的 menulist
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) !~ "^'. word . '"')
-
-  " call s:log(otherwise_matching_menu)
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
@@ -230,27 +210,6 @@ function! easycomplete#flush()
   call s:flush()
 endfunction
 
-" 重置全局变量
-function! s:flush()
-  " 清空menuitems
-  let g:easycomplete_menuitems = []
-  " 重置 first_complete_hit 状态
-  let g:easycomplete_first_complete_hit = 0
-  " 重置当前选中的 complete item
-  call s:ResetCompletedItem()
-  " 重置 complete menu 全量缓存
-  call s:ResetCompleteCache()
-  " 重置当前每个插件的 docomplete 的状态
-  call s:ResetCompleteTaskQueue()
-endfunction
-
-function! s:ResetCompletedItem()
-  if pumvisible()
-    return
-  endif
-  let g:easycomplete_completed_item = {}
-endfunction
-
 " 判断当前是否在complete menu 中光标移动在内高亮某一项
 function! easycomplete#CompleteCursored()
   if !pumvisible()
@@ -265,57 +224,6 @@ endfunction
 
 function! easycomplete#GetCompletedItem()
   return g:easycomplete_completed_item
-endfunction
-
-function! s:SetupCompleteCache()
-  let g:easycomplete_menucache = {}
-  let g:easycomplete_menucache["_#_1"] = 1  " 当前输入单词行号
-  let g:easycomplete_menucache["_#_2"] = 1  " 当前输入单词列号
-endfunction
-
-function! s:ResetCompleteCache()
-  if !exists('g:easycomplete_menucache')
-    call s:SetupCompleteCache()
-  endif
-
-  let start_pos = col('.') - strwidth(s:GetTypingWord())
-  if g:easycomplete_menucache["_#_1"] != line('.') || g:easycomplete_menucache["_#_2"] != start_pos
-    let g:easycomplete_menucache = {}
-  endif
-  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
-  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
-endfunction
-
-function! s:AddCompleteCache(word, menulist)
-  if !exists('g:easycomplete_menucache')
-    call s:SetupCompleteCache()
-  endif
-
-  let start_pos = col('.') - strwidth(a:word)
-  if g:easycomplete_menucache["_#_1"] == line('.') && g:easycomplete_menucache["_#_2"] == start_pos
-    let g:easycomplete_menucache[a:word] = a:menulist
-  else
-    let g:easycomplete_menucache = {}
-  endif
-  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
-  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
-endfunction
-
-function! s:ResetBacking()
-  let g:easycomplete_backing_or_cr = 0
-endfunction
-
-" 设置一个什么也不做的标志位，50ms 后恢复
-function! s:zizz()
-  let g:easycomplete_backing_or_cr = 1
-  call s:StopAsyncRun()
-  call s:AsyncRun(function('s:ResetBacking'), [], 50)
-  " call timer_start(50, { -> easycomplete#util#call(function('s:ResetBacking'), [])})
-  return "\<BS>"
-endfunction
-
-function s:zizzing()
-  return g:easycomplete_backing_or_cr == 1 ? v:true : v:false
 endfunction
 
 function! easycomplete#IsBacking()
@@ -343,20 +251,6 @@ function! easycomplete#backing()
   " return ''
 endfunction
 
-function! s:zizzTimerHandler()
-  if pumvisible()
-    return ''
-  endif
-
-  if !exists('g:easycomplete_menucache')
-    call s:SetupCompleteCache()
-    return ''
-  endif
-
-  call s:CompleteAdd(get(g:easycomplete_menucache, s:GetTypingWord()))
-  return ''
-endfunction
-
 " 格式参照 asyncomplete
 function! easycomplete#context() abort
   let l:ret = {
@@ -375,34 +269,6 @@ function! easycomplete#context() abort
   let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 当前完整字符的起始列位置
   return l:ret
 endfunction
-
-function! s:SameCtx(ctx1, ctx2)
-  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
-    return v:false
-  endif
-  if a:ctx1["lnum"] == a:ctx2["lnum"]
-        \ && a:ctx1["col"] == a:ctx2["col"]
-        \ && a:ctx1["typing"] ==# a:ctx2["typing"]
-    return v:true
-  else
-    return v:false
-  endif
-endfunction
-
-" ctx1 前，ctx2 后
-function! s:SameBeginning(ctx1, ctx2)
-  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
-    return v:false
-  endif
-  if a:ctx1["startcol"] == a:ctx2["startcol"]
-        \ && a:ctx1["lnum"] == a:ctx2["lnum"]
-        \ && match(a:ctx2["typing"], a:ctx1["typing"]) == 0
-    return v:true
-  else
-    return v:false
-  endif
-endfunction
-
 
 " 异步回来的complete menu携带的 ctx 和当前光标所在的 ctx 比较
 " 如果发生变化则返回 false，如果是一致的则返回true
@@ -509,7 +375,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 200
+    let word_first_type_delay = 150
   endif
 
   " 判断是否是 SecondComplete 中的完全模糊匹配
@@ -590,10 +456,6 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
-function! s:GetTypingWord()
-  return easycomplete#util#GetTypingWord()
-endfunction
-
 function! easycomplete#CompleteChanged()
   " 判断光标是否在上下滑动，显示选中item的info
   let item = v:event.completed_item
@@ -661,44 +523,8 @@ function! s:ShowCompleteInfo(info)
   call popup_show(id)
 endfunction
 
-function! s:ModifyInfoByMaxwidth(info, maxwidth)
-  if type(a:info) == type("")
-    if strlen(a:info) <= a:maxwidth
-      return a:info
-    endif
-    let span = a:maxwidth
-    let cursor = 0
-    let t_info = []
-    let t_line = ""
-
-    while cursor <= (strlen(a:info) - 1)
-      let t_line = t_line . a:info[cursor]
-      if (cursor + 1) % (span) == 0 && cursor != 0
-        call add(t_info, t_line)
-        let t_line = ""
-      endif
-      let cursor += 1
-    endwhile
-    if !empty(t_line)
-      call add(t_info, t_line)
-    endif
-    return t_info
-  endif
-
-  if type(a:info) == type([])
-    let t_info = []
-    for item in a:info
-      let modified_info_item = s:ModifyInfoByMaxwidth(item, a:maxwidth)
-      if type(modified_info_item) == type("")
-        call add(t_info, modified_info_item)
-      endif
-      if type(modified_info_item) == type([])
-        let t_info = t_info + modified_info_item
-      endif
-    endfor
-    return t_info
-  endif
-
+function s:ModifyInfoByMaxwidth(...)
+  return call('easycomplete#util#ModifyInfoByMaxwidth', a:000)
 endfunction
 
 function! easycomplete#SetMenuInfo(name, info, menu_flag)
@@ -1011,6 +837,142 @@ function! s:LetCompleteTaskQueueAllDone()
   endfor
 endfunction
 
+" ----------------------------------------------------------------------
+"  Util Method
+" ----------------------------------------------------------------------
+
+" 判断是否安装了 vim-snippet
+function! s:SnipSupports()
+  try
+    call funcref("UltiSnips#RefreshSnippets")
+  catch /^Vim\%((\a\+)\)\=:E700/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
+function! easycomplete#nill() abort
+  return v:none " DO NOTHING
+endfunction
+
+" 重置全局变量
+function! s:flush()
+  " 清空menuitems
+  let g:easycomplete_menuitems = []
+  " 重置 first_complete_hit 状态
+  let g:easycomplete_first_complete_hit = 0
+  " 重置当前选中的 complete item
+  call s:ResetCompletedItem()
+  " 重置 complete menu 全量缓存
+  call s:ResetCompleteCache()
+  " 重置当前每个插件的 docomplete 的状态
+  call s:ResetCompleteTaskQueue()
+endfunction
+
+function! s:ResetCompletedItem()
+  if pumvisible()
+    return
+  endif
+  let g:easycomplete_completed_item = {}
+endfunction
+
+function! s:SetupCompleteCache()
+  let g:easycomplete_menucache = {}
+  let g:easycomplete_menucache["_#_1"] = 1  " 当前输入单词行号
+  let g:easycomplete_menucache["_#_2"] = 1  " 当前输入单词列号
+endfunction
+
+function! s:ResetCompleteCache()
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  let start_pos = col('.') - strwidth(s:GetTypingWord())
+  if g:easycomplete_menucache["_#_1"] != line('.') || g:easycomplete_menucache["_#_2"] != start_pos
+    let g:easycomplete_menucache = {}
+  endif
+  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
+  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
+endfunction
+
+function! s:AddCompleteCache(word, menulist)
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+  endif
+
+  let start_pos = col('.') - strwidth(a:word)
+  if g:easycomplete_menucache["_#_1"] == line('.') && g:easycomplete_menucache["_#_2"] == start_pos
+    let g:easycomplete_menucache[a:word] = a:menulist
+  else
+    let g:easycomplete_menucache = {}
+  endif
+  let g:easycomplete_menucache["_#_1"] = line('.')  " 行号
+  let g:easycomplete_menucache["_#_2"] = start_pos  " 列号
+endfunction
+
+function! s:ResetBacking()
+  let g:easycomplete_backing_or_cr = 0
+endfunction
+
+" 设置一个什么也不做的标志位，50ms 后恢复
+function! s:zizz()
+  let g:easycomplete_backing_or_cr = 1
+  call s:StopAsyncRun()
+  call s:AsyncRun(function('s:ResetBacking'), [], 50)
+  " call timer_start(50, { -> easycomplete#util#call(function('s:ResetBacking'), [])})
+  return "\<BS>"
+endfunction
+
+function s:zizzing()
+  return g:easycomplete_backing_or_cr == 1 ? v:true : v:false
+endfunction
+
+function! s:zizzTimerHandler()
+  if pumvisible()
+    return ''
+  endif
+
+  if !exists('g:easycomplete_menucache')
+    call s:SetupCompleteCache()
+    return ''
+  endif
+
+  call s:CompleteAdd(get(g:easycomplete_menucache, s:GetTypingWord()))
+  return ''
+endfunction
+
+function! s:SameCtx(ctx1, ctx2)
+  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+    return v:false
+  endif
+  if a:ctx1["lnum"] == a:ctx2["lnum"]
+        \ && a:ctx1["col"] == a:ctx2["col"]
+        \ && a:ctx1["typing"] ==# a:ctx2["typing"]
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+" ctx1 前，ctx2 后
+" 判断FirstComplete 和 SecondComplete 时是否在同一个 beginning 的上下文里
+function! s:SameBeginning(ctx1, ctx2)
+  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+    return v:false
+  endif
+  if a:ctx1["startcol"] == a:ctx2["startcol"]
+        \ && a:ctx1["lnum"] == a:ctx2["lnum"]
+        \ && match(a:ctx2["typing"], a:ctx1["typing"]) == 0
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:GetTypingWord()
+  return easycomplete#util#GetTypingWord()
+endfunction
+
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)
 endfunction
@@ -1033,3 +995,28 @@ function! easycomplete#log(msg)
   call s:log(a:msg)
 endfunction
 
+" 全局 API
+" easycomplete#CheckContextSequence
+" easycomplete#CleverShiftTab
+" easycomplete#CleverTab
+" easycomplete#CompleteAdd
+" easycomplete#CompleteChanged
+" easycomplete#CompleteCursored
+" easycomplete#CompleteDone
+" easycomplete#Enable
+" easycomplete#FireCondition
+" easycomplete#GetBindingKeys
+" easycomplete#GetCompletedItem
+" easycomplete#InsertLeave
+" easycomplete#IsBacking
+" easycomplete#RegisterSource
+" easycomplete#SetCompletedItem
+" easycomplete#SetMenuInfo
+" easycomplete#TypeEnterWithPUM
+" easycomplete#backing
+" easycomplete#complete
+" easycomplete#context
+" easycomplete#flush
+" easycomplete#log
+" easycomplete#nill
+" easycomplete#typing
