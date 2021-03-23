@@ -10,21 +10,15 @@
 
 基于 vim-plug 安装
 
-    Plug 'SirVer/ultisnips'
-    Plug 'honza/vim-snippets'
     Plug 'jayli/vim-easycomplete'
 
-其中 ultisnips 和 vim-snippets 是代码片段补全用的（非强制）
-
-> - JS/TS 补全需要安装 tsserver，`npm -g install typescript`
-> - Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi` （TODO）
-> - Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`（TODO）
+执行 `PlugInstall`
 
 ### 配置
 
-什么都不用配置，默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`g:easycomplete_tab_trigger="<tab>"`来设置
+默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了三种样式：最常用的是`g:easycomplete_scheme="dark"`，可留空
+插件自带了三种样式：最常用的是`g:easycomplete_scheme="dark"`，可留空，其他什么也不用配置
 
 ### 使用
 
@@ -32,12 +26,31 @@
 
 使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样），如果是 JS Python 等语言，可以使用`:EasyCompleteGotoDefinition`
 
-关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。路径补全和 <kbd>C-X C-F</kbd> 一致。
+字典来源于`set dictionary={你的字典文件}`配置。敲入路径前缀`./`或者`../`可自动弹出路径和文件匹配。
 
 `:h easycomplete` 打开帮助文档
 
 > - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
 > - 依赖 vim 版本不低于 8.2
+
+## 支持的语言和插件
+
+### 代码片段展开：
+
+    Plug 'SirVer/ultisnips'
+    Plug 'honza/vim-snippets'
+
+EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用
+
+### 语言插件
+
+EasyComplete 内建 Go、JS/TS、Python 支持，每种语言需要单独安装各自依赖的 lsp 服务
+
+- JS/TS 补全需要安装 tsserver，`npm -g install typescript`
+- Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi` （TODO）
+- Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`（TODO）
+
+其他补全可以自己开发插件
 
 ## 插件开发
 
