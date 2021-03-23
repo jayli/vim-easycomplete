@@ -142,7 +142,7 @@ function! s:CompleteTypingMatch(...)
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " During CompleteChanged event. Menulist must not be changed by complete()
-  let filtered_menu = map(filtered_menu,function("s:PrepareInfoPlaceHolder"))
+  let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
   " Because complete() will fire CompleteChanged event, We use async call here.
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
@@ -493,6 +493,15 @@ function! s:GetInfoByCompleteItem(item)
   return info
 endfunction
 
+function! s:TagBarExists()
+  try
+    call funcref("tagbar#StopAutoUpdate")
+  catch /^Vim\%((\a\+)\)\=:E700/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
 function! s:ShowCompleteInfo(info)
   if g:env_is_nvim | return | endif
   let id = popup_findinfo()
@@ -504,16 +513,26 @@ function! s:ShowCompleteInfo(info)
   " List: [...]
   " PlaceHolder: '_'
   if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "_")
+    if s:TagBarExists()
+      call tagbar#StopAutoUpdate()
+    endif
     call popup_close(id)
     return
   endif
   if type(a:info) == type([]) && empty(a:info)
+    if s:TagBarExists()
+      call tagbar#StopAutoUpdate()
+    endif
     call popup_close(id)
     return
   endif
   let popup_opts = popup_getoptions(id)
-  let width = popup_opts.maxwidth > g:easycomplete_popup_width ?
-        \ g:easycomplete_popup_width : popup_opts.maxwidth
+  if empty(popup_opts)
+    let width = g:easycomplete_popup_width
+  else
+    let width = popup_opts.maxwidth > g:easycomplete_popup_width ?
+          \ g:easycomplete_popup_width : popup_opts.maxwidth
+  endif
   let l:info = s:ModifyInfoByMaxwidth(a:info, width)
   call popup_settext(id, l:info)
   call popup_show(id)
@@ -672,20 +691,21 @@ function! easycomplete#CompleteAdd(menu_list)
   if type(menuitems) != type([]) || empty(menuitems)
     return
   endif
-  let menuitems = map(sort(copy(menuitems), "s:SortTextComparatorByAlphabet"),
-        \ function("s:PrepareInfoPlaceHolder"))
+  let menuitems = sort(copy(menuitems), "s:SortTextComparatorByAlphabet")
   let menuitems = filter(menuitems,
         \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
 
+  let g:easycomplete_menuitems = deepcopy(menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   try
+    let menuitems = map(menuitems, function("s:PrepareInfoPlaceHolder"))
     call s:FirstComplete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
     return v:null
   endtry
-  let g:easycomplete_menuitems = menuitems
+  " let g:easycomplete_menuitems = menuitems
   if g:env_is_vim | call popup_clear() | endif
-  call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
+  call s:AddCompleteCache(typing_word, menuitems)
 endfunction
 
 function! s:FirstComplete(start_pos, menuitems)

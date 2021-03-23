@@ -43,11 +43,11 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 #### 语言插件
 
-EasyComplete 内建 Go、JS/TS、Python 支持，每种语言需要单独安装各自依赖的 lsp 服务
+EasyComplete 默认支持 Go、JS/TS、Python 补全，每种语言需要单独安装各自依赖的 language server 服务
 
 - JS/TS 补全需要安装 tsserver，`npm -g install typescript`
+- Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
 - Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi` （TODO）
-- Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`（TODO）
 
 其他补全可以自己开发插件
 

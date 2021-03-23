@@ -58,6 +58,13 @@ augroup EasyCompleteRegistSources
       \  })
 
   call easycomplete#RegisterSource({
+      \ 'name': 'go',
+      \ 'whitelist': ['go'],
+      \ 'completor': 'easycomplete#sources#go#completor',
+      \ 'constructor' :'easycomplete#sources#go#constructor'
+      \  })
+
+  call easycomplete#RegisterSource({
       \ 'name': 'directory',
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#directory#completor'),

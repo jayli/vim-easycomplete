@@ -245,16 +245,6 @@ endfunction
 
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
   if type(a:info) == type("")
-    " 构造分割线
-    if a:info =~ "^-\\+$"
-      let num = 1
-      let info_line = ""
-      while num <= a:maxwidth
-        let info_line = info_line . "-"
-        let num += 1
-      endwhile
-      return info_line
-    endif
     if strlen(a:info) <= a:maxwidth
       return a:info
     endif
@@ -277,16 +267,36 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     return t_info
   endif
 
+  let maxwidth = 0 " 实际最大宽度
   if type(a:info) == type([])
     let t_info = []
     for item in a:info
       let modified_info_item = easycomplete#util#ModifyInfoByMaxwidth(item, a:maxwidth)
       if type(modified_info_item) == type("")
+        let maxwidth = strlen(modified_info_item)
         call add(t_info, modified_info_item)
       endif
       if type(modified_info_item) == type([])
+        let maxwidth = a:maxwidth
         let t_info = t_info + modified_info_item
       endif
+    endfor
+
+    " 构造分割线
+    let l:count = 0
+    for item in t_info
+      " 构造分割线
+      if item =~ "^-\\+$"
+        let num = 1
+        let info_line = ""
+        while num <= maxwidth
+          let info_line = info_line . "-"
+          let num += 1
+        endwhile
+        let t_info[l:count] = info_line
+        break
+      endif
+      let l:count += 1
     endfor
     return t_info
   endif
