@@ -24,7 +24,7 @@
 
 使用 <kbd>Tab</kbd> 键呼出补全菜单，用 <kbd>Shift-Tab</kbd> 在插入模式下输入 Tab。
 
-使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样），如果是 JS Python 等语言，可以使用`:EasyCompleteGotoDefinition`
+使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样），也可以自行绑定快捷键`:EasyCompleteGotoDefinition`
 
 字典来源于`set dictionary={你的字典文件}`配置。敲入路径前缀`./`或者`../`可自动弹出路径和文件匹配。
 
