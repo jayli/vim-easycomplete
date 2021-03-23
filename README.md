@@ -32,6 +32,9 @@
 
 关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。路径补全和 <kbd>C-X C-F</kbd> 一致。
 
+`:h easycomplete` 打开帮助文档
+
 > 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
+> 依赖 vim 版本不低于 8.2
 
 Enjoy yourself

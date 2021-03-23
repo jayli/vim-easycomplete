@@ -1,7 +1,7 @@
 *easycomplete.txt*		Vim-EasyComplete Plugin
 
-			Copyright (c) 2018-2020 @Jayli
-	More Info:<https://github.com/jayli/vim-easycomplete>
+			Copyright (c) 2020-2021 @Jayli
+	More Info: <https://github.com/jayli/vim-easycomplete>
 
 EasyComplete                                                     *easycomplete*
 
@@ -9,17 +9,29 @@ EasyComplete                                                     *easycomplete*
 
 介绍
 
-EasyComplete 是一个非常好用的自动补全插件，配合 Vim-Dictionary 使用效果更佳
+EasyComplete 是一个简单到爆的 VIM 自动完成插件，装完即用，什么都不用配置
+
+EasyComplete 只包含补全和 LSP 提供的定义跳转功能。不包含文件语法检查、错误提示、
+单词语义提示等，以 VIM 的方式来使用 EasyComplete。
 
 ===============================================================================
 
 安装：参照文档 <https://github.com/jayli/vim-easycomplete>
 
-配置：在 .vimrc 中添加：
+使用：默认按键绑定只有 <Tab> 和 <S-Tab>
 
->
-	imap <Tab>   <Plug>EasyCompTabTrigger
-	imap <S-Tab> <Plug>EasyCompShiftTabTrigger
-<
+- <Tab>: 激活自动补全窗口
+- <S-Tab>: 向上选择补全窗口选项，或者在插入模式中插入 <Tab>
+- <C-]>: 定义跳转
+- <C-t>: tag 的跳回
 
-S-Tab 配置是可选项，更多用法请参照源码
+如果Tab与你的习惯不符，可以通过 `g:easycomplete_tab_trigger="<c-k>"` 来设置
+
+目前支持的功能列表:
+
+- buf.vim buffer 关键词匹配和字典匹配
+- directory.vim 目录和文件匹配
+- snips.vim 代码片段支持，来自 ultisnips
+- ts.vim js和ts语法支持, 绑定了 `<C-]>` 用作定义跳转
+
+-EOF-
