@@ -152,7 +152,9 @@ function! s:CompleteTypingMatch(...)
 endfunction
 
 function! s:PrepareInfoPlaceHolder(key, val)
-  let a:val.info = "_"
+  if !(has_key(a:val, "info") && type(a:val.info) == type("") && !empty(a:val.info))
+    let a:val.info = "_"
+  endif
   let a:val.equal = 1
   return a:val
 endfunction
