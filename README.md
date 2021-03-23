@@ -2,9 +2,9 @@
 
 ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-简单到爆的自动补全插件，代码补全依赖 vim-snippets
+简单到爆的自动补全插件
 
-![](https://gw.alicdn.com/imgextra/i1/O1CN014Du5i31rbI2jfH0q7_!!6000000005649-1-tps-687-307.gif)
+![](https://gw.alicdn.com/imgextra/i4/O1CN01fz8bi11L9I81HjnfR_!!6000000001256-1-tps-843-448.gif)
 
 ### 安装
 
@@ -30,20 +30,8 @@
 
 使用 <kbd>Ctrl-]</kbd> 来跳转到变量定义，<kbd>Ctrl-t</kbd> 返回（跟 tags 操作一样），如果是 JS Python 等语言，可以使用`:EasyCompleteGotoDefinition`
 
-JavaScript 和 TypeScript 的语法补全基于 TSServer，建议配置`tsconfig.json`，也可以不配
-
-    {
-      "compilerOptions": {
-        "noImplicitAny": true,
-        "target": "es5",
-        "module": "commonjs"
-      }
-    }
-
-和 VSCode 的语法嗅探的比较：
-
-![](https://gw.alicdn.com/tfs/TB1YpXfyYY1gK0jSZTEXXXDQVXa-2026-752.png)
-
 关键字和字典补全和 <kbd>C-X C-N</kbd> 一致，字典来源于`set dictionary={你的字典文件}`配置。路径补全和 <kbd>C-X C-F</kbd> 一致。
 
 > 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
+
+Enjoy yourself
