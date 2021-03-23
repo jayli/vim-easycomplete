@@ -5,8 +5,6 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
-" hack for tsserver initialize speed
-"
 if get(g:, 'easycomplete_plugin_init')
   finish
 endif
@@ -17,19 +15,19 @@ if v:version < 802
   finish
 endif
 
-augroup FileTypeChecking
-  let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
-  if ext ==# "ts"
-    finish
-  endif
-augroup END
+" augroup FileTypeChecking
+"   let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
+"   if ext ==# "ts"
+"     finish
+"   endif
+" augroup END
 
-if has('vim_starting') " vim 启动时加载
+if has('vim_starting')
   augroup EasyCompleteStart
     autocmd!
     autocmd BufReadPost * call easycomplete#Enable()
   augroup END
-else " 通过 :packadd 手动加载
+else
   call easycomplete#Enable()
 endif
 

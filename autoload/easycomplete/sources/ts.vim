@@ -3,7 +3,7 @@ if get(g:, 'easycomplete_sources_ts')
 endif
 let g:easycomplete_sources_ts = 1
 
-augroup easycomplete#sources#ts#initLocalVars
+augroup easycomplete#sources#ts#InitLocalVars
   " 正在运行中的 job 指针
   " {
   "   "job": 1,
@@ -16,19 +16,16 @@ augroup easycomplete#sources#ts#initLocalVars
         \ "job": 0,
         \ "opend_files":{}
         \ }
-  let s:tsq_job_open_files = {}
   let s:event_callbacks = {}
   let s:response_callbacks = {}
-  let s:ctx_list = {}
   let s:buf_info_map = {}
   let s:notify_callback = {}
-  let s:quickfix_list = []
   let s:request_seq = 1
   let b:tsserver_reloading = 0
   let s:menu_flag = "[TS]"
 augroup END
 
-augroup easycomplete#sources#ts#initIgnoreConditions
+augroup easycomplete#sources#ts#InitIgnoreConditions
   let s:ignore_response_events = ["configFileDiag",
         \ "telemetry","projectsUpdatedInBackground",
         \ "setTypings","syntaxDiag","semanticDiag",
@@ -62,11 +59,11 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
   augroup END
 
-  call s:registEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
-  call s:registResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
-  call s:registResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
-  call s:registResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
-  call s:registResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
+  call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
+  call s:RegistResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
+  call s:RegistResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
+  call s:RegistResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
+  call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
 endfunction
 
@@ -141,9 +138,10 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   endif
 
   let l:request_req = get(a:item, 'request_seq')
-  let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list), "s:sortTextComparator"), 'v:val.kind != "warning"'), 
+  let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list),
+        \                       "s:sortTextComparator"), 'v:val.kind != "warning"'),
         \ function("s:CompleteMenuMap"))
-  let l:ctx = s:getCtxByRequestSeq(l:request_req)
+  let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
   " 如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作
   if !easycomplete#CheckContextSequence(l:ctx)
     return
@@ -189,13 +187,13 @@ function! s:NormalizeEntryDetail(item)
   endif
 
   if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
-    let l:doc_list = ["------------"]
+    let l:doc_list = ["------------"] " 任意长度即可, 显示的时候回重新计算分割线宽度
     let l:t_line = ""
     for document_item in get(a:item, "documentation")
       if document_item.text =~ "\\(\\r\\|\\n\\)"
         call add(l:doc_list, l:t_line)
         let l:t_line = ""
-      else 
+      else
         let l:t_line = l:t_line . document_item.text
       endif
     endfor
@@ -228,7 +226,7 @@ endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
   call s:TsserverReload()
-  call s:restoreCtx(a:ctx)
+  call easycomplete#util#RestoreCtx(a:ctx, s:request_seq)
   if a:ctx['char'] == "/"
     return v:true
   endif
@@ -241,33 +239,6 @@ function! s:StopTsserver()
   if s:tsq_job.job > 0
     call easycomplete#job#stop(s:tsq_job.job)
   endif
-endfunction
-
-function! s:nSort(a, b)
-    return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
-endfunction
-
-" 存储ctx，异步返回时取出
-function! s:restoreCtx(ctx)
-  " 删除多余的 ctx
-  let arr = []
-  for item in keys(s:ctx_list)
-    call add(arr, str2nr(item))
-  endfor
-  let sorted_arr = reverse(sort(arr, "s:nSort"))
-  let new_dict = {}
-  let index = 0
-  while index < 10 && index < len(sorted_arr)
-    let t_index = string(sorted_arr[index])
-    let new_dict[t_index] = get(s:ctx_list, t_index)
-    let index = index + 1
-  endwhile
-  let s:ctx_list = new_dict
-  let s:ctx_list[string(s:request_seq)] = a:ctx
-endfunction
-
-function! s:getCtxByRequestSeq(seq)
-  return get(s:ctx_list, string(a:seq))
 endfunction
 
 function! s:sendAsyncRequest(line)
@@ -416,8 +387,8 @@ function! s:messageHandler(msg)
   endif
 
   let l:item = l:res_item
-  let l:eventName = s:getTsserverEventType(l:item)
-  let l:responseName = s:getTsserverResponseType(l:item)
+  let l:eventName = s:GetTsserverEventType(l:item)
+  let l:responseName = s:GetTsserverResponseType(l:item)
 
   " normal 模式下只处理 definition 事件，其他事件均在插入模式下处理
   if easycomplete#util#NotInsertMode() && l:responseName !=# 'definition'
@@ -498,19 +469,19 @@ endfunction
 
 function! s:TsserverReload()
   let l:file = expand('%:p')
-  call s:saveTmp(l:file)
-  let l:args = {'file': l:file, 'tmpfile': s:getTmpFile(l:file)}
+  call s:SaveTmp(l:file)
+  let l:args = {'file': l:file, 'tmpfile': s:GetTmpFile(l:file)}
   call s:SendCommandOneWay('reload', l:args)
   let b:tsserver_reloading = 1
 endfunction
 
-function! s:saveTmp(file_name)
-  let tmpfile = s:getTmpFile(a:file_name)
+function! s:SaveTmp(file_name)
+  let tmpfile = s:GetTmpFile(a:file_name)
   call writefile(getbufline(a:file_name, 1, '$'), tmpfile)
   return 1
 endfunction
 
-function! s:getTmpFile(file_name)
+function! s:GetTmpFile(file_name)
   let name = s:normalize(a:file_name)
   if !has_key(s:buf_info_map, name)
     let s:buf_info_map[name] = {}
@@ -529,11 +500,11 @@ function! s:DelTmpFiles()
     return
   endif
   for name in keys(s:buf_info_map)
-    call s:delTmp(name)
+    call s:DelTmp(name)
   endfor
 endfunction
 
-function! s:delTmp(file_name)
+function! s:DelTmp(file_name)
   let name = s:normalize(a:file_name)
   if !has_key(s:buf_info_map, name)
     return
@@ -548,15 +519,15 @@ function! s:normalize(buf_name)
   return easycomplete#util#normalize(a:buf_name)
 endfunction
 
-function! s:registEventCallback(callback, eventName)
+function! s:RegistEventCallback(callback, eventName)
   let s:event_callbacks[a:eventName] = a:callback
 endfunction
 
-function! s:registResponseCallback(callback, responseName)
+function! s:RegistResponseCallback(callback, responseName)
   let s:response_callbacks[a:responseName] = a:callback
 endfunction
 
-function! s:getTsserverResponseType(item)
+function! s:GetTsserverResponseType(item)
   if type(a:item) == v:t_dict
     \ && has_key(a:item, 'type')
     \ && get(a:item, 'type') ==# 'response'
@@ -566,7 +537,7 @@ function! s:getTsserverResponseType(item)
   return 0
 endfunction
 
-function! s:getTsserverEventType(item)
+function! s:GetTsserverEventType(item)
   if type(a:item) == v:t_dict
     \ && has_key(a:item, 'type')
     \ && a:item.type ==# 'event'

@@ -109,7 +109,7 @@ function! s:GetWrappedDictKeywordList()
             \   "word" : item ,
             \   "kind" : "k",
             \   "equal":1
-            \   "menu" : "[KW]" 
+            \   "menu" : "[KW]"
             \ })
     endfor
   endfor

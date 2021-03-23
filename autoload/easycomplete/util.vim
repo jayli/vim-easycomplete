@@ -115,16 +115,49 @@ function! easycomplete#util#trim(str)
   return ""
 endfunction
 
+" 存储ctx，异步返回时取出
+function! easycomplete#util#RestoreCtx(ctx, request_seq)
+  " 删除多余的 ctx
+  let arr = []
+  if !exists("s:ctx_list")
+    let s:ctx_list = {}
+  endif
+  for item in keys(s:ctx_list)
+    call add(arr, str2nr(item))
+  endfor
+  let sorted_arr = reverse(sort(arr, "s:nSort"))
+  let new_dict = {}
+  let index = 0
+  while index < 10 && index < len(sorted_arr)
+    let t_index = string(sorted_arr[index])
+    let new_dict[t_index] = get(s:ctx_list, t_index)
+    let index = index + 1
+  endwhile
+  let s:ctx_list = new_dict
+  let s:ctx_list[string(a:request_seq)] = a:ctx
+endfunction
+
+function! easycomplete#util#GetCtxByRequestSeq(seq)
+  if !exists("s:ctx_list")
+    let s:ctx_list = {}
+  endif
+  return get(s:ctx_list, string(a:seq))
+endfunction
+
+function! s:nSort(a, b)
+    return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
+endfunction
+
 function! easycomplete#util#FuzzySearch(needle, haystack)
   " 优先调用 python 的实现，速度更快
   if has("pythonx")
-    return easycomplete#util#FuzzySearchPy(a:needle, a:haystack)
+    return s:FuzzySearchPy(a:needle, a:haystack)
   else
-    return easycomplete#util#FuzzySearchVim(a:needle, a:haystack)
+    return s:FuzzySearchVim(a:needle, a:haystack)
   endif
 endfunction
 
-function! easycomplete#util#FuzzySearchVim(needle, haystack)
+function! s:FuzzySearchVim(needle, haystack)
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)
   if qlen > tlen
@@ -161,7 +194,7 @@ function! easycomplete#util#FuzzySearchVim(needle, haystack)
   return v:true
 endfunction
 
-function! easycomplete#util#FuzzySearchPy(needle, haystack)
+function! s:FuzzySearchPy(needle, haystack)
   let needle = tolower(a:needle)
   let haystack = tolower(a:haystack)
 pyx << EOF
