@@ -34,7 +34,7 @@
 
 `:h easycomplete` 打开帮助文档
 
-> 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用）
-> 依赖 vim 版本不低于 8.2
+> - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
+> - 依赖 vim 版本不低于 8.2
 
 Enjoy yourself
