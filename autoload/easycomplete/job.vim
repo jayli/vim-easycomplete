@@ -264,7 +264,7 @@ function! s:job_wait_single(jobid, timeout, start) abort
     let l:timeout = a:timeout / 1000.0
     try
       while l:timeout < 0 || reltimefloat(reltime(a:start)) < l:timeout
-        let l:info = job_info(l:jobinfo.job)
+        let l:info = s:job_info(l:jobinfo.job)
         if l:info.status ==# 'dead'
           return l:info.exitval
         elseif l:info.status ==# 'fail'
@@ -292,6 +292,17 @@ function! s:job_wait(jobids, timeout) abort
   return l:ret
 endfunction
 
+function! s:job_info(id)
+  if has("nvim")
+    let status = s:job_pid(a:id) == 0 ? "dead" : "run"
+    return {"process":s:job_pid(a:id), "status": status,
+          \ "exitval": status == "dead" ? 1 : 0}
+  endif
+  if !has("nvim")
+    return job_info(a:id)
+  endif
+endfunction
+
 function! s:job_pid(jobid) abort
   if !has_key(s:jobs, a:jobid)
     return 0
@@ -301,7 +312,7 @@ function! s:job_pid(jobid) abort
   if l:jobinfo.type == s:job_type_nvimjob
     return jobpid(a:jobid)
   elseif l:jobinfo.type == s:job_type_vimjob
-    let l:vimjobinfo = job_info(a:jobid)
+    let l:vimjobinfo = s:job_info(a:jobid)
     if type(l:vimjobinfo) == type({}) && has_key(l:vimjobinfo, 'process')
       return l:vimjobinfo['process']
     endif
@@ -351,7 +362,7 @@ function! easycomplete#job#status(jobid)
   if has_key(s:jobs, a:jobid)
     let l:jobinfo = s:jobs[a:jobid]
     if has_key(l:jobinfo, "job")
-      return job_info(l:jobinfo.job).status
+      return s:job_info(l:jobinfo.job).status
     endif
   endif
   return "dead"

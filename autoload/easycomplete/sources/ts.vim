@@ -52,7 +52,10 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     " TODO 因为e出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
     " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
-    autocmd SafeState,InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    if g:env_is_vim
+      autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    endif
     " goto definition 方法需要抽到配置里去
     command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
     " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
@@ -306,8 +309,13 @@ function! s:GotoDefinition(file, line, offset)
 endfunction
 
 function! easycomplete#sources#ts#GotoDefinition()
-  let l:ctx = easycomplete#context()
-  call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
+  let ext = tolower(easycomplete#util#extention())
+  if index(["js","jsx","ts","tsx"], ext) >= 0
+    let l:ctx = easycomplete#context()
+    call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
+    return
+  endif
+  exec "tag ". expand('<cword>')
 endfunction
 
 function! s:TsServerIsRunning()

@@ -73,6 +73,9 @@ function! s:InitLocalVars()
     setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
   endif
   if g:env_is_vim | setlocal completeopt+=popup | endif
+  " nvim dos not support popup window for complete menu. It only support
+  " preview window. So shut it down for nvim.
+  if g:env_is_nvim | setlocal completeopt-=preview | endif
   setlocal completeopt-=longest
   setlocal cpoptions+=B
 endfunction
@@ -893,11 +896,12 @@ function! s:ResetBacking()
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-" setup a flag for do nothing for 50ms
+" setup a flag for do nothing for 20ms
 function! s:zizz()
+  let delay = g:env_is_nvim ? 20 : 50
   let g:easycomplete_backing_or_cr = 1
   call s:StopAsyncRun()
-  call s:AsyncRun(function('s:ResetBacking'), [], 50)
+  call s:AsyncRun(function('s:ResetBacking'), [], delay)
   return "\<BS>"
 endfunction
 

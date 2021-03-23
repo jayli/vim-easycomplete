@@ -2,8 +2,7 @@
 function! easycomplete#util#filetype()
   " SourcePost 事件中 &filetype 为空，应当从 bufname 中根据后缀获取
   " TODO 这个函数需要重写
-  let filename = fnameescape(fnamemodify(bufname('%'),':p'))
-  let ext_part = substitute(filename,"^.\\+[\\.]","","g")
+  let ext_part = easycomplete#util#extention()
   let filetype_dict = {
         \ 'js':'javascript',
         \ 'ts':'typescript',
@@ -18,6 +17,12 @@ function! easycomplete#util#filetype()
   else
     return ext_part
   endif
+endfunction
+
+function! easycomplete#util#extention()
+  let filename = fnameescape(fnamemodify(bufname('%'),':p'))
+  let ext_part = substitute(filename,"^.\\+[\\.]","","g")
+  return ext_part
 endfunction
 
 " 运行一个全局的 Timer，只在 complete 的时候用
