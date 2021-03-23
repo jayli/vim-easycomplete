@@ -33,16 +33,16 @@
 > - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
 > - 依赖 vim 版本不低于 8.2
 
-## 支持的语言和插件
+### 支持的语言和插件
 
-### 代码片段展开：
+#### 代码片段展开：
 
     Plug 'SirVer/ultisnips'
     Plug 'honza/vim-snippets'
 
 EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用
 
-### 语言插件
+#### 语言插件
 
 EasyComplete 内建 Go、JS/TS、Python 支持，每种语言需要单独安装各自依赖的 lsp 服务
 
@@ -52,7 +52,7 @@ EasyComplete 内建 Go、JS/TS、Python 支持，每种语言需要单独安装�
 
 其他补全可以自己开发插件
 
-## 插件开发
+### 插件开发
 
 插件文件位置，以 snip 为例，插件路径：`autoload/easycomplete/sources/snip.vim`，[参考样例](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)
 
