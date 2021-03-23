@@ -51,6 +51,13 @@ augroup EasyCompleteRegistSources
       \  }))
 
   call easycomplete#RegisterSource({
+      \ 'name': 'py',
+      \ 'whitelist': ['py','python'],
+      \ 'completor': 'easycomplete#sources#py#completor',
+      \ 'constructor' :'easycomplete#sources#py#constructor'
+      \  })
+
+  call easycomplete#RegisterSource({
       \ 'name': 'directory',
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#directory#completor'),

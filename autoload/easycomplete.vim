@@ -293,7 +293,7 @@ endfunction
 function! s:CallConstructorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   let b:constructor = get(l:opt, "constructor")
-  if b:constructor == 0
+  if empty(b:constructor)
     return v:null
   endif
   if type(b:constructor) == 2 " type is function
