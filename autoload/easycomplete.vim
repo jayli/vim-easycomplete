@@ -11,7 +11,6 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! s:InitLocalVars()
-
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -70,8 +69,10 @@ function! s:InitLocalVars()
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
   " TODO width is not working?
-  setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
-  setlocal completeopt+=popup
+  if g:env_is_vim && exists("&completepopup")
+    setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
+  endif
+  if g:env_is_vim | setlocal completeopt+=popup | endif
   setlocal completeopt-=longest
   setlocal cpoptions+=B
 endfunction
@@ -290,7 +291,7 @@ function! s:CallConstructorByName(name, ctx)
   let l:opt = get(g:easycomplete_source, a:name)
   let b:constructor = get(l:opt, "constructor")
   if b:constructor == 0
-    return v:none
+    return v:null
   endif
   if type(b:constructor) == 2 " type is function
     call b:constructor(l:opt, a:ctx)
@@ -350,7 +351,7 @@ function! s:DoComplete(immediately)
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
     call s:CloseCompletionMenu()
-    return v:none
+    return v:null
   endif
 
   if complete_check()
@@ -360,7 +361,7 @@ function! s:DoComplete(immediately)
   " One ':' or '.', Do nothing
   if strlen(l:ctx['typed']) == 1 && (l:ctx['char'] ==# '.' || l:ctx['char'] ==# ':')
     call s:CloseCompletionMenu()
-    return v:none
+    return v:null
   endif
 
   " More than one '.'
@@ -381,13 +382,13 @@ function! s:DoComplete(immediately)
         \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
         \ && s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
     call s:CompleteTypingMatch()
-    return v:none
+    return v:null
   endif
 
   " Finally Do Complete Action
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
-  return v:none
+  return v:null
 endfunction
 
 " Sample:
@@ -464,7 +465,7 @@ function! easycomplete#CompleteChanged()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
-    call popup_clear()
+    if g:env_is_vim | call popup_clear() | endif
     return
   endif
   let info = s:GetInfoByCompleteItem(copy(item))
@@ -490,6 +491,7 @@ function! s:GetInfoByCompleteItem(item)
 endfunction
 
 function! s:ShowCompleteInfo(info)
+  if g:env_is_nvim | return | endif
   let id = popup_findinfo()
   let winid = id
   let bufnr = winbufnr(id)
@@ -676,10 +678,10 @@ function! easycomplete#CompleteAdd(menu_list)
   try
     call s:FirstComplete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
-    return v:none
+    return v:null
   endtry
   let g:easycomplete_menuitems = menuitems
-  call popup_clear()
+  if g:env_is_vim | call popup_clear() | endif
   call s:AddCompleteCache(typing_word, g:easycomplete_menuitems)
 endfunction
 
@@ -829,7 +831,7 @@ function! s:SnipSupports()
 endfunction
 
 function! easycomplete#nill() abort
-  return v:none " DO NOTHING
+  return v:null " DO NOTHING
 endfunction
 
 " Reset Global configration

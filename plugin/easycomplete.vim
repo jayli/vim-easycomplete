@@ -10,8 +10,12 @@ if get(g:, 'easycomplete_plugin_init')
 endif
 let g:easycomplete_plugin_init = 1
 
-if v:version < 802
-  echom "EasyComplete requires vim version upper than 802"
+let g:env_is_vim = has('nvim') ? v:false : v:true
+let g:env_is_nvim = has('nvim') ? v:true : v:false
+
+if (g:env_is_vim && v:version < 802) || (g:env_is_nvim && !has('nvim-0.4.0'))
+  echom "EasyComplete requires vim version upper than 802".
+        \ " or nvim version upper than 0.4.0"
   finish
 endif
 

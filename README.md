@@ -12,7 +12,7 @@
 
     Plug 'jayli/vim-easycomplete'
 
-执行 `PlugInstall`
+执行 `PlugInstall`，（兼容版本：vim 8.2 及以上，nvim 0.4.0 以上版本）
 
 ### 配置
 
@@ -31,7 +31,6 @@
 `:h easycomplete` 打开帮助文档
 
 > - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
-> - 依赖 vim 版本不低于 8.2
 
 ### 支持的语言和插件
 
