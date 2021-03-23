@@ -16,9 +16,9 @@
 
 ### 配置
 
-默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`g:easycomplete_tab_trigger="<tab>"`来设置
+默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`let g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了三种样式：最常用的是`g:easycomplete_scheme="dark"`，可留空，其他什么也不用配置
+插件自带了三种样式：最常用的是`let g:easycomplete_scheme="dark"`，可留空，其他什么也不用配置
 
 ### 使用
 
