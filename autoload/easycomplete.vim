@@ -21,7 +21,9 @@ function! s:InitLocalVars()
   endif
 
   " Global LSP plugins
-  let g:easycomplete_source  = {}
+  if !exists("g:easycomplete_source")
+    let g:easycomplete_source  = {}
+  endif
   " Complete Resutl Caching storage, Used for <BS> and <CR> to show the
   " complete menu
   let g:easycomplete_menucache = {}

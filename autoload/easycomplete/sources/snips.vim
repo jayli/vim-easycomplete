@@ -29,3 +29,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   return v:true
 endfunction
 
+function! easycomplete#sources#snips#constructor(...)
+  " Do Nothing
+endfunction
+

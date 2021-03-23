@@ -4,7 +4,7 @@
 
 简单到爆的自动补全插件
 
-![](https://gw.alicdn.com/imgextra/i4/O1CN01fz8bi11L9I81HjnfR_!!6000000001256-1-tps-843-448.gif)
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01fz8bi11L9I81HjnfR_!!6000000001256-1-tps-843-448.gif" width=600>
 
 ### 安装
 
@@ -24,7 +24,7 @@
 
 什么都不用配置，默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了三种样式：`g:easycomplete_scheme="dark"`，可留空
+插件自带了三种样式：最常用的是`g:easycomplete_scheme="dark"`，可留空
 
 ### 使用
 
@@ -38,5 +38,27 @@
 
 > - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
 > - 依赖 vim 版本不低于 8.2
+
+## 插件开发
+
+插件文件位置，以 snip 为例，插件路径：`autoload/easycomplete/sources/snip.vim`，[参考样例](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)
+
+在 vimrc 中添加插件注册的代码：
+
+```
+call easycomplete#RegisterSource({
+    \ 'name': 'snips',
+    \ 'whitelist': ['*'],
+    \ 'completor': 'easycomplete#sources#snips#completor',
+    \ 'constructor': 'easycomplete#sources#snips#constructor',
+    \  })
+```
+
+配置项：
+
+- name: {string}，插件名
+- whitelist: {list}，适配的文件类型，`*`为匹配所有类型，如果只匹配"javascript"，则这样写`["javascript"]`
+- completor: {string | function}，可以是字符串也可以是function类型，补全函数的具体实现
+- constructor: {string | function}，可以是字符串也可以是function类型，插件构造器，BufEnter 时调用，可选配置
 
 Enjoy yourself
