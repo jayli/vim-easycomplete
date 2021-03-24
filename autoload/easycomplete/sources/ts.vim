@@ -156,7 +156,7 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   call s:DoComplete(l:ctx, l:easycomplete_menu_list)
   " 取 entries details
   let l:entries= map(copy(l:easycomplete_menu_list), function("s:EntriesMap"))
-  if !empty(l:entries) && type(l:entries) == type([])
+  if type(l:entries) == type([]) && !empty(l:entries)
     call s:TsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
   endif
 endfunction
@@ -371,18 +371,21 @@ function! s:StdOutCallback(job_id, data, event)
     return
   endif
   if len(a:data) >=3
-    " 在 nvim 中不会一次性完整输出，会一个片段一个片段的输出
-    " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
-    " vim 中未发现这个问题
-
     if s:IsJSON(a:data[2])
       call s:MessageHandler(a:data[2])
       let s:callback_data_str = ""
       return
+    else
+      let s:callback_data_str = s:callback_data_str . a:data[2]
+      return
     endif
+  endif
 
-    let s:callback_data_str = s:callback_data_str . a:data[2]
-
+  " 在 nvim 中不会一次性完整输出，会一个片段一个片段的输出
+  " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
+  " vim 中未发现这个问题
+  if len(a:data) <= 2
+    let s:callback_data_str = s:callback_data_str . a:data[0]
     if s:IsJSON(s:callback_data_str)
       call s:MessageHandler(s:callback_data_str)
       let s:callback_data_str = ""
