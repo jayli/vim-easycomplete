@@ -120,6 +120,33 @@ function! easycomplete#util#trim(str)
   return ""
 endfunction
 
+function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
+  let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
+  let info = ""
+  for item in a:all_menu
+    if type(item) != type({})
+      continue
+    endif
+    let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
+    if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
+      if has_key(item, "info")
+        let info = get(item, "info")
+      endif
+      break
+    endif
+  endfor
+  return info
+endfunction
+
+function! easycomplete#util#TagBarExists()
+  try
+    call funcref("tagbar#StopAutoUpdate")
+  catch /^Vim\%((\a\+)\)\=:E700/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
 " 存储ctx，异步返回时取出
 function! easycomplete#util#RestoreCtx(ctx, request_seq)
   " 删除多余的 ctx

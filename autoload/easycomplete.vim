@@ -57,7 +57,7 @@ function! s:InitLocalVars()
   let g:easycomplete_complete_taskqueue = []
 
   " Width of info popup window
-  let g:easycomplete_popup_width = 70
+  let g:easycomplete_popup_width = 50
 
   " Current typing key
   let b:typing_key = 0
@@ -69,7 +69,7 @@ function! s:InitLocalVars()
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
   " TODO width is not working?
-  if g:env_is_vim && exists("&completepopup")
+  if g:env_is_vim && exists('+completepopup')
     setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
   endif
   if g:env_is_vim | setlocal completeopt+=popup | endif
@@ -470,42 +470,25 @@ function! easycomplete#CompleteChanged()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
-    if g:env_is_vim | call popup_clear() | endif
+    if g:env_is_vim  | call popup_clear() | endif
+    if g:env_is_nvim
+      call easycomplete#popup#MenuPopupChanged([])
+    endif
     return
   endif
-  let info = s:GetInfoByCompleteItem(copy(item))
+  let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   call s:ShowCompleteInfo(info)
 endfunction
 
-function! s:GetInfoByCompleteItem(item)
-  let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
-  let info = ""
-  for item in g:easycomplete_menuitems
-    if type(item) != type({})
-      continue
-    endif
-    let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
-    if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
-      if has_key(item, "info")
-        let info = get(item, "info")
-      endif
-      break
-    endif
-  endfor
-  return info
-endfunction
-
-function! s:TagBarExists()
-  try
-    call funcref("tagbar#StopAutoUpdate")
-  catch /^Vim\%((\a\+)\)\=:E700/
-    return v:false
-  endtry
-  return v:true
-endfunction
-
 function! s:ShowCompleteInfo(info)
-  if g:env_is_nvim | return | endif
+  " nvim
+  if g:env_is_nvim
+    let l:info = s:ModifyInfoByMaxwidth(a:info, g:easycomplete_popup_width)
+    call easycomplete#popup#MenuPopupChanged(l:info)
+    return
+  endif
+
+  " vim
   let id = popup_findinfo()
   let winid = id
   let bufnr = winbufnr(id)
@@ -515,14 +498,14 @@ function! s:ShowCompleteInfo(info)
   " List: [...]
   " PlaceHolder: '_'
   if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "_")
-    if s:TagBarExists()
+    if easycomplete#util#TagBarExists()
       call tagbar#StopAutoUpdate()
     endif
     call popup_close(id)
     return
   endif
   if type(a:info) == type([]) && empty(a:info)
-    if s:TagBarExists()
+    if easycomplete#util#TagBarExists()
       call tagbar#StopAutoUpdate()
     endif
     call popup_close(id)
@@ -946,6 +929,9 @@ function! s:zizzTimerHandler()
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
+  if type(a:ctx1) != type({}) || type(a:ctx2) != type({})
+    return v:false
+  endif
   if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
     return v:false
   endif

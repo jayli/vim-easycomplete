@@ -23,6 +23,9 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let b:tsserver_reloading = 0
   let s:menu_flag = "[TS]"
+  " 正在返回的字符串片段，等待所有返回片段拼接成一个完整的json后，执行
+  " MessageHandler
+  let s:callback_data_str = ""
 augroup END
 
 augroup easycomplete#sources#ts#InitIgnoreConditions
@@ -335,7 +338,7 @@ function! s:StartTsserver()
     endif
 
     let job_status = easycomplete#job#status(s:tsq_job.job)
-    let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:stdOutCallback')})
+    let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:StdOutCallback')})
     if s:tsq_job.job <= 0
       echoerr "tsserver launch failed"
     endif
@@ -363,16 +366,41 @@ function! s:ConfigTsserver()
   call s:SendCommandOneWay('configure', l:args)
 endfunction
 
-function! s:stdOutCallback(job_id, data, event)
+function! s:StdOutCallback(job_id, data, event)
   if a:event != 'stdout'
     return
   endif
   if len(a:data) >=3
-    call s:messageHandler(a:data[2])
+    " 在 nvim 中不会一次性完整输出，会一个片段一个片段的输出
+    " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
+    " vim 中未发现这个问题
+
+    if s:IsJSON(a:data[2])
+      call s:MessageHandler(a:data[2])
+      let s:callback_data_str = ""
+      return
+    endif
+
+    let s:callback_data_str = s:callback_data_str . a:data[2]
+
+    if s:IsJSON(s:callback_data_str)
+      call s:MessageHandler(s:callback_data_str)
+      let s:callback_data_str = ""
+      return
+    endif
   endif
 endfunction
 
-function! s:messageHandler(msg)
+function! s:IsJSON(str)
+  try
+    call json_decode(a:str)
+  catch
+    return v:false
+  endtry
+  return v:true
+endfunction
+
+function! s:MessageHandler(msg)
   if type(a:msg) != 1 || empty(a:msg)
     " Not a string or blank message.
     return
@@ -381,7 +409,7 @@ function! s:messageHandler(msg)
     let l:res_item = json_decode(a:msg)
   catch
     " TODO 出异常到这里，程序会报错
-    echom 'tsserver response error'
+    echom v:exception
     call easycomplete#flush()
     return
   endtry
