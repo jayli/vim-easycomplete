@@ -70,7 +70,6 @@ function! s:exit_cb(jobid, opts, job, status) abort
 endfunction
 
 function! s:on_stdout(jobid, data, event) abort
-  echom a:data
   if has_key(s:jobs, a:jobid)
     let l:jobinfo = s:jobs[a:jobid]
     if has_key(l:jobinfo.opts, 'on_stdout')

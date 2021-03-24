@@ -359,6 +359,7 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
+
   if complete_check()
     call s:CloseCompletionMenu()
   endif
@@ -382,6 +383,7 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 150
   endif
 
+
   " Check fuzzy match condition
   if !empty(g:easycomplete_menuitems)
         \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
@@ -390,9 +392,21 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
+  " if not in insert mode
+  if g:env_is_nvim && mode() != 'i'
+    return v:null
+  endif
+
   " Finally Do Complete Action
-  call s:StopAsyncRun()
-  call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
+  if g:env_is_nvim
+    call s:CompleteHandler()
+    return
+  endif
+  if g:env_is_vim
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
+    return
+  endif
   return v:null
 endfunction
 
@@ -618,9 +632,7 @@ endfunction
 
 function! s:CompleteHandler()
   call s:StopAsyncRun()
-  if s:NotInsertMode()
-    return
-  endif
+  if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
   if strwidth(l:ctx['typing']) == 0 && index([':','.','/'], l:ctx['char']) < 0
     return

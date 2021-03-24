@@ -40,7 +40,7 @@ endfunction
 function! easycomplete#popup#StartCheck(info)
   " use timer_start since nvim_buf_set_lines is not allowed in
   " CompleteChanged
-  call easycomplete#util#StopAsyncRun()
+  " call easycomplete#util#StopAsyncRun()
   call easycomplete#util#AsyncRun(function('s:check'), [a:info], 0)
 endfunction
 
