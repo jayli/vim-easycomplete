@@ -23,11 +23,10 @@ function! s:InitLocalVars()
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " Complete Resutl Caching storage, Used for <BS> and <CR> to show the
-  " complete menu
+  " Complete Resutl Caching storage, For <BS> and <CR> typing
   let g:easycomplete_menucache = {}
   " The most important storage for each complete result
-  " After each completor done, Info will be appended here
+  " After each completor done, Info will be appended here.
   " menuitems will be set to [] after CompleteDone event
   let g:easycomplete_menuitems = []
   " Record v:event.complete_item for pum, to checkout cursor in or out of pum
@@ -35,10 +34,10 @@ function! s:InitLocalVars()
 
   " HACK: To avoid trigger completedone event after going back from last item
   " in pum, We need to store ctx for checking completedone event fired
-  " correctly. Just using this variable for temp condition.
+  " correctly. This variable is for temp usage.
   let g:easycomplete_firstcomplete_ctx = {}
 
-  " Like YCM, This is the local variable for checking complete result form
+  " Like YCM, local variable for checking complete result form
   " the first completition or not. Second Completiton will not query
   " suggestions from lsp server.
   let g:easycomplete_first_complete_hit = 0
@@ -166,8 +165,8 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = a:easycomplete_menuitems
   " To avoid completedone event recursive calling
   call s:zizz()
-  " This will fire completedone event, and then call s:flush() to reset
-  " global configration. So g:easycomplete_menuitems must not be changed here.
+  " This will cause completedone event, and then call s:flush() to reset
+  " global configration. So g:easycomplete_menuitems must not be changed.
   call complete(a:start_pos, a:menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
@@ -214,7 +213,7 @@ function! easycomplete#flush()
   call s:flush()
 endfunction
 
-" Cursor is in pum or not
+" checkout Cursor is in pum or not
 function! easycomplete#CompleteCursored()
   if !pumvisible()
     return v:false
@@ -278,6 +277,10 @@ endfunction
 
 " Same as asynccomplete
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
+  if s:NotInsertMode()
+    call s:flush()
+    return
+  endif
   let l:ctx = easycomplete#context()
   " check async completor ctx same as current ctx or not
   if !s:SameCtx(a:ctx, l:ctx)
@@ -383,7 +386,6 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 150
   endif
 
-
   " Check fuzzy match condition
   if !empty(g:easycomplete_menuitems)
         \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
@@ -400,12 +402,9 @@ function! s:DoComplete(immediately)
   " Finally Do Complete Action
   if g:env_is_nvim
     call s:CompleteHandler()
-    return
-  endif
-  if g:env_is_vim
+  elseif g:env_is_vim
     call s:StopAsyncRun()
     call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
-    return
   endif
   return v:null
 endfunction
@@ -579,7 +578,16 @@ function! easycomplete#CleverTab()
     return "\<Tab>"
   else
     " Otherwise fire docomplete()
-    call s:DoComplete(v:true)
+    if g:env_is_nvim
+      " Hack for nvim, During DoComplete mode() may change to 'n'. Leveing
+      " Insert Mode make a s:flush() call. Then empty the task queue.
+      " I dont know why.
+      " So I have to make DoComplete() a async call.
+      call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
+      call s:SendKeys( "\<ESC>a" )
+    elseif g:env_is_vim
+      call s:DoComplete(v:true)
+    endif
     return ""
   endif
 endfunction
@@ -680,7 +688,6 @@ function! easycomplete#CompleteAdd(menu_list)
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
-
   " FirstComplete will sort complete result just like YCM and coc.
   let typing_word = s:GetTypingWord()
   let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")

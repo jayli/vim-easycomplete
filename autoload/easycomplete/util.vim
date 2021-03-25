@@ -329,6 +329,10 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
   endif
 endfunction
 
+function! easycomplete#util#InsertMode()
+  return !easycomplete#util#NotInsertMode()
+endfunction
+
 function! easycomplete#util#NotInsertMode()
   if g:env_is_vim
     return mode()[0] != 'i' ? v:true : v:false
