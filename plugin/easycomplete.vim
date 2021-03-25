@@ -47,7 +47,8 @@ augroup EasyCompleteRegistSources
       \ 'name': 'ts',
       \ 'whitelist': ['javascript','typescript','javascript.jsx'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
-      \ 'constructor' :function('easycomplete#sources#ts#constructor')
+      \ 'constructor' :function('easycomplete#sources#ts#constructor'),
+      \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition')
       \  }))
 
   call easycomplete#RegisterSource({

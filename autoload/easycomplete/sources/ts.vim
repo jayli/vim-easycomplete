@@ -59,10 +59,10 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     if g:env_is_vim
       autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     endif
-    " goto definition 方法需要抽到配置里去
-    command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
-    " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
-    nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+    " " goto definition 方法需要抽到配置里去
+    " command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
+    " " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
+    " nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
   augroup END
 
   call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
@@ -311,14 +311,17 @@ function! s:GotoDefinition(file, line, offset)
   call s:SendCommandAsyncResponse('definition', l:args)
 endfunction
 
-function! easycomplete#sources#ts#GotoDefinition()
+function! easycomplete#sources#ts#GotoDefinition(...)
   let ext = tolower(easycomplete#util#extention())
   if index(["js","jsx","ts","tsx"], ext) >= 0
     let l:ctx = easycomplete#context()
     call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
-    return
+    " return v:true 成功跳转，告知主进程
+    return v:true
   endif
-  exec "tag ". expand('<cword>')
+  " exec "tag ". expand('<cword>')
+  " 未成功跳转，则交给主进程处理
+  return v:false
 endfunction
 
 function! s:TsServerIsRunning()

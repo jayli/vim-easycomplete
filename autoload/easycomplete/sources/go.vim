@@ -4,6 +4,13 @@ endif
 let g:easycomplete_gocode = 1
 
 function! easycomplete#sources#go#constructor(opt, ctx)
+  augroup easycomplete#sources#go#augroup
+    autocmd!
+    " goto definition 方法需要抽到配置里去
+    command! EasyCompleteGotoDefinition : call easycomplete#sources#go#GotoDefinition()
+    " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
+    nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+  augroup END
 endfunction
 
 function! easycomplete#sources#go#completor(opt, ctx) abort
@@ -47,7 +54,7 @@ function! s:done(opt, ctx)
   call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
 endfunction
 
-function! s:gocodeCurrentBuffer()
+function! s:GocodeCurrentBuffer()
   let buf = getline(1, '$')
   if &encoding != 'utf-8'
     let buf = map(buf, 'iconv(v:val, &encoding, "utf-8")')
@@ -109,7 +116,7 @@ fu! s:gocodeCursor()
 endf
 
 function! s:GocodeAutocomplete()
-  let filename = s:gocodeCurrentBuffer()
+  let filename = s:GocodeCurrentBuffer()
   let result = s:GocodeCommand('autocomplete',
         \ [s:GocodeCurrentBufferOpt(filename), '-f=vim'],
         \ [expand('%:p'), s:gocodeCursor()])

@@ -91,7 +91,7 @@ function! easycomplete#Enable()
   call s:InitLocalVars()
   " We must ensure typing command binded first
   " plugin command binded there after
-  call s:BindingTypingCommand()
+  call s:BindingTypingCommandOnce()
   " Init plugin configration
   call easycomplete#plugin#init()
   " Init plugins constructor
@@ -108,7 +108,11 @@ function! easycomplete#GetBindingKeys()
   return l:key_liststr
 endfunction
 
-function! s:BindingTypingCommand()
+function! s:BindingTypingCommandOnce()
+  if get(g:, 'easycomplete_typing_binding_done')
+    return
+  endif
+  let g:easycomplete_typing_binding_done = 1
   inoremap <silent><expr> <BS> easycomplete#backing()
   if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
     " If ultisnips is installed. Ultisnips' tab binding will conflict with
@@ -119,7 +123,7 @@ function! s:BindingTypingCommand()
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 
-  augroup easycomplete#augroup
+  augroup easycomplete#NormalBinding
     autocmd!
     " Global typing event for FirstComplete Action
     autocmd TextChangedI * call easycomplete#typing()
@@ -128,11 +132,42 @@ function! s:BindingTypingCommand()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
+
+  " goto definition 方法需要抽到配置里去
+  command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
+  nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+endfunction
+
+function! easycomplete#GotoDefinitionCalling()
+  let l:ctx = easycomplete#context()
+  let syntax_going = v:false
+  for item in keys(g:easycomplete_source)
+    if s:CompleteSourceReady(item)
+      if has_key(get(g:easycomplete_source, item), "gotodefinition")
+        let syntax_going = s:GotoDefinitionByName(item, l:ctx)
+        break
+      endif
+    endif
+  endfor
+  if syntax_going == v:false
+    try
+      exec "tag ". expand('<cword>')
+    catch
+      echom v:exception
+    endtry
+  endif
 endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
   " 初始
+  let l:char = easycomplete#context()["char"]
+  " None ASCII typing
+  if char2nr(l:char) < 33 || char2nr(l:char) > 126
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return
+  endif
   if !get(g:, 'easycomplete_first_complete_hit')
     return
   endif
@@ -293,6 +328,21 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   endif
   call s:SetCompleteTaskQueue(a:name, l:ctx, 1, 1)
   call s:CompleteAdd(a:items)
+endfunction
+
+function! s:GotoDefinitionByName(name, ctx)
+  let l:opt = get(g:easycomplete_source, a:name)
+  let b:gotodefinition= get(l:opt, "gotodefinition")
+  if empty(b:gotodefinition)
+    return v:false
+  endif
+  if type(b:gotodefinition) == 2 " type is function
+    return b:gotodefinition(l:opt, a:ctx)
+  endif
+  if type(b:gotodefinition) == type("string") " type is string
+    return call(b:gotodefinition, [l:opt, a:ctx])
+  endif
+  return v:false
 endfunction
 
 function! s:CallConstructorByName(name, ctx)

@@ -72,5 +72,6 @@ call easycomplete#RegisterSource({
 - whitelist: {list}，适配的文件类型，`*`为匹配所有类型，如果只匹配"javascript"，则这样写`["javascript"]`
 - completor: {string | function}，可以是字符串也可以是function类型，补全函数的具体实现
 - constructor: {string | function}，可以是字符串也可以是function类型，插件构造器，BufEnter 时调用，可选配置
+- gotodefinition: {string | function}，可以是字符串也可以是function类型，goto 跳转到定义处的函数，可选配置
 
 Enjoy yourself
