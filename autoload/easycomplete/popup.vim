@@ -127,6 +127,7 @@ function! s:check(info)
   call easycomplete#popup#close()
 
   let g:easycomplete_popup_win = call('nvim_open_win', winargs)
+  call nvim_win_set_var(g:easycomplete_popup_win, 'syntax', 'on')
   call nvim_win_set_option(g:easycomplete_popup_win, 'foldenable', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'wrap', v:true)
   call nvim_win_set_option(g:easycomplete_popup_win, 'statusline', '')
@@ -137,7 +138,6 @@ function! s:check(info)
   call nvim_win_set_option(g:easycomplete_popup_win, 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'colorcolumn', '')
   call nvim_win_set_option(g:easycomplete_popup_win, 'filetype', 'javascript')
-  call nvim_win_set_option(g:easycomplete_popup_win, 'syntax', 'on')
 
   silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
