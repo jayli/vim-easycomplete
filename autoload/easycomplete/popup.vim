@@ -121,11 +121,6 @@ function! s:check(info)
     let opt.row = winline() - opt.height
   endif
 
-  " if winline() > s:event:row
-  "   " 菜单向上展开
-  "   let opt.row = winline() - 1 - opt.height
-  " endif
-
   let winargs = [s:buf, 0, opt]
 
   " close the old one if already opened

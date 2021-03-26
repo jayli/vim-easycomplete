@@ -271,11 +271,22 @@ EOF
 endfunction
 
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
+  let border = has('nvim') ? " " : ""
+  let maxwidth = has('nvim') ? a:maxwidth - 2 : a:maxwidth
+
+  let border = ""
+  let maxwidth = a:maxwidth
   if type(a:info) == type("")
-    if strlen(a:info) <= a:maxwidth
+    if strlen(a:info) == 0
+      return ""
+    endif
+    if trim(a:info) =~ "^-\\+$"
       return a:info
     endif
-    let span = a:maxwidth
+    if strlen(a:info) <= maxwidth
+      return border . a:info . border
+    endif
+    let span = maxwidth
     let cursor = 0
     let t_info = []
     let t_line = ""
@@ -294,17 +305,17 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     return t_info
   endif
 
-  let maxwidth = 0 " 实际最大宽度
+  let t_maxwidth = 0 " 实际最大宽度
   if type(a:info) == type([])
     let t_info = []
     for item in a:info
-      let modified_info_item = easycomplete#util#ModifyInfoByMaxwidth(item, a:maxwidth)
+      let modified_info_item = easycomplete#util#ModifyInfoByMaxwidth(item, maxwidth)
       if type(modified_info_item) == type("")
-        let maxwidth = strlen(modified_info_item)
+        let t_maxwidth = strlen(modified_info_item)
         call add(t_info, modified_info_item)
       endif
       if type(modified_info_item) == type([])
-        let maxwidth = a:maxwidth
+        let t_maxwidth = maxwidth
         let t_info = t_info + modified_info_item
       endif
     endfor
@@ -316,7 +327,7 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
       if item =~ "^-\\+$"
         let num = 1
         let info_line = ""
-        while num <= maxwidth
+        while num <= t_maxwidth
           let info_line = info_line . "-"
           let num += 1
         endwhile
