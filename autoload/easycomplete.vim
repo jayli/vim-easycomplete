@@ -177,12 +177,23 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " During CompleteChanged event. Menulist must not be changed by complete()
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
+  " hack for PlaceHolder
+  let filtered_menu = s:HackForPlaceHolder(filtered_menu)
   " Because complete() will fire CompleteChanged event, We use async call here.
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
         \   filtered_menu,
         \   g_easycomplete_menuitems
         \ ], 0)
+endfunction
+
+function! s:HackForPlaceHolder(items)
+  " TODO Jayli
+  return a:items
+  if g:env_is_nvim | return a:items | endif
+  if a:items[0].info == "" | let a:items[0].info = "_" | endif
+  if a:items[-1].info == "" | let a:items[-1].info = "_" | endif
+  return a:items
 endfunction
 
 function! s:PrepareInfoPlaceHolder(key, val)
@@ -529,7 +540,7 @@ function! s:HideInfoPopup()
 endfunction
 
 function! easycomplete#CompleteChanged()
-  call s:HideInfoPopup()
+  " call s:HideInfoPopup()
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
   " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
@@ -568,14 +579,14 @@ function! s:ShowCompleteInfo(info)
     if easycomplete#util#TagBarExists()
       call tagbar#StopAutoUpdate()
     endif
-    call popup_close(id)
+    call popup_hide(id)
     return
   endif
   if type(a:info) == type([]) && empty(a:info)
     if easycomplete#util#TagBarExists()
       call tagbar#StopAutoUpdate()
     endif
-    call popup_close(id)
+    call popup_hide(id)
     return
   endif
   let popup_opts = popup_getoptions(id)
@@ -757,6 +768,7 @@ function! easycomplete#CompleteAdd(menu_list)
   let start_pos = col('.') - strwidth(typing_word)
   try
     let menuitems = map(menuitems, function("s:PrepareInfoPlaceHolder"))
+    let menuitems = s:HackForPlaceHolder(menuitems)
     call s:FirstComplete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
     return v:null
