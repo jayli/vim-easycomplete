@@ -450,12 +450,8 @@ function! s:DoComplete(immediately)
   endif
 
   " Finally Do Complete Action
-  if g:env_is_nvim
-    call s:CompleteHandler()
-  elseif g:env_is_vim
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
-  endif
+  call s:StopAsyncRun()
+  call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:null
 endfunction
 
@@ -524,7 +520,16 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
+function! s:HideInfoPopup()
+  if g:env_is_nvim | return | endif
+  let id = popup_findinfo()
+  if id != 0
+    call popup_hide(id)
+  endif
+endfunction
+
 function! easycomplete#CompleteChanged()
+  call s:HideInfoPopup()
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
   " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
@@ -553,7 +558,6 @@ function! s:ShowCompleteInfo(info)
 
   " vim
   let id = popup_findinfo()
-  let winid = id
   let bufnr = winbufnr(id)
   call setbufvar(bufnr, "&filetype", &filetype)
   " Three type of Info:

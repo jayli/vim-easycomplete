@@ -274,8 +274,8 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
   let border = has('nvim') ? " " : ""
   let maxwidth = has('nvim') ? a:maxwidth - 2 : a:maxwidth
 
-  let border = ""
-  let maxwidth = a:maxwidth
+  " let border = ""
+  " let maxwidth = a:maxwidth
   if type(a:info) == type("")
     if strlen(a:info) == 0
       return ""
@@ -283,6 +283,7 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     if trim(a:info) =~ "^-\\+$"
       return a:info
     endif
+    " 字符串长度小于 maxwidth
     if strlen(a:info) <= maxwidth
       return border . a:info . border
     endif
@@ -291,17 +292,19 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     let t_info = []
     let t_line = ""
 
+    " 字符串长度大于 maxwidth
     while cursor <= (strlen(a:info) - 1)
       let t_line = t_line . a:info[cursor]
       if (cursor + 1) % (span) == 0 && cursor != 0
-        call add(t_info, t_line)
+        call add(t_info, border . t_line . border)
         let t_line = ""
       endif
       let cursor += 1
     endwhile
     if !empty(t_line)
-      call add(t_info, t_line)
+      call add(t_info, border . t_line . border)
     endif
+    " t_info is Array
     return t_info
   endif
 
@@ -324,14 +327,8 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     let l:count = 0
     for item in t_info
       " 构造分割线
-      if item =~ "^-\\+$"
-        let num = 1
-        let info_line = ""
-        while num <= t_maxwidth
-          let info_line = info_line . "-"
-          let num += 1
-        endwhile
-        let t_info[l:count] = info_line
+      if trim(item) =~ "^-\\+$"
+        let t_info[l:count] = repeat("-", maxwidth)
         break
       endif
       let l:count += 1

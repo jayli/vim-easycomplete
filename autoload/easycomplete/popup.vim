@@ -56,25 +56,12 @@ function! s:check(info)
   endif
   let s:last_event = s:event
 
-  let info = a:info
-
-  " if type(info) == type("") && (empty(info) || info ==# "_")
-  "   call easycomplete#popup#close()
-  "   return
-  " endif
-
-  " if type(info) == type([]) && empty(info)
-  "   call easycomplete#popup#close()
-  "   return
-  " endif
-
-  let info = type(info) == type("") ? [info] : info
+  let info = type(a:info) == type("") ? [a:info] : a:info
 
   if !s:buf
-    " unlisted-buffer & scratch-buffer (nobuflisted, buftype=nofile,
-    " bufhidden=hide, noswapfile)
     let s:buf = nvim_create_buf(0, 1)
-    call nvim_buf_set_option(s:buf, 'syntax', 'OFF')
+    call nvim_buf_set_option(s:buf, 'syntax', 'on')
+    call nvim_buf_set_option(s:buf, 'filetype', &filetype)
   endif
   call nvim_buf_set_lines(s:buf, 0, -1, 0, info)
 
