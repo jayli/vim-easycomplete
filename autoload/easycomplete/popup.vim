@@ -1,4 +1,4 @@
-
+" nvim only
 if get(s:, 'easycompelte_popup_loaded') || !has('nvim')
   finish
 endif
@@ -111,7 +111,20 @@ function! s:check(info)
   endif
   " }}}
 
-  let opt.row = s:event.row
+  " let opt.row = s:event.row
+
+  if winline() < s:event.row
+    " 菜单向下展开
+    let opt.row = s:event.row
+  else
+    " 菜单向上展开
+    let opt.row = winline() - opt.height
+  endif
+
+  " if winline() > s:event:row
+  "   " 菜单向上展开
+  "   let opt.row = winline() - 1 - opt.height
+  " endif
 
   let winargs = [s:buf, 0, opt]
 
@@ -135,7 +148,6 @@ function! s:check(info)
 endfunction
 
 function! easycomplete#popup#reopen()
-  " call s:log('reopen')
   call easycomplete#popup#close()
   call easycomplete#popup#StartCheck(s:info)
 endfunction
