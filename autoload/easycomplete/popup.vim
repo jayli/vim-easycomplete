@@ -1,19 +1,28 @@
-" nvim only
-" if get(g:, 'easycompelte_popup_mojo_loaded')
-"   finish
-" endif
-" let g:easycompelte_popup_mojo_loaded = 1
 
+" Popup menu 的实现
+" vim 8.2 实现了 popupmenu, 即 completeopt+=popup 很好用，但有几个bug
+" 1. setlocal completepopup=width:70 中的 Width 属性无效
+" 2. 连续 c-n 快速在 completemenu 中移动选中位置，频繁 popup 出 infomenu
+" 时会有 complete menu 的闪烁
+" 3. menu info 字段不支持 list 类型
+" 4. 按照官方文档手工通过 popup_settext 和 popup_show 来显示 popup window
+" 的话，必须通过 popup_findinfo 来获取已经存在的 popup window，但
+" popup_findinfo 必须被存在 info 不为空的 complete item 高亮时先创建出来，否则
+" popup_findinfo 的结果是空，如果这时手工创建 popup window，popup_findinfo 依
+" 然无法返回手工创建的这个 window id，还不如全部手写 popup 逻辑
+" 5. nvim 没有实现 popup menu 的功能，但提供了浮窗能力，因此干脆手写了
+
+" popup window 最大高度
 let s:max_height = 40
 let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 
 augroup easycomplete#popup#au
   autocmd!
-  autocmd CompleteDone * call easycomplete#popup#CompleteDone()
-  autocmd InsertLeave * call easycomplete#popup#InsertLeave()
-  " autocmd VimResized,VimResume * call easycomplete#popup#reopen()
   autocmd VimResized * call easycomplete#popup#reopen()
+  if s:is_nvim
+    autocmd VimResume * call easycomplete#popup#reopen()
+  endif
 augroup END
 
 let s:timer = 0
@@ -33,7 +42,7 @@ endfunction
 function! easycomplete#popup#MenuPopupChanged(info)
   let s:event = copy(v:event)
   let s:item = copy(v:event.completed_item)
-  call easycomplete#popup#StartCheck(a:info)
+  call easycomplete#popup#DoPopup(a:info)
   let s:info = a:info
 endfunction
 
@@ -42,7 +51,7 @@ function! easycomplete#popup#CompleteDone()
   call easycomplete#popup#close()
 endfunction
 
-function! easycomplete#popup#StartCheck(info)
+function! easycomplete#popup#DoPopup(info)
   " use timer_start since nvim_buf_set_lines is not allowed in
   " CompleteChanged
   " call easycomplete#util#StopAsyncRun()
@@ -55,8 +64,6 @@ function! s:check(info)
     return
   endif
   if g:easycomplete_popup_win && s:event == s:last_event
-    " let s:skip_cnt = get(s:, 'skip_cnt', 0) + 1
-    " echom 'already opened, skip ' . s:skip_cnt
     return
   endif
   let s:last_event = s:event
@@ -96,7 +103,7 @@ function! s:check(info)
         \ 'style':'minimal'
         \ }
 
-  " {{{ show relative popup
+  " show relative popup
   if s:event.scrollbar
     let right_avail_col  = s:event.col + s:event.width + 1
   else
@@ -117,7 +124,6 @@ function! s:check(info)
     call easycomplete#popup#close()
     return
   endif
-  " }}}
 
   if winline() < s:event.row
     " 菜单向下展开
@@ -147,23 +153,24 @@ function! s:VimShowPopup(opt)
         \ 'firstline': 0,
         \ 'fixed': 1
         \ }
+
   if g:easycomplete_popup_win
-    call easycomplete#popup#close()
+    call popup_setoptions(g:easycomplete_popup_win, opt)
+    call setbufvar(s:buf, "&filetype", &filetype)
+    call setwinvar(winid, '&scrolloff', 0)
+    call setwinvar(winid, 'float', 1)
+    call setwinvar(winid, '&list', 0)
+    call setwinvar(winid, '&number', 0)
+    call setwinvar(winid, '&relativenumber', 0)
+    call setwinvar(winid, '&cursorcolumn', 0)
+    call setwinvar(winid, '&colorcolumn', 0)
+    call setwinvar(winid, '&wrap', 1)
+    call setwinvar(winid, '&linebreak', 1)
+    call setwinvar(winid, '&conceallevel', 2)
+  else
+    let winid = popup_create(s:buf, opt)
+    let g:easycomplete_popup_win = winid
   endif
-  let winid = popup_create(s:buf, opt)
-  call setbufvar(s:buf, "&filetype", &filetype)
-  call setwinvar(winid, '&scrolloff', 0)
-  call setwinvar(winid, 'float', 1)
-  call setwinvar(winid, '&list', 0)
-  call setwinvar(winid, '&number', 0)
-  call setwinvar(winid, '&relativenumber', 0)
-  call setwinvar(winid, '&cursorcolumn', 0)
-  call setwinvar(winid, '&colorcolumn', 0)
-  call setwinvar(winid, '&wrap', 1)
-  call setwinvar(winid, '&linebreak', 1)
-  call setwinvar(winid, '&conceallevel', 2)
-  
-  let g:easycomplete_popup_win = winid
   call popup_show(g:easycomplete_popup_win)
 endfunction
 
@@ -190,7 +197,7 @@ endfunction
 
 function! easycomplete#popup#reopen()
   call easycomplete#popup#close()
-  call easycomplete#popup#StartCheck(s:info)
+  call easycomplete#popup#DoPopup(s:info)
 endfunction
 
 function! easycomplete#popup#close()
@@ -236,7 +243,6 @@ function! easycomplete#popup#DisplayHeight(lines, width)
   let max_height = s:max_height
   return height > max_height ? max_height : height
 endfunction
-
 
 function! s:log(msg)
   echohl MoreMsg

@@ -120,6 +120,8 @@ function! s:BindingTypingCommandOnce()
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
+  " inoremap <silent><expr> <C-N> easycomplete#CN()
+  " inoremap <silent><expr> <C-P> easycomplete#CP()
 
   augroup easycomplete#NormalBinding
     autocmd!
@@ -134,6 +136,23 @@ function! s:BindingTypingCommandOnce()
   " goto definition 方法需要抽到配置里去
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+endfunction
+
+function! easycomplete#CN()
+  " call s:zizz()
+  " echom 2222
+  " call s:SendKeys("\<C-N>")
+  " return ""
+  if pumvisible()
+    call s:zizz()
+    return "\<Down>"
+  endif
+  return "\<Down>"
+endfunction
+
+function! easycomplete#CP()
+  call s:zizz()
+  call s:SendKeys("\<C-P>")
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
@@ -228,6 +247,7 @@ function! s:FuzzySearch(needle, haystack)
 endfunction
 
 function! easycomplete#CompleteDone()
+  call easycomplete#popup#CompleteDone()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
@@ -239,6 +259,7 @@ function! easycomplete#CompleteDone()
 endfunction
 
 function! easycomplete#InsertLeave()
+  call easycomplete#popup#InsertLeave()
   call s:flush()
 endfunction
 
@@ -518,21 +539,13 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
-function! s:HideInfoPopup()
-  if g:env_is_nvim | return | endif
-  let id = popup_findinfo()
-  if id != 0
-    call popup_hide(id)
-  endif
-endfunction
-
 function! easycomplete#CompleteChanged()
-  " call s:HideInfoPopup()
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
   " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
   " Here we check zizzing from CompleteTypingMatch to stop recursive call.
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+    " echom easycomplete#context()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
@@ -546,54 +559,15 @@ function! easycomplete#CompleteChanged()
   endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
-  " call easycomplete#popup#MenuPopupChanged(thin_info)
   call s:ShowCompleteInfo(thin_info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
-  " nvim
-  " hack
   if easycomplete#util#TagBarExists()
     call tagbar#StopAutoUpdate()
   endif
-  if g:env_is_nvim || g:env_is_vim
-    call easycomplete#popup#MenuPopupChanged(a:info)
-    return
-  endif
+  call easycomplete#popup#MenuPopupChanged(a:info)
   return
-
-  " vim
-  let id = popup_findinfo()
-  let bufnr = winbufnr(id)
-  call setbufvar(bufnr, "&filetype", &filetype)
-  " Three type of Info:
-  " String : '..'
-  " List: [...]
-  " PlaceHolder: '_'
-  if type(a:info) == type("") && (empty(a:info) || s:StringTrim(a:info) ==# "_")
-    if easycomplete#util#TagBarExists()
-      call tagbar#StopAutoUpdate()
-    endif
-    call popup_hide(id)
-    return
-  endif
-  if type(a:info) == type([]) && empty(a:info)
-    if easycomplete#util#TagBarExists()
-      call tagbar#StopAutoUpdate()
-    endif
-    call popup_hide(id)
-    return
-  endif
-  let popup_opts = popup_getoptions(id)
-  if empty(popup_opts)
-    let width = g:easycomplete_popup_width
-  else
-    let width = popup_opts.maxwidth > g:easycomplete_popup_width ?
-          \ g:easycomplete_popup_width : popup_opts.maxwidth
-  endif
-  let l:info = s:ModifyInfoByMaxwidth(a:info, width)
-  call popup_settext(id, l:info)
-  call popup_show(id)
 endfunction
 
 function s:ModifyInfoByMaxwidth(...)

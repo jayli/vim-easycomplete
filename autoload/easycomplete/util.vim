@@ -331,6 +331,11 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
       endif
       let l:count += 1
     endfor
+
+    " hack for vim popup menu scrollbar
+    if t_info[-1] ==# ""
+      unlet t_info[len(t_info)-1]
+    endif
     return t_info
   endif
 endfunction
