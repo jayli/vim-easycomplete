@@ -68,13 +68,11 @@ function! s:InitLocalVars()
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
   " TODO width is not working?
-  if g:env_is_vim && exists('+completepopup')
-    setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
-  endif
-  if g:env_is_vim | setlocal completeopt+=popup | endif
-  " nvim dos not support popup window for complete menu. It only support
-  " preview window. So shut it down for nvim.
-  if g:env_is_nvim | setlocal completeopt-=preview | endif
+  " if g:env_is_vim && exists('+completepopup')
+  "   setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
+  " endif
+  setlocal completeopt-=popup
+  setlocal completeopt-=preview
   setlocal completeopt-=longest
   setlocal cpoptions+=B
 endfunction
@@ -177,8 +175,6 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " During CompleteChanged event. Menulist must not be changed by complete()
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
-  " hack for PlaceHolder
-  let filtered_menu = s:HackForPlaceHolder(filtered_menu)
   " Because complete() will fire CompleteChanged event, We use async call here.
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
@@ -187,18 +183,9 @@ function! s:CompleteTypingMatch(...)
         \ ], 0)
 endfunction
 
-function! s:HackForPlaceHolder(items)
-  " TODO Jayli
-  return a:items
-  if g:env_is_nvim | return a:items | endif
-  if a:items[0].info == "" | let a:items[0].info = "_" | endif
-  if a:items[-1].info == "" | let a:items[-1].info = "_" | endif
-  return a:items
-endfunction
-
 function! s:PrepareInfoPlaceHolder(key, val)
   if !(has_key(a:val, "info") && type(a:val.info) == type("") && !empty(a:val.info))
-    let a:val.info = "_"
+    let a:val.info = ""
   endif
   let a:val.equal = 1
   return a:val
@@ -549,23 +536,31 @@ function! easycomplete#CompleteChanged()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
-    if g:env_is_vim  | call popup_clear() | endif
+    " hack
     if g:env_is_nvim
       call easycomplete#popup#MenuPopupChanged([])
+    else
+      call easycomplete#popup#close()
     endif
     return
   endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
-  call s:ShowCompleteInfo(info)
+  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+  " call easycomplete#popup#MenuPopupChanged(thin_info)
+  call s:ShowCompleteInfo(thin_info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
   " nvim
-  if g:env_is_nvim
-    let l:info = s:ModifyInfoByMaxwidth(a:info, g:easycomplete_popup_width)
-    call easycomplete#popup#MenuPopupChanged(l:info)
+  " hack
+  if easycomplete#util#TagBarExists()
+    call tagbar#StopAutoUpdate()
+  endif
+  if g:env_is_nvim || g:env_is_vim
+    call easycomplete#popup#MenuPopupChanged(a:info)
     return
   endif
+  return
 
   " vim
   let id = popup_findinfo()
@@ -768,7 +763,6 @@ function! easycomplete#CompleteAdd(menu_list)
   let start_pos = col('.') - strwidth(typing_word)
   try
     let menuitems = map(menuitems, function("s:PrepareInfoPlaceHolder"))
-    let menuitems = s:HackForPlaceHolder(menuitems)
     call s:FirstComplete(start_pos, menuitems)
   catch /^Vim\%((\a\+)\)\=:E730/
     return v:null

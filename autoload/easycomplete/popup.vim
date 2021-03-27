@@ -1,14 +1,19 @@
 " nvim only
-if get(s:, 'easycompelte_popup_loaded') || !has('nvim')
-  finish
-endif
-let s:easycompelte_popup_loaded = 1
+" if get(g:, 'easycompelte_popup_mojo_loaded')
+"   finish
+" endif
+" let g:easycompelte_popup_mojo_loaded = 1
+
+let s:max_height = 40
+let s:is_vim = !has('nvim')
+let s:is_nvim = has('nvim')
 
 augroup easycomplete#popup#au
   autocmd!
   autocmd CompleteDone * call easycomplete#popup#CompleteDone()
   autocmd InsertLeave * call easycomplete#popup#InsertLeave()
-  autocmd VimResized,VimResume * call easycomplete#popup#reopen()
+  " autocmd VimResized,VimResume * call easycomplete#popup#reopen()
+  autocmd VimResized * call easycomplete#popup#reopen()
 augroup END
 
 let s:timer = 0
@@ -45,7 +50,7 @@ function! easycomplete#popup#StartCheck(info)
 endfunction
 
 function! s:check(info)
-  if empty(s:item) || !pumvisible()
+  if empty(s:item) || empty(a:info) || !pumvisible()
     call easycomplete#popup#close()
     return
   endif
@@ -59,21 +64,37 @@ function! s:check(info)
   let info = type(a:info) == type("") ? [a:info] : a:info
 
   if !s:buf
-    let s:buf = nvim_create_buf(0, 1)
-    call nvim_buf_set_option(s:buf, 'syntax', 'on')
-    call nvim_buf_set_option(s:buf, 'filetype', &filetype)
+    if s:is_vim
+      noa let s:buf = bufadd('')
+      noa call bufload(s:buf)
+      call setbufvar(s:buf, '&filetype', &filetype)
+    elseif s:is_nvim
+      noa let s:buf = nvim_create_buf(v:false, v:true)
+      call nvim_buf_set_option(s:buf, 'syntax', 'on')
+      call nvim_buf_set_option(s:buf, 'filetype', &filetype)
+    endif
+    call setbufvar(s:buf, '&buflisted', 0)
+    call setbufvar(s:buf, '&buftype', 'nofile')
+    call setbufvar(s:buf, '&undolevels', -1)
   endif
-  call nvim_buf_set_lines(s:buf, 0, -1, 0, info)
+
+  if s:is_nvim
+    call nvim_buf_set_lines(s:buf, 0, -1, v:false, info)
+  elseif s:is_vim
+    call deletebufline(s:buf, 1, '$')
+    call setbufline(s:buf, 1, info)
+  endif
 
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
 
-  let opt = { 'focusable': v:true,
+  let opt = { 
+        \ 'focusable': v:true,
         \ 'width': prevw_width,
         \ 'height': prevw_height,
         \ 'relative':'editor',
         \ 'style':'minimal'
-        \}
+        \ }
 
   " {{{ show relative popup
   if s:event.scrollbar
@@ -98,8 +119,6 @@ function! s:check(info)
   endif
   " }}}
 
-  " let opt.row = s:event.row
-
   if winline() < s:event.row
     " 菜单向下展开
     let opt.row = s:event.row
@@ -108,11 +127,48 @@ function! s:check(info)
     let opt.row = winline() - opt.height
   endif
 
-  let winargs = [s:buf, 0, opt]
-
   " close the old one if already opened
   call easycomplete#popup#close()
 
+  if s:is_nvim
+    call s:NvimShowPopup(opt)
+  elseif s:is_vim
+    call s:VimShowPopup(opt)
+  endif
+endfunction
+
+function! s:VimShowPopup(opt)
+  if s:is_nvim | return | endif
+  let opt = {
+        \ 'line': a:opt.row + 1,
+        \ 'col': a:opt.col + 1,
+        \ 'maxwidth': a:opt.width,
+        \ 'maxheight': a:opt.height,
+        \ 'firstline': 0,
+        \ 'fixed': 1
+        \ }
+  if g:easycomplete_popup_win
+    call easycomplete#popup#close()
+  endif
+  let winid = popup_create(s:buf, opt)
+  call setbufvar(s:buf, "&filetype", &filetype)
+  call setwinvar(winid, '&scrolloff', 0)
+  call setwinvar(winid, 'float', 1)
+  call setwinvar(winid, '&list', 0)
+  call setwinvar(winid, '&number', 0)
+  call setwinvar(winid, '&relativenumber', 0)
+  call setwinvar(winid, '&cursorcolumn', 0)
+  call setwinvar(winid, '&colorcolumn', 0)
+  call setwinvar(winid, '&wrap', 1)
+  call setwinvar(winid, '&linebreak', 1)
+  call setwinvar(winid, '&conceallevel', 2)
+  let g:easycomplete_popup_win = winid
+  call popup_show(g:easycomplete_popup_win)
+endfunction
+
+function! s:NvimShowPopup(opt)
+  if s:is_vim | return | endif
+  let winargs = [s:buf, 0, a:opt]
   let g:easycomplete_popup_win = call('nvim_open_win', winargs)
   call nvim_win_set_var(g:easycomplete_popup_win, 'syntax', 'on')
   call nvim_win_set_option(g:easycomplete_popup_win, 'foldenable', v:false)
@@ -124,7 +180,9 @@ function! s:check(info)
   call nvim_win_set_option(g:easycomplete_popup_win, 'cursorline', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'colorcolumn', '')
-  call nvim_win_set_option(g:easycomplete_popup_win, 'filetype', 'javascript')
+  if has('nvim-0.5.0')
+    call setwinvar(g:easycomplete_popup_win, '&scrolloff', 0)
+  endif
 
   silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
@@ -135,13 +193,20 @@ function! easycomplete#popup#reopen()
 endfunction
 
 function! easycomplete#popup#close()
-  if g:easycomplete_popup_win
-    let id = win_id2win(g:easycomplete_popup_win)
-    if id > 0
-      execute id . 'close!'
+  if s:is_vim
+    if g:easycomplete_popup_win
+      call popup_close(g:easycomplete_popup_win)
+      let g:easycomplete_popup_win = 0
     endif
-    let g:easycomplete_popup_win = 0
-    let s:last_winargs = []
+  else
+    if g:easycomplete_popup_win
+      let id = win_id2win(g:easycomplete_popup_win)
+      if id > 0
+        execute id . 'close!'
+      endif
+      let g:easycomplete_popup_win = 0
+      let s:last_winargs = []
+    endif
   endif
 endfunction
 
@@ -167,8 +232,13 @@ function! easycomplete#popup#DisplayHeight(lines, width)
   for line in a:lines
     let height += (strdisplaywidth(line) + a:width - 1) / a:width
   endfor
-  let max_height = 40
+  let max_height = s:max_height
   return height > max_height ? max_height : height
 endfunction
 
 
+function! s:log(msg)
+  echohl MoreMsg
+  echom '>>> '. string(a:msg)
+  echohl NONE
+endfunction

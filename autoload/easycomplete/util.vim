@@ -271,11 +271,9 @@ EOF
 endfunction
 
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
-  let border = has('nvim') ? " " : ""
-  let maxwidth = has('nvim') ? a:maxwidth - 2 : a:maxwidth
+  let border = " "
+  let maxwidth = a:maxwidth - 2
 
-  " let border = ""
-  " let maxwidth = a:maxwidth
   if type(a:info) == type("")
     if strlen(a:info) == 0
       return ""
