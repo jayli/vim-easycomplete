@@ -162,6 +162,7 @@ function! s:VimShowPopup(opt)
   call setwinvar(winid, '&wrap', 1)
   call setwinvar(winid, '&linebreak', 1)
   call setwinvar(winid, '&conceallevel', 2)
+  
   let g:easycomplete_popup_win = winid
   call popup_show(g:easycomplete_popup_win)
 endfunction
