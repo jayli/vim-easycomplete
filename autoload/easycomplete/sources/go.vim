@@ -4,6 +4,18 @@ endif
 let g:easycomplete_gocode = 1
 
 function! easycomplete#sources#go#constructor(opt, ctx)
+  "augroup LspGo
+  "  au!
+  "  autocmd User lsp_setup call lsp#register_server({
+  "        \ 'name': 'go-lang',
+  "        \ 'cmd': {server_info->['gopls']},
+  "        \ 'whitelist': ['go'],
+  "        \ })
+  "  autocmd FileType go setlocal omnifunc=lsp#complete
+  "  "autocmd FileType go nmap <buffer> gd <plug>(lsp-definition)
+  "  "autocmd FileType go nmap <buffer> ,n <plug>(lsp-next-error)
+  "  "autocmd FileType go nmap <buffer> ,p <plug>(lsp-previous-error)
+  "augroup END
 endfunction
 
 function! easycomplete#sources#go#completor(opt, ctx) abort
@@ -84,6 +96,7 @@ function! s:GocodeCommand(cmd, preargs, args)
     let a:preargs[i] = s:GocodeShellescape(a:preargs[i])
   endfor
   let result = s:system(printf('gocode %s %s %s', join(a:preargs), a:cmd, join(a:args)))
+  echom result
   if v:shell_error != 0
     return "[\"0\", []]"
   else
@@ -98,7 +111,7 @@ function! s:GocodeCurrentBufferOpt(filename)
   return '-in=' . a:filename
 endfunction
 
-fu! s:gocodeCursor()
+fu! s:GocodeCursor()
   if &encoding != 'utf-8'
     let c = col('.')
     let buf = line('.') == 1 ? "" : (join(getline(1, line('.')-1), "\n") . "\n")
@@ -112,7 +125,8 @@ function! s:GocodeAutocomplete()
   let filename = s:GocodeCurrentBuffer()
   let result = s:GocodeCommand('autocomplete',
         \ [s:GocodeCurrentBufferOpt(filename), '-f=vim'],
-        \ [expand('%:p'), s:gocodeCursor()])
+        \ [expand('%:p'), s:GocodeCursor()])
+  echom result
   call delete(filename)
   return result
 endfunction

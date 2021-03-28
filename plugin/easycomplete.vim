@@ -52,6 +52,13 @@ augroup EasyCompleteRegistSources
       \  }))
 
   call easycomplete#RegisterSource({
+      \ 'name': 'vim',
+      \ 'whitelist': ['vim'],
+      \ 'completor': 'easycomplete#sources#vim#completor',
+      \ 'constructor' :'easycomplete#sources#vim#constructor'
+      \  })
+
+  call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
       \ 'completor': 'easycomplete#sources#py#completor',
