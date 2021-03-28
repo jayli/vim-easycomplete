@@ -4,7 +4,7 @@
 
 简单到爆的自动补全插件
 
-<img src="https://gw.alicdn.com/imgextra/i4/O1CN01fz8bi11L9I81HjnfR_!!6000000001256-1-tps-843-448.gif" width=600>
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
 
 ### 安装
 
