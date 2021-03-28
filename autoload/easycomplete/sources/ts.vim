@@ -59,10 +59,6 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     if g:env_is_vim
       autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     endif
-    " " goto definition 方法需要抽到配置里去
-    " command! EasyCompleteGotoDefinition : call easycomplete#sources#ts#GotoDefinition()
-    " " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
-    " nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
   augroup END
 
   call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
@@ -103,6 +99,7 @@ function! easycomplete#sources#ts#DiagnosticsCallback(item)
   " TODO
 endfunction
 
+" EntryDetail Callback 数据结构
 "     [{
 "       'name': 'DOMError',
 "       'kind': 'var',
@@ -152,17 +149,20 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   if !easycomplete#CheckContextSequence(l:ctx)
     return
   endif
-  " 显示 completemenu
   call s:DoComplete(l:ctx, l:easycomplete_menu_list)
-  " 取 entries details
-  let l:entries= map(copy(l:easycomplete_menu_list), function("s:EntriesMap"))
-  if type(l:entries) == type([]) && !empty(l:entries)
-    call s:TsCompletionEntryDetails(l:ctx['filepath'], l:ctx['lnum'], l:ctx['col'], l:entries)
-  endif
+  call s:DoFetchEntryDetails(l:ctx, l:easycomplete_menu_list)
 endfunction
 
 function! s:DoComplete(ctx, menu_list)
   call easycomplete#complete('ts', a:ctx, a:ctx['startcol'], a:menu_list)
+endfunction
+
+" 获取 keyword 的 More Info
+function! s:DoFetchEntryDetails(ctx, menu_list)
+  let l:entries= map(copy(a:menu_list), function("s:EntriesMap"))
+  if type(l:entries) == type([]) && !empty(l:entries)
+    call s:TsCompletionEntryDetails(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], l:entries)
+  endif
 endfunction
 
 function! s:NormalizeEntryDetail(item)
@@ -262,7 +262,7 @@ function! s:SendCommandOneWay(cmd, args)
   call s:SendCommandAsyncResponse(a:cmd, a:args)
 endfunction
 
-" Fetch keywards to complete from TSServer.
+" 从 TSServer 获取匹配完成的关键字
 " PARAM: {string} file File name.
 " PARAM: {string} line The line number of location to complete.
 " PARAM: {string} offset The col number of location to complete.
@@ -299,7 +299,7 @@ function! s:TsCompletionEntryDetails(file, line, offset, entryNames)
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
 endfunction
 
-" Fetch location where the symbol at cursor(line, offset) in file is defined.
+" 跳转到定义位置
 " PARAM: {string} file File name.
 " PARAM: {int} line The line number of location to complete.
 " PARAM: {int} offset The col number of location to complete.

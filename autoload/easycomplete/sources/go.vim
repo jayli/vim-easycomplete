@@ -4,13 +4,6 @@ endif
 let g:easycomplete_gocode = 1
 
 function! easycomplete#sources#go#constructor(opt, ctx)
-  augroup easycomplete#sources#go#augroup
-    autocmd!
-    " goto definition 方法需要抽到配置里去
-    command! EasyCompleteGotoDefinition : call easycomplete#sources#go#GotoDefinition()
-    " TODO 重新定义 c-] 做 definition 跳转，有待进一步测试兼容
-    nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
-  augroup END
 endfunction
 
 function! easycomplete#sources#go#completor(opt, ctx) abort

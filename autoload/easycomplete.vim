@@ -64,13 +64,11 @@ function! s:InitLocalVars()
   " Checking typing <BS> or <CR>, and other none ASCII typing
   " Used for every InputTextChange event for s:zizz()
   let g:easycomplete_backing_or_cr = 0
+
+  " basic setting
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
-  " TODO width is not working?
-  " if g:env_is_vim && exists('+completepopup')
-  "   setlocal completepopup=width:70,highlight:Pmenu,border:off,align:menu
-  " endif
   setlocal completeopt-=popup
   setlocal completeopt-=preview
   setlocal completeopt-=longest
@@ -120,8 +118,6 @@ function! s:BindingTypingCommandOnce()
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
-  " inoremap <silent><expr> <C-N> easycomplete#CN()
-  " inoremap <silent><expr> <C-P> easycomplete#CP()
 
   augroup easycomplete#NormalBinding
     autocmd!
@@ -136,23 +132,6 @@ function! s:BindingTypingCommandOnce()
   " goto definition 方法需要抽到配置里去
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
-endfunction
-
-function! easycomplete#CN()
-  " call s:zizz()
-  " echom 2222
-  " call s:SendKeys("\<C-N>")
-  " return ""
-  if pumvisible()
-    call s:zizz()
-    return "\<Down>"
-  endif
-  return "\<Down>"
-endfunction
-
-function! easycomplete#CP()
-  call s:zizz()
-  call s:SendKeys("\<C-P>")
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
@@ -545,7 +524,7 @@ function! easycomplete#CompleteChanged()
   " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
   " Here we check zizzing from CompleteTypingMatch to stop recursive call.
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-    " echom easycomplete#context()
+        \ && !easycomplete#CompleteCursored()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
@@ -637,8 +616,8 @@ function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " Get Matching word under cursor
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-  if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word ) ||
-        \ ( pumvisible() && s:SnipSupports() && empty(l:item) )
+  if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
+        \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
     " should do snippet expand action or not
     if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
@@ -708,12 +687,10 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list)
-  " 单词匹配表
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
 
-  " 当前匹配
   if !exists('g:easycomplete_menuitems')
     let g:easycomplete_menuitems = []
   endif
