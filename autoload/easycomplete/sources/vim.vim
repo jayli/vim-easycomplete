@@ -27,8 +27,6 @@ function! easycomplete#sources#vim#completor(opt, ctx) abort
 endfunction
 
 
-
-
 function! s:server_initialized() abort
   let l:server_names = lsp#get_server_names()
   for l:server_name in l:server_names
@@ -36,9 +34,9 @@ function! s:server_initialized() abort
       continue
     endif
     let l:init_capabilities = lsp#get_server_capabilities(l:server_name)
-    echom s:servers
-    echom l:server_name
-    echom l:init_capabilities
+    " echom s:servers
+    " echom l:server_name
+    " echom l:init_capabilities
     if !has_key(l:init_capabilities, 'completionProvider')
       continue
     endif
@@ -68,7 +66,7 @@ function! s:server_initialized() abort
     " call asyncomplete#register_source(l:source_opt)
     call add(l:source_opt['allowlist'], "*")
     call easycomplete#RegisterSource(l:source_opt)
-    echom l:source_opt
+    " echom l:source_opt
     let s:servers[l:server_name] = 1
   endfor
 endfunction

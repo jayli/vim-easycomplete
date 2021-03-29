@@ -1,3 +1,5 @@
+" TODO，依赖 Gocode，Go 升级到 1.15 后报错
+" panic: rpc: can't find service RPC.RPC_auto_complete
 if exists('g:easycomplete_gocode')
   finish
 endif
