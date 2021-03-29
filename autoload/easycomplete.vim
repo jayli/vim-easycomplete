@@ -23,13 +23,14 @@ function! s:InitLocalVars()
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " Complete Resutl Caching storage, For <BS> and <CR> typing
+  " Complete Result Caching, For <BS> and <CR> typing
   let g:easycomplete_menucache = {}
-  " The most important storage for each complete result
-  " After each completor done, Info will be appended here.
-  " menuitems will be set to [] after CompleteDone event
+  " The Global storage for each complete result
+  " Info msg will be appended here.
+  " menuitems will be set to [] after CompleteDone
   let g:easycomplete_menuitems = []
-  " Record v:event.complete_item for pum, to checkout cursor in or out of pum
+  " Record v:event.complete_item for pum, to checkout if there is an item
+  " selected in pum 
   let g:easycomplete_completed_item = {}
 
   " HACK: To avoid trigger completedone event after going back from last item
@@ -156,9 +157,8 @@ endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
-  " 初始
   let l:char = easycomplete#context()["char"]
-  " None ASCII typing
+  " exit on None ASCII typing
   if char2nr(l:char) < 33 || char2nr(l:char) > 126
     call s:CloseCompletionMenu()
     call s:flush()
@@ -173,7 +173,7 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   " During CompleteChanged event. Menulist must not be changed by complete()
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
-  " Because complete() will fire CompleteChanged event, We use async call here.
+  " complete() will fire CompleteChanged event, use async call instead.
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
         \   filtered_menu,
@@ -196,9 +196,9 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = a:easycomplete_menuitems
   " To avoid completedone event recursive calling
   call s:zizz()
-  " This will cause completedone event, and then call s:flush() to reset
-  " global configration. So g:easycomplete_menuitems must not be changed.
   call complete(a:start_pos, a:menuitems)
+  " complete() will cause completedone event, and then call s:flush() to reset
+  " global configration. So g:easycomplete_menuitems must not be changed.
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
@@ -315,7 +315,6 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
     return
   endif
   let l:ctx = easycomplete#context()
-  " check async completor ctx same as current ctx or not
   if !s:SameCtx(a:ctx, l:ctx)
     if s:CompleteSourceReady(a:name)
       " call s:CloseCompletionMenu()
@@ -593,9 +592,9 @@ function! easycomplete#CleverTab()
     " Otherwise fire docomplete()
     if g:env_is_nvim
       " Hack for nvim, During DoComplete mode() may change to 'n'. Leveing
-      " Insert Mode make a s:flush() call. Then empty the task queue.
+      " Insert Mode make a flush() call and empty the task queue.
       " I dont know why.
-      " So I have to make DoComplete() a async call.
+      " A Async call seems to be fine.
       call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
       call s:SendKeys( "\<ESC>a" )
     elseif g:env_is_vim
@@ -771,7 +770,8 @@ function! s:NormalizeMenulist(arr)
 
   for item in a:arr
     if type(item) == type("")
-      let l:menu_item = { 'word': item,
+      let l:menu_item = { 
+            \ 'word': item,
             \ 'menu': '',
             \ 'user_data': '',
             \ 'info': '',
@@ -782,8 +782,16 @@ function! s:NormalizeMenulist(arr)
       call add(l:menu_list, l:menu_item)
     endif
     if type(item) == type({})
-      call add(l:menu_list, extend({'word': '', 'menu': '', 'user_data': '', 'equal': 1, 'dup': 1,
-            \                       'info': '', 'kind': '', 'abbr': ''},
+      call add(l:menu_list, extend({
+            \   'word': '',
+            \   'menu': '',
+            \   'user_data': '',
+            \   'equal': 1,
+            \   'dup': 1,
+            \   'info': '',
+            \   'kind': '',
+            \   'abbr': ''
+            \ },
             \ item ))
     endif
   endfor
