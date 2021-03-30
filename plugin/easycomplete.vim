@@ -5,7 +5,7 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
-finish
+" finish
 
 if get(g:, 'easycomplete_plugin_init')
   finish
