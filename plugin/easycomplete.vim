@@ -53,18 +53,19 @@ augroup EasyCompleteRegistSources
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition')
       \  }))
 
-  call easycomplete#RegisterSource({
-      \ 'name': 'vim',
-      \ 'whitelist': ['vim'],
-      \ 'completor': 'easycomplete#sources#vim#completor',
-      \ 'constructor' :'easycomplete#sources#vim#constructor'
-      \  })
+  " call easycomplete#RegisterSource({
+  "     \ 'name': 'vim',
+  "     \ 'whitelist': ['vim'],
+  "     \ 'completor': 'easycomplete#sources#vim#completor',
+  "     \ 'constructor' :'easycomplete#sources#vim#constructor'
+  "     \  })
 
   call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
       \ 'completor': 'easycomplete#sources#py#completor',
-      \ 'constructor' :'easycomplete#sources#py#constructor'
+      \ 'constructor' :'easycomplete#sources#py#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition'
       \  })
 
   call easycomplete#RegisterSource({

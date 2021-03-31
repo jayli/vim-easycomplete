@@ -1,4 +1,4 @@
-" Log log#log() authored by jayli bachi@taobao.com
+" Log easycomplete#log#log() authored by jayli bachi@taobao.com
 " Useage
 "   - Command
 "     - Log {stn} : show low at window

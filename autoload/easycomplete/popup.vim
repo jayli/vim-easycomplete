@@ -95,7 +95,7 @@ function! s:check(info)
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
 
-  let opt = { 
+  let opt = {
         \ 'focusable': v:true,
         \ 'width': prevw_width,
         \ 'height': prevw_height,
