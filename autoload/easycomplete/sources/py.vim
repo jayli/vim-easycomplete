@@ -3,24 +3,22 @@ if get(g:, 'easycomplete_sources_py')
 endif
 let g:easycomplete_sources_py = 1
 
-
 function! easycomplete#sources#py#constructor(opt, ctx)
   if executable('pyls')
     " pip install python-language-server
-    " au User lsp_setup call lsp#register_server({
-    call lsp#register_server({
+    call easycomplete#lsp#register_server({
           \ 'name': 'pyls',
           \ 'cmd': {server_info->['pyls']},
           \ 'allowlist': ['python'],
           \ })
   endif
-  if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
-  " call s:on_lsp_buffer_enabled()
+  " if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
 endfunction
 
 function! easycomplete#sources#py#completor(opt, ctx) abort
   " call lsp#omni#completor()
   let l:info = s:find_complete_servers()
+  echom l:info['server_names']
   if empty(l:info['server_names'])
     return []
   endif
@@ -31,8 +29,10 @@ endfunction
 
 function! s:find_complete_servers() abort
   let l:server_names = []
-  for l:server_name in lsp#get_allowed_servers()
-    let l:init_capabilities = lsp#get_server_capabilities(l:server_name)
+  for l:server_name in easycomplete#lsp#get_allowed_servers()
+    " TODO here 这里 get_server_capabilities 函数得到的是空对象 {}，看上去是
+    " pyls没有初始化好，跟上次pyls没装对的现象有点像
+    let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
     if has_key(l:init_capabilities, 'completionProvider')
       " TODO: support triggerCharacters
       call add(l:server_names, l:server_name)
@@ -44,11 +44,11 @@ endfunction
 
 function! s:send_completion_request(info) abort
   let l:server_name = a:info['server_names'][0]
-  call lsp#send_request(l:server_name, {
+  call easycomplete#lsp#send_request(l:server_name, {
         \ 'method': 'textDocument/completion',
         \ 'params': {
-        \   'textDocument': lsp#get_text_document_identifier(),
-        \   'position': lsp#get_position(),
+        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
+        \   'position': easycomplete#lsp#get_position(),
         \   'context': { 'triggerKind': 1 },
         \ },
         \ 'on_notification': function('s:handle_omnicompletion', [l:server_name]),
@@ -56,7 +56,7 @@ function! s:send_completion_request(info) abort
 endfunction
 
 function! s:handle_omnicompletion(server_name, data) abort
-  if lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
+  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
     echom "error jayli"
     return
   endif
@@ -114,7 +114,7 @@ function! s:GetVimCompletionItems(response)
     endif
 
     if l:expandable
-      let l:vim_complete_item['word'] = lsp#utils#make_valid_word(substitute(l:vim_complete_item['word'], '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g'))
+      let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(substitute(l:vim_complete_item['word'], '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g'))
       let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']

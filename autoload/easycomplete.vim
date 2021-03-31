@@ -30,7 +30,7 @@ function! s:InitLocalVars()
   " menuitems will be set to [] after CompleteDone
   let g:easycomplete_menuitems = []
   " Record v:event.complete_item for pum, to checkout if there is an item
-  " selected in pum 
+  " selected in pum
   let g:easycomplete_completed_item = {}
 
   " HACK: To avoid trigger completedone event after going back from last item
