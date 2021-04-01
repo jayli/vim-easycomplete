@@ -60,6 +60,7 @@ augroup EasyCompleteRegistSources
   "     \ 'constructor' :'easycomplete#sources#vim#constructor'
   "     \  })
 
+  " easycompelte#lsp
   call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
@@ -67,6 +68,15 @@ augroup EasyCompleteRegistSources
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition'
       \  })
+
+  " " vim-lsp
+  " call easycomplete#RegisterSource({
+  "     \ 'name': 'python',
+  "     \ 'whitelist': ['py','python'],
+  "     \ 'completor': 'easycomplete#sources#python#completor',
+  "     \ 'constructor' :'easycomplete#sources#python#constructor',
+  "     \ 'gotodefinition': 'easycomplete#sources#python#GotoDefinition'
+  "     \  })
 
   call easycomplete#RegisterSource({
       \ 'name': 'go',

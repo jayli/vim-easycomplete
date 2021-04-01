@@ -97,6 +97,8 @@ function! easycomplete#Enable()
   call s:SetupCompleteCache()
   " Setup Pmenu hl
   call easycomplete#ui#setScheme()
+
+  call easycomplete#lsp#enable()
 endfunction
 
 function! easycomplete#GetBindingKeys()

@@ -52,7 +52,7 @@ function! s:lsp_text_edit_item_to_vim(uri, text_edit, cache) abort
         return v:null
     endif
 
-    let l:path = lsp#utils#uri_to_path(a:uri)
+    let l:path = easycomplete#lsp#utils#uri_to_path(a:uri)
     let l:range = a:text_edit['range']
     let [l:line, l:col] = easycomplete#lsp#utils#position#lsp_to_vim(l:path, l:range['start'])
 
@@ -99,7 +99,7 @@ function! s:_apply(bufnr, text_edit, cursor_position) abort
 
     " fixendofline
     let l:buffer_length = len(getbufline(a:bufnr, '^', '$'))
-    let l:should_fixendofline = lsp#utils#buffer#_get_fixendofline(a:bufnr)
+    " let l:should_fixendofline = lsp#utils#buffer#_get_fixendofline(a:bufnr)
     let l:should_fixendofline = getbufvar(a:bufnr, '&endofline') || getbufvar(a:bufnr, '&fixendofline')
     let l:should_fixendofline = l:should_fixendofline && l:new_lines[-1] ==# ''
     let l:should_fixendofline = l:should_fixendofline && l:buffer_length <= a:text_edit['range']['end']['line']
@@ -173,7 +173,7 @@ function! s:_check(text_edits) abort
       \   l:range.end.line == l:text_edit.range.start.line &&
       \   l:range.end.character > l:text_edit.range.start.character
       \ )
-        call lsp#log('text_edit: range overlapped.')
+        echom 'text_edit: range overlapped.'
       endif
       let l:range = l:text_edit.range
     endfor
