@@ -479,17 +479,22 @@ endfunction
 function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
   call s:ResetCompleteTaskQueue()
-  for item in keys(g:easycomplete_source)
-    if s:CompleteSourceReady(item)
-      let l:cprst = s:CallCompeltorByName(item, l:ctx)
-      if l:cprst == v:true " true: go on
-        continue
-      else
-        call s:LetCompleteTaskQueueAllDone()
-        break " false: break, only use for directory matching
+  try
+    for item in keys(g:easycomplete_source)
+      if s:CompleteSourceReady(item)
+        let l:cprst = s:CallCompeltorByName(item, l:ctx)
+        if l:cprst == v:true " true: go on
+          continue
+        else
+          call s:LetCompleteTaskQueueAllDone()
+          break " false: break, only use for directory matching
+        endif
       endif
-    endif
-  endfor
+    endfor
+  catch
+    echom v:exception
+    call s:flush()
+  endtry
 endfunction
 
 function! s:ConstructorCalling(...)
@@ -700,6 +705,7 @@ function! easycomplete#CompleteAdd(menu_list)
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
+
   " FirstComplete will sort complete result just like YCM and coc.
   let typing_word = s:GetTypingWord()
   let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")
@@ -1016,14 +1022,8 @@ function! s:NotInsertMode()
   return call('easycomplete#util#NotInsertMode', a:000)
 endfunction
 
-function! s:log(msg)
-  echohl MoreMsg
-  echom '>>> '. string(a:msg)
-  echohl NONE
-endfunction
-
-function! easycomplete#log(msg)
-  call s:log(a:msg)
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
 
 function! s:loglog(...)

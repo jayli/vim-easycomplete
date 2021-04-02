@@ -334,8 +334,10 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     endfor
 
     " hack for vim popup menu scrollbar
-    if t_info[-1] ==# ""
-      unlet t_info[len(t_info)-1]
+    if len(t_info) >= 2
+      if t_info[-1] ==# ""
+        unlet t_info[len(t_info)-1]
+      endif
     endif
     return t_info
   endif
@@ -370,8 +372,67 @@ function! easycomplete#util#GetTypingWord()
   return word
 endfunction
 
+function! easycomplete#util#LspType(c_type)
+  let l:kinds = {
+      \ 'Text' : 1,
+      \ 'Method' : 2,
+      \ 'Function' : 3,
+	    \ 'Constructor' : 4,
+      \ 'Field' : 5,
+      \ 'Variable' : 6,
+      \ 'Class' : 7,
+      \ 'Interface' : 8,
+      \ 'Module' : 9,
+      \ 'Property' : 10,
+      \ 'Unit' : 11,
+      \ 'Value' : 12,
+      \ 'Enum' : 13,
+      \ 'Keyword' : 14,
+      \ 'Snippet' : 15,
+      \ 'Color' : 16,
+      \ 'File' : 17,
+      \ 'Reference' : 18,
+      \ 'Folder' : 19,
+      \ 'EnumMember' : 20,
+      \ 'Constant' : 21,
+      \ 'Struct' : 22,
+      \ 'Event' : 23,
+      \ 'Operator' : 24,
+      \ 'TypeParameter' : 25
+      \ }
+  let l:type = ""
+  for item in keys(l:kinds)
+    if a:c_type == l:kinds[item]
+      let l:type = tolower(item[0])
+      break
+    endif
+  endfor
+  return l:type
+endfunction
+
 function! s:log(msg)
-  call easycomplete#log(a:msg)
+  call easycomplete#util#log(a:msg)
+endfunction
+
+function! easycomplete#util#log(...)
+  let l:args = a:000
+  let l:res = ""
+  if empty(a:000)
+    let l:res = ""
+  elseif len(a:000) == 1
+    if index([2,7], type(a:000))
+      let l:res = string(a:1)
+    else
+      let l:res = a:1
+    endif
+  else
+    for item in l:args
+      let l:res = l:res . " " . json_encode(item)
+    endfor
+  endif
+  echohl MoreMsg
+  echom '>>> '. l:res
+  echohl NONE
 endfunction
 
 " for tsserver only

@@ -1,6 +1,5 @@
 
 function! easycomplete#sources#snips#completor(opt, ctx)
-
   let l:typing = a:ctx['typing']
   if index(['.','/',':'], a:ctx['char']) >= 0
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])

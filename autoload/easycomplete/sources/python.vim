@@ -30,8 +30,6 @@ endfunction
 function! s:find_complete_servers() abort
   let l:server_names = []
   for l:server_name in lsp#get_allowed_servers()
-    " TODO here 这里 get_server_capabilities 函数得到的是空对象 {}，看上去是
-    " pyls没有初始化好，跟上次pyls没装对的现象有点像
     let l:init_capabilities = lsp#get_server_capabilities(l:server_name)
     if has_key(l:init_capabilities, 'completionProvider')
       " TODO: support triggerCharacters

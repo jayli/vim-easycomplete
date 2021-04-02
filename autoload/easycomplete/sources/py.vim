@@ -16,10 +16,11 @@ function! easycomplete#sources#py#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#py#completor(opt, ctx) abort
-  " call lsp#omni#completor()
   let l:info = s:find_complete_servers()
+  let l:ctx = easycomplete#context()
   if empty(l:info['server_names'])
-    return []
+    call easycomplete#complete('py', l:ctx, l:ctx['startcol'], [])
+    return v:true
   endif
 
   call s:send_completion_request(l:info)
@@ -43,6 +44,7 @@ endfunction
 
 function! s:send_completion_request(info) abort
   let l:server_name = a:info['server_names'][0]
+
   call easycomplete#lsp#send_request(l:server_name, {
         \ 'method': 'textDocument/completion',
         \ 'params': {
@@ -55,7 +57,9 @@ function! s:send_completion_request(info) abort
 endfunction
 
 function! s:handle_completion(server_name, data) abort
+  let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
+    call easycomplete#complete('py', l:ctx, l:ctx['startcol'], [])
     echom "error jayli"
     return
   endif
@@ -63,10 +67,6 @@ function! s:handle_completion(server_name, data) abort
   let l:result = s:get_completion_result(a:server_name, a:data)
   let l:matches = l:result['matches']
 
-  echom '--'
-  echom l:matches
-
-  let l:ctx = easycomplete#context()
   call easycomplete#complete('py', l:ctx, l:ctx['startcol'], l:matches)
 endfunction
 
@@ -76,13 +76,12 @@ function! s:get_completion_result(server_name, data) abort
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
-  " echom l:response
 
-  " let l:completion_result = lsp#omni#get_vim_completion_items(l:options)
   let l:completion_result = s:GetVimCompletionItems(l:response)
 
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
+
 
 function! s:GetVimCompletionItems(response)
   let l:result = a:response['result']
@@ -101,7 +100,7 @@ function! s:GetVimCompletionItems(response)
   for l:completion_item in l:items
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
     let l:vim_complete_item = {
-          \ 'kind': get(l:completion_item, 'kind', ''),
+          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
           \ 'dup': 1,
           \ 'menu' : "[PY]",
           \ 'empty': 1,
@@ -131,8 +130,22 @@ function! s:GetVimCompletionItems(response)
 endfunction
 
 function! s:NormalizeInfo(info)
-  let li = split(a:info, "\n")
-  return li
+  let l:li = split(a:info, "\n")
+  let l:str = []
+
+  for item in l:li
+    if item ==# ''
+      call add(l:str, item)
+    else
+      if len(l:str) == 0
+        call add(l:str, item)
+      else
+        let l:old = l:str[len(l:str) - 1]
+        let l:str[len(l:str) - 1] = l:old . " " . item
+      endif
+    endif
+  endfor
+  return l:str
 endfunction
 
 function! easycomplete#sources#py#GotoDefinition(...)
@@ -172,4 +185,8 @@ function! s:on_lsp_buffer_enabled() abort
   " autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
 
   " refer to doc to add more commands
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction

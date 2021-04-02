@@ -234,6 +234,7 @@ function! easycomplete#lsp#send_request(server_name, request) abort
         \ 'request': copy(a:request),
         \ 'cb': has_key(a:request, 'on_notification') ? a:request['on_notification'] : function('s:Noop'),
         \ }
+
     let l:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
         \ easycomplete#lsp#request(a:server_name, a:request),
         \ easycomplete#lsp#callbag#subscribe({
@@ -304,6 +305,40 @@ function! s:request_create(ctx, next, error, complete) abort
         \ {s->s:is_step_error(s) ? s:request_error(a:ctx, s.result[0]) : s:request_send(a:ctx) },
         \ ])
   return function('s:request_cancel', [a:ctx])
+endfunction
+
+function! s:request_cancel(ctx) abort
+  if a:ctx['cancelled'] | return | endif
+  let a:ctx['cancelled'] = 1
+  if a:ctx['request_id'] <= 0 || a:ctx['done'] | return | endif " we have not made the request yet or request is complete, so nothing to cancel
+  if easycomplete#lsp#get_server_status(a:ctx['server_name']) !=# 'running' | return | endif " if server is not running we cant send the request
+  " send the actual cancel request
+  let a:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
+        \ easycomplete#lsp#notification(a:ctx['server_name'], {
+        \   'method': '$/cancelRequest',
+        \   'params': { 'id': a:ctx['request_id'] },
+        \ }),
+        \ easycomplete#lsp#callbag#subscribe({
+        \   'error':{e->s:send_request_dispose(a:ctx)},
+        \   'complete':{->s:send_request_dispose(a:ctx)},
+        \ })
+        \)
+endfunction
+
+function! easycomplete#lsp#notification(server_name, request) abort
+  return easycomplete#lsp#callbag#lazy(function('s:send_notification', [a:server_name, a:request]))
+endfunction
+
+" Returns the current status of all servers (if called with no arguments) or
+" the given server (if given an argument). Can be one of "unknown server",
+" "exited", "starting", "failed", "running", "not running"
+function! easycomplete#lsp#get_server_status(...) abort
+  if a:0 == 0
+    let l:strs = map(keys(s:servers), {k, v -> v . ': ' . s:server_status(v)})
+    return join(l:strs, "\n")
+  else
+    return s:server_status(a:1)
+  endif
 endfunction
 
 function! s:request_send(ctx) abort
@@ -475,7 +510,7 @@ function! s:text_changes(buf, server_name) abort
     " compute diff
     let l:old_content = s:get_last_file_content(a:buf, a:server_name)
     let l:new_content = s:get_lines(a:buf)
-    let l:changes = lsp#utils#diff#compute(l:old_content, l:new_content)
+    let l:changes = s:diff_compute(l:old_content, l:new_content)
     if empty(l:changes.text) && l:changes.rangeLength ==# 0
       return []
     endif
@@ -1203,4 +1238,113 @@ endfunction
 
 function! s:get_symbol_kinds() abort
     return map(keys(s:default_symbol_kinds), {idx, key -> str2nr(key)})
+endfunction
+
+function! s:diff_compute(old, new) abort
+  let [l:start_line, l:start_char] = s:FirstDifference(a:old, a:new)
+  let [l:end_line, l:end_char] =
+      \ s:LastDifference(a:old[l:start_line :], a:new[l:start_line :], l:start_char)
+
+  let l:text = s:ExtractText(a:new, l:start_line, l:start_char, l:end_line, l:end_char)
+  let l:length = s:Length(a:old, l:start_line, l:start_char, l:end_line, l:end_char)
+
+  let l:adj_end_line = len(a:old) + l:end_line
+  let l:adj_end_char = l:end_line == 0 ? 0 : strchars(a:old[l:end_line]) + l:end_char + 1
+
+  let l:result = { 'range': {'start': {'line': l:start_line, 'character': l:start_char},
+      \ 'end': {'line': l:adj_end_line, 'character': l:adj_end_char}},
+      \ 'text': l:text,
+      \ 'rangeLength': l:length,
+      \}
+
+  return l:result
+endfunction
+
+" Finds the line and character of the first different character between two
+" list of Strings.
+function! s:FirstDifference(old, new) abort
+  let l:line_count = min([len(a:old), len(a:new)])
+  if l:line_count == 0 | return [0, 0] | endif
+  for l:i in range(l:line_count)
+    if a:old[l:i] !=# a:new[l:i] | break | endif
+  endfor
+  if l:i >= l:line_count
+    return [l:line_count - 1, strchars(a:old[l:line_count - 1])]
+  endif
+  let l:old_line = a:old[l:i]
+  let l:new_line = a:new[l:i]
+  let l:length = min([strchars(l:old_line), strchars(l:new_line)])
+  let l:j = 0
+  while l:j < l:length
+    if strgetchar(l:old_line, l:j) != strgetchar(l:new_line, l:j) | break | endif
+    let l:j += 1
+  endwhile
+  return [l:i, l:j]
+endfunction
+
+function! s:LastDifference(old, new, start_char) abort
+  let l:line_count = min([len(a:old), len(a:new)])
+  if l:line_count == 0 | return [0, 0] | endif
+	for l:i in range(-1, -1 * l:line_count, -1)
+	  if a:old[l:i] !=# a:new[l:i] | break | endif
+	endfor
+  if l:i <= -1 * l:line_count
+    let l:i = -1 * l:line_count
+    let l:old_line = strcharpart(a:old[l:i], a:start_char)
+    let l:new_line = strcharpart(a:new[l:i], a:start_char)
+  else
+    let l:old_line = a:old[l:i]
+    let l:new_line = a:new[l:i]
+  endif
+  let l:old_line_length = strchars(l:old_line)
+  let l:new_line_length = strchars(l:new_line)
+  let l:length = min([l:old_line_length, l:new_line_length])
+  let l:j = -1
+  while l:j >= -1 * l:length
+    if  strgetchar(l:old_line, l:old_line_length + l:j) !=
+        \ strgetchar(l:new_line, l:new_line_length + l:j)
+      break
+    endif
+    let l:j -= 1
+  endwhile
+  return [l:i, l:j]
+endfunction
+
+function! s:ExtractText(lines, start_line, start_char, end_line, end_char) abort
+  if a:start_line == len(a:lines) + a:end_line
+    if a:end_line == 0 | return '' | endif
+    let l:line = a:lines[a:start_line]
+    let l:length = strchars(l:line) + a:end_char - a:start_char + 1
+    return strcharpart(l:line, a:start_char, l:length)
+  endif
+  let l:result = strcharpart(a:lines[a:start_line], a:start_char) . "\n"
+  for l:line in a:lines[a:start_line + 1:a:end_line - 1]
+    let l:result .= l:line . "\n"
+  endfor
+  if a:end_line != 0
+    let l:line = a:lines[a:end_line]
+    let l:length = strchars(l:line) + a:end_char + 1
+    let l:result .= strcharpart(l:line, 0, l:length)
+  endif
+  return l:result
+endfunction
+
+function! s:Length(lines, start_line, start_char, end_line, end_char) abort
+  let l:adj_end_line = len(a:lines) + a:end_line
+  if l:adj_end_line >= len(a:lines)
+    let l:adj_end_char = a:end_char - 1
+  else
+    let l:adj_end_char = strchars(a:lines[l:adj_end_line]) + a:end_char
+  endif
+  if a:start_line == l:adj_end_line
+    return l:adj_end_char - a:start_char + 1
+  endif
+  let l:result = strchars(a:lines[a:start_line]) - a:start_char + 1
+  let l:line = a:start_line + 1
+  while l:line < l:adj_end_line
+    let l:result += strchars(a:lines[l:line]) + 1
+    let l:line += 1
+  endwhile
+  let l:result += l:adj_end_char + 1
+  return l:result
 endfunction

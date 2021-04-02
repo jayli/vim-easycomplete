@@ -47,7 +47,7 @@ EasyComplete 默认支持 Go、JS/TS、Python 补全，每种语言需要单独�
 
 - JS/TS 补全需要安装 tsserver，`npm -g install typescript`
 - Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
-- Python 补全需要安装 [Jedi](https://pypi.org/project/jedi/)：`pip3 install jedi` （TODO）
+- Python 补全需要安装 pyls：`pip install python-language-server`
 
 其他补全可以自己开发插件
 
