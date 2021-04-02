@@ -1304,3 +1304,4 @@ function! s:Length(lines, start_line, start_char, end_line, end_char) abort
   let l:result += l:adj_end_char + 1
   return l:result
 endfunction
+

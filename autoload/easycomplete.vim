@@ -1224,6 +1224,68 @@ function! s:NormalizeLSPInfo(info)
   return l:str
 endfunction
 
+" LSP definition 跳转的通用封装
+function! easycomplete#DoLspDefinition(file_exts)
+  let ext = tolower(easycomplete#util#extention())
+  if index(a:file_exts, ext) >= 0
+    call easycomplete#LspDefinition('definition')
+    return v:true
+  endif
+  " exec "tag ". expand('<cword>')
+  " 未成功跳转，则交给主进程处理
+  return v:false
+endfunction
+
+" LSP 的 GoToDefinition
+function! easycomplete#LspDefinition(method) abort
+  " typeDefinition => type definition
+  let l:operation = substitute(a:method, '\u', ' \l\0', 'g')
+  let l:server = easycomplete#FindLspCompleteServers()['server_names'][0]
+  let l:ctx = { 'counter': len(l:server), 'list':[], 'jump_if_one': 1, 'mods': '', 'in_preview': 0 }
+
+  let l:params = {
+        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
+        \   'position': easycomplete#lsp#get_position(),
+        \ }
+  call easycomplete#lsp#send_request(l:server, {
+        \ 'method': 'textDocument/' . a:method,
+        \ 'params': l:params,
+        \ 'on_notification': function('s:handle_location', [l:ctx, l:server, l:operation]),
+        \ })
+
+  echo printf('Retrieving %s ...', l:operation)
+endfunction
+
+function! s:handle_location(ctx, server, type, data) abort "ctx = {counter, list, last_command_id, jump_if_one, mods, in_preview}
+  if easycomplete#lsp#client#is_error(a:data['response']) || !has_key(a:data['response'], 'result')
+    call s:log('Failed to retrieve '. a:type . ' for ' . a:server .
+          \ ': ' . easycomplete#lsp#client#error_message(a:data['response']))
+  else
+    let a:ctx['list'] = a:ctx['list'] + easycomplete#lsp#utils#location#_lsp_to_vim_list(a:data['response']['result'])
+  endif
+
+  if empty(a:ctx['list'])
+    call easycomplete#lsp#utils#error('No ' . a:type .' found')
+  else
+    call easycomplete#util#UpdateTagStack()
+
+    let l:loc = a:ctx['list'][0]
+
+    if len(a:ctx['list']) == 1 && a:ctx['jump_if_one'] && !a:ctx['in_preview']
+      call easycomplete#lsp#utils#location#_open_vim_list_item(l:loc, a:ctx['mods'])
+      echo 'Retrieved ' . a:type
+      redraw
+    elseif !a:ctx['in_preview']
+      call setqflist([])
+      call setqflist(a:ctx['list'])
+      echo 'Retrieved ' . a:type
+      botright copen
+    else
+      " do nothing
+    endif
+  endif
+endfunction
+
 
 " Global API
 " easycomplete#CheckContextSequence
