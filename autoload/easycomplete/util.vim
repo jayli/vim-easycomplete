@@ -481,3 +481,14 @@ function! easycomplete#util#NormalizeEntryDetail(item)
 
   return [l:title] + l:desp_list + l:doc_list
 endfunction
+
+" b 字符在 a 中出现的次数
+function! easycomplete#util#contains(a, b)
+  let l:count = 0
+  for item in str2list(a:a)
+    if item == char2nr(a:b)
+      let l:count += 1
+    endif
+  endfor
+  return l:count
+endfunction

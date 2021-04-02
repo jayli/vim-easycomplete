@@ -37,24 +37,6 @@ function! easycomplete#lsp#callbag#pipe(...) abort
 endfunction
 " }}}
 
-" operate() {{{
-function! easycomplete#lsp#callbag#operate(...) abort
-    let l:data = { 'cbs': a:000 }
-    return function('s:operateFactory', [l:data])
-endfunction
-
-function! s:operateFactory(data, src) abort
-    let l:Res = a:src
-    let l:n = len(a:data['cbs'])
-    let l:i = 0
-    while l:i < l:n
-        let l:Res = a:data['cbs'][l:i](l:Res)
-        let l:i = l:i + 1
-    endwhile
-    return l:Res
-endfunction
-" }}}
-
 " makeSubject() {{{
 function! easycomplete#lsp#callbag#makeSubject() abort
     let l:data = { 'sinks': [] }
@@ -1206,15 +1188,6 @@ function! s:flattenInnerSourceCallback(data, t, d) abort
             call a:data['outerTalkback'](1, easycomplete#lsp#callbag#undefined())
         endif
     endif
-endfunction
-" }}}
-
-" flatMap() {{{
-function! easycomplete#lsp#callbag#flatMap(F) abort
-    return easycomplete#lsp#callbag#operate(
-        \ easycomplete#lsp#callbag#map(a:F),
-        \ easycomplete#lsp#callbag#flatten(),
-        \ )
 endfunction
 " }}}
 

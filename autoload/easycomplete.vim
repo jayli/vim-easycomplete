@@ -121,6 +121,8 @@ function! s:BindingTypingCommandOnce()
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
+  inoremap <expr> <Up> easycomplete#Up()
+  inoremap <expr> <Down> easycomplete#Down()
 
   augroup easycomplete#NormalBinding
     autocmd!
@@ -159,6 +161,10 @@ endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
+  echom v:completed_item
+  if empty(v:completed_item) && s:zizzing()
+    return
+  endif
   let l:char = easycomplete#context()["char"]
   " exit on None ASCII typing
   if char2nr(l:char) < 33 || char2nr(l:char) > 126
@@ -233,6 +239,7 @@ function! easycomplete#CompleteDone()
     return
   endif
   if pumvisible() || empty(v:completed_item)
+    call s:zizz()
     return
   endif
 
@@ -266,6 +273,20 @@ endfunction
 
 function! easycomplete#IsBacking()
   return s:zizzing()
+endfunction
+
+function! easycomplete#Up()
+  if pumvisible()
+    call s:zizz()
+  endif
+  return "\<Up>"
+endfunction
+
+function! easycomplete#Down()
+  if pumvisible()
+    call s:zizz()
+  endif
+  return "\<Down>"
 endfunction
 
 function! easycomplete#backing()
@@ -529,8 +550,9 @@ function! easycomplete#CompleteChanged()
   call easycomplete#SetCompletedItem(item)
   " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
   " Here we check zizzing from CompleteTypingMatch to stop recursive call.
+  
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-        \ && !easycomplete#CompleteCursored()
+        " \ && !easycomplete#CompleteCursored()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
@@ -749,7 +771,9 @@ endfunction
 
 function! s:SortTextComparatorByLength(entry1, entry2)
   if has_key(a:entry1, "word") && has_key(a:entry2, "word")
-    if strlen(a:entry1.word) > strlen(a:entry2.word)
+    let k1 = has_key(a:entry1, "abbr") ? a:entry1.abbr : a:entry1.word
+    let k2 = has_key(a:entry2, "abbr") ? a:entry2.abbr : a:entry2.word
+    if strlen(k1) > strlen(k2)
       return v:true
     else
       return v:false
@@ -761,7 +785,12 @@ endfunction
 function! s:SortTextComparatorByAlphabet(entry1, entry2)
   " return v:true
   if has_key(a:entry1, "word") && has_key(a:entry2, "word")
-    if a:entry1.word > a:entry2.word
+    let k1 = has_key(a:entry1, "abbr") ? a:entry1.abbr : a:entry1.word
+    let k2 = has_key(a:entry2, "abbr") ? a:entry2.abbr : a:entry2.word
+    if match(k1, "_") == 0
+      return v:true
+    endif
+    if k1 > k2
       return v:true
     else
       return v:false
@@ -872,7 +901,7 @@ function! s:LetCompleteTaskQueueAllDone()
 endfunction
 
 " ----------------------------------------------------------------------
-"  Util Method
+"  Util Method 常用的工具函数
 " ----------------------------------------------------------------------
 
 function! s:SnipSupports()
@@ -1029,6 +1058,172 @@ endfunction
 function! s:loglog(...)
   return call('easycomplete#log#log', a:000)
 endfunction
+
+" ----------------------------------------------------------------------
+" LSP 专用工具函数
+" 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
+" 工具函数主要是给 easycomplete 的插件用的通用方法
+" vim-lsp 源码非常脏乱差，命名不讲究，而且冗余很大，这里只做了初步精简
+" ----------------------------------------------------------------------
+
+" LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
+function! easycomplete#DoLspComplete(opt, ctx)
+  let l:info = easycomplete#FindLspCompleteServers()
+  let l:ctx = easycomplete#context()
+  if empty(l:info['server_names'])
+    call easycomplete#complete(a:opt['name'], l:ctx, l:ctx['startcol'], [])
+    return v:true
+  endif
+  call easycomplete#LspCompleteRequest(l:info, a:opt['name'])
+  return v:true
+endfunction
+
+" 原 s:send_completion_request(info)
+" info: lsp server 信息
+" plugin_name: 插件的名字，比如 py, ts
+function! easycomplete#LspCompleteRequest(info, plugin_name) abort
+  let l:server_name = a:info['server_names'][0]
+
+  call easycomplete#lsp#send_request(l:server_name, {
+        \ 'method': 'textDocument/completion',
+        \ 'params': {
+        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
+        \   'position': easycomplete#lsp#get_position(),
+        \   'context': { 'triggerKind': 1 }
+        \ },
+        \ 'on_notification': function('s:handle_completion', [l:server_name, a:plugin_name])
+        \ })
+endfunction
+
+" s:find_complete_servers() 获取 LSP Complete Server 信息
+function! easycomplete#FindLspCompleteServers() abort
+  let l:server_names = []
+  for l:server_name in easycomplete#lsp#get_allowed_servers()
+    let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
+    if has_key(l:init_capabilities, 'completionProvider')
+      " TODO: support triggerCharacters
+      call add(l:server_names, l:server_name)
+    endif
+  endfor
+
+  return { 'server_names': l:server_names }
+endfunction
+
+function! s:handle_completion(server_name, plugin_name, data) abort
+  let l:ctx = easycomplete#context()
+  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
+    call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
+    echom "error jayli"
+    return
+  endif
+
+  let l:result = s:get_completion_result(a:server_name, a:data, a:plugin_name)
+  let l:matches = l:result['matches']
+
+  try
+    let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByLength")
+    let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByAlphabet")
+  catch
+    echom v:exception
+  endtry
+
+  call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
+endfunction
+
+function! s:get_completion_result(server_name, data, plugin_name) abort
+  let l:result = a:data['response']['result']
+
+  let l:response = a:data['response']
+
+  " 这里包含了 info document 和 matches
+
+  let l:completion_result = s:GetVimCompletionItems(l:response, a:plugin_name)
+
+  return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
+endfunction
+
+function! s:GetVimCompletionItems(response, plugin_name)
+  let l:result = a:response['result']
+  if type(l:result) == type([])
+    let l:items = l:result
+    let l:incomplete = 0
+  elseif type(l:result) == type({})
+    let l:items = l:result['items']
+    let l:incomplete = l:result['isIncomplete']
+  else
+    let l:items = []
+    let l:incomplete = 0
+  endif
+
+  let l:vim_complete_items = []
+  for l:completion_item in l:items
+    let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
+    let l:vim_complete_item = {
+          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
+          \ 'dup': 1,
+          \ 'menu' : "[". toupper(a:plugin_name) ."]",
+          \ 'empty': 1,
+          \ 'icase': 1,
+          \ }
+
+    " 如果 label 中包含括号 且过长
+    if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
+      if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
+        let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
+      endif
+    endif
+
+    if has_key(l:completion_item, 'textEdit') &&
+          \ type(l:completion_item['textEdit']) == type({}) &&
+          \ has_key(l:completion_item['textEdit'], 'nextText')
+      let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
+    elseif has_key(l:completion_item, 'insertText') && !empty(l:completion_item['insertText'])
+      let l:vim_complete_item['word'] = l:completion_item['insertText']
+    else
+      let l:vim_complete_item['word'] = l:completion_item['label']
+    endif
+
+    if l:expandable
+      let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
+            \ substitute(l:vim_complete_item['word'],
+            \ '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g'))
+      let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
+    else
+      let l:vim_complete_item['abbr'] = l:completion_item['label']
+    endif
+
+    let l:t_info = s:NormalizeLSPInfo(get(l:completion_item, "documentation", ""))
+    if !empty(get(l:completion_item, "detail", ""))
+      let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
+    else
+      let l:vim_complete_item['info'] = l:t_info
+    endif
+
+    let l:vim_complete_items += [l:vim_complete_item]
+  endfor
+
+  return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
+endfunction
+
+function! s:NormalizeLSPInfo(info)
+  let l:li = split(a:info, "\n")
+  let l:str = []
+
+  for item in l:li
+    if item ==# ''
+      call add(l:str, item)
+    else
+      if len(l:str) == 0
+        call add(l:str, item)
+      else
+        let l:old = l:str[len(l:str) - 1]
+        let l:str[len(l:str) - 1] = l:old . " " . item
+      endif
+    endif
+  endfor
+  return l:str
+endfunction
+
 
 " Global API
 " easycomplete#CheckContextSequence

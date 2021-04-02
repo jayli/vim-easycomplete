@@ -4,6 +4,7 @@ endif
 let g:easycomplete_sources_py = 1
 
 function! easycomplete#sources#py#constructor(opt, ctx)
+  " 注册 lsp
   if executable('pyls')
     " pip install python-language-server
     call easycomplete#lsp#register_server({
@@ -16,136 +17,7 @@ function! easycomplete#sources#py#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#py#completor(opt, ctx) abort
-  let l:info = s:find_complete_servers()
-  let l:ctx = easycomplete#context()
-  if empty(l:info['server_names'])
-    call easycomplete#complete('py', l:ctx, l:ctx['startcol'], [])
-    return v:true
-  endif
-
-  call s:send_completion_request(l:info)
-  return v:true
-endfunction
-
-function! s:find_complete_servers() abort
-  let l:server_names = []
-  for l:server_name in easycomplete#lsp#get_allowed_servers()
-    " TODO here 这里 get_server_capabilities 函数得到的是空对象 {}，看上去是
-    " pyls没有初始化好，跟上次pyls没装对的现象有点像
-    let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
-    if has_key(l:init_capabilities, 'completionProvider')
-      " TODO: support triggerCharacters
-      call add(l:server_names, l:server_name)
-    endif
-  endfor
-
-  return { 'server_names': l:server_names }
-endfunction
-
-function! s:send_completion_request(info) abort
-  let l:server_name = a:info['server_names'][0]
-
-  call easycomplete#lsp#send_request(l:server_name, {
-        \ 'method': 'textDocument/completion',
-        \ 'params': {
-        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-        \   'position': easycomplete#lsp#get_position(),
-        \   'context': { 'triggerKind': 1 }
-        \ },
-        \ 'on_notification': function('s:handle_completion', [l:server_name])
-        \ })
-endfunction
-
-function! s:handle_completion(server_name, data) abort
-  let l:ctx = easycomplete#context()
-  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
-    call easycomplete#complete('py', l:ctx, l:ctx['startcol'], [])
-    echom "error jayli"
-    return
-  endif
-
-  let l:result = s:get_completion_result(a:server_name, a:data)
-  let l:matches = l:result['matches']
-
-  call easycomplete#complete('py', l:ctx, l:ctx['startcol'], l:matches)
-endfunction
-
-function! s:get_completion_result(server_name, data) abort
-  let l:result = a:data['response']['result']
-
-  let l:response = a:data['response']
-
-  " 这里包含了 info document 和 matches
-
-  let l:completion_result = s:GetVimCompletionItems(l:response)
-
-  return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
-endfunction
-
-
-function! s:GetVimCompletionItems(response)
-  let l:result = a:response['result']
-  if type(l:result) == type([])
-    let l:items = l:result
-    let l:incomplete = 0
-  elseif type(l:result) == type({})
-    let l:items = l:result['items']
-    let l:incomplete = l:result['isIncomplete']
-  else
-    let l:items = []
-    let l:incomplete = 0
-  endif
-
-  let l:vim_complete_items = []
-  for l:completion_item in l:items
-    let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
-    let l:vim_complete_item = {
-          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
-          \ 'dup': 1,
-          \ 'menu' : "[PY]",
-          \ 'empty': 1,
-          \ 'icase': 1,
-          \ }
-    if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({}) && has_key(l:completion_item['textEdit'], 'nextText')
-      let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
-    elseif has_key(l:completion_item, 'insertText') && !empty(l:completion_item['insertText'])
-      let l:vim_complete_item['word'] = l:completion_item['insertText']
-    else
-      let l:vim_complete_item['word'] = l:completion_item['label']
-    endif
-
-    if l:expandable
-      let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(substitute(l:vim_complete_item['word'], '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g'))
-      let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
-    else
-      let l:vim_complete_item['abbr'] = l:completion_item['label']
-    endif
-
-    let l:vim_complete_item['info'] = s:NormalizeInfo(get(l:completion_item, "documentation", ""))
-
-    let l:vim_complete_items += [l:vim_complete_item]
-  endfor
-
-  return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
-endfunction
-
-function! s:NormalizeInfo(info)
-  let l:li = split(a:info, "\n")
-  let l:str = []
-
-  for item in l:li
-    if item ==# ''
-      call add(l:str, item)
-    else
-      if len(l:str) == 0
-        call add(l:str, item)
-      else
-        let l:old = l:str[len(l:str) - 1]
-        let l:str[len(l:str) - 1] = l:old . " " . item
-      endif
-    endif
-  endfor
-  return l:str
+  return easycomplete#DoLspComplete(a:opt, a:ctx)
 endfunction
 
 function! easycomplete#sources#py#GotoDefinition(...)

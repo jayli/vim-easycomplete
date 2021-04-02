@@ -5,35 +5,37 @@ let s:already_setup = 0
 let s:servers = {} " { lsp_id, server_info, init_callbacks, init_result, buffers: { path: { changed_tick } }
 let s:last_command_id = 0
 let s:notification_callbacks = [] " { name, callback }
+let s:undefined_token = '__callbag_undefined__'
+let s:str_type = type('')
 
 let s:default_symbol_kinds = {
-    \ '1': 'file',
-    \ '2': 'module',
-    \ '3': 'namespace',
-    \ '4': 'package',
-    \ '5': 'class',
-    \ '6': 'method',
-    \ '7': 'property',
-    \ '8': 'field',
-    \ '9': 'constructor',
-    \ '10': 'enum',
-    \ '11': 'interface',
-    \ '12': 'function',
-    \ '13': 'variable',
-    \ '14': 'constant',
-    \ '15': 'string',
-    \ '16': 'number',
-    \ '17': 'boolean',
-    \ '18': 'array',
-    \ '19': 'object',
-    \ '20': 'key',
-    \ '21': 'null',
-    \ '22': 'enum member',
-    \ '23': 'struct',
-    \ '24': 'event',
-    \ '25': 'operator',
-    \ '26': 'type parameter',
-    \ }
+      \ '1': 'file',
+      \ '2': 'module',
+      \ '3': 'namespace',
+      \ '4': 'package',
+      \ '5': 'class',
+      \ '6': 'method',
+      \ '7': 'property',
+      \ '8': 'field',
+      \ '9': 'constructor',
+      \ '10': 'enum',
+      \ '11': 'interface',
+      \ '12': 'function',
+      \ '13': 'variable',
+      \ '14': 'constant',
+      \ '15': 'string',
+      \ '16': 'number',
+      \ '17': 'boolean',
+      \ '18': 'array',
+      \ '19': 'object',
+      \ '20': 'key',
+      \ '21': 'null',
+      \ '22': 'enum member',
+      \ '23': 'struct',
+      \ '24': 'event',
+      \ '25': 'operator',
+      \ '26': 'type parameter',
+      \ }
 
 let s:default_completion_item_kinds = {
       \ '1': 'text',
@@ -77,18 +79,18 @@ let s:default_completion_item_kinds = {
 let s:file_content = {}
 
 augroup lsp_silent
-    autocmd!
-    autocmd User lsp_setup silent
-    autocmd User lsp_register_server silent
-    autocmd User lsp_unregister_server silent
-    autocmd User lsp_server_init silent
-    autocmd User lsp_server_exit silent
-    autocmd User lsp_complete_done silent
-    autocmd User lsp_float_opened silent
-    autocmd User lsp_float_closed silent
-    autocmd User lsp_buffer_enabled silent
-    autocmd User lsp_diagnostics_updated silent
-    autocmd User lsp_progress_updated silent
+  " autocmd!
+  " autocmd User lsp_setup silent
+  " autocmd User lsp_register_server silent
+  " autocmd User lsp_unregister_server silent
+  " autocmd User lsp_server_init silent
+  " autocmd User lsp_server_exit silent
+  " autocmd User lsp_complete_done silent
+  " autocmd User lsp_float_opened silent
+  " autocmd User lsp_float_closed silent
+  " autocmd User lsp_buffer_enabled silent
+  " autocmd User lsp_diagnostics_updated silent
+  " autocmd User lsp_progress_updated silent
 augroup END
 
 function! easycomplete#lsp#enable()
@@ -115,9 +117,9 @@ function! s:register_events() abort
 endfunction
 
 function! s:on_text_document_did_close() abort
-    let l:buf = bufnr('%')
-    if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
-    call s:log('s:on_text_document_did_close()', l:buf)
+  let l:buf = bufnr('%')
+  if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
+  call s:log('s:on_text_document_did_close()', l:buf)
 endfunction
 
 function! s:on_text_document_did_save() abort
@@ -141,7 +143,7 @@ endfunction
 
 function! s:fire_lsp_buffer_enabled(server_name, buf, ...) abort
   if a:buf == bufnr('%')
-    doautocmd <nomodeline> User lsp_buffer_enabled
+    " doautocmd <nomodeline> User lsp_buffer_enabled
   else
     " Not using ++once in autocmd for compatibility of VIM8.0
     let l:cmd = printf('autocmd BufEnter <buffer=%d> doautocmd <nomodeline> User lsp_buffer_enabled', a:buf)
@@ -160,7 +162,7 @@ function! easycomplete#lsp#register_server(server_info) abort
         \ 'buffers': {},
         \ }
   " call s:log('easycomplete#lsp#register_server', 'server registered', l:server_name)
-  doautocmd <nomodeline> User lsp_register_server
+  " doautocmd <nomodeline> User lsp_register_server
 endfunction
 
 function! easycomplete#lsp#get_server_capabilities(server_name) abort
@@ -229,13 +231,13 @@ function! s:Noop(...) abort
 endfunction
 
 function! easycomplete#lsp#send_request(server_name, request) abort
-    let l:ctx = {
+  let l:ctx = {
         \ 'server_name': a:server_name,
         \ 'request': copy(a:request),
         \ 'cb': has_key(a:request, 'on_notification') ? a:request['on_notification'] : function('s:Noop'),
         \ }
 
-    let l:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
+  let l:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
         \ easycomplete#lsp#request(a:server_name, a:request),
         \ easycomplete#lsp#callbag#subscribe({
         \   'next':{d->l:ctx['cb'](d)},
@@ -280,7 +282,7 @@ function! s:subscribeSourceCallback(data, t, d) abort
 endfunction
 
 function! s:isUndefined(d) abort
-    return type(a:d) == s:str_type && a:d ==# s:undefined_token
+  return type(a:d) == s:str_type && a:d ==# s:undefined_token
 endfunction
 
 function! easycomplete#lsp#request(server_name, request) abort
@@ -479,22 +481,22 @@ function! s:ensure_changed(buf, server_name, cb) abort
 endfunction
 
 function! s:get_text_document_change_sync_kind(server_name) abort
-    let l:capabilities = easycomplete#lsp#get_server_capabilities(a:server_name)
-    if !empty(l:capabilities) && has_key(l:capabilities, 'textDocumentSync')
-        if type(l:capabilities['textDocumentSync']) == type({})
-            if  has_key(l:capabilities['textDocumentSync'], 'change') && type(l:capabilities['textDocumentSync']['change']) == type(1)
-                let l:val = l:capabilities['textDocumentSync']['change']
-                return l:val >= 0 && l:val <= 2 ? l:val : 1
-            else
-                return 1
-            endif
-        elseif type(l:capabilities['textDocumentSync']) == type(1)
-            return l:capabilities['textDocumentSync']
-        else
-            return 1
-        endif
+  let l:capabilities = easycomplete#lsp#get_server_capabilities(a:server_name)
+  if !empty(l:capabilities) && has_key(l:capabilities, 'textDocumentSync')
+    if type(l:capabilities['textDocumentSync']) == type({})
+      if  has_key(l:capabilities['textDocumentSync'], 'change') && type(l:capabilities['textDocumentSync']['change']) == type(1)
+        let l:val = l:capabilities['textDocumentSync']['change']
+        return l:val >= 0 && l:val <= 2 ? l:val : 1
+      else
+        return 1
+      endif
+    elseif type(l:capabilities['textDocumentSync']) == type(1)
+      return l:capabilities['textDocumentSync']
+    else
+      return 1
     endif
-    return 1
+  endif
+  return 1
 endfunction
 
 function! s:text_changes(buf, server_name) abort
@@ -948,7 +950,7 @@ function! s:handle_initialize(server_name, data) abort
     call l:Init_callback(a:data)
   endfor
 
-  doautocmd <nomodeline> User lsp_server_init
+  " doautocmd <nomodeline> User lsp_server_init
 endfunction
 
 function! s:send_notification(server_name, data) abort
@@ -1041,52 +1043,6 @@ function! s:shareTalkbackCallback(data, sink, t, d) abort
   endif
 endfunction
 
-function! s:makeSubjectFactory(data, t, d) abort
-  if a:t == 0
-    let l:Sink = a:d
-    call add(a:data['sinks'], l:Sink)
-    call l:Sink(0, function('s:makeSubjectSinkCallback', [a:data, l:Sink]))
-  else
-    let l:zinkz = copy(a:data['sinks'])
-    let l:i = 0
-    let l:n = len(l:zinkz)
-    while l:i < l:n
-      let l:Sink = l:zinkz[l:i]
-      let l:j = -1
-      let l:found = 0
-      for l:Item in a:data['sinks']
-        let l:j += 1
-        if l:Item == l:Sink
-          let l:found = 1
-          break
-        endif
-      endfor
-
-      if l:found
-        call l:Sink(a:t, a:d)
-      endif
-      let l:i += 1
-    endwhile
-  endif
-endfunction
-
-function! s:makeSubjectSinkCallback(data, Sink, t, d) abort
-  if a:t == 2
-    let l:i = -1
-    let l:found = 0
-    for l:Item in a:data['sinks']
-      let l:i += 1
-      if l:Item == a:Sink
-        let l:found = 1
-        break
-      endif
-    endfor
-    if l:found
-      call remove(a:data['sinks'], l:i)
-    endif
-  endif
-endfunction
-
 function! s:new_rpc_success(message, data) abort
   return {
         \ 'response': {
@@ -1138,98 +1094,98 @@ function! s:log(...)
 endfunction
 
 function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
-    " Sorted alphabetically
-    return {
-    \   'textDocument': {
-    \       'codeAction': {
-    \         'dynamicRegistration': v:false,
-    \         'codeActionLiteralSupport': {
-    \           'codeActionKind': {
-    \             'valueSet': ['', 'quickfix', 'refactor', 'refactor.extract', 'refactor.inline', 'refactor.rewrite', 'source', 'source.organizeImports'],
-    \           }
-    \         },
-    \         'disabledSupport': v:true,
-    \       },
-    \       'codeLens': {
-    \           'dynamicRegistration': v:false,
-    \       },
-    \       'completion': {
-    \           'dynamicRegistration': v:false,
-    \           'completionItem': {
-    \              'documentationFormat': ['markdown', 'plaintext'],
-    \              'snippetSupport': v:false,
-    \              'resolveSupport': {
-    \                  'properties': ['additionalTextEdits']
-    \              }
-    \           },
-    \           'completionItemKind': {
-    \              'valueSet': s:get_completion_item_kinds()
-    \           }
-    \       },
-    \       'declaration': {
-    \           'dynamicRegistration': v:false,
-    \           'linkSupport' : v:true
-    \       },
-    \       'definition': {
-    \           'dynamicRegistration': v:false,
-    \           'linkSupport' : v:true
-    \       },
-    \       'documentHighlight': {
-    \           'dynamicRegistration': v:false,
-    \       },
-    \       'documentSymbol': {
-    \           'dynamicRegistration': v:false,
-    \           'symbolKind': {
-    \              'valueSet': s:get_symbol_kinds()
-    \           },
-    \           'hierarchicalDocumentSymbolSupport': v:false,
-    \           'labelSupport': v:false
-    \       },
-    \       'foldingRange': {
-    \           'dynamicRegistration': v:false,
-    \           'lineFoldingOnly': v:true,
-    \           'rangeLimit': 5000,
-    \       },
-    \       'formatting': {
-    \           'dynamicRegistration': v:false,
-    \       },
-    \       'hover': {
-    \           'dynamicRegistration': v:false,
-    \           'contentFormat': ['markdown', 'plaintext'],
-    \       },
-    \       'implementation': {
-    \           'dynamicRegistration': v:false,
-    \           'linkSupport' : v:true
-    \       },
-    \       'rangeFormatting': {
-    \           'dynamicRegistration': v:false,
-    \       },
-    \       'references': {
-    \           'dynamicRegistration': v:false,
-    \       },
-    \       'semanticHighlightingCapabilities': {
-    \           'semanticHighlighting': v:false
-    \       },
-    \       'synchronization': {
-    \           'didSave': v:true,
-    \           'dynamicRegistration': v:false,
-    \           'willSave': v:false,
-    \           'willSaveWaitUntil': v:false,
-    \       },
-    \       'typeHierarchy': v:false,
-    \       'typeDefinition': {
-    \           'dynamicRegistration': v:false,
-    \           'linkSupport' : v:true
-    \       },
-    \   },
-    \   'window': {
-    \       'workDoneProgress': v:false
-    \   },
-    \   'workspace': {
-    \       'applyEdit': v:true,
-    \       'configuration': v:true
-    \   },
-    \ }
+  " Sorted alphabetically
+  return {
+        \   'textDocument': {
+        \       'codeAction': {
+        \         'dynamicRegistration': v:false,
+        \         'codeActionLiteralSupport': {
+        \           'codeActionKind': {
+        \             'valueSet': ['', 'quickfix', 'refactor', 'refactor.extract', 'refactor.inline', 'refactor.rewrite', 'source', 'source.organizeImports'],
+        \           }
+        \         },
+        \         'disabledSupport': v:true,
+        \       },
+        \       'codeLens': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'completion': {
+        \           'dynamicRegistration': v:false,
+        \           'completionItem': {
+        \              'documentationFormat': ['markdown', 'plaintext'],
+        \              'snippetSupport': v:false,
+        \              'resolveSupport': {
+        \                  'properties': ['additionalTextEdits']
+        \              }
+        \           },
+        \           'completionItemKind': {
+        \              'valueSet': s:get_completion_item_kinds()
+        \           }
+        \       },
+        \       'declaration': {
+        \           'dynamicRegistration': v:false,
+        \           'linkSupport' : v:true
+        \       },
+        \       'definition': {
+        \           'dynamicRegistration': v:false,
+        \           'linkSupport' : v:true
+        \       },
+        \       'documentHighlight': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'documentSymbol': {
+        \           'dynamicRegistration': v:false,
+        \           'symbolKind': {
+        \              'valueSet': s:get_symbol_kinds()
+        \           },
+        \           'hierarchicalDocumentSymbolSupport': v:false,
+        \           'labelSupport': v:false
+        \       },
+        \       'foldingRange': {
+        \           'dynamicRegistration': v:false,
+        \           'lineFoldingOnly': v:true,
+        \           'rangeLimit': 5000,
+        \       },
+        \       'formatting': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'hover': {
+        \           'dynamicRegistration': v:false,
+        \           'contentFormat': ['markdown', 'plaintext'],
+        \       },
+        \       'implementation': {
+        \           'dynamicRegistration': v:false,
+        \           'linkSupport' : v:true
+        \       },
+        \       'rangeFormatting': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'references': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'semanticHighlightingCapabilities': {
+        \           'semanticHighlighting': v:false
+        \       },
+        \       'synchronization': {
+        \           'didSave': v:true,
+        \           'dynamicRegistration': v:false,
+        \           'willSave': v:false,
+        \           'willSaveWaitUntil': v:false,
+        \       },
+        \       'typeHierarchy': v:false,
+        \       'typeDefinition': {
+        \           'dynamicRegistration': v:false,
+        \           'linkSupport' : v:true
+        \       },
+        \   },
+        \   'window': {
+        \       'workDoneProgress': v:false
+        \   },
+        \   'workspace': {
+        \       'applyEdit': v:true,
+        \       'configuration': v:true
+        \   },
+        \ }
 endfunction
 
 function! s:get_completion_item_kinds() abort
@@ -1237,13 +1193,13 @@ function! s:get_completion_item_kinds() abort
 endfunction
 
 function! s:get_symbol_kinds() abort
-    return map(keys(s:default_symbol_kinds), {idx, key -> str2nr(key)})
+  return map(keys(s:default_symbol_kinds), {idx, key -> str2nr(key)})
 endfunction
 
 function! s:diff_compute(old, new) abort
   let [l:start_line, l:start_char] = s:FirstDifference(a:old, a:new)
   let [l:end_line, l:end_char] =
-      \ s:LastDifference(a:old[l:start_line :], a:new[l:start_line :], l:start_char)
+        \ s:LastDifference(a:old[l:start_line :], a:new[l:start_line :], l:start_char)
 
   let l:text = s:ExtractText(a:new, l:start_line, l:start_char, l:end_line, l:end_char)
   let l:length = s:Length(a:old, l:start_line, l:start_char, l:end_line, l:end_char)
@@ -1252,10 +1208,10 @@ function! s:diff_compute(old, new) abort
   let l:adj_end_char = l:end_line == 0 ? 0 : strchars(a:old[l:end_line]) + l:end_char + 1
 
   let l:result = { 'range': {'start': {'line': l:start_line, 'character': l:start_char},
-      \ 'end': {'line': l:adj_end_line, 'character': l:adj_end_char}},
-      \ 'text': l:text,
-      \ 'rangeLength': l:length,
-      \}
+        \ 'end': {'line': l:adj_end_line, 'character': l:adj_end_char}},
+        \ 'text': l:text,
+        \ 'rangeLength': l:length,
+        \}
 
   return l:result
 endfunction
@@ -1285,9 +1241,9 @@ endfunction
 function! s:LastDifference(old, new, start_char) abort
   let l:line_count = min([len(a:old), len(a:new)])
   if l:line_count == 0 | return [0, 0] | endif
-	for l:i in range(-1, -1 * l:line_count, -1)
-	  if a:old[l:i] !=# a:new[l:i] | break | endif
-	endfor
+  for l:i in range(-1, -1 * l:line_count, -1)
+    if a:old[l:i] !=# a:new[l:i] | break | endif
+  endfor
   if l:i <= -1 * l:line_count
     let l:i = -1 * l:line_count
     let l:old_line = strcharpart(a:old[l:i], a:start_char)
@@ -1302,7 +1258,7 @@ function! s:LastDifference(old, new, start_char) abort
   let l:j = -1
   while l:j >= -1 * l:length
     if  strgetchar(l:old_line, l:old_line_length + l:j) !=
-        \ strgetchar(l:new_line, l:new_line_length + l:j)
+          \ strgetchar(l:new_line, l:new_line_length + l:j)
       break
     endif
     let l:j -= 1
