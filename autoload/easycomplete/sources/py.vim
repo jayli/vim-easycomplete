@@ -50,12 +50,11 @@ function! s:send_completion_request(info) abort
         \   'position': easycomplete#lsp#get_position(),
         \   'context': { 'triggerKind': 1 }
         \ },
-        \ 'on_notification': function('s:handle_omnicompletion', [l:server_name])
+        \ 'on_notification': function('s:handle_completion', [l:server_name])
         \ })
 endfunction
 
-function! s:handle_omnicompletion(server_name, data) abort
-  echom a:data
+function! s:handle_completion(server_name, data) abort
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
     echom "error jayli"
     return
@@ -63,6 +62,9 @@ function! s:handle_omnicompletion(server_name, data) abort
 
   let l:result = s:get_completion_result(a:server_name, a:data)
   let l:matches = l:result['matches']
+
+  echom '--'
+  echom l:matches
 
   let l:ctx = easycomplete#context()
   call easycomplete#complete('py', l:ctx, l:ctx['startcol'], l:matches)
@@ -121,8 +123,6 @@ function! s:GetVimCompletionItems(response)
     endif
 
     let l:vim_complete_item['info'] = s:NormalizeInfo(get(l:completion_item, "documentation", ""))
-    echom '----'
-    echom l:vim_complete_item
 
     let l:vim_complete_items += [l:vim_complete_item]
   endfor

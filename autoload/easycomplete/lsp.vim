@@ -1,16 +1,10 @@
 let s:enabled = 0
 let s:fixendofline_exists = exists('+fixendofline')
-" let s:Stream = easycomplete#lsp#callbag_makeSubject()
+let s:Stream = easycomplete#lsp#callbag#makeSubject()
 let s:already_setup = 0
 let s:servers = {} " { lsp_id, server_info, init_callbacks, init_result, buffers: { path: { changed_tick } }
 let s:last_command_id = 0
 let s:notification_callbacks = [] " { name, callback }
-
-let s:undefined_token = '__callbag_undefined__'
-let s:str_type = type('')
-" vim-lsp/autoload/lsp/ui/vim/folding.vim
-let s:folding_ranges = {}
-let s:textprop_name = 'vim-lsp-folding-linenr'
 
 let s:default_symbol_kinds = {
     \ '1': 'file',
@@ -235,14 +229,14 @@ function! s:Noop(...) abort
 endfunction
 
 function! easycomplete#lsp#send_request(server_name, request) abort
-  let l:ctx = {
+    let l:ctx = {
         \ 'server_name': a:server_name,
         \ 'request': copy(a:request),
         \ 'cb': has_key(a:request, 'on_notification') ? a:request['on_notification'] : function('s:Noop'),
         \ }
-  let l:ctx['dispose'] = easycomplete#lsp#callbag_pipe(
+    let l:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
         \ easycomplete#lsp#request(a:server_name, a:request),
-        \ easycomplete#lsp#callbag_subscribe({
+        \ easycomplete#lsp#callbag#subscribe({
         \   'next':{d->l:ctx['cb'](d)},
         \   'error':{e->s:send_request_error(l:ctx, e)},
         \   'complete':{->s:send_request_dispose(l:ctx)},
@@ -267,33 +261,19 @@ function! s:send_request_error(ctx, error) abort
   call s:send_request_dispose(a:ctx)
 endfunction
 
-function! easycomplete#lsp#callbag_subscribe(...) abort
-  let l:data = {}
-  if a:0 > 0 && type(a:1) == type({}) " a:1 { next, error, complete }
-    if has_key(a:1, 'next') | let l:data['next'] = a:1['next'] | endif
-    if has_key(a:1, 'error') | let l:data['error'] = a:1['error'] | endif
-    if has_key(a:1, 'complete') | let l:data['complete'] = a:1['complete'] | endif
-  else " a:1 = next, a:2 = error, a:3 = complete
-    if a:0 >= 1 | let l:data['next'] = a:1 | endif
-    if a:0 >= 2 | let l:data['error'] = a:2 | endif
-    if a:0 >= 3 | let l:data['complete'] = a:3 | endif
-  endif
-  return function('s:subscribeListener', [l:data])
-endfunction
-
 function! s:subscribeListener(data, source) abort
   call a:source(0, function('s:subscribeSourceCallback', [a:data]))
   return function('s:subscribeDispose', [a:data])
 endfunction
 
 function! s:subscribeDispose(data, ...) abort
-  if has_key(a:data, 'talkback') | call a:data['talkback'](2, easycomplete#lsp#callbag_undefined()) | endif
+  if has_key(a:data, 'talkback') | call a:data['talkback'](2, easycomplete#lsp#callbag#undefined()) | endif
 endfunction
 
 function! s:subscribeSourceCallback(data, t, d) abort
   if a:t == 0 | let a:data['talkback'] = a:d | endif
   if a:t == 1 && has_key(a:data, 'next') | call a:data['next'](a:d) | endif
-  if a:t == 1 || a:t == 0 | call a:data['talkback'](1, easycomplete#lsp#callbag_undefined()) | endif
+  if a:t == 1 || a:t == 0 | call a:data['talkback'](1, easycomplete#lsp#callbag#undefined()) | endif
   if a:t == 2 && s:isUndefined(a:d) && has_key(a:data, 'complete') | call a:data['complete']() | endif
   if a:t == 2 && !s:isUndefined(a:d) && has_key(a:data, 'error') | call a:data['error'](a:d) | endif
 endfunction
@@ -310,7 +290,7 @@ function! easycomplete#lsp#request(server_name, request) abort
         \ 'done': 0,
         \ 'cancelled': 0,
         \ }
-  return easycomplete#lsp#callbag_create(function('s:request_create', [l:ctx]))
+  return easycomplete#lsp#callbag#create(function('s:request_create', [l:ctx]))
 endfunction
 
 function! s:request_create(ctx, next, error, complete) abort
@@ -324,6 +304,17 @@ function! s:request_create(ctx, next, error, complete) abort
         \ {s->s:is_step_error(s) ? s:request_error(a:ctx, s.result[0]) : s:request_send(a:ctx) },
         \ ])
   return function('s:request_cancel', [a:ctx])
+endfunction
+
+function! s:request_send(ctx) abort
+  if a:ctx['cancelled'] | return | endif " caller already unsubscribed so don't bother sending request
+  let a:ctx['request_id'] = s:send_request(a:ctx['server_name'], a:ctx['request'])
+endfunction
+
+function! s:request_error(ctx, error) abort
+  if a:ctx['cancelled'] | return | endif " caller already unsubscribed so don't bother notifying
+  let a:ctx['done'] = 1
+  call a:ctx['error'](a:error)
 endfunction
 
 function! s:is_step_error(s) abort
@@ -412,6 +403,99 @@ function! s:ensure_flush(buf, server_name, cb) abort
         \ ])
 endfunction
 
+function! s:ensure_changed(buf, server_name, cb) abort
+  let l:server = s:servers[a:server_name]
+  let l:path = easycomplete#lsp#utils#get_buffer_uri(a:buf)
+
+  let l:buffers = l:server['buffers']
+  if !has_key(l:buffers, l:path)
+    let l:msg = s:new_rpc_success('file is not managed', { 'server_name': a:server_name, 'path': l:path })
+    call s:log(l:msg)
+    call a:cb(l:msg)
+    return
+  endif
+  let l:buffer_info = l:buffers[l:path]
+
+  let l:changed_tick = getbufvar(a:buf, 'changedtick')
+
+  if l:buffer_info['changed_tick'] == l:changed_tick
+    let l:msg = s:new_rpc_success('not dirty', { 'server_name': a:server_name, 'path': l:path })
+    call s:log(l:msg)
+    call a:cb(l:msg)
+    return
+  endif
+
+  let l:buffer_info['changed_tick'] = l:changed_tick
+  let l:buffer_info['version'] = l:buffer_info['version'] + 1
+
+  call s:send_notification(a:server_name, {
+        \ 'method': 'textDocument/didChange',
+        \ 'params': {
+        \   'textDocument': s:get_versioned_text_document_identifier(a:buf, l:buffer_info),
+        \   'contentChanges': s:text_changes(a:buf, a:server_name),
+        \ }
+        \ })
+  " call lsp#ui#vim#folding#send_request(a:server_name, a:buf, 0)
+  call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
+
+  let l:msg = s:new_rpc_success('textDocument/didChange sent', { 'server_name': a:server_name, 'path': l:path })
+  call s:log(l:msg)
+  call a:cb(l:msg)
+endfunction
+
+function! s:get_text_document_change_sync_kind(server_name) abort
+    let l:capabilities = easycomplete#lsp#get_server_capabilities(a:server_name)
+    if !empty(l:capabilities) && has_key(l:capabilities, 'textDocumentSync')
+        if type(l:capabilities['textDocumentSync']) == type({})
+            if  has_key(l:capabilities['textDocumentSync'], 'change') && type(l:capabilities['textDocumentSync']['change']) == type(1)
+                let l:val = l:capabilities['textDocumentSync']['change']
+                return l:val >= 0 && l:val <= 2 ? l:val : 1
+            else
+                return 1
+            endif
+        elseif type(l:capabilities['textDocumentSync']) == type(1)
+            return l:capabilities['textDocumentSync']
+        else
+            return 1
+        endif
+    endif
+    return 1
+endfunction
+
+function! s:text_changes(buf, server_name) abort
+  let l:sync_kind = s:get_text_document_change_sync_kind(a:server_name)
+
+  " When syncKind is None, return null for contentChanges.
+  if l:sync_kind == 0
+    return v:null
+  endif
+
+  " When syncKind is Incremental and previous content is saved.
+  if l:sync_kind == 2 && has_key(s:file_content, a:buf)
+    " compute diff
+    let l:old_content = s:get_last_file_content(a:buf, a:server_name)
+    let l:new_content = s:get_lines(a:buf)
+    let l:changes = lsp#utils#diff#compute(l:old_content, l:new_content)
+    if empty(l:changes.text) && l:changes.rangeLength ==# 0
+      return []
+    endif
+    call s:update_file_content(a:buf, a:server_name, l:new_content)
+    return [l:changes]
+  endif
+
+  let l:new_content = s:get_lines(a:buf)
+  let l:changes = {'text': join(l:new_content, "\n")}
+  call s:update_file_content(a:buf, a:server_name, l:new_content)
+  return [l:changes]
+endfunction
+
+function! s:get_versioned_text_document_identifier(buf, buffer_info) abort
+  return {
+        \ 'uri': easycomplete#lsp#utils#get_buffer_uri(a:buf),
+        \ 'version': a:buffer_info['version'],
+        \ }
+endfunction
+
 function! s:get_fixendofline(buf) abort
   let l:eol = getbufvar(a:buf, '&endofline')
   let l:binary = getbufvar(a:buf, '&binary')
@@ -467,7 +551,6 @@ function! s:ensure_open(buf, server_name, cb) abort
   endif
 
   call s:update_file_content(a:buf, a:server_name, s:get_lines(a:buf))
-
   let l:buffer_info = { 'changed_tick': getbufvar(a:buf, 'changedtick'), 'version': 1, 'uri': l:path }
   let l:buffers[l:path] = l:buffer_info
 
@@ -478,15 +561,34 @@ function! s:ensure_open(buf, server_name, cb) abort
         \ },
         \ })
 
-  call s:folding_send_request(a:server_name, a:buf, 0)
+  call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
 
   let l:msg = s:new_rpc_success('textDocument/open sent', { 'server_name': a:server_name, 'path': l:path, 'filetype': getbufvar(a:buf, '&filetype') })
   call s:log(l:msg)
   call a:cb(l:msg)
 endfunction
 
+function! s:update_file_content(buf, server_name, new) abort
+  if !has_key(s:file_content, a:buf)
+    let s:file_content[a:buf] = {}
+  endif
+  call s:log('s:update_file_content()', a:buf)
+  let s:file_content[a:buf][a:server_name] = a:new
+endfunction
+
+function! s:has_provider(server_name, ...) abort
+  let l:value = easycomplete#lsp#get_server_capabilities(a:server_name)
+  for l:provider in a:000
+    if empty(l:value) || type(l:value) != type({}) || !has_key(l:value, l:provider)
+      return 0
+    endif
+    let l:value = l:value[l:provider]
+  endfor
+  return (type(l:value) == type(v:true) && l:value == v:true) || type(l:value) == type({})
+endfunction
+
 function! s:folding_send_request(server_name, buf, sync) abort
-  if !lsp#capabilities#has_folding_range_provider(a:server_name)
+  if !s:has_provider(a:server_name, 'foldingRangeProvider')
     return
   endif
 
@@ -503,6 +605,40 @@ function! s:folding_send_request(server_name, buf, sync) abort
         \ 'sync': a:sync,
         \ 'bufnr': a:buf
         \ })
+endfunction
+
+function! s:handle_fold_request(server, data) abort
+  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
+    return
+  endif
+
+  let l:result = a:data['response']['result']
+
+  if type(l:result) != type([])
+    return
+  endif
+
+  let l:uri = a:data['request']['params']['textDocument']['uri']
+  let l:path = easycomplete#lsp#utils#uri_to_path(l:uri)
+  let l:bufnr = bufnr(l:path)
+
+  if l:bufnr < 0
+    return
+  endif
+
+  if !has_key(s:folding_ranges, a:server)
+    let s:folding_ranges[a:server] = {}
+  endif
+  let s:folding_ranges[a:server][l:bufnr] = l:result
+
+  " Set 'foldmethod' back to 'expr', which forces a re-evaluation of
+  " 'foldexpr'. Only do this if the user hasn't changed 'foldmethod',
+  " and this is the correct buffer.
+  for l:winid in win_findbuf(l:bufnr)
+    if getwinvar(l:winid, '&foldmethod') ==# 'expr'
+      call setwinvar(l:winid, '&foldmethod', 'expr')
+    endif
+  endfor
 endfunction
 
 function! s:set_textprops(buf) abort
@@ -717,7 +853,7 @@ function! easycomplete#lsp#get_server_info(server_name) abort
 endfunction
 
 function! s:on_notification(server_name, id, data, event) abort
-  echom '>>>> ' . string(a:data)
+  " echom '>>>> on_notification ' . string(a:data)
   call s:log('<---', a:id, a:server_name, a:data)
   let l:response = a:data['response']
   let l:server = s:servers[a:server_name]
@@ -781,7 +917,6 @@ function! s:handle_initialize(server_name, data) abort
 endfunction
 
 function! s:send_notification(server_name, data) abort
-  " jayli TODO 这里执行一次就不再往下走了，很奇怪，正常启动文件会执行四次
   let l:lsp_id = s:servers[a:server_name]['lsp_id']
   let l:data = copy(a:data)
   if has_key(l:data, 'on_notification')
@@ -812,9 +947,8 @@ function! s:on_exit(server_name, id, data, event) abort
 endfunction
 
 function! easycomplete#lsp#stream(...) abort
-  let s:Stream = easycomplete#lsp#callbag_makeSubject()
   if a:0 == 0
-    return easycomplete#lsp#callbag_share(s:Stream)
+    return easycomplete#lsp#callbag#share(s:Stream)
   else
     call s:Stream(a:1, a:2)
   endif
@@ -865,22 +999,12 @@ function! s:shareTalkbackCallback(data, sink, t, d) abort
     endif
 
     if empty(a:data['sinks'])
-      call a:data['sourceTalkback'](2, easycomplete#lsp#callbag_undefined())
+      call a:data['sourceTalkback'](2, easycomplete#lsp#callbag#undefined())
     endif
   else
     call a:data['sourceTalkback'](a:t, a:d)
   endif
 endfunction
-
-function! easycomplete#lsp#callbag_undefined() abort
-  return s:undefined_token
-endfunction
-
-function! easycomplete#lsp#callbag_makeSubject() abort
-  let l:data = { 'sinks': [] }
-  return function('s:makeSubjectFactory', [l:data])
-endfunction
-
 
 function! s:makeSubjectFactory(data, t, d) abort
   if a:t == 0
@@ -928,12 +1052,6 @@ function! s:makeSubjectSinkCallback(data, Sink, t, d) abort
   endif
 endfunction
 
-
-function! easycomplete#lsp#callbag_share(source) abort
-    let l:data = { 'source': a:source, 'sinks': [] }
-    return function('s:shareFactory', [l:data])
-endfunction
-
 function! s:new_rpc_success(message, data) abort
   return {
         \ 'response': {
@@ -960,24 +1078,6 @@ function! s:request_on_notification(ctx, id, data, event) abort
   let a:ctx['done'] = 1
   call a:ctx['next'](extend({ 'server_name': a:ctx['server_name'] }, a:data))
   call a:ctx['complete']()
-endfunction
-
-function! easycomplete#lsp#callbag_create(...) abort
-    let l:data = {}
-    if a:0 > 0
-        let l:data['prod'] = a:1
-    endif
-    return function('s:createProd', [l:data])
-endfunction
-
-function! easycomplete#lsp#callbag_pipe(...) abort
-    let l:Res = a:1
-    let l:i = 1
-    while l:i < a:0
-        let l:Res = a:000[l:i](l:Res)
-        let l:i = l:i + 1
-    endwhile
-    return l:Res
 endfunction
 
 function! s:log(...)
