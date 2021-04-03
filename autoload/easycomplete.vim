@@ -20,14 +20,17 @@ function! s:InitLocalVars()
   endif
 
   " Global LSP plugins
+  " 全局 Complete 注册插件
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
   " Complete Result Caching, For <BS> and <CR> typing
+  " 匹配过程中的 Cache
   let g:easycomplete_menucache = {}
   " The Global storage for each complete result
   " Info msg will be appended here.
   " menuitems will be set to [] after CompleteDone
+  " 匹配过程中的全量匹配数据
   let g:easycomplete_menuitems = []
   " Record v:event.complete_item for pum, to checkout if there is an item
   " selected in pum
@@ -36,11 +39,13 @@ function! s:InitLocalVars()
   " HACK: To avoid trigger completedone event after going back from last item
   " in pum, We need to store ctx for checking completedone event fired
   " correctly. This variable is for temp usage.
+  " 选择匹配项过程中的过程变量ctx存储
   let g:easycomplete_firstcomplete_ctx = {}
 
   " Like YCM, local variable for checking complete result form
   " the first completition or not. Second Completiton will not query
   " suggestions from lsp server.
+  " FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
 
   " Store every async completor task. Set done to 1 for such completor
@@ -57,6 +62,7 @@ function! s:InitLocalVars()
   let g:easycomplete_complete_taskqueue = []
 
   " Width of info popup window
+  " popupwindow 宽度
   let g:easycomplete_popup_width = 50
 
   " Current typing key
@@ -64,6 +70,7 @@ function! s:InitLocalVars()
 
   " Checking typing <BS> or <CR>, and other none ASCII typing
   " Used for every InputTextChange event for s:zizz()
+  " zizz 标志位
   let g:easycomplete_backing_or_cr = 0
 
   " basic setting
@@ -98,6 +105,7 @@ function! easycomplete#Enable()
   " Setup Pmenu hl
   call easycomplete#ui#setScheme()
 
+  " lsp 服务初始化
   call easycomplete#lsp#enable()
 endfunction
 
@@ -134,7 +142,7 @@ function! s:BindingTypingCommandOnce()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
 
-  " goto definition 方法需要抽到配置里去
+  " goto definition 通用方法的实现
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
 endfunction
@@ -758,6 +766,7 @@ function! s:FirstComplete(start_pos, menuitems)
     "
     " TODO: I use a delaytime via first_complete_hit to seperate TextChange
     " and CompleteChange. CompleteChange must happened after TextChange event
+    " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
     call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 40)
     let g:easycomplete_firstcomplete_ctx = easycomplete#context()
@@ -859,6 +868,7 @@ endfunction
 "  TODO: This contain a hidden trouble at force break of completor. So each
 "  completor will be an async call, and return each continuing condition
 "  manully. I dont find a better way to solve this problem.
+"  任务队列的设计不完善，当lsp特别慢的时候有可能会等待很长时间，需要加一个超时
 " ----------------------------------------------------------------------
 function! s:ResetCompleteTaskQueue()
   let g:easycomplete_complete_taskqueue = []
@@ -1062,7 +1072,7 @@ endfunction
 " LSP 专用工具函数
 " 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
 " 工具函数主要是给 easycomplete 的插件用的通用方法
-" vim-lsp 源码非常脏乱差，命名不讲究，而且冗余很大，这里只做了初步精简
+" vim-lsp 源码非常脏乱差，而且冗余很大，这里只做了初步精简
 " ----------------------------------------------------------------------
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
@@ -1090,7 +1100,7 @@ function! easycomplete#LspCompleteRequest(info, plugin_name) abort
         \   'position': easycomplete#lsp#get_position(),
         \   'context': { 'triggerKind': 1 }
         \ },
-        \ 'on_notification': function('s:handle_completion', [l:server_name, a:plugin_name])
+        \ 'on_notification': function('s:HandleLspCompletion', [l:server_name, a:plugin_name])
         \ })
 endfunction
 
@@ -1108,7 +1118,7 @@ function! easycomplete#FindLspCompleteServers() abort
   return { 'server_names': l:server_names }
 endfunction
 
-function! s:handle_completion(server_name, plugin_name, data) abort
+function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
     call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
@@ -1116,7 +1126,7 @@ function! s:handle_completion(server_name, plugin_name, data) abort
     return
   endif
 
-  let l:result = s:get_completion_result(a:server_name, a:data, a:plugin_name)
+  let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
 
   try
@@ -1129,7 +1139,7 @@ function! s:handle_completion(server_name, plugin_name, data) abort
   call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
 endfunction
 
-function! s:get_completion_result(server_name, data, plugin_name) abort
+function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
   let l:result = a:data['response']['result']
 
   let l:response = a:data['response']
@@ -1227,8 +1237,7 @@ endfunction
 function! easycomplete#DoLspDefinition(file_exts)
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
-    call easycomplete#LspDefinition('definition')
-    return v:true
+    return easycomplete#LspDefinition('definition')
   endif
   " exec "tag ". expand('<cword>')
   " 未成功跳转，则交给主进程处理
@@ -1239,6 +1248,10 @@ endfunction
 function! easycomplete#LspDefinition(method) abort
   " typeDefinition => type definition
   let l:operation = substitute(a:method, '\u', ' \l\0', 'g')
+  let l:servers = easycomplete#FindLspCompleteServers()['server_names']
+  if empty(l:servers)
+    return v:false
+  endif
   let l:server = easycomplete#FindLspCompleteServers()['server_names'][0]
   let l:ctx = { 'counter': len(l:server), 'list':[], 'jump_if_one': 1, 'mods': '', 'in_preview': 0 }
 
@@ -1249,13 +1262,16 @@ function! easycomplete#LspDefinition(method) abort
   call easycomplete#lsp#send_request(l:server, {
         \ 'method': 'textDocument/' . a:method,
         \ 'params': l:params,
-        \ 'on_notification': function('s:handle_location', [l:ctx, l:server, l:operation]),
+        \ 'on_notification': function('s:HandleLspLocation', [l:ctx, l:server, l:operation]),
         \ })
 
   echo printf('Retrieving %s ...', l:operation)
+  return v:true
 endfunction
 
-function! s:handle_location(ctx, server, type, data) abort "ctx = {counter, list, last_command_id, jump_if_one, mods, in_preview}
+" 这里 ctx 的格式保留下来
+" ctx = {counter, list, last_command_id, jump_if_one, mods, in_preview}
+function! s:HandleLspLocation(ctx, server, type, data) abort
   if easycomplete#lsp#client#is_error(a:data['response']) || !has_key(a:data['response'], 'result')
     call s:log('Failed to retrieve '. a:type . ' for ' . a:server .
           \ ': ' . easycomplete#lsp#client#error_message(a:data['response']))
@@ -1294,20 +1310,27 @@ endfunction
 " easycomplete#CompleteChanged
 " easycomplete#CompleteCursored
 " easycomplete#CompleteDone
+" easycomplete#DoLspComplete
+" easycomplete#DoLspDefinition
+" easycomplete#Down
 " easycomplete#Enable
+" easycomplete#FindLspCompleteServers
 " easycomplete#FireCondition
 " easycomplete#GetBindingKeys
 " easycomplete#GetCompletedItem
+" easycomplete#GotoDefinitionCalling
 " easycomplete#InsertLeave
 " easycomplete#IsBacking
+" easycomplete#LspCompleteRequest
+" easycomplete#LspDefinition
 " easycomplete#RegisterSource
 " easycomplete#SetCompletedItem
 " easycomplete#SetMenuInfo
 " easycomplete#TypeEnterWithPUM
+" easycomplete#Up
 " easycomplete#backing
 " easycomplete#complete
 " easycomplete#context
 " easycomplete#flush
-" easycomplete#log
 " easycomplete#nill
 " easycomplete#typing

@@ -54,8 +54,6 @@ function! s:send_completion_request(info) abort
 endfunction
 
 function! s:handle_omnicompletion(server_name, data) abort
-  echom "成功"
-  echom a:data
   if lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
     echom "error jayli"
     return

@@ -53,12 +53,13 @@ augroup EasyCompleteRegistSources
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition')
       \  }))
 
-  " call easycomplete#RegisterSource({
-  "     \ 'name': 'vim',
-  "     \ 'whitelist': ['vim'],
-  "     \ 'completor': 'easycomplete#sources#vim#completor',
-  "     \ 'constructor' :'easycomplete#sources#vim#constructor'
-  "     \  })
+  call easycomplete#RegisterSource({
+      \ 'name': 'vim',
+      \ 'whitelist': ['vim'],
+      \ 'completor': 'easycomplete#sources#vim#completor',
+      \ 'constructor' :'easycomplete#sources#vim#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition'
+      \  })
 
   " easycompelte#lsp
   call easycomplete#RegisterSource({
@@ -68,6 +69,14 @@ augroup EasyCompleteRegistSources
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition'
       \  })
+  
+  " call easycomplete#RegisterSource({
+  "     \ 'name': 'python',
+  "     \ 'whitelist': ['py','python'],
+  "     \ 'completor': 'easycomplete#sources#python#completor',
+  "     \ 'constructor' :'easycomplete#sources#python#constructor',
+  "     \ 'gotodefinition': 'easycomplete#sources#python#GotoDefinition'
+  "     \  })
 
   call easycomplete#RegisterSource({
       \ 'name': 'go',

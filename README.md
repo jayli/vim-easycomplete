@@ -2,11 +2,11 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-简单到爆的自动补全插件
+简单到爆的 VIM/NVIM 自动补全插件，它只做补全
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
 
-### 安装
+### 一）安装
 
 基于 vim-plug 安装
 
@@ -14,13 +14,15 @@
 
 执行 `PlugInstall`，（兼容版本：vim 8.2 及以上，nvim 0.4.0 以上版本）
 
-### 配置
+### 二）配置
 
 默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`let g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了三种样式：最常用的是`let g:easycomplete_scheme="dark"`，可留空，其他什么也不用配置
+插件自带了三种样式（dark, light, rider）：最常用的是`rider`，这样配置 `let g:easycomplete_scheme="dark"`，自带的样式仅仅是 vim 默认样式不太适合的时候，一般留空即可。
 
-### 使用
+所有配置完毕，安装完成后即插即用。
+
+### 三）使用
 
 使用 <kbd>Tab</kbd> 键呼出补全菜单，用 <kbd>Shift-Tab</kbd> 在插入模式下输入 Tab。
 
@@ -30,28 +32,48 @@
 
 `:h easycomplete` 打开帮助文档
 
-> - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用
+> - 注意：不能和 [SuperTab](https://github.com/ervandew/supertab) 一起使用，coc 的默认配置也删掉（tab键配置可能会有冲突）
 
-### 支持的语言和插件
+### 四）支持的编程语言和配套插件
 
-#### 代码片段展开：
+vim-easycomplete 支持常规编程语言的自动补全，支持的语言和功能有
+
+#### 1）默认支持的补全
+
+- 关键字补全：默认所有类型文件都支持
+- 文件路径补全：默认支持
+- 字典单词补全：默认支持
+
+#### 2）有外部依赖和 lsp 依赖的编程语言补全
+
+##### 代码片段补全和展开
+
+依赖 ultisnips 和 vim-snippets，这是我调研过所有代码片段补全中最完整的，安装：
 
     Plug 'SirVer/ultisnips'
     Plug 'honza/vim-snippets'
 
 EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用
 
-#### 语言插件
+##### JavaScript 和 TypeScript
 
-EasyComplete 默认支持 Go、JS/TS、Python 补全，每种语言需要单独安装各自依赖的 language server 服务
+安装 tsserver：`npm -g install typescript`
 
-- JS/TS 补全需要安装 tsserver，`npm -g install typescript`
-- Go 补全需要安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
-- Python 补全需要安装 pyls：`pip install python-language-server`
+##### Python 补全
 
-其他补全可以自己开发插件
+安装 pyls：`pip install python-language-server`
 
-### 插件开发
+##### Go 补全
+
+安装 [Gocode](https://github.com/nsf/gocode)：`go get -u github.com/nsf/gocode`
+
+##### Vim 补全
+
+安装 vim-language-server，`npm -g install vim-language-server`
+
+### 五）支持新语言的插件开发
+
+方便起见，EasyComplete 也支持自己实现新的语言插件，只要遵循 lsp 规范即可。
 
 插件文件位置，以 snip 为例，插件路径：`autoload/easycomplete/sources/snip.vim`，[参考样例](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)
 
