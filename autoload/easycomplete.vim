@@ -161,7 +161,6 @@ endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
-  echom v:completed_item
   if empty(v:completed_item) && s:zizzing()
     return
   endif
