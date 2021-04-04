@@ -20,7 +20,7 @@
 
 插件自带了三种样式（dark, light, rider）：最常用的是`rider`，这样配置 `let g:easycomplete_scheme="dark"`，自带的样式仅仅是 vim 默认样式不太适合的时候，一般留空即可。
 
-所有配置完毕，安装完成后即插即用。
+此外无其他配置。
 
 ### 三）使用
 
@@ -36,7 +36,7 @@
 
 ### 四）支持的编程语言和配套插件
 
-vim-easycomplete 支持常规编程语言的自动补全，支持的语言和功能有
+easycomplete 支持常用编程语言的自动补全
 
 #### 1）默认支持的补全
 
@@ -95,5 +95,11 @@ call easycomplete#RegisterSource({
 - completor: {string | function}，可以是字符串也可以是function类型，补全函数的具体实现
 - constructor: {string | function}，可以是字符串也可以是function类型，插件构造器，BufEnter 时调用，可选配置
 - gotodefinition: {string | function}，可以是字符串也可以是function类型，goto 跳转到定义处的函数，可选配置，如果跳转成功则返回 `v:true`，如果跳转未成功则返回`v:false`，交还给`tag` 命令来处理
+
+### 六）License
+
+MIT
+
+-----
 
 Enjoy yourself

@@ -19,38 +19,26 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
 
-  " Global LSP plugins
   " 全局 Complete 注册插件
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " Complete Result Caching, For <BS> and <CR> typing
-  " 匹配过程中的 Cache
+  " 匹配过程中的 Cache，主要处理 <BS> 和 <CR> 键
   let g:easycomplete_menucache = {}
-  " The Global storage for each complete result
-  " Info msg will be appended here.
-  " menuitems will be set to [] after CompleteDone
-  " 匹配过程中的全量匹配数据
+  " 匹配过程中的全量匹配数据，CompleteDone 后置空
   let g:easycomplete_menuitems = []
-  " Record v:event.complete_item for pum, to checkout if there is an item
-  " selected in pum
+  " 保存 v:event.complete_item,判断是否pum处于选中状态
   let g:easycomplete_completed_item = {}
 
-  " HACK: To avoid trigger completedone event after going back from last item
-  " in pum, We need to store ctx for checking completedone event fired
-  " correctly. This variable is for temp usage.
-  " 选择匹配项过程中的过程变量ctx存储
+  " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
+  " 因此需要选择匹配项过程中的过程变量ctx存储
   let g:easycomplete_firstcomplete_ctx = {}
 
-  " Like YCM, local variable for checking complete result form
-  " the first completition or not. Second Completiton will not query
-  " suggestions from lsp server.
-  " FirstComplete 标志位
+  " 和 YCM 一样，用做 FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
 
-  " Store every async completor task. Set done to 1 for such completor
-  " completed. This will ensure each completor calling shows pum menu at one
-  " time.
+  " 每次first complete过程中的任务队列，所有队列任务都完成后才显示匹配菜单
+  " TODO: 需要加一个 timeout
   " [
   "   {
   "     "ctx": {},
@@ -61,19 +49,17 @@ function! s:InitLocalVars()
   " ]
   let g:easycomplete_complete_taskqueue = []
 
-  " Width of info popup window
   " popupwindow 宽度
   let g:easycomplete_popup_width = 50
 
-  " Current typing key
+  " 当前敲入的字符
   let b:typing_key = 0
 
-  " Checking typing <BS> or <CR>, and other none ASCII typing
-  " Used for every InputTextChange event for s:zizz()
+  " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
   " zizz 标志位
   let g:easycomplete_backing_or_cr = 0
 
-  " basic setting
+  " completeopt 基础配置
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
@@ -83,9 +69,9 @@ function! s:InitLocalVars()
   setlocal cpoptions+=B
 endfunction
 
-" Entry of EasyComplete
+" EasyComplete 入口函数
 function! easycomplete#Enable()
-  " EasyComplete will be initalized after BufEnter
+  " 每个 BufferEnter 时调用
   if exists("b:easycomplete_loaded_done")
     return
   endif
@@ -93,8 +79,8 @@ function! easycomplete#Enable()
 
   " Init Global Setting
   call s:InitLocalVars()
-  " We must ensure typing command binded first
-  " plugin command binded there after
+  " 必须要确保typing command先绑定
+  " 插件里的typing command后绑定
   call s:BindingTypingCommandOnce()
   " Init plugin configration
   call easycomplete#plugin#init()
@@ -103,8 +89,7 @@ function! easycomplete#Enable()
   " Init complete cache
   call s:SetupCompleteCache()
   " Setup Pmenu hl
-  call easycomplete#ui#setScheme()
-
+  call easycomplete#ui#SetScheme()
   " lsp 服务初始化
   call easycomplete#lsp#enable()
 endfunction
@@ -124,6 +109,7 @@ function! s:BindingTypingCommandOnce()
   if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
     " If ultisnips is installed. Ultisnips' tab binding will conflict with
     " easycomplete tab binding. So iunmap first.
+    " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
     exec "iunmap " . g:easycomplete_tab_trigger
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
@@ -134,9 +120,9 @@ function! s:BindingTypingCommandOnce()
 
   augroup easycomplete#NormalBinding
     autocmd!
-    " Global typing event for FirstComplete Action
+    " FirstComplete Action
     autocmd TextChangedI * call easycomplete#typing()
-    " Global typing event for SecondComplete Action
+    " SecondComplete Action
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -186,9 +172,8 @@ function! s:CompleteTypingMatch(...)
   let word = exists('a:1') ? a:1 : s:GetTypingWord()
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
-  " During CompleteChanged event. Menulist must not be changed by complete()
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
-  " complete() will fire CompleteChanged event, use async call instead.
+  " complete() 会导致 CompleteChanged 事件, 这里使用异步
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
         \   filtered_menu,
@@ -204,26 +189,23 @@ function! s:PrepareInfoPlaceHolder(key, val)
   return a:val
 endfunction
 
-" FirstComplete: The first complete action for fetching result from lsp server
-" SecondComplete: The second complete action for matching suggestions from
-" easycomplete_menuitems.
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = a:easycomplete_menuitems
-  " To avoid completedone event recursive calling
+  " 避免 completedone 事件递归调用
   call s:zizz()
   call complete(a:start_pos, a:menuitems)
-  " complete() will cause completedone event, and then call s:flush() to reset
-  " global configration. So g:easycomplete_menuitems must not be changed.
+  " complete() → completedone → s:flush()
+  " 这里确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
 function! s:CustomCompleteMenuFilter(all_menu, word)
-  " Full match coming first.
+  " 完整匹配在前
   let word = tolower(a:word)
   let original_matching_menu = sort(filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) =~ "^'. word . '"'), "s:SortTextComparatorByLength")
 
-  " Fuzzy match coming second
+  " 模糊匹配在后
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
         \ 'tolower(v:val.word) !~ "^'. word . '"')
 
@@ -262,7 +244,7 @@ function! easycomplete#flush()
   call s:flush()
 endfunction
 
-" checkout Cursor is in pum or not
+" 判断 pum 是否是选中状态
 function! easycomplete#CompleteCursored()
   if !pumvisible()
     return v:false
@@ -307,14 +289,13 @@ function! easycomplete#backing()
   endif
   if s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
         \ && !empty(g:easycomplete_menuitems)
-    " I dont know why I get ctx before sendkey <bs>. So I mast do this
-    " asyncrun for s:CompleteTypingMatch
+    " 不明白为何 ctx 获取在 sendkey <bs> 之前，所以这里用异步
     call s:AsyncRun(function('s:CompleteTypingMatch'), [], 0)
   endif
   return ""
 endfunction
 
-" Same as asynccomplete
+" 参考 asynccomplete
 function! easycomplete#context() abort
   let l:ret = {
         \ 'bufnr':bufnr('%'),
@@ -333,12 +314,11 @@ function! easycomplete#context() abort
   return l:ret
 endfunction
 
-" Is Async completor's ctx same as current ctx or not
+" 检查 ctx 和当前 ctx 是否一致
 function! easycomplete#CheckContextSequence(ctx)
   return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
-" Same as asynccomplete
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
@@ -401,10 +381,11 @@ function! s:CallCompeltorByName(name, ctx)
 endfunction
 
 function! easycomplete#FireCondition()
-  if easycomplete#IsBacking()
+  let l:char = easycomplete#context()["char"]
+  if s:zizzing() && index([":",".","_","/",">"], l:char) < 0
     return v:false
   endif
-  let l:char = easycomplete#context()["char"]
+
   if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) < 0
     return v:false
   endif
@@ -428,8 +409,8 @@ function! easycomplete#typing()
   return ""
 endfunction
 
-" immediately: fire complete right now or not
-" This will fired immediately as typing '/' or '.' for directory matching
+" immediately: 是否立即出发 complete()
+" 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
   " Filter unexpected '.' dot matching
   let l:ctx = easycomplete#context()
@@ -555,15 +536,14 @@ endfunction
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
-  " To avoid recursive call: CompleteChanged → complete() → CompleteChanged
-  " Here we check zizzing from CompleteTypingMatch to stop recursive call.
-  
+  " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
+  " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
         " \ && !easycomplete#CompleteCursored()
     call s:CompleteTypingMatch()
   endif
   if empty(item)
-    " hack
+    " hack for nvim
     if g:env_is_nvim
       call easycomplete#popup#MenuPopupChanged([])
     else
@@ -605,7 +585,7 @@ function! easycomplete#CleverTab()
     call s:zizz()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
-    " While in Ultisnips, Tab to jump forwards
+    " In Ultisnips, Tab to jump forwards
     " call UltiSnips#JumpForwards()
     call s:zizz()
     call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
@@ -625,12 +605,10 @@ function! easycomplete#CleverTab()
     call s:zizz()
     return "\<Tab>"
   else
-    " Otherwise fire docomplete()
+    " Otherwise exec docomplete()
     if g:env_is_nvim
-      " Hack for nvim, During DoComplete mode() may change to 'n'. Leveing
-      " Insert Mode make a flush() call and empty the task queue.
-      " I dont know why.
-      " A Async call seems to be fine.
+      " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush() 来清
+      " 空匹配任务队列，这里用异步调用看起来是ok的
       call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
       call s:SendKeys( "\<ESC>a" )
     elseif g:env_is_vim
@@ -640,13 +618,13 @@ function! easycomplete#CleverTab()
   endif
 endfunction
 
-" CleverShiftTab, echo <Tab> when pum is not visible
+" CleverShiftTab
 function! easycomplete#CleverShiftTab()
   call s:zizz()
   return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
 
-" <CR> for complete selection and expand snip
+" <CR> 逻辑，判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " Get Matching word under cursor
@@ -669,7 +647,6 @@ function! easycomplete#TypeEnterWithPUM()
   return "\<CR>"
 endfunction
 
-" feedkeys at 'in' mod
 function! s:SendKeys( keys )
   call feedkeys(a:keys, 'in')
 endfunction
@@ -681,7 +658,7 @@ endfunction
 " close pum
 function! s:CloseCompletionMenu()
   if pumvisible()
-    call s:SendKeys( "\<ESC>a" )
+    call s:SendKeys("\<ESC>a")
   endif
   call s:ResetCompletedItem()
 endfunction
@@ -704,11 +681,9 @@ function! s:CompleteInit(...)
   else
     let l:word = a:1
   endif
-  " this will course pum flashing
+  " 这会导致pum闪烁
   let g:easycomplete_menuitems = []
-
-  " Because complete menu is async created. Here I setup a delaytime for
-  " continuing typing with a visible pum to avoid this flashing.
+  " 用一个延时来避免闪烁
   if exists('g:easycomplete_visual_delay') && g:easycomplete_visual_delay > 0
     call timer_stop(g:easycomplete_visual_delay)
   endif
@@ -762,10 +737,6 @@ endfunction
 function! s:FirstComplete(start_pos, menuitems)
   " menuitems is not empty
   if s:CheckCompleteTastQueueAllDone()
-    " Same as YCM, Use Async Complete all time
-    "
-    " TODO: I use a delaytime via first_complete_hit to seperate TextChange
-    " and CompleteChange. CompleteChange must happened after TextChange event
     " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
     call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 40)
@@ -862,12 +833,7 @@ function! s:CompleteFilter(raw_menu_list)
 endfunction
 
 " ----------------------------------------------------------------------
-"  TaskQueue:
-"  Exec complete() as the last async complete result coming back.
-"
-"  TODO: This contain a hidden trouble at force break of completor. So each
-"  completor will be an async call, and return each continuing condition
-"  manully. I dont find a better way to solve this problem.
+"  TaskQueue: 每个插件都完成后，一并显示匹配菜单
 "  任务队列的设计不完善，当lsp特别慢的时候有可能会等待很长时间，需要加一个超时
 " ----------------------------------------------------------------------
 function! s:ResetCompleteTaskQueue()
@@ -926,7 +892,7 @@ function! easycomplete#nill() abort
   return v:null " DO NOTHING
 endfunction
 
-" Reset Global configration
+" 清空全局配置
 function! s:flush()
   " reset menuitems
   let g:easycomplete_menuitems = []
@@ -1028,9 +994,8 @@ function! s:SameCtx(ctx1, ctx2)
   endif
 endfunction
 
-" ctx1 before，ctx2 after
-" checkout FirstComplete and SecondComplete are belong to
-" one beginning ctx or not
+" ctx1 在前，ctx2 在后
+" 判断 FirstComplete 和 SecondComplete 是否是一个 ctx 下的行为
 function! s:SameBeginning(ctx1, ctx2)
   if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
     return v:false
@@ -1092,7 +1057,6 @@ endfunction
 " plugin_name: 插件的名字，比如 py, ts
 function! easycomplete#LspCompleteRequest(info, plugin_name) abort
   let l:server_name = a:info['server_names'][0]
-
   call easycomplete#lsp#send_request(l:server_name, {
         \ 'method': 'textDocument/completion',
         \ 'params': {
@@ -1118,6 +1082,10 @@ function! easycomplete#FindLspCompleteServers() abort
   return { 'server_names': l:server_names }
 endfunction
 
+function! easycomplete#HandleLspComplete(...)
+  return call('s:HandleLspComplete', a:000)
+endfunction
+
 function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
@@ -1141,13 +1109,10 @@ endfunction
 
 function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
   let l:result = a:data['response']['result']
-
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
-
   let l:completion_result = s:GetVimCompletionItems(l:response, a:plugin_name)
-
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 
@@ -1300,37 +1265,3 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
     endif
   endif
 endfunction
-
-
-" Global API
-" easycomplete#CheckContextSequence
-" easycomplete#CleverShiftTab
-" easycomplete#CleverTab
-" easycomplete#CompleteAdd
-" easycomplete#CompleteChanged
-" easycomplete#CompleteCursored
-" easycomplete#CompleteDone
-" easycomplete#DoLspComplete
-" easycomplete#DoLspDefinition
-" easycomplete#Down
-" easycomplete#Enable
-" easycomplete#FindLspCompleteServers
-" easycomplete#FireCondition
-" easycomplete#GetBindingKeys
-" easycomplete#GetCompletedItem
-" easycomplete#GotoDefinitionCalling
-" easycomplete#InsertLeave
-" easycomplete#IsBacking
-" easycomplete#LspCompleteRequest
-" easycomplete#LspDefinition
-" easycomplete#RegisterSource
-" easycomplete#SetCompletedItem
-" easycomplete#SetMenuInfo
-" easycomplete#TypeEnterWithPUM
-" easycomplete#Up
-" easycomplete#backing
-" easycomplete#complete
-" easycomplete#context
-" easycomplete#flush
-" easycomplete#nill
-" easycomplete#typing

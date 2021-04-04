@@ -1,7 +1,7 @@
 " 菜单样式设置
 " 支持三种 dark, light, rider
 " 默认为 light
-function! easycomplete#ui#setScheme()
+function! easycomplete#ui#SetScheme()
   if !exists("g:easycomplete_scheme")
     return
   endif

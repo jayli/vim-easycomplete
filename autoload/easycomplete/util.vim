@@ -364,7 +364,8 @@ function! easycomplete#util#GetTypingWord()
   let start = col('.') - 1
   let line = getline('.')
   let width = 0
-  while start > 0 && line[start - 1] =~ '[a-zA-Z0-9_#]'
+  let regx = &filetype == "vim" ? '[a-zA-Z0-9_#]' : '[a-zA-Z0-9_#]'
+  while start > 0 && line[start - 1] =~ regx
     let start = start - 1
     let width = width + 1
   endwhile
