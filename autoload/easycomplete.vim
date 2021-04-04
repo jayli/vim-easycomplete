@@ -155,7 +155,7 @@ endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
-  if empty(v:completed_item) && s:zizzing()
+  if (empty(v:completed_item) && s:zizzing()) && !s:VimColonTyping()
     return
   endif
   let l:char = easycomplete#context()["char"]
@@ -392,12 +392,24 @@ function! easycomplete#FireCondition()
   return v:true
 endfunction
 
+" vim 冒号 typing
+function! s:VimColonTyping()
+  if &filetype == "vim" &&
+        \ easycomplete#context()['typing'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#typing()
   if !easycomplete#FireCondition()
     return ""
   endif
 
-  if s:zizzing()
+  if s:VimColonTyping()
+    " continue
+  elseif s:zizzing()
     return ""
   endif
 
@@ -413,13 +425,13 @@ endfunction
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
   " Filter unexpected '.' dot matching
+
   let l:ctx = easycomplete#context()
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
     call s:CloseCompletionMenu()
     return v:null
   endif
-
 
   if complete_check()
     call s:CloseCompletionMenu()
