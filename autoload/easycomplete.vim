@@ -1213,7 +1213,7 @@ endfunction
 function! easycomplete#DoLspDefinition(file_exts)
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
-    return easycomplete#LspDefinition('definition')
+    return easycomplete#LspDefinition()
   endif
   " exec "tag ". expand('<cword>')
   " 未成功跳转，则交给主进程处理
@@ -1223,6 +1223,7 @@ endfunction
 " LSP 的 GoToDefinition
 function! easycomplete#LspDefinition(method) abort
   " typeDefinition => type definition
+  let l:method = "definition"
   let l:operation = substitute(a:method, '\u', ' \l\0', 'g')
   let l:servers = easycomplete#FindLspCompleteServers()['server_names']
   if empty(l:servers)
@@ -1236,7 +1237,7 @@ function! easycomplete#LspDefinition(method) abort
         \   'position': easycomplete#lsp#get_position(),
         \ }
   call easycomplete#lsp#send_request(l:server, {
-        \ 'method': 'textDocument/' . a:method,
+        \ 'method': 'textDocument/' . l:method,
         \ 'params': l:params,
         \ 'on_notification': function('s:HandleLspLocation', [l:ctx, l:server, l:operation]),
         \ })
