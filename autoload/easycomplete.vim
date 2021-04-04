@@ -761,31 +761,30 @@ function! s:SetFirstCompeleHit()
 endfunction
 
 function! s:SortTextComparatorByLength(entry1, entry2)
-  if has_key(a:entry1, "word") && has_key(a:entry2, "word")
-    let k1 = has_key(a:entry1, "abbr") ? a:entry1.abbr : a:entry1.word
-    let k2 = has_key(a:entry2, "abbr") ? a:entry2.abbr : a:entry2.word
-    if strlen(k1) > strlen(k2)
-      return v:true
-    else
-      return v:false
-    endif
+  let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
+        \ a:entry1.abbr : get(a:entry1, "word","")
+  let k2 = has_key(a:entry2, "abbr") && !empty(a:entry2.abbr) ?
+        \ a:entry2.abbr : get(a:entry2, "word","")
+  if strlen(k1) > strlen(k2)
+    return v:true
+  else
+    return v:false
   endif
   return v:false
 endfunction
 
 function! s:SortTextComparatorByAlphabet(entry1, entry2)
-  " return v:true
-  if has_key(a:entry1, "word") && has_key(a:entry2, "word")
-    let k1 = has_key(a:entry1, "abbr") ? a:entry1.abbr : a:entry1.word
-    let k2 = has_key(a:entry2, "abbr") ? a:entry2.abbr : a:entry2.word
-    if match(k1, "_") == 0
-      return v:true
-    endif
-    if k1 > k2
-      return v:true
-    else
-      return v:false
-    endif
+  let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
+        \ a:entry1.abbr : get(a:entry1, "word","")
+  let k2 = has_key(a:entry2, "abbr") && !empty(a:entry2.abbr) ?
+        \ a:entry2.abbr : get(a:entry2, "word","")
+  if match(k1, "_") == 0
+    return v:true
+  endif
+  if k1 > k2
+    return v:true
+  else
+    return v:false
   endif
   return v:false
 endfunction
@@ -798,7 +797,7 @@ function! s:NormalizeMenulist(arr)
 
   for item in a:arr
     if type(item) == type("")
-      let l:menu_item = { 
+      let l:menu_item = {
             \ 'word': item,
             \ 'menu': '',
             \ 'user_data': '',
