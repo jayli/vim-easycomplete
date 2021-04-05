@@ -130,7 +130,29 @@ function! s:BindingTypingCommandOnce()
 
   " goto definition 通用方法的实现
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
+  " 检查插件依赖的命令工具是否已经安装
+  command! EasyCompleteCheck : call easycomplete#checking()
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+endfunction
+
+" 检查当前注册的插件中所依赖的 command 是否已经安装
+function! easycomplete#checking()
+  call easycomplete#log#log("检查插件依赖命令工具是否安装:")
+  for item in keys(g:easycomplete_source)
+    let l:name = item
+    if !has_key(g:easycomplete_source[item], 'command')
+      continue
+    endif
+    let l:command = get(g:easycomplete_source[item], 'command')
+    echom l:command
+
+    let l:flag_txt = executable(l:command) ? "ready" : "missing!"
+    let l:flag_ico = executable(l:command) ? "√" : "×"
+    let l:msg = "[".l:flag_ico."]" . " " . l:name . ": `" . l:command . "` " . l:flag_txt
+    call easycomplete#log#log(l:msg)
+  endfor
+  call easycomplete#log#log("Done")
+  call easycomplete#log#log("关闭消息窗口 `:CloseLog`")
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
