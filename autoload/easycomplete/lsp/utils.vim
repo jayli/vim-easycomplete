@@ -131,19 +131,6 @@ else
     endfunction
 endif
 
-if has('win32') || has('win64')
-    function! easycomplete#lsp#utils#normalize_uri(uri) abort
-        " Refer to https://github.com/microsoft/language-server-protocol/pull/1019 on normalization of urls.
-        " TODO: after the discussion is settled, modify this function.
-        let l:ret = substitute(a:uri, '^file:///[a-zA-Z]\zs%3[aA]', ':', '')
-        return substitute(l:ret, '^file:///\zs\([A-Z]\)', "\\=tolower(submatch(1))", '')
-    endfunction
-else
-    function! easycomplete#lsp#utils#normalize_uri(uri) abort
-        return a:uri
-    endfunction
-endif
-
 function! easycomplete#lsp#utils#get_default_root_uri() abort
     return easycomplete#lsp#utils#path_to_uri(getcwd())
 endfunction
@@ -200,82 +187,10 @@ function! easycomplete#lsp#utils#_nearest_path(matches) abort
               \ sort(keys(a:matches), function('easycomplete#lsp#utils#_compare_nearest_path', [a:matches]))[0]
 endfunction
 
-" Find a nearest to a `path` parent filename `filename` by traversing the filesystem upwards
-" The filename ending with '/' or '\' will be regarded as directory name,
-" otherwith as file name
-function! easycomplete#lsp#utils#find_nearest_parent_file_directory(path, filename) abort
-    if type(a:filename) == 3
-        let l:matched_paths = {}
-        for l:current_name in a:filename
-            let l:path = easycomplete#lsp#utils#find_nearest_parent_file_directory(a:path, l:current_name)
-
-            if !empty(l:path)
-                if has_key(l:matched_paths, l:path)
-                    let l:matched_paths[l:path] += 1
-                else
-                    let l:matched_paths[l:path] = 1
-                endif
-            endif
-        endfor
-
-        return easycomplete#lsp#utils#_nearest_path(l:matched_paths)
-    elseif type(a:filename) == 1
-        if a:filename[-1:] ==# '/' || a:filename[-1:] ==# '\'
-            let l:modify_str = ':p:h:h'
-            let l:path = easycomplete#lsp#utils#find_nearest_parent_directory(a:path, a:filename[:-2])
-        else
-            let l:modify_str = ':p:h'
-            let l:path = easycomplete#lsp#utils#find_nearest_parent_file(a:path, a:filename)
-        endif
-
-        return empty(l:path) ? '' : fnamemodify(l:path, l:modify_str)
-    else
-        echoerr "The type of argument \"filename\" must be String or List"
-    endif
-endfunction
-
-if exists('*matchstrpos')
-    function! easycomplete#lsp#utils#matchstrpos(expr, pattern) abort
-        return matchstrpos(a:expr, a:pattern)
-    endfunction
-else
-    function! easycomplete#lsp#utils#matchstrpos(expr, pattern) abort
-        return [matchstr(a:expr, a:pattern), match(a:expr, a:pattern), matchend(a:expr, a:pattern)]
-    endfunction
-endif
-
-function! easycomplete#lsp#utils#empty_complete(...) abort
-    return []
-endfunction
-
 function! easycomplete#lsp#utils#error(msg) abort
     echohl ErrorMsg
     echom a:msg
     echohl NONE
-endfunction
-
-function! easycomplete#lsp#utils#echo_with_truncation(msg) abort
-    let l:msg = a:msg
-
-    if &laststatus == 0 || (&laststatus == 1 && tabpagewinnr(tabpagenr(), '$') == 1)
-        let l:winwidth = winwidth(0)
-
-        if &ruler
-            let l:winwidth -= 18
-        endif
-    else
-        let l:winwidth = &columns
-    endif
-
-    if &showcmd
-        let l:winwidth -= 12
-    endif
-
-    if l:winwidth > 5 && l:winwidth < strdisplaywidth(l:msg)
-        let l:msg = l:msg[:l:winwidth - 5] . '...'
-    endif
-
-    exec 'echo l:msg'
 endfunction
 
 " Convert a byte-index (1-based) to a character-index (0-based)
@@ -293,138 +208,6 @@ function! easycomplete#lsp#utils#to_char(expr, lnum, col) abort
     endif
     let l:linestr = l:lines[-1]
     return strchars(strpart(l:linestr, 0, a:col - 1))
-endfunction
-
-function! s:get_base64_alphabet() abort
-    let l:alphabet = []
-
-    " Uppercase letters
-    for l:c in range(char2nr('A'), char2nr('Z'))
-        call add(l:alphabet, nr2char(l:c))
-    endfor
-
-    " Lowercase letters
-    for l:c in range(char2nr('a'), char2nr('z'))
-        call add(l:alphabet, nr2char(l:c))
-    endfor
-
-    " Numbers
-    for l:c in range(char2nr('0'), char2nr('9'))
-        call add(l:alphabet, nr2char(l:c))
-    endfor
-
-    " Symbols
-    call add(l:alphabet, '+')
-    call add(l:alphabet, '/')
-
-    return l:alphabet
-endfunction
-
-if exists('*trim')
-  function! easycomplete#lsp#utils#_trim(string) abort
-    return trim(a:string)
-  endfunction
-else
-  function! easycomplete#lsp#utils#_trim(string) abort
-    return substitute(a:string, '^\s*\|\s*$', '', 'g')
-  endfunction
-endif
-
-function! easycomplete#lsp#utils#_get_before_line() abort
-  let l:text = getline('.')
-  let l:idx = min([strlen(l:text), col('.') - 2])
-  let l:idx = max([l:idx, -1])
-  if l:idx == -1
-    return ''
-  endif
-  return l:text[0 : l:idx]
-endfunction
-
-function! easycomplete#lsp#utils#_get_before_char_skip_white() abort
-  let l:current_lnum = line('.')
-
-  let l:lnum = l:current_lnum
-  while l:lnum > 0
-    if l:lnum == l:current_lnum
-      let l:text = easycomplete#lsp#utils#_get_before_line()
-    else
-      let l:text = getline(l:lnum)
-    endif
-    let l:match = matchlist(l:text, '\([^[:blank:]]\)\s*$')
-    if get(l:match, 1, v:null) isnot v:null
-      return l:match[1]
-    endif
-    let l:lnum -= 1
-  endwhile
-
-  return ''
-endfunction
-
-let s:alphabet = s:get_base64_alphabet()
-
-function! easycomplete#lsp#utils#base64_decode(data) abort
-    let l:ret = []
-
-    " Process base64 string in chunks of 4 chars
-    for l:group in split(a:data, '.\{4}\zs')
-        let l:group_dec = 0
-
-        " Convert 4 chars to 3 octets
-        for l:char in split(l:group, '\zs')
-            let l:group_dec = l:group_dec * 64
-            let l:group_dec += max([index(s:alphabet, l:char), 0])
-        endfor
-
-        " Split the number representing the 3 octets into the individual
-        " octets
-        let l:octets = []
-        let l:i = 0
-        while l:i < 3
-            call add(l:octets, l:group_dec % 256)
-            let l:group_dec = l:group_dec / 256
-            let l:i += 1
-        endwhile
-
-        call extend(l:ret, reverse(l:octets))
-    endfor
-
-    " Handle padding
-    if len(a:data) >= 2
-        if strpart(a:data, len(a:data) - 2) ==# '=='
-            call remove(l:ret, -2, -1)
-        elseif strpart(a:data, len(a:data) - 1) ==# '='
-            call remove(l:ret, -1, -1)
-        endif
-    endif
-
-    return l:ret
-endfunction
-
-function! easycomplete#lsp#utils#make_valid_word(str) abort
-   let l:str = substitute(a:str, '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g')
-   let l:str = substitute(l:str, '\\\(.\)', '\1', 'g')
-   let l:valid = matchstr(l:str, '^[^"'' (<{\[\t\r\n]\+')
-   if empty(l:valid)
-       return l:str
-   endif
-   if l:valid =~# ':$'
-       return l:valid[:-2]
-   endif
-   return l:valid
-endfunction
-
-function! easycomplete#lsp#utils#_split_by_eol(text) abort
-    return split(a:text, '\r\n\|\r\|\n', v:true)
-endfunction
-
-" parse command options like "-key" or "-key=value"
-function! easycomplete#lsp#utils#parse_command_options(params) abort
-    let l:result = {}
-    for l:param in a:params
-        let l:match = matchlist(l:param, '-\{1,2}\zs\([^=]*\)\(=\(.*\)\)\?\m')
-        let l:result[l:match[1]] = l:match[3]
-    endfor
-    return l:result
 endfunction
 
 " polyfill for the neovim wait function

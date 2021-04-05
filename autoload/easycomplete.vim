@@ -1224,7 +1224,7 @@ endfunction
 function! easycomplete#LspDefinition() abort
   " typeDefinition => type definition
   let l:method = "definition"
-  let l:operation = substitute(a:method, '\u', ' \l\0', 'g')
+  let l:operation = substitute(l:method, '\u', ' \l\0', 'g')
   let l:servers = easycomplete#FindLspCompleteServers()['server_names']
   if empty(l:servers)
     return v:false
