@@ -132,7 +132,19 @@ function! s:BindingTypingCommandOnce()
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
   command! EasyCompleteCheck : call easycomplete#checking()
+  command! EasyCompleteProfileStart : call easycomplete#ProfileStart()
+  command! EasyCompleteProfileStop : call easycomplete#ProfileStop()
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
+endfunction
+
+function! easycomplete#ProfileStart()
+  exec "profile start profile.log"
+  exec "profile func *"
+  exec "profile file *"
+endfunction
+
+function! easycomplete#ProfileStop()
+  exec "profile pause"
 endfunction
 
 " 检查当前注册的插件中所依赖的 command 是否已经安装
@@ -144,8 +156,6 @@ function! easycomplete#checking()
       continue
     endif
     let l:command = get(g:easycomplete_source[item], 'command')
-    echom l:command
-
     let l:flag_txt = executable(l:command) ? "ready" : "missing!"
     let l:flag_ico = executable(l:command) ? "√" : "×"
     let l:msg = "[".l:flag_ico."]" . " " . l:name . ": `" . l:command . "` " . l:flag_txt
@@ -770,18 +780,26 @@ endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
   " menuitems is not empty
+  call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
   if s:CheckCompleteTastQueueAllDone()
     " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
-    call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
-    call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 40)
-    let g:easycomplete_firstcomplete_ctx = easycomplete#context()
+    if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
+      call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
+    else
+      call s:StopAsyncRun()
+      call s:CompleteTypingMatch()
+    endif
+    " call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
+    " let g:easycomplete_firstcomplete_ctx = easycomplete#context()
   endif
+  let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
 
 function! s:SetFirstCompeleHit()
   let g:easycomplete_first_complete_hit = 1
 endfunction
 
+" TODO 性能优化，4 次调用 0.08 s
 function! s:SortTextComparatorByLength(entry1, entry2)
   let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
         \ a:entry1.abbr : get(a:entry1, "word","")
@@ -795,6 +813,7 @@ function! s:SortTextComparatorByLength(entry1, entry2)
   return v:false
 endfunction
 
+" TODO 性能优化，4 次调用 0.09 s
 function! s:SortTextComparatorByAlphabet(entry1, entry2)
   let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
         \ a:entry1.abbr : get(a:entry1, "word","")

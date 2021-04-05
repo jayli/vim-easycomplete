@@ -182,7 +182,8 @@ function! s:nSort(a, b)
 endfunction
 
 function! easycomplete#util#FuzzySearch(needle, haystack)
-  " 优先调用 python 的实现，速度更快
+  " 实测 vim script 速度更快
+  return s:FuzzySearchVim(a:needle, a:haystack)
   if has("pythonx")
     return s:FuzzySearchPy(a:needle, a:haystack)
   else
