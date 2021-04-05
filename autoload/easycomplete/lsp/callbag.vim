@@ -25,6 +25,7 @@ function! s:createArrayWithSize(size, defaultValue) abort
     return l:array
 endfunction
 
+" mark
 " pipe() {{{
 function! easycomplete#lsp#callbag#pipe(...) abort
     let l:Res = a:1
@@ -37,6 +38,7 @@ function! easycomplete#lsp#callbag#pipe(...) abort
 endfunction
 " }}}
 
+" mark
 " makeSubject() {{{
 function! easycomplete#lsp#callbag#makeSubject() abort
     let l:data = { 'sinks': [] }
@@ -570,6 +572,7 @@ function! s:debounceTimeTimerCallback(data, d, ...) abort
 endfunction
 " }}}
 
+" mark
 " subscribe() {{{
 function! easycomplete#lsp#callbag#subscribe(...) abort
     let l:data = {}

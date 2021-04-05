@@ -1221,7 +1221,7 @@ function! easycomplete#DoLspDefinition(file_exts)
 endfunction
 
 " LSP 的 GoToDefinition
-function! easycomplete#LspDefinition(method) abort
+function! easycomplete#LspDefinition() abort
   " typeDefinition => type definition
   let l:method = "definition"
   let l:operation = substitute(a:method, '\u', ' \l\0', 'g')
