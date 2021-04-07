@@ -233,13 +233,13 @@ endfunction
 
 function! s:CustomCompleteMenuFilter(all_menu, word)
   " 完整匹配在前
-  let word = tolower(a:word)
+  let word = a:word
   let original_matching_menu = sort(filter(deepcopy(a:all_menu),
-        \ 'tolower(v:val.word) =~ "^'. word . '"'), "s:SortTextComparatorByLength")
+        \ 'v:val.word =~ "^'. word . '"'), "s:SortTextComparatorByLength")
 
   " 模糊匹配在后
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
-        \ 'tolower(v:val.word) !~ "^'. word . '"')
+        \ 'v:val.word !~ "^'. word . '"')
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
@@ -749,6 +749,10 @@ function! easycomplete#CompleteAdd(menu_list)
     let g:easycomplete_menuitems = []
   endif
 
+  if type(a:menu_list) != type([]) || empty(a:menu_list)
+    return
+  endif
+
   " close pum before call completeadd
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
@@ -756,15 +760,9 @@ function! easycomplete#CompleteAdd(menu_list)
 
   " FirstComplete will sort complete result just like YCM and coc.
   let typing_word = s:GetTypingWord()
-  let new_menulist = sort(copy(s:NormalizeMenulist(a:menu_list)), "s:SortTextComparatorByLength")
+  let new_menulist = filter(copy(s:NormalizeMenulist(a:menu_list)),
+        \ 'v:val.word =~ "'. typing_word . '"')
   let menuitems = g:easycomplete_menuitems + new_menulist
-  if type(menuitems) != type([]) || empty(menuitems)
-    return
-  endif
-  let menuitems = sort(copy(menuitems), "s:SortTextComparatorByAlphabet")
-  let menuitems = filter(menuitems,
-        \ 'tolower(v:val.word) =~ "'. tolower(typing_word) . '"')
-
   let g:easycomplete_menuitems = deepcopy(menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   try
@@ -784,7 +782,8 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
-      call s:AsyncRun(function('complete'), [a:start_pos, a:menuitems], 1)
+      let result_items = s:SortCompleteItems(a:menuitems, s:GetTypingWord())
+      call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
     else
       call s:StopAsyncRun()
       call s:CompleteTypingMatch()
@@ -793,6 +792,19 @@ function! s:FirstComplete(start_pos, menuitems)
     " let g:easycomplete_firstcomplete_ctx = easycomplete#context()
   endif
   let g:easycomplete_firstcomplete_ctx = easycomplete#context()
+endfunction
+
+function! s:SortCompleteItems(menu_list, typing_word)
+  try
+    let l:items = s:NormalizeSort(a:menu_list)
+  catch
+    echom v:exception
+  endtry
+  " 精确匹配在前
+  let original_matching_menu = filter(deepcopy(l:items), 'v:val.word =~ "^'. a:typing_word . '"')
+  " 模糊匹配在后
+  let otherwise_matching_menu = filter(deepcopy(l:items), 'v:val.word !~ "^'. a:typing_word . '"')
+  return original_matching_menu + otherwise_matching_menu
 endfunction
 
 function! s:SetFirstCompeleHit()
@@ -811,6 +823,52 @@ function! s:SortTextComparatorByLength(entry1, entry2)
     return v:false
   endif
   return v:false
+endfunction
+
+" TODO PY 和 VIM 实现的一致性
+function! s:NormalizeSort(items)
+  return s:NormalizeSortVIM(a:items)
+  if has("pythonx")
+    return s:NormalizeSortPY(a:items)
+  else
+    return s:NormalizeSortVIM(a:items)
+  endif
+endfunction
+
+function! s:NormalizeSortVIM(items)
+  " 先按照长度排序
+  let l:items = sort(copy(a:items), "s:SortTextComparatorByLength")
+  " 再按照字母表排序
+  let l:items = sort(copy(l:items), "s:SortTextComparatorByAlphabet")
+  return l:items
+endfunction
+
+function! s:NormalizeSortPY(items)
+pyx << EOF
+import vim
+import json
+items = vim.eval("a:items")
+
+def getKey(el):
+  if len(el["abbr"]) != 0:
+    k1 = el["abbr"]
+  else:
+    k1 = el["word"]
+  return k1
+
+def getKeyByAlphabet(el):
+  return getKey(el).lower().rjust(6,"=")
+
+def getKeyByLength(el):
+  return len(getKey(el))
+
+# 先按照长度排序
+items.sort(key=getKeyByLength)
+items.sort(key=getKeyByAlphabet)
+# 再按照字母表排序
+vim.command("let ret = %s"%json.dumps(items))
+EOF
+  return ret
 endfunction
 
 " TODO 性能优化，4 次调用 0.09 s
@@ -1149,12 +1207,12 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
 
-  try
-    let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByLength")
-    let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByAlphabet")
-  catch
-    echom v:exception
-  endtry
+  " try
+  "   let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByLength")
+  "   let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByAlphabet")
+  " catch
+  "   echom v:exception
+  " endtry
 
   call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
 endfunction
