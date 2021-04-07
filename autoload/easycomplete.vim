@@ -827,7 +827,7 @@ endfunction
 
 " TODO PY 和 VIM 实现的一致性
 function! s:NormalizeSort(items)
-  return s:NormalizeSortVIM(a:items)
+  " return s:NormalizeSortVIM(a:items)
   if has("pythonx")
     return s:NormalizeSortPY(a:items)
   else
@@ -857,7 +857,7 @@ def getKey(el):
   return k1
 
 def getKeyByAlphabet(el):
-  return getKey(el).lower().rjust(6,"=")
+  return getKey(el).lower().rjust(5,"a")
 
 def getKeyByLength(el):
   return len(getKey(el))
