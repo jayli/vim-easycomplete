@@ -762,7 +762,7 @@ function! easycomplete#CompleteAdd(menu_list)
   let typing_word = s:GetTypingWord()
   let new_menulist = filter(copy(s:NormalizeMenulist(a:menu_list)),
         \ 'v:val.word =~ "'. typing_word . '"')
-  let menuitems = g:easycomplete_menuitems + new_menulist
+  let menuitems = s:distinct(g:easycomplete_menuitems + new_menulist)
   let g:easycomplete_menuitems = deepcopy(menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   try
@@ -774,6 +774,37 @@ function! easycomplete#CompleteAdd(menu_list)
   " let g:easycomplete_menuitems = menuitems
   if g:env_is_vim | call popup_clear() | endif
   call s:AddCompleteCache(typing_word, menuitems)
+endfunction
+
+"popup 菜单内关键词去重，只做buff、dict和lsp里的keyword去重
+"snippet 不去重
+function! s:distinct(menu_list)
+  if empty(a:menu_list) || len(a:menu_list) == 0
+    return []
+  endif
+
+  let result_items = deepcopy(a:menu_list)
+
+  let buf_list = []
+  for item in a:menu_list
+    if item.menu == "[buf]"
+      call add(buf_list, item.word)
+    endif
+  endfor
+
+  for item in a:menu_list
+    if item.menu == "[S]" || item.menu == "[buf]"
+      continue
+    endif
+
+    let word = has_key(item, "abbr") && !empty(item.abbr) ?
+          \ item.abbr : get(item, "word", "")
+
+    if index(buf_list, word) >= 0
+      call filter(result_items, '!(v:val.menu == "[buf]" && v:val.word ==# "' . word . '")')
+    endif
+  endfor
+  return result_items
 endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
