@@ -438,6 +438,25 @@ function! easycomplete#util#log(...)
   echohl NONE
 endfunction
 
+function! easycomplete#util#GotoWindow(winid) abort
+  if a:winid == bufwinid(bufnr(""))
+    return
+  endif
+  for window in range(1, winnr('$'))
+    call s:GotoWinnr(window)
+    if a:winid == bufwinid(bufnr(""))
+      break
+    endif
+  endfor
+endfunction " }}}
+
+function! s:GotoWinnr(winnr) abort
+  let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
+        \ : 'wincmd ' . a:winnr
+  noautocmd execute cmd
+  call execute('redraw','silent!')
+endfunction " }}}
+
 " for tsserver only
 function! easycomplete#util#NormalizeEntryDetail(item)
   let l:title = ""
