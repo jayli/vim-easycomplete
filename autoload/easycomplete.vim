@@ -826,6 +826,8 @@ function! s:FirstComplete(start_pos, menuitems)
       let result_items = s:SortCompleteItems(a:menuitems, s:GetTypingWord())
       call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
     else
+      " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
+      " SecondComplete
       call s:StopAsyncRun()
       call s:CompleteTypingMatch()
     endif
