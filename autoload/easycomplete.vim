@@ -434,7 +434,7 @@ function! easycomplete#FireCondition()
   return v:true
 endfunction
 
-" vim 冒号 typing
+" vim 冒号 typing: Hack for vim
 function! s:VimColonTyping()
   if &filetype == "vim" &&
         \ easycomplete#context()['typing'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):"
@@ -467,7 +467,6 @@ endfunction
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
   " Filter unexpected '.' dot matching
-
   let l:ctx = easycomplete#context()
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
