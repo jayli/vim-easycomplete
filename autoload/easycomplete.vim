@@ -890,32 +890,8 @@ function! s:NormalizeSortVIM(items)
   return l:items
 endfunction
 
-function! s:NormalizeSortPY(items)
-pyx << EOF
-import vim
-import json
-items = vim.eval("a:items")
-
-def getKey(el):
-  if len(el["abbr"]) != 0:
-    k1 = el["abbr"]
-  else:
-    k1 = el["word"]
-  return k1
-
-def getKeyByAlphabet(el):
-  return getKey(el).lower().rjust(5,"a")
-
-def getKeyByLength(el):
-  return len(getKey(el))
-
-# 先按照长度排序
-items.sort(key=getKeyByLength)
-# 再按照字母表排序
-items.sort(key=getKeyByAlphabet)
-vim.command("let ret = %s"%json.dumps(items))
-EOF
-  return ret
+function! s:NormalizeSortPY(...)
+  return call("easycomplete#python#NormalizeSortPY", a:000)
 endfunction
 
 " TODO 性能优化，4 次调用 0.09 s

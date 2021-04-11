@@ -1,5 +1,4 @@
 """ 常用的工具函数
-
 function! easycomplete#util#filetype()
   " SourcePost 事件中 &filetype 为空，应当从 bufname 中根据后缀获取
   " TODO 这个函数需要重写
@@ -182,9 +181,20 @@ function! s:nSort(a, b)
 endfunction
 
 function! easycomplete#util#FuzzySearch(needle, haystack)
-  " 实测 vim script 速度更快
-  return s:FuzzySearchVim(a:needle, a:haystack)
-  if has("pythonx")
+  " 实测 vim script 速度更快，这里始终使用 VIM 的实现
+  " Python 实现的执行速度 ---
+  " FUNCTION  easycomplete#util#FuzzySearch()
+  "     Defined: ~/.vim/bundle/vim-easycomplete/autoload/easycomplete/util.vim:184
+  " Called 201 times
+  " Total time:   0.056193
+  "  Self time:   0.005171
+  " VIM 实现的执行速度 --- 
+  " FUNCTION  easycomplete#util#FuzzySearch()
+  "     Defined: ~/.vim/bundle/vim-easycomplete/autoload/easycomplete/util.vim:184
+  " Called 201 times
+  " Total time:   0.031811
+  "  Self time:   0.004698
+  if v:false && has("pythonx")
     return s:FuzzySearchPy(a:needle, a:haystack)
   else
     return s:FuzzySearchVim(a:needle, a:haystack)
@@ -228,48 +238,8 @@ function! s:FuzzySearchVim(needle, haystack)
   return v:true
 endfunction
 
-function! s:FuzzySearchPy(needle, haystack)
-  let needle = tolower(a:needle)
-  let haystack = tolower(a:haystack)
-pyx << EOF
-import vim
-needle = vim.eval("needle")
-haystack = vim.eval("haystack")
-
-def FuzzySearch(needle, haystack):
-  flag = 1
-  tlen = len(haystack)
-  qlen = len(needle)
-  if qlen > tlen:
-    return 0
-  elif qlen == tlen:
-    if needle == haystack:
-      return 1
-    else:
-      return 0
-  else:
-    needle_ls = list(needle)
-    haystack_ls = list(haystack)
-    j = 0
-    fallback = 0
-    for nch in needle_ls:
-      fallback = 0
-      while j < tlen:
-        if haystack_ls[j] == nch:
-          j += 1
-          fallback = 1
-          break
-        else:
-          j += 1
-      if fallback == 1:
-        continue
-      return 0
-    return 1
-
-flag = FuzzySearch(needle, haystack)
-vim.command("let ret = %s"%flag)
-EOF
-  return ret
+function! s:FuzzySearchPy(...)
+  return call("easycomplete#python#FuzzySearchPy", a:000)
 endfunction
 
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
