@@ -760,7 +760,11 @@ function! easycomplete#CompleteAdd(menu_list)
   endif
 
   if type(a:menu_list) != type([]) || empty(a:menu_list)
-    return
+    if s:CheckCompleteTastQueueAllDone()
+      " continue
+    else
+      return
+    endif
   endif
 
   " close pum before call completeadd
@@ -1005,10 +1009,10 @@ function! s:SetCompleteTaskQueue(name, ctx, condition, done)
   call filter(g:easycomplete_complete_taskqueue, 'v:val.name != "'.a:name.'"')
   call add(g:easycomplete_complete_taskqueue, {
         \ "name" : a:name,
-        \ "ctx" : a:ctx,
         \ "condition": a:condition,
         \ "done" : a:done
         \ })
+        " \ "ctx" : a:ctx,
 endfunction
 
 function! s:CheckCompleteTastQueueAllDone()
@@ -1243,19 +1247,12 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
     call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
-    echom "error jayli"
+    echom "lsp error response"
     return
   endif
 
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
-
-  " try
-  "   let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByLength")
-  "   let l:matches = sort(deepcopy(l:matches), "s:SortTextComparatorByAlphabet")
-  " catch
-  "   echom v:exception
-  " endtry
 
   call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
 endfunction
