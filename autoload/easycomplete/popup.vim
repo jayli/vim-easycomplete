@@ -54,12 +54,16 @@ endfunction
 function! easycomplete#popup#DoPopup(info)
   " use timer_start since nvim_buf_set_lines is not allowed in
   " CompleteChanged
-  " call easycomplete#util#StopAsyncRun()
-  call easycomplete#util#AsyncRun(function('s:check'), [a:info], 0)
+  call s:StopVisualAsyncRun()
+  call s:StartPopupAsyncRun("s:check", [a:info], 100)
 endfunction
 
 function! s:check(info)
-  if empty(s:item) || empty(a:info) || !pumvisible()
+  if !pumvisible()
+    call easycomplete#popup#close()
+    return
+  endif
+  if empty(s:item) || empty(a:info)
     call easycomplete#popup#close()
     return
   endif
@@ -143,6 +147,17 @@ function! s:check(info)
   endif
 endfunction
 
+function! s:StopVisualAsyncRun()
+  if exists('s:popup_visual_delay') && s:popup_visual_delay > 0
+    call timer_stop(s:popup_visual_delay)
+  endif
+endfunction
+
+function! s:StartPopupAsyncRun(method, args, times)
+  let s:popup_visual_delay = timer_start(a:times,
+        \ { -> easycomplete#util#call(function(a:method), a:args)})
+endfunction
+
 function! s:VimShowPopup(opt)
   if s:is_nvim | return | endif
   let opt = {
@@ -156,6 +171,9 @@ function! s:VimShowPopup(opt)
 
   if g:easycomplete_popup_win
     call popup_setoptions(g:easycomplete_popup_win, opt)
+  else
+    let winid = popup_create(s:buf, opt)
+    let g:easycomplete_popup_win = winid
     call setbufvar(s:buf, "&filetype", &filetype)
     call setwinvar(winid, '&scrolloff', 0)
     call setwinvar(winid, 'float', 1)
@@ -167,9 +185,6 @@ function! s:VimShowPopup(opt)
     call setwinvar(winid, '&wrap', 1)
     call setwinvar(winid, '&linebreak', 1)
     call setwinvar(winid, '&conceallevel', 2)
-  else
-    let winid = popup_create(s:buf, opt)
-    let g:easycomplete_popup_win = winid
   endif
   call popup_show(g:easycomplete_popup_win)
 endfunction
