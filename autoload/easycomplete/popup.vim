@@ -64,7 +64,8 @@ function! s:check(info)
     return
   endif
   if empty(s:item) || empty(a:info)
-    call easycomplete#popup#close()
+    " call easycomplete#popup#close()
+    call popup_hide(g:easycomplete_popup_win)
     return
   endif
   if g:easycomplete_popup_win && s:event == s:last_event
@@ -138,7 +139,7 @@ function! s:check(info)
   endif
 
   " close the old one if already opened
-  call easycomplete#popup#close()
+  " call easycomplete#popup#close()
 
   if s:is_nvim
     call s:NvimShowPopup(opt)
@@ -170,23 +171,21 @@ function! s:VimShowPopup(opt)
         \ }
 
   if g:easycomplete_popup_win
-    call popup_setoptions(g:easycomplete_popup_win, opt)
+    call popup_move(g:easycomplete_popup_win, opt)
+    call popup_show(g:easycomplete_popup_win)
   else
     let winid = popup_create(s:buf, opt)
     let g:easycomplete_popup_win = winid
-    call setbufvar(s:buf, "&filetype", &filetype)
-    call setwinvar(winid, '&scrolloff', 0)
+    call setwinvar(winid, '&scrolloff', 1)
     call setwinvar(winid, 'float', 1)
-    call setwinvar(winid, '&list', 0)
     call setwinvar(winid, '&number', 0)
-    call setwinvar(winid, '&relativenumber', 0)
-    call setwinvar(winid, '&cursorcolumn', 0)
-    call setwinvar(winid, '&colorcolumn', 0)
-    call setwinvar(winid, '&wrap', 1)
-    call setwinvar(winid, '&linebreak', 1)
-    call setwinvar(winid, '&conceallevel', 2)
+    " call setwinvar(winid, '&list', 0)
+    " call setwinvar(winid, '&cursorcolumn', 0)
+    " call setwinvar(winid, '&colorcolumn', 0)
+    " call setwinvar(winid, '&wrap', 1)
+    " call setwinvar(winid, '&linebreak', 1)
+    " call setwinvar(winid, '&conceallevel', 2)
   endif
-  call popup_show(g:easycomplete_popup_win)
 endfunction
 
 function! s:NvimShowPopup(opt)
