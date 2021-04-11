@@ -2,7 +2,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-简单到爆的 VIM/NVIM 自动补全插件，它只做补全
+简单到爆的 VIM/NVIM 自动补全插件
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
 
@@ -18,7 +18,7 @@
 
 默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`let g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了三种样式（dark, light, rider）：最常用的是`rider`，这样配置 `let g:easycomplete_scheme="dark"`，自带的样式仅仅是 vim 默认样式不太适合的时候，一般留空即可。
+插件自带了三种样式（dark, light, rider, sharp）：最常用的是`rider`，这样配置 `let g:easycomplete_scheme="rider"`，自带的样式仅仅是 vim 默认样式不太适合的时候使用，一般留空即可。
 
 此外无其他配置。
 
