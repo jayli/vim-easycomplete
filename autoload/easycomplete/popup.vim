@@ -171,15 +171,17 @@ function! s:VimShowPopup(opt)
         \ 'fixed': 1,
         \ }
 
+  " TODO: 在 iTerm2 下，执行 popup_move/popup_setoptions/popup_create 会造成
+  " complete menu 的闪烁，原因未知
   if g:easycomplete_popup_win
     call popup_move(g:easycomplete_popup_win, opt)
     call popup_show(g:easycomplete_popup_win)
   else
     let winid = popup_create(s:buf, opt)
     let g:easycomplete_popup_win = winid
-    " call setwinvar(winid, '&scrolloff', 1)
-    " call setwinvar(winid, 'float', 1)
-    " call setwinvar(winid, '&number', 0)
+    call setwinvar(winid, '&scrolloff', 1)
+    call setwinvar(winid, 'float', 1)
+    call setwinvar(winid, '&number', 0)
     " call setwinvar(winid, '&list', 0)
     " call setwinvar(winid, '&cursorcolumn', 0)
     " call setwinvar(winid, '&colorcolumn', 0)
