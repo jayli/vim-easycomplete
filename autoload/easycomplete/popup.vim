@@ -55,7 +55,7 @@ function! easycomplete#popup#DoPopup(info)
   " use timer_start since nvim_buf_set_lines is not allowed in
   " CompleteChanged
   call s:StopVisualAsyncRun()
-  call s:StartPopupAsyncRun("s:check", [a:info], 100)
+  call s:StartPopupAsyncRun("s:check", [a:info], 200)
 endfunction
 
 function! s:check(info)
@@ -142,6 +142,7 @@ function! s:check(info)
   " call easycomplete#popup#close()
 
   if s:is_nvim
+    call easycomplete#popup#close()
     call s:NvimShowPopup(opt)
   elseif s:is_vim
     call s:VimShowPopup(opt)
@@ -167,7 +168,7 @@ function! s:VimShowPopup(opt)
         \ 'maxwidth': a:opt.width,
         \ 'maxheight': a:opt.height,
         \ 'firstline': 0,
-        \ 'fixed': 1
+        \ 'fixed': 1,
         \ }
 
   if g:easycomplete_popup_win
@@ -176,9 +177,9 @@ function! s:VimShowPopup(opt)
   else
     let winid = popup_create(s:buf, opt)
     let g:easycomplete_popup_win = winid
-    call setwinvar(winid, '&scrolloff', 1)
-    call setwinvar(winid, 'float', 1)
-    call setwinvar(winid, '&number', 0)
+    " call setwinvar(winid, '&scrolloff', 1)
+    " call setwinvar(winid, 'float', 1)
+    " call setwinvar(winid, '&number', 0)
     " call setwinvar(winid, '&list', 0)
     " call setwinvar(winid, '&cursorcolumn', 0)
     " call setwinvar(winid, '&colorcolumn', 0)
