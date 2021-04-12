@@ -55,7 +55,7 @@ function! easycomplete#popup#DoPopup(info)
   " use timer_start since nvim_buf_set_lines is not allowed in
   " CompleteChanged
   call s:StopVisualAsyncRun()
-  call s:StartPopupAsyncRun("s:check", [a:info], 200)
+  call s:StartPopupAsyncRun("s:check", [a:info], 170)
 endfunction
 
 function! s:check(info)
