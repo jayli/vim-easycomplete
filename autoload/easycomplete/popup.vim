@@ -64,11 +64,14 @@ function! s:check(info)
     return
   endif
   if empty(s:item) || empty(a:info)
-    " call easycomplete#popup#close()
-    call popup_hide(g:easycomplete_popup_win)
+    if s:is_vim
+      call popup_hide(g:easycomplete_popup_win)
+    else
+      call easycomplete#popup#close()
+    endif
     return
   endif
-  if g:easycomplete_popup_win && s:event == s:last_event
+  if s:is_nvim && g:easycomplete_popup_win && s:event == s:last_event
     return
   endif
   let s:last_event = s:event
@@ -95,6 +98,7 @@ function! s:check(info)
   elseif s:is_vim
     call deletebufline(s:buf, 1, '$')
     call setbufline(s:buf, 1, info)
+    " call setbufline(s:buf, 1, [rand(srand())])
   endif
 
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
@@ -130,12 +134,14 @@ function! s:check(info)
     return
   endif
 
-  if winline() < s:event.row
+  let l:screen_line = line('.') - line('w0') + 1
+  if l:screen_line <= s:event.row
     " 菜单向下展开
     let opt.row = s:event.row
   else
     " 菜单向上展开
-    let opt.row = winline() - opt.height
+    let opt.row = l:screen_line - opt.height - 1
+    let opt.row += (win_screenpos(win_getid())[0] - 1)
   endif
 
   " close the old one if already opened
@@ -174,7 +180,7 @@ function! s:VimShowPopup(opt)
   " TODO: 在 iTerm2 下，执行 popup_move/popup_setoptions/popup_create 会造成
   " complete menu 的闪烁，原因未知
   if g:easycomplete_popup_win
-    call popup_move(g:easycomplete_popup_win, opt)
+    call popup_setoptions(g:easycomplete_popup_win, opt)
     call popup_show(g:easycomplete_popup_win)
   else
     let winid = popup_create(s:buf, opt)
