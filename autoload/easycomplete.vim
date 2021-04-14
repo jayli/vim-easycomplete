@@ -452,7 +452,7 @@ endfunction
 " vim 冒号 typing: Hack for vim
 function! s:VimColonTyping()
   if &filetype == "vim" &&
-        \ easycomplete#context()['typing'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):"
+        \ easycomplete#context()['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
     return v:true
   else
     return v:false
@@ -526,10 +526,19 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 150
   endif
 
-  " hack for vim . typing
+  " 特殊字符'->',':','.','::'等 在个语言中的匹配，一般要配合 lsp 一起使用，即
+  " lsp给出的结果中就包含了 "a.b.c" 的提示，这时直接执行 SecondComplete 动作
   if !empty(g:easycomplete_menuitems)
+    " hack for vim . typing
     if s:VimDotTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\(\w\+\.\)\{-1,}$')
+      call s:CompleteTypingMatch(l:vim_word)
+      return v:null
+    endif
+
+    " hack for vim : typing
+    if s:VimColonTyping()
+      let l:vim_word = matchstr(l:ctx['typed'], '\w:$')
       call s:CompleteTypingMatch(l:vim_word)
       return v:null
     endif
@@ -631,9 +640,16 @@ function! easycomplete#CompleteChanged()
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-    
+    " TODO 这里的逻辑需要抽离一下，每个语言对于特殊字符的定义是不同的
+    " 如果匹配不出东西，就 flush 重置，在 CompleteTypingMatch 中执行
+    " 不应该每个语言hack都写这里
     if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
+      " VIM '.' 操作符:"a.b.c","a.b"...
       let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
+      call s:CompleteTypingMatch(l:vim_word)
+    elseif &filetype == 'vim' && l:ctx['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\\w\\{-}$"
+      " VIM ':' 操作符:"g:s"...
+      let l:vim_word = matchstr(l:ctx['typed'], '\w:\w\{-}$')
       call s:CompleteTypingMatch(l:vim_word)
     else
       call s:CompleteTypingMatch()

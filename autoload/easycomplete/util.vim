@@ -335,8 +335,10 @@ function! easycomplete#util#GetTypingWord()
   let start = col('.') - 1
   let line = getline('.')
   let width = 0
-  " hack for vim script
-  let regx = &filetype == "vim" ? '[a-zA-Z0-9_#:]' : '[a-zA-Z0-9_#]'
+  " 正常情况这里取普通单词逻辑不应当变化
+  " 如果不同语言对单词组成字符界定不一，在主流程中处理
+  " 比如 vim 把 'g:abc' 对待为一个完整单词
+  let regx = '[a-zA-Z0-9_#]'
   while start > 0 && line[start - 1] =~ regx
     let start = start - 1
     let width = width + 1
