@@ -634,7 +634,6 @@ function! easycomplete#CompleteChanged()
     
     if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
       let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
-      echom l:vim_word
       call s:CompleteTypingMatch(l:vim_word)
     else
       call s:CompleteTypingMatch()
