@@ -503,7 +503,6 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
-
   if complete_check()
     call s:CloseCompletionMenu()
   endif
@@ -1389,6 +1388,7 @@ function! s:NormalizeLSPInfo(info)
 endfunction
 
 " LSP definition 跳转的通用封装
+" file_exts 文件后缀
 function! easycomplete#DoLspDefinition(file_exts)
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0

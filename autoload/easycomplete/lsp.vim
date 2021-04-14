@@ -842,6 +842,13 @@ function! s:on_request(server_name, id, request) abort
   endif
 endfunction
 
+function! s:send_response(server_name, data) abort
+  let l:lsp_id = s:servers[a:server_name]['lsp_id']
+  let l:data = copy(a:data)
+  call s:log('--->', l:lsp_id, a:server_name, l:data)
+  call easycomplete#lsp#client#send_response(l:lsp_id, a:data)
+endfunction
+
 function! s:workspace_edit_apply_workspace_edit(workspace_edit) abort
   let l:loclist_items = []
 

@@ -78,7 +78,8 @@ augroup EasyCompleteRegistSources
       \ 'whitelist': ['go'],
       \ 'completor': 'easycomplete#sources#go#completor',
       \ 'constructor' :'easycomplete#sources#go#constructor',
-      \ 'command': 'gocode'
+      \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
+      \ 'command': 'gopls'
       \  })
 
   call easycomplete#RegisterSource({
