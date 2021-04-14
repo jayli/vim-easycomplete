@@ -142,6 +142,9 @@ function! s:check(info)
     " 菜单向上展开
     let opt.row = l:screen_line - opt.height - 1
     let opt.row += (win_screenpos(win_getid())[0] - 1)
+    if s:is_nvim
+      let opt.row += 0
+    endif
   endif
 
   " close the old one if already opened
