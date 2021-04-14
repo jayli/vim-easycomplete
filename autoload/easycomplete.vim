@@ -96,7 +96,7 @@ endfunction
 
 function! easycomplete#GetBindingKeys()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/.:>_'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/.:>_'
   return l:key_liststr
 endfunction
 
@@ -503,6 +503,7 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
+
   if complete_check()
     call s:CloseCompletionMenu()
   endif
@@ -526,6 +527,7 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 150
   endif
 
+  " typing 中的 SecondComplete 特殊字符处理
   " 特殊字符'->',':','.','::'等 在个语言中的匹配，一般要配合 lsp 一起使用，即
   " lsp给出的结果中就包含了 "a.b.c" 的提示，这时直接执行 SecondComplete 动作
   if !empty(g:easycomplete_menuitems)
@@ -784,6 +786,9 @@ function! s:CompleteHandler()
     return
   endif
 
+  " 之前所有的步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
+  " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误
+  " ，否则不应该在后续链路做 Hack 了
   call s:CompleteInit()
   call s:CompletorCalling()
 endfunction
