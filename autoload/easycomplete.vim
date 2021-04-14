@@ -215,6 +215,17 @@ function! s:CompleteTypingMatch(...)
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
+  
+  " 如果在 VIM 中输入了':'和'.'，一旦没有匹配项，就直接清空
+  " g:easycomplete_menuitems，匹配状态复位
+  " 注意：这里其实区分了 跟随匹配 和 Tab 匹配两个不同的动作
+  " - 跟随匹配要更“自然”，能匹配不出东西就保持空，尽可能少的干扰
+  " - Tab 匹配要更“刻意”，能多匹配就多匹配，尽量多给提示，交给用户去选择
+  if (s:VimDotTyping() || s:VimColonTyping()) && len(filtered_menu) == 0
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return
+  endif
 
   " complete() 会导致 CompleteChanged 事件, 这里使用异步
   call s:AsyncRun(function('s:SecondComplete'), [
@@ -623,6 +634,7 @@ function! easycomplete#CompleteChanged()
     
     if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
       let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
+      echom l:vim_word
       call s:CompleteTypingMatch(l:vim_word)
     else
       call s:CompleteTypingMatch()
