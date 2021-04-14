@@ -197,7 +197,7 @@ endfunction
 
 " Second Complete
 function! s:CompleteTypingMatch(...)
-  if (empty(v:completed_item) && s:zizzing()) && !s:VimColonTyping()
+  if (empty(v:completed_item) && s:zizzing()) && !(s:VimColonTyping() || s:VimDotTyping())
     return
   endif
   let l:char = easycomplete#context()["char"]
@@ -215,6 +215,7 @@ function! s:CompleteTypingMatch(...)
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
+
   " complete() 会导致 CompleteChanged 事件, 这里使用异步
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
@@ -244,6 +245,9 @@ endfunction
 function! s:CustomCompleteMenuFilter(all_menu, word)
   " 完整匹配在前
   let word = a:word
+  if index(str2list(word), char2nr('.')) >= 0
+    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
+  endif
   let original_matching_menu = sort(filter(deepcopy(a:all_menu),
         \ 'v:val.word =~ "^'. word . '"'), "s:SortTextComparatorByLength")
 
@@ -444,12 +448,25 @@ function! s:VimColonTyping()
   endif
 endfunction
 
+" vim 点号 typing: Hack for vim
+function! s:VimDotTyping()
+  if &filetype == "vim" &&
+        \ easycomplete#context()['typed'] =~ "\\w\\."
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#typing()
   if !easycomplete#FireCondition()
     return ""
   endif
 
   if s:VimColonTyping()
+    " continue
+  elseif s:VimDotTyping()
+    " TODO call self.sth
     " continue
   elseif s:zizzing()
     return ""
@@ -468,6 +485,7 @@ endfunction
 function! s:DoComplete(immediately)
   " Filter unexpected '.' dot matching
   let l:ctx = easycomplete#context()
+  " 不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
     call s:CloseCompletionMenu()
@@ -484,8 +502,8 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
-  " More than one '.'
-  if l:ctx['char'] == '.'
+  " 连续两个 '.' 重新初始化 complete
+  if l:ctx['char'] == '.' && (len(l:ctx['typed']) >= 2 && str2list(l:ctx['typed'])[-2] == char2nr('.'))
     call s:CompleteInit()
     call s:ResetCompleteCache()
   endif
@@ -495,6 +513,15 @@ function! s:DoComplete(immediately)
     let word_first_type_delay = 0
   else
     let word_first_type_delay = 150
+  endif
+
+  " hack for vim . typing
+  if !empty(g:easycomplete_menuitems)
+    if s:VimDotTyping()
+      let l:vim_word = matchstr(l:ctx['typed'], '\(\w\+\.\)\{-1,}$')
+      call s:CompleteTypingMatch(l:vim_word)
+      return v:null
+    endif
   endif
 
   " Check fuzzy match condition
@@ -588,12 +615,18 @@ endfunction
 
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
+  let l:ctx = easycomplete#context()
   call easycomplete#SetCompletedItem(item)
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-        " \ && !easycomplete#CompleteCursored()
-    call s:CompleteTypingMatch()
+    
+    if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
+      let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
+      call s:CompleteTypingMatch(l:vim_word)
+    else
+      call s:CompleteTypingMatch()
+    endif
   endif
   if empty(item)
     " hack for nvim

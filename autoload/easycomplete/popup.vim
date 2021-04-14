@@ -182,6 +182,7 @@ function! s:VimShowPopup(opt)
   if g:easycomplete_popup_win
     call popup_setoptions(g:easycomplete_popup_win, opt)
     call popup_show(g:easycomplete_popup_win)
+    
   else
     let winid = popup_create(s:buf, opt)
     let g:easycomplete_popup_win = winid
