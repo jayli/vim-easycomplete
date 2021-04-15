@@ -261,11 +261,11 @@ function! s:CustomCompleteMenuFilter(all_menu, word)
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
   let original_matching_menu = sort(filter(deepcopy(a:all_menu),
-        \ 'v:val.word =~ "^'. word . '"'), "s:SortTextComparatorByLength")
+        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) =~ "^'. word . '"'), "s:SortTextComparatorByLength")
 
   " 模糊匹配在后
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
-        \ 'v:val.word !~ "^'. word . '"')
+        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) !~ "^'. word . '"')
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
@@ -345,10 +345,11 @@ function! easycomplete#backing()
     call s:flush()
     return ""
   endif
-  if s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
-        \ && !empty(g:easycomplete_menuitems)
+  if !empty(g:easycomplete_menuitems)
     " 不明白为何 ctx 获取在 sendkey <bs> 之前，所以这里用异步
-    call s:AsyncRun(function('s:CompleteTypingMatch'), [], 0)
+    " call s:AsyncRun(function('s:CompleteTypingMatch'), [], 0)
+    " call s:StopAsyncRun()
+    call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 0)
   endif
   return ""
 endfunction
@@ -656,29 +657,53 @@ function! s:CompleteSourceReady(name)
   endif
 endfunction
 
+" 这个函数只能在 SecondComplete 过程中使用
+" 用来根据 g:easycomplete_firstcomplete_ctx 和 ctx 做 diff 算出 typing word
+" Gtx 即 g:easycomplete_firstcomplete_ctx
+function! s:GetTypingWordByGtx()
+  if empty(g:easycomplete_firstcomplete_ctx)
+    return ""
+  endif
+  let l:ctx = easycomplete#context()
+  let l:gtx = g:easycomplete_firstcomplete_ctx
+  return l:ctx['typed'][strlen(l:gtx['typed'])-strlen(l:gtx['typing']):]
+endfunction
+
+function! s:CompleteChangedMatchAction()
+  " TODO Bug: g:<tab> 给出来的结果 无法走到这里，导致不能做 SecondComplete
+  " TODO 这里的逻辑需要抽离一下，每个语言对于特殊字符的定义是不同的
+  " 如果匹配不出东西，就 flush 重置，在 CompleteTypingMatch 中执行
+  " 不应该每个语言hack都写这里
+  let l:ctx = easycomplete#context()
+  call s:StopZizz()
+  if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
+    " VIM '.' 操作符:"a.b.c","a.b"...
+    " let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
+    let l:vim_word = s:GetTypingWordByGtx() 
+    call s:CompleteTypingMatch(l:vim_word)
+  elseif &filetype == 'vim' && l:ctx['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\\w\\{-}$"
+    " VIM ':' 操作符:"g:s"...
+    " let l:vim_word1 = matchstr(l:ctx['typed'], '\w:\w\{-}$')
+    let l:vim_word = s:GetTypingWordByGtx() 
+    call s:CompleteTypingMatch(l:vim_word)
+  else
+    " 测试中，如果work，VIM 逻辑的特殊处理可以不需要了
+    " call s:StopZizz()
+    " call s:CompleteTypingMatch()
+    let l:vim_word = s:GetTypingWordByGtx() 
+    call s:CompleteTypingMatch(l:vim_word)
+  endif
+
+endfunction
+
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
-  let l:ctx = easycomplete#context()
   call easycomplete#SetCompletedItem(item)
+  " SecondComplete 的前进态走这里，后退态走 easycomplete#backing 函数
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-    " TODO Bug: g:<tab> 给出来的结果 无法走到这里，导致不能做 SecondComplete
-    " TODO 这里的逻辑需要抽离一下，每个语言对于特殊字符的定义是不同的
-    " 如果匹配不出东西，就 flush 重置，在 CompleteTypingMatch 中执行
-    " 不应该每个语言hack都写这里
-
-    if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
-      " VIM '.' 操作符:"a.b.c","a.b"...
-      let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
-      call s:CompleteTypingMatch(l:vim_word)
-    elseif &filetype == 'vim' && l:ctx['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\\w\\{-}$"
-      " VIM ':' 操作符:"g:s"...
-      let l:vim_word = matchstr(l:ctx['typed'], '\w:\w\{-}$')
-      call s:CompleteTypingMatch(l:vim_word)
-    else
-      call s:CompleteTypingMatch()
-    endif
+    call s:CompleteChangedMatchAction()
   endif
   if empty(item)
     " hack for nvim
@@ -868,11 +893,16 @@ function! easycomplete#CompleteAdd(menu_list)
 
   " FirstComplete will sort complete result just like YCM and coc.
   let typing_word = s:GetTypingWord()
+  if index(str2list(typing_word), char2nr('.')) >= 0
+    let matched_typing_word = substitute(typing_word, "\\.", "\\\\\\\\.", "g")
+  else
+    let matched_typing_word = typing_word
+  endif
   let new_menulist = filter(copy(s:NormalizeMenulist(a:menu_list)),
-        \ 'v:val.word =~ "'. typing_word . '"')
+        \ 'v:val.word =~ "'. matched_typing_word . '"')
   let menuitems = s:distinct(g:easycomplete_menuitems + new_menulist)
-  let g:easycomplete_menuitems = deepcopy(menuitems)
   let start_pos = col('.') - strwidth(typing_word)
+  let g:easycomplete_menuitems = deepcopy(menuitems)
   try
     let menuitems = map(menuitems, function("s:PrepareInfoPlaceHolder"))
     call s:FirstComplete(start_pos, menuitems)
@@ -1131,6 +1161,8 @@ function! s:flush()
   call s:ResetCompleteCache()
   " reset docomplete task
   call s:ResetCompleteTaskQueue()
+  " reset global first complete ctx
+  let g:easycomplete_firstcomplete_ctx = {}
 endfunction
 
 function! s:ResetCompletedItem()
@@ -1174,7 +1206,7 @@ function! s:AddCompleteCache(word, menulist)
   let g:easycomplete_menucache["_#_2"] = start_pos  " col num
 endfunction
 
-function! s:ResetBacking()
+function! s:ResetBacking(...)
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
@@ -1182,9 +1214,18 @@ endfunction
 function! s:zizz()
   let delay = g:env_is_nvim ? 20 : 50
   let g:easycomplete_backing_or_cr = 1
-  call s:StopAsyncRun()
-  call s:AsyncRun(function('s:ResetBacking'), [], delay)
+  if exists('s:zizz_timmer') && s:zizz_timmer > 0
+    call timer_stop(s:zizz_timmer)
+  endif
+  let s:zizz_timmer = timer_start(delay, function('s:ResetBacking'))
   return "\<BS>"
+endfunction
+
+function! s:StopZizz()
+  if exists('s:zizz_timmer') && s:zizz_timmer > 0
+    call timer_stop(s:zizz_timmer)
+  endif
+  call s:ResetBacking()
 endfunction
 
 function s:zizzing()
