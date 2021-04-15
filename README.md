@@ -18,7 +18,13 @@
 
 默认 Tab 键唤醒补全，如果有冲突，修改默认配置可以用`let g:easycomplete_tab_trigger="<tab>"`来设置
 
-插件自带了四种样式（`dark`, `light`, `rider`, `sharp`）：最常用的是`sharp`，这样配置 `let g:easycomplete_scheme="sharp"`，自带的样式仅仅是 vim 默认样式不太适合的时候使用，一般留空即可。
+插件自带了四种样式（`dark`, `light`, `rider`, `sharp`）：最常用的是`sharp`，这样配置：
+
+```
+let g:easycomplete_scheme="sharp"
+```
+
+自带的样式仅仅是 vim 默认样式不太适合的时候使用，一般留空即可。
 
 此外无其他配置。
 
