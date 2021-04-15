@@ -149,7 +149,7 @@ endfunction
 
 " 检查当前注册的插件中所依赖的 command 是否已经安装
 function! easycomplete#checking()
-  let amsg = ["检查插件依赖命令工具是否安装:"]
+  let amsg = ["Checking lsp cmd tools dependencies:"]
   call add(amsg, "")
   for item in keys(g:easycomplete_source)
     let l:name = item
@@ -210,6 +210,7 @@ function! s:CompleteTypingMatch(...)
   if !get(g:, 'easycomplete_first_complete_hit')
     return
   endif
+
 
   let word = exists('a:1') ? a:1 : s:GetTypingWord()
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
@@ -449,6 +450,26 @@ function! easycomplete#FireCondition()
   return v:true
 endfunction
 
+" CPP 的 双冒号
+function! s:CppColonTyping()
+  if &filetype == "cpp" &&
+        \ easycomplete#context()['typed'] =~ "\\w::$"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+" CPP 的 双冒号
+function! s:CppArrowTyping()
+  if &filetype == "cpp" &&
+        \ easycomplete#context()['typed'] =~ "->$"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 " vim 冒号 typing: Hack for vim
 function! s:VimColonTyping()
   if &filetype == "vim" &&
@@ -477,7 +498,8 @@ function! easycomplete#typing()
   if s:VimColonTyping()
     " continue
   elseif s:VimDotTyping()
-    " TODO call self.sth
+    " continue
+  " elseif s:CppColonTyping()
     " continue
   elseif s:zizzing()
     return ""
@@ -641,9 +663,11 @@ function! easycomplete#CompleteChanged()
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+    " TODO Bug: g:<tab> 给出来的结果 无法走到这里，导致不能做 SecondComplete
     " TODO 这里的逻辑需要抽离一下，每个语言对于特殊字符的定义是不同的
     " 如果匹配不出东西，就 flush 重置，在 CompleteTypingMatch 中执行
     " 不应该每个语言hack都写这里
+
     if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
       " VIM '.' 操作符:"a.b.c","a.b"...
       let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
@@ -713,6 +737,9 @@ function! easycomplete#CleverTab()
     "   empty line
     call s:zizz()
     return "\<Tab>"
+  elseif s:CppArrowTyping()
+    call s:DoTabCompleteAction()
+    return ""
   elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
         \ "\\(\\w\\|\\/\\|\\.\\|\\:\\)$") < 0
     " Typing a none alphabet lettera, not '/' or ':'
@@ -720,15 +747,19 @@ function! easycomplete#CleverTab()
     return "\<Tab>"
   else
     " Otherwise exec docomplete()
-    if g:env_is_nvim
-      " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush() 来清
-      " 空匹配任务队列，这里用异步调用看起来是ok的
-      call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
-      call s:SendKeys( "\<ESC>a" )
-    elseif g:env_is_vim
-      call s:DoComplete(v:true)
-    endif
+    call s:DoTabCompleteAction()
     return ""
+  endif
+endfunction
+
+function! s:DoTabCompleteAction()
+  if g:env_is_nvim
+    " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush() 来清
+    " 空匹配任务队列，这里用异步调用看起来是ok的
+    call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
+    call s:SendKeys( "\<ESC>a" )
+  elseif g:env_is_vim
+    call s:DoComplete(v:true)
   endif
 endfunction
 
@@ -781,7 +812,7 @@ function! s:CompleteHandler()
   call s:StopAsyncRun()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
-  if strwidth(l:ctx['typing']) == 0 && index([':','.','/'], l:ctx['char']) < 0
+  if strwidth(l:ctx['typing']) == 0 && index([':','.','/','>'], l:ctx['char']) < 0
     return
   endif
 

@@ -73,6 +73,10 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 安装 vim-language-server，`npm -g install vim-language-server`
 
+#### 6) CPP 补全
+
+安装 ccls，[参照这里进行安装](https://github.com/MaskRay/ccls)
+
 ### 五）支持新语言的插件开发
 
 方便起见，EasyComplete 也支持自己实现新的语言插件，只要遵循 lsp 规范即可。

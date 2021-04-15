@@ -63,6 +63,15 @@ augroup EasyCompleteRegistSources
       \ 'command': 'vim-language-server'
       \  })
 
+  call easycomplete#RegisterSource({
+      \ 'name': 'cpp',
+      \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+      \ 'completor': 'easycomplete#sources#cpp#completor',
+      \ 'constructor' :'easycomplete#sources#cpp#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
+      \ 'command': 'ccls'
+      \  })
+
   " easycompelte#lsp
   call easycomplete#RegisterSource({
       \ 'name': 'py',
