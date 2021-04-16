@@ -221,6 +221,11 @@ function! s:CompleteTypingMatch(...)
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
   let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
   let filtered_menu = map(filtered_menu, function("s:PrepareInfoPlaceHolder"))
+  if len(filtered_menu) == 0
+    call s:CloseCompletionMenu()
+    return
+  endif
+
   
   " 如果在 VIM 中输入了':'和'.'，一旦没有匹配项，就直接清空
   " g:easycomplete_menuitems，匹配状态复位
@@ -343,6 +348,7 @@ endfunction
 
 function! easycomplete#backing()
   call s:zizz()
+  " 因为 backing 之后需要做 fuzzy match，所以不能直接返回"\<BS>"
   call s:SendKeys("\<BS>")
   let ctx = easycomplete#context()
   if strlen(ctx["typing"]) == 1 || empty(ctx["typing"])
@@ -356,6 +362,9 @@ function! easycomplete#backing()
     " call s:StopAsyncRun()
     call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 0)
   endif
+  " TODO backing 的动作会导致 complete menu 关闭，这时再异步执行
+  " CompleteChangedMatchAction 时，pumvisible 是关闭状态，匹配完成后会再打开
+  " complete menu，造成一次闪烁，目前没找到好办法解决
   return ""
 endfunction
 
