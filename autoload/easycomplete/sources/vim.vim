@@ -8,6 +8,8 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
     call easycomplete#lsp#register_server({
         \ 'name': 'vimls',
         \ 'cmd': {server_info->['vim-language-server', '--stdio']},
+        \ 'initialization_options':{'vimruntime': $VIMRUNTIME, 'runtimepath': &rtp, 'iskeyword': "@,48-57,_,192-255,-#"},
+        \ 'suggest': {'fromVimruntime': v:true},
         \ 'allowlist': ['vim'],
         \ })
   endif
