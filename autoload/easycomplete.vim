@@ -228,15 +228,15 @@ function! s:CompleteTypingMatch(...)
   " 如果在 VIM 中输入了':'和'.'，一旦没有匹配项，就直接清空
   " g:easycomplete_menuitems，匹配状态复位
   " 注意：这里其实区分了 跟随匹配 和 Tab 匹配两个不同的动作
-  " - 跟随匹配要更“自然”，能匹配不出东西就保持空，尽可能少的干扰
-  " - Tab 匹配要更“刻意”，能多匹配就多匹配，尽量多给提示，交给用户去选择
+  " - 跟随匹配内容尽可能少，能匹配不出东西就保持空，尽可能少的干扰
+  " - Tab 匹配内容尽可能多，能多匹配就多匹配，交给用户去选择
   if (s:VimDotTyping() || s:VimColonTyping()) && len(filtered_menu) == 0
     call s:CloseCompletionMenu()
     call s:flush()
     return
   endif
 
-  " complete() 会导致 CompleteChanged 事件, 这里使用异步
+  " complete() 会导致 CompleteChanged 事件, 必须使用异步
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
         \   filtered_menu,
@@ -269,7 +269,8 @@ function! s:CustomCompleteMenuFilter(all_menu, word)
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
   let original_matching_menu = sort(filter(deepcopy(a:all_menu),
-        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) =~ "^'. word . '"'), "s:SortTextComparatorByLength")
+        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) =~ "^'. word . '"'),
+        \ "s:SortTextComparatorByLength")
 
   " 模糊匹配在后
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
@@ -357,22 +358,22 @@ function! easycomplete#Down()
   return "\<Down>"
 endfunction
 
-" 参考 asynccomplete
+" 参考 asynccomplete 并做了扩展
 function! easycomplete#context() abort
   let l:ret = {
         \ 'bufnr':bufnr('%'),
         \ 'curpos':getcurpos(),
         \ 'changedtick':b:changedtick
         \ }
-  let l:ret['lnum'] = l:ret['curpos'][1] " line num
-  let l:ret['col'] = l:ret['curpos'][2] " col num
+  let l:ret['lnum'] = l:ret['curpos'][1] " 行号
+  let l:ret['col'] = l:ret['curpos'][2] " 列号
   let l:ret['filetype'] = &filetype " filetype
   let l:ret['filepath'] = expand('%:p') " filepath
-  let line = getline(l:ret['lnum']) " current line
-  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " current line content before col
-  let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " typing char
-  let l:ret['typing'] = s:GetTypingWord() " typing word
-  let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " start position for complete
+  let line = getline(l:ret['lnum']) " 当前行内容
+  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标前敲入的内容
+  let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " 当前单个字符
+  let l:ret['typing'] = s:GetTypingWord() " 当前敲入的单词 
+  let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 单词起始位置
   return l:ret
 endfunction
 
@@ -458,7 +459,7 @@ function! easycomplete#FireCondition()
   return v:true
 endfunction
 
-" C 的 双冒号
+" C++ 的双冒号
 function! s:CppColonTyping()
   if &filetype == "cpp" &&
         \ easycomplete#context()['typed'] =~ "\\w::$"
@@ -478,7 +479,7 @@ function! s:CppArrowTyping()
   endif
 endfunction
 
-" vim 冒号 typing: Hack for vim
+" vim 的冒号
 function! s:VimColonTyping()
   if &filetype == "vim" &&
         \ easycomplete#context()['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
@@ -488,7 +489,7 @@ function! s:VimColonTyping()
   endif
 endfunction
 
-" vim 点号 typing: Hack for vim
+" vim 的点号
 function! s:VimDotTyping()
   if &filetype == "vim" &&
         \ easycomplete#context()['typed'] =~ "\\w\\."
@@ -498,6 +499,7 @@ function! s:VimDotTyping()
   endif
 endfunction
 
+" 输入和退格监听函数
 function! easycomplete#typing()
   if easycomplete#IsBacking()
     call s:zizz()
@@ -533,12 +535,11 @@ function! easycomplete#typing()
   return ""
 endfunction
 
-" immediately: 是否立即出发 complete()
+" immediately: 是否立即执行 complete()
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
-  " Filter unexpected '.' dot matching
   let l:ctx = easycomplete#context()
-  " 不连续的 '.'
+  " 过滤不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
         \ && l:ctx['typed'][l:ctx['col'] - 3] !~ '^[a-zA-Z0-9]$'
     call s:CloseCompletionMenu()
@@ -563,7 +564,7 @@ function! s:DoComplete(immediately)
     call s:ResetCompleteCache()
   endif
 
-  " First typing has a delay time
+  " 首次按键给一个延迟，体验更好
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
@@ -574,14 +575,14 @@ function! s:DoComplete(immediately)
   " 特殊字符'->',':','.','::'等 在个语言中的匹配，一般要配合 lsp 一起使用，即
   " lsp给出的结果中就包含了 "a.b.c" 的提示，这时直接执行 SecondComplete 动作
   if !empty(g:easycomplete_menuitems)
-    " hack for vim . typing
+    " hack for vim '.' typing
     if s:VimDotTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\(\w\+\.\)\{-1,}$')
       call s:CompleteTypingMatch(l:vim_word)
       return v:null
     endif
 
-    " hack for vim : typing
+    " hack for vim ':' typing
     if s:VimColonTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\w:$')
       call s:CompleteTypingMatch(l:vim_word)
@@ -589,7 +590,7 @@ function! s:DoComplete(immediately)
     endif
   endif
 
-  " Check fuzzy match condition
+  " 检查模糊匹配 fuzzy match 条件
   if !empty(g:easycomplete_menuitems)
         \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
         \ && s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
@@ -597,12 +598,12 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
-  " if not in insert mode
+  " 如果不是 insert 模式
   if g:env_is_nvim && mode() != 'i'
     return v:null
   endif
 
-  " Finally Do Complete Action
+  " 执行 DoComplete
   call s:StopAsyncRun()
   call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
   return v:null
@@ -628,8 +629,8 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
-" Call every completor from registed plugins
-" Completor will call CompleteAdd to update complete menu
+" 从注册的插件中依次调用每个 completor 函数
+" 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCalling(...)
   let l:ctx = easycomplete#context()
   call s:ResetCompleteTaskQueue()
@@ -699,14 +700,13 @@ endfunction
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
   call easycomplete#SetCompletedItem(item)
-  " SecondComplete 的前进态走这里，后退态走 easycomplete#backing 函数
+  " SecondComplete 的前进态走这里，后退态走 easycomplete#typing 函数
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
-  " 这里检查 zizzing 来判断 CompleteTypingMatch 是否需要执行
+  " 用 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     call s:CompleteChangedMatchAction()
   endif
   if empty(item)
-    " hack for nvim
     if g:env_is_nvim
       call easycomplete#popup#MenuPopupChanged([])
     else
@@ -747,7 +747,7 @@ function! easycomplete#CleverTab()
     call s:zizz()
     return "\<C-N>"
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
-    " In Ultisnips, Tab to jump forwards
+    " 安装了 Ultisnips 后，用 Tab 来前跳
     " call UltiSnips#JumpForwards()
     call s:zizz()
     call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
@@ -755,7 +755,7 @@ function! easycomplete#CleverTab()
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
         \ len(s:StringTrim(getline('.'))) == 0
-    " empty line checking:
+    " 空行检查:
     "   whole empty line
     "   a space char before
     "   empty line
@@ -766,11 +766,10 @@ function! easycomplete#CleverTab()
     return ""
   elseif match(strpart(getline('.'), 0 ,col('.') - 1)[0:col('.')-1],
         \ "\\(\\w\\|\\/\\|\\.\\|\\:\\)$") < 0
-    " Typing a none alphabet lettera, not '/' or ':'
+    " 输入非字母表字符，同时也不是 '/' 或者 ':'
     call s:zizz()
     return "\<Tab>"
   else
-    " Otherwise exec docomplete()
     call s:DoTabCompleteAction()
     return ""
   endif
@@ -779,7 +778,7 @@ endfunction
 function! s:DoTabCompleteAction()
   if g:env_is_nvim
     " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush() 来清
-    " 空匹配任务队列，这里用异步调用看起来是ok的
+    " nvim 中改用异步调用
     call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
     call s:SendKeys( "\<ESC>a" )
   elseif g:env_is_vim
@@ -796,7 +795,7 @@ endfunction
 " <CR> 逻辑，判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
-  " Get Matching word under cursor
+  " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
         \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
@@ -840,9 +839,9 @@ function! s:CompleteHandler()
     return
   endif
 
-  " 之前所有的步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
+  " 以上所有步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
   " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误，
-  " 否则不应该在后续链路做 Hack 了，即便不正确也是 LSP 的bug
+  " 否则不应该在后续链路做 Hack 了
   call s:CompleteInit()
   call s:CompletorCalling()
 
@@ -949,7 +948,7 @@ function! s:distinct(menu_list)
 endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
-  " menuitems is not empty
+  " menuitems 始终不为空 
   call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
   if s:zizzing() | return | endif
   if s:CheckCompleteTastQueueAllDone()
@@ -962,11 +961,6 @@ function! s:FirstComplete(start_pos, menuitems)
       " easycomplete#typing() → s:CompleteTypingMatch()
     endif
   endif
-  " 为了避免连续快速桥字符的时序错乱，记录 g:easycomplete_firstcomplete_ctx 的
-  " 时机应当提前到发起 completeCalling 的时刻，否则在 completeAdd 回调执行之前
-  " 就极有可能快速typing前进了好几个字符，在viml中最常见
-
-  " let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
 
 function! s:SortCompleteItems(menu_list, typing_word)
@@ -1002,7 +996,6 @@ endfunction
 
 " TODO PY 和 VIM 实现的一致性
 function! s:NormalizeSort(items)
-  " return s:NormalizeSortVIM(a:items)
   if has("pythonx")
     return s:NormalizeSortPY(a:items)
   else
@@ -1114,9 +1107,9 @@ function! s:SetCompleteTaskQueue(name, ctx, condition, done)
   call add(g:easycomplete_complete_taskqueue, {
         \ "name" : a:name,
         \ "condition": a:condition,
+        \ "ctx" : a:ctx,
         \ "done" : a:done
         \ })
-        " \ "ctx" : a:ctx,
 endfunction
 
 function! s:CheckCompleteTastQueueAllDone()
@@ -1220,7 +1213,7 @@ function! s:ResetBacking(...)
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-" setup a flag for do nothing for 20ms
+" setup a flag for doing nothing for 20ms
 function! s:zizz()
   let delay = g:env_is_nvim ? 20 : 50
   let g:easycomplete_backing_or_cr = 1
@@ -1314,8 +1307,8 @@ endfunction
 " ----------------------------------------------------------------------
 " LSP 专用工具函数
 " 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
-" 工具函数主要是给 easycomplete 的插件用的通用方法
-" vim-lsp 源码非常脏乱差，而且冗余很大，这里只做了初步精简
+" 工具函数主要是给 easycomplete 的插件用的通用方法，已经做到了最小依赖
+" vim-lsp 源码非常脏乱差，而且冗余很大，这里只对源码做了初步精简
 " ----------------------------------------------------------------------
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层

@@ -1,5 +1,4 @@
-
-" Popup menu 的实现
+" Popup menu 的实现 <bachi@taobao.com>
 " vim 8.2 实现了 popupmenu, 即 completeopt+=popup 很好用，但有几个bug
 " 1. setlocal completepopup=width:70 中的 Width 属性无效
 " 2. 连续 c-n 快速在 completemenu 中移动选中位置，频繁 popup 出 infomenu
@@ -52,8 +51,6 @@ function! easycomplete#popup#CompleteDone()
 endfunction
 
 function! easycomplete#popup#DoPopup(info)
-  " use timer_start since nvim_buf_set_lines is not allowed in
-  " CompleteChanged
   call s:StopVisualAsyncRun()
   call s:StartPopupAsyncRun("s:check", [a:info], 170)
 endfunction
@@ -147,9 +144,6 @@ function! s:check(info)
     endif
   endif
 
-  " close the old one if already opened
-  " call easycomplete#popup#close()
-
   if s:is_nvim
     call easycomplete#popup#close()
     call s:NvimShowPopup(opt)
@@ -185,7 +179,6 @@ function! s:VimShowPopup(opt)
   if g:easycomplete_popup_win
     call popup_setoptions(g:easycomplete_popup_win, opt)
     call popup_show(g:easycomplete_popup_win)
-    
   else
     let winid = popup_create(s:buf, opt)
     let g:easycomplete_popup_win = winid
