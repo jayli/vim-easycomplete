@@ -1,6 +1,6 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
-" Description:  The extreme simple complete plugin for vim
+" Description:  A minimalism style complete plugin for vim
 "
 "               More Info:
 "               <https://github.com/jayli/vim-easycomplete>
@@ -226,7 +226,6 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
-  
   " 如果在 VIM 中输入了':'和'.'，一旦没有匹配项，就直接清空
   " g:easycomplete_menuitems，匹配状态复位
   " 注意：这里其实区分了 跟随匹配 和 Tab 匹配两个不同的动作
@@ -358,8 +357,6 @@ function! easycomplete#backing()
   endif
   if !empty(g:easycomplete_menuitems)
     " 不明白为何 ctx 获取在 sendkey <bs> 之前，所以这里用异步
-    " call s:AsyncRun(function('s:CompleteTypingMatch'), [], 0)
-    " call s:StopAsyncRun()
     call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 0)
   endif
   " TODO backing 的动作会导致 complete menu 关闭，这时再异步执行
@@ -713,7 +710,6 @@ function! s:CompleteChangedMatchAction()
     let l:vim_word = s:GetTypingWordByGtx() 
     call s:CompleteTypingMatch(l:vim_word)
   endif
-
 endfunction
 
 function! easycomplete#CompleteChanged()
@@ -763,7 +759,6 @@ endfunction
 
 "CleverTab tab
 function! easycomplete#CleverTab()
-  " setlocal completeopt-=noinsert
   if pumvisible()
     call s:zizz()
     return "\<C-N>"
@@ -821,7 +816,7 @@ function! easycomplete#TypeEnterWithPUM()
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
         \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
-    " should do snippet expand action or not
+    " 判断是否展开代码片段
     if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
       call s:CloseCompletionMenu()
       " let key_str = "\\" . g:UltiSnipsExpandTrigger
@@ -862,8 +857,8 @@ function! s:CompleteHandler()
   endif
 
   " 之前所有的步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
-  " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误
-  " ，否则不应该在后续链路做 Hack 了，即便不正确也是 LSP 的bug
+  " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误，
+  " 否则不应该在后续链路做 Hack 了，即便不正确也是 LSP 的bug
   call s:CompleteInit()
   call s:CompletorCalling()
 
@@ -910,12 +905,12 @@ function! easycomplete#CompleteAdd(menu_list)
     endif
   endif
 
-  " close pum before call completeadd
+  " 关闭 pum
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
 
-  " FirstComplete will sort complete result just like YCM and coc.
+  " FristComplete 的过滤方法类似 YCM 和 coc
   let typing_word = s:GetTypingWord()
   if index(str2list(typing_word), char2nr('.')) >= 0
     let matched_typing_word = substitute(typing_word, "\\.", "\\\\\\\\.", "g")
