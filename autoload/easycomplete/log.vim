@@ -91,12 +91,21 @@ function! s:InitLogWindow()
   endif
   call execute("vertical botright new filetype=help buftype=nofile")
   call execute("setlocal nonu")
-  call term_start("tail -f " . get(g:debugger, 'logfile'),{
-      \ 'term_finish': 'close',
-      \ 'term_name':'log_debugger_window_name',
-      \ 'vertical':'1',
-      \ 'curwin':'1'
-      \ })
+  if g:env_is_vim
+    call term_start("tail -f " . get(g:debugger, 'logfile'),{
+        \ 'term_finish': 'close',
+        \ 'term_name':'log_debugger_window_name',
+        \ 'vertical':'1',
+        \ 'curwin':'1'
+        \ })
+  else
+    call termopen("tail -f " . get(g:debugger, 'logfile'),{
+        \ 'term_finish': 'close',
+        \ 'term_name':'log_debugger_window_name',
+        \ 'vertical':'1',
+        \ 'curwin':'1'
+        \ })
+  endif
   exec 'setl statusline=%1*\ Normal\ %*%5*\ Log\ Window\ %*\ %r%f[%M]%=Depth\ :\ %L\ '
   let g:debugger.log_term_winid = bufwinid('log_debugger_window_name')
   let g:debugger.log_winnr = winnr()

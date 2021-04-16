@@ -52,8 +52,8 @@ function! s:InitLocalVars()
   " popupwindow 宽度
   let g:easycomplete_popup_width = 50
 
-  " 当前敲入的字符
-  let b:typing_key = 0
+  " 当前敲入的字符所属的 ctx，用来判断光标前进还是后退
+  let b:typing_ctx = easycomplete#context()
 
   " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
   " zizz 标志位
@@ -105,7 +105,6 @@ function! s:BindingTypingCommandOnce()
     return
   endif
   let g:easycomplete_typing_binding_done = 1
-  inoremap <silent><expr> <BS> easycomplete#backing()
   if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
     " If ultisnips is installed. Ultisnips' tab binding will conflict with
     " easycomplete tab binding. So iunmap first.
@@ -328,7 +327,20 @@ function! easycomplete#GetCompletedItem()
 endfunction
 
 function! easycomplete#IsBacking()
-  return s:zizzing()
+  let curr_ctx = easycomplete#context()
+  let old_ctx = copy(b:typing_ctx)
+  let b:typing_ctx = curr_ctx
+  if s:SameBeginning(curr_ctx, old_ctx)
+        \ && strlen(old_ctx['typed']) >= 2
+        \ && curr_ctx['typed'] ==# old_ctx['typed'][:-2]
+    " 单行后退
+    return v:true
+  elseif old_ctx['lnum'] == curr_ctx['lnum'] + 1 && old_ctx['col'] == 1
+    " 隔行后退
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 function! easycomplete#Up()
@@ -343,26 +355,6 @@ function! easycomplete#Down()
     call s:zizz()
   endif
   return "\<Down>"
-endfunction
-
-function! easycomplete#backing()
-  call s:zizz()
-  " 因为 backing 之后需要做 fuzzy match，所以不能直接返回"\<BS>"
-  call s:SendKeys("\<BS>")
-  let ctx = easycomplete#context()
-  if strlen(ctx["typing"]) == 1 || empty(ctx["typing"])
-    call s:CloseCompletionMenu()
-    call s:flush()
-    return ""
-  endif
-  if !empty(g:easycomplete_menuitems)
-    " 不明白为何 ctx 获取在 sendkey <bs> 之前，所以这里用异步
-    call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 0)
-  endif
-  " TODO backing 的动作会导致 complete menu 关闭，这时再异步执行
-  " CompleteChangedMatchAction 时，pumvisible 是关闭状态，匹配完成后会再打开
-  " complete menu，造成一次闪烁，目前没找到好办法解决
-  return ""
 endfunction
 
 " 参考 asynccomplete
@@ -507,6 +499,20 @@ function! s:VimDotTyping()
 endfunction
 
 function! easycomplete#typing()
+  if easycomplete#IsBacking()
+    call s:zizz()
+    let ctx = easycomplete#context()
+    if empty(ctx["typing"])
+      call s:CloseCompletionMenu()
+      call s:flush()
+      return ""
+    endif
+    if !empty(g:easycomplete_menuitems)
+      call s:CompleteChangedMatchAction()
+    endif
+    return ""
+  endif
+
   if !easycomplete#FireCondition()
     return ""
   endif
@@ -514,8 +520,6 @@ function! easycomplete#typing()
   if s:VimColonTyping()
     " continue
   elseif s:VimDotTyping()
-    " continue
-  " elseif s:CppColonTyping()
     " continue
   elseif s:zizzing()
     return ""
@@ -1167,6 +1171,8 @@ function! s:flush()
   call s:ResetCompleteTaskQueue()
   " reset global first complete ctx
   let g:easycomplete_firstcomplete_ctx = {}
+  " reset b:typing_ctx
+  let b:typing_ctx = easycomplete#context()
 endfunction
 
 function! s:ResetCompletedItem()
