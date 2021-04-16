@@ -211,6 +211,11 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
+  if s:OrigionalPosition()
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return
+  endif
 
   let word = exists('a:1') ? a:1 : s:GetTypingWord()
   let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
@@ -378,6 +383,10 @@ function! easycomplete#CheckContextSequence(ctx)
   return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
+function! s:OrigionalPosition()
+  return easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
+endfunction
+
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
@@ -528,6 +537,8 @@ function! s:DoComplete(immediately)
 
   if complete_check()
     call s:CloseCompletionMenu()
+    call s:StopAsyncRun()
+    return v:null
   endif
 
   " One ':' or '.', Do nothing
@@ -683,7 +694,7 @@ function! s:CompleteChangedMatchAction()
     call s:CompleteTypingMatch(l:vim_word)
   elseif &filetype == 'vim' && l:ctx['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\\w\\{-}$"
     " VIM ':' 操作符:"g:s"...
-    " let l:vim_word1 = matchstr(l:ctx['typed'], '\w:\w\{-}$')
+    " let l:vim_word = matchstr(l:ctx['typed'], '\w:\w\{-}$')
     let l:vim_word = s:GetTypingWordByGtx() 
     call s:CompleteTypingMatch(l:vim_word)
   else
@@ -843,9 +854,12 @@ function! s:CompleteHandler()
 
   " 之前所有的步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
   " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误
-  " ，否则不应该在后续链路做 Hack 了
+  " ，否则不应该在后续链路做 Hack 了，即便不正确也是 LSP 的bug
   call s:CompleteInit()
   call s:CompletorCalling()
+
+  " 记录 g:easycomplete_firstcomplete_ctx 的时机，最早就是这里
+  let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
 
 function! s:CompleteInit(...)
@@ -870,6 +884,7 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list)
+  if s:zizzing() | return | endif
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
@@ -948,6 +963,7 @@ endfunction
 function! s:FirstComplete(start_pos, menuitems)
   " menuitems is not empty
   call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
+  if s:zizzing() | return | endif
   if s:CheckCompleteTastQueueAllDone()
     " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
@@ -955,14 +971,14 @@ function! s:FirstComplete(start_pos, menuitems)
       call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
     else
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
-      " SecondComplete
-      call s:StopAsyncRun()
-      call s:CompleteTypingMatch()
+      " easycomplete#typing() → s:CompleteTypingMatch()
     endif
-    " call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
-    " let g:easycomplete_firstcomplete_ctx = easycomplete#context()
   endif
-  let g:easycomplete_firstcomplete_ctx = easycomplete#context()
+  " 为了避免连续快速桥字符的时序错乱，记录 g:easycomplete_firstcomplete_ctx 的
+  " 时机应当提前到发起 completeCalling 的时刻，否则在 completeAdd 回调执行之前
+  " 就极有可能快速typing前进了好几个字符，在viml中最常见
+
+  " let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
 
 function! s:SortCompleteItems(menu_list, typing_word)
@@ -1124,6 +1140,10 @@ function! s:CheckCompleteTastQueueAllDone()
     endif
   endfor
   return flag
+endfunction
+
+function! s:complete_check()
+  return !s:CheckCompleteTastQueueAllDone()
 endfunction
 
 function! s:LetCompleteTaskQueueAllDone()
