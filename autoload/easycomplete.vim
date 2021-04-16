@@ -687,29 +687,9 @@ function! s:GetTypingWordByGtx()
 endfunction
 
 function! s:CompleteChangedMatchAction()
-  " TODO Bug: g:<tab> 给出来的结果 无法走到这里，导致不能做 SecondComplete
-  " TODO 这里的逻辑需要抽离一下，每个语言对于特殊字符的定义是不同的
-  " 如果匹配不出东西，就 flush 重置，在 CompleteTypingMatch 中执行
-  " 不应该每个语言hack都写这里
-  let l:ctx = easycomplete#context()
   call s:StopZizz()
-  if &filetype == 'vim' && l:ctx['typed'] =~ "\\(\\(\\w\\+\\.\\)\\w\\{1,}\\)\\{-1,}$"
-    " VIM '.' 操作符:"a.b.c","a.b"...
-    " let l:vim_word = matchstr(l:ctx['typed'], '\(\(\w\+\.\)\w\{1,}\)\{-1,}$')
-    let l:vim_word = s:GetTypingWordByGtx() 
-    call s:CompleteTypingMatch(l:vim_word)
-  elseif &filetype == 'vim' && l:ctx['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\\w\\{-}$"
-    " VIM ':' 操作符:"g:s"...
-    " let l:vim_word = matchstr(l:ctx['typed'], '\w:\w\{-}$')
-    let l:vim_word = s:GetTypingWordByGtx() 
-    call s:CompleteTypingMatch(l:vim_word)
-  else
-    " 测试中，如果work，VIM 逻辑的特殊处理可以不需要了
-    " call s:StopZizz()
-    " call s:CompleteTypingMatch()
-    let l:vim_word = s:GetTypingWordByGtx() 
-    call s:CompleteTypingMatch(l:vim_word)
-  endif
+  let l:vim_word = s:GetTypingWordByGtx() 
+  call s:CompleteTypingMatch(l:vim_word)
 endfunction
 
 function! easycomplete#CompleteChanged()
@@ -1389,7 +1369,28 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
 
+  " hack for vim-language-server: 
+  "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
+  "   g:b:l:a: 都是正确的，只有 s: 不正确
+  "   需要修改 word 为 insertText.slice(2)
+  try
+    if &filetype == 'vim' && l:ctx['typed'] =~ "s:\\w\\{-}$"
+      let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
+    endif
+  catch
+    echom v:exception
+  endtry
+
   call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
+endfunction
+
+function! s:VimHack_S_ColonMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && get(a:val, "abbr") ==# get(a:val, "word")
+        \ && matchstr(get(a:val, "word"), "^s:") ==  "s:"
+    let a:val.word = get(a:val, "word")[2:]
+  endif
+  return a:val
 endfunction
 
 function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
