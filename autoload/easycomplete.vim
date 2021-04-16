@@ -460,7 +460,7 @@ function! easycomplete#FireCondition()
   return v:true
 endfunction
 
-" CPP 的 双冒号
+" C 的 双冒号
 function! s:CppColonTyping()
   if &filetype == "cpp" &&
         \ easycomplete#context()['typed'] =~ "\\w::$"
@@ -470,7 +470,7 @@ function! s:CppColonTyping()
   endif
 endfunction
 
-" CPP 的 双冒号
+" C++ 的箭头
 function! s:CppArrowTyping()
   if &filetype == "cpp" &&
         \ easycomplete#context()['typed'] =~ "->$"
