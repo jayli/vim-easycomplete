@@ -39,11 +39,11 @@ endif
 
 " Buildin Plugins
 augroup EasyCompleteRegistSources
-  " call easycomplete#RegisterSource({
-  "     \ 'name': 'buf',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': 'easycomplete#sources#buf#completor',
-  "     \ })
+  call easycomplete#RegisterSource({
+      \ 'name': 'buf',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#buf#completor',
+      \ })
 
   call easycomplete#RegisterSource(easycomplete#sources#ts#getConfig({
       \ 'name': 'ts',
@@ -60,7 +60,8 @@ augroup EasyCompleteRegistSources
       \ 'completor': 'easycomplete#sources#vim#completor',
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
-      \ 'command': 'vim-language-server'
+      \ 'command': 'vim-language-server',
+      \ 'trigger' : 'always'
       \  })
 
   call easycomplete#RegisterSource({
@@ -91,15 +92,15 @@ augroup EasyCompleteRegistSources
       \ 'command': 'gopls'
       \  })
 
-  " call easycomplete#RegisterSource({
-  "     \ 'name': 'directory',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': function('easycomplete#sources#directory#completor'),
-  "     \  })
+  call easycomplete#RegisterSource({
+      \ 'name': 'directory',
+      \ 'whitelist': ['*'],
+      \ 'completor': function('easycomplete#sources#directory#completor'),
+      \  })
 
-  " call easycomplete#RegisterSource({
-  "     \ 'name': 'snips',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': 'easycomplete#sources#snips#completor',
-  "     \  })
+  call easycomplete#RegisterSource({
+      \ 'name': 'snips',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#snips#completor',
+      \  })
 augroup END
