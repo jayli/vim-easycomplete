@@ -38,7 +38,7 @@ function! s:InitLocalVars()
   let g:easycomplete_first_complete_hit = 0
 
   " 菜单显示最大 item 数量，默认和 coc 保持一致
-  let g:easycomplete_maxlength = 500
+  let g:easycomplete_maxlength = 50
 
   " 执行 complete 的开关，1 则允许 complete()，0，则关闭 complete()
   let g:easycomplete_render = 1
@@ -102,7 +102,7 @@ endfunction
 
 function! easycomplete#GetBindingKeys()
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/.:>_'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/.:_'
   return l:key_liststr
 endfunction
 
@@ -548,17 +548,19 @@ endfunction
 function! easycomplete#typing()
   if easycomplete#IsBacking()
     if s:TriggerAlways()
-      return
+      return ""
     endif
     call s:zizz()
     let ctx = easycomplete#context()
     if empty(ctx["typing"]) || empty(ctx['char'])
+          \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
       call s:CloseCompletionMenu()
       call s:flush()
       return ""
     endif
     if !empty(g:easycomplete_menuitems)
-      call s:CompleteChangedMatchAction()
+      call s:StopAsyncRun()
+      call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 1)
     endif
     return ""
   endif
@@ -578,6 +580,9 @@ function! easycomplete#typing()
   if pumvisible()
     return ""
   endif
+
+  let b:typing_ctx = easycomplete#context()
+
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
   return ""
@@ -774,6 +779,7 @@ function! s:CompleteChangedMatchAction()
   call s:StopZizz()
   let l:vim_word = s:GetTypingWordByGtx() 
   call s:CompleteTypingMatch(l:vim_word)
+  let b:typing_ctx = easycomplete#context()
 endfunction
 
 function! easycomplete#CompleteChanged()
