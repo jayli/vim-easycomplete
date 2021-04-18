@@ -11,14 +11,12 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
           \ 'cmd': {server_info->['vim-language-server', '--stdio']},
           \ 'whitelist': ['vim'],
           \ 'initialization_options': {
-          \   'is_nvim':1,
-          \   'iskeyword': '@,48-57,_,192-255,#',
           \   'vimruntime': expand($VIMRUNTIME),
-          \   'count':1,
-          \   'gap':500,
+          \   'runtimepath': &rtp,
+          \   'iskeyword': '@,48-57,_,192-255,-#',
           \   'diagnostic':{'enable':1},
-          \   'indexes':{'runtime':1, 'gap':1, 'count':100},
-          \   'suggest': { 'fromVimruntime': 1 , 'fromRuntimepath': 1}
+          \   'indexes':{'runtime':1, 'gap':10, 'count':50, 'runtimepath': 0},
+          \   'suggest': { 'from_vimruntime': 1 , 'from_runtimepath': 0}
           \ }
           \ })
   endif
