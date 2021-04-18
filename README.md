@@ -2,6 +2,8 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
+<img src="https://gw.alicdn.com/imgextra/i1/O1CN01ldj7Zb1xovXKSOfXY_!!6000000006491-2-tps-640-477.png" width=300>
+
 余杭区最好用的 VIM/NVIM 自动补全插件
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
