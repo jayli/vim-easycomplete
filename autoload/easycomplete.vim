@@ -37,6 +37,9 @@ function! s:InitLocalVars()
   " 和 YCM 一样，用做 FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
 
+  " 菜单显示最大 item 数量，默认和 coc 保持一致
+  let g:easycomplete_maxlength = 50
+
   " 每次first complete过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " TODO: 需要加一个 timeout
   " [
@@ -237,11 +240,12 @@ function! s:CompleteTypingMatch(...)
   endif
 
   " complete() 会导致 CompleteChanged 事件, 必须使用异步
+  call s:StopAsyncRun()
   call s:AsyncRun(function('s:SecondComplete'), [
         \   col('.') - strlen(word),
         \   filtered_menu,
         \   g_easycomplete_menuitems
-        \ ], 0)
+        \ ], 2)
 endfunction
 
 function! s:PrepareInfoPlaceHolder(key, val)
@@ -253,36 +257,48 @@ function! s:PrepareInfoPlaceHolder(key, val)
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
-  let tmp_menuitems = a:easycomplete_menuitems
+  let tmp_menuitems = deepcopy(a:easycomplete_menuitems)
   " 避免 completedone 事件递归调用
   call s:zizz()
-  call complete(a:start_pos, a:menuitems)
+  call complete(a:start_pos, a:menuitems[0 : g:easycomplete_maxlength])
   " complete() → completedone → s:flush()
   " 这里确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
+function! s:HasKey(obj,keyname)
+  for item in a:obj
+    if (empty(item.abbr) ? item.word : item.abbr) ==# a:keyname
+      return v:true
+    endif
+  endfor
+  return v:false
+endfunction
+
 function! s:CustomCompleteMenuFilter(all_menu, word)
-  " 完整匹配在前
   let word = a:word
   if index(str2list(word), char2nr('.')) >= 0
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
-  let original_matching_menu = sort(filter(deepcopy(a:all_menu),
-        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) =~ "^'. word . '"'),
-        \ "s:SortTextComparatorByLength")
-
+  " 完整匹配在前
+  let original_matching_menu = sort(
+        \ filter(deepcopy(a:all_menu),
+              \ 'matchstr((empty(v:val.abbr) ? v:val.word : v:val.abbr), "^'. word .'") == "'. word . '"'
+              \ ),
+        \ "s:SortTextComparatorByLength"
+        \ )
+  " TODO here 'app' 匹配不正确，参照 coc 的结果
   " 模糊匹配在后
   let otherwise_matching_menu = filter(deepcopy(a:all_menu),
-        \ '(empty(v:val.abbr) ? v:val.word : v:val.abbr) !~ "^'. word . '"')
+        \ 'matchstr((empty(v:val.abbr) ? v:val.word : v:val.abbr), "^'. word .'") != "'. word . '"')
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
-    if s:FuzzySearch(word, item.word)
-      call add(otherwise_fuzzymatching, item)
+    if s:FuzzySearch(word, (empty(item.abbr) ? item.word : item.abbr))
+      call add(otherwise_fuzzymatching, deepcopy(item))
     endif
   endfor
-  return original_matching_menu + otherwise_fuzzymatching
+  return s:distinct(original_matching_menu + otherwise_fuzzymatching)
 endfunction
 
 function! s:FuzzySearch(needle, haystack)
@@ -298,7 +314,6 @@ function! easycomplete#CompleteDone()
     call s:zizz()
     return
   endif
-
   call s:flush()
 endfunction
 
@@ -316,7 +331,8 @@ function! easycomplete#CompleteCursored()
   if !pumvisible()
     return v:false
   endif
-  return empty(g:easycomplete_completed_item) ? v:false : v:true
+  return complete_info()['selected'] == -1 ? v:false : v:true
+  " return empty(g:easycomplete_completed_item) ? v:false : v:true
 endfunction
 
 function! easycomplete#SetCompletedItem(item)
@@ -331,7 +347,7 @@ function! easycomplete#IsBacking()
   let curr_ctx = easycomplete#context()
   let old_ctx = copy(b:typing_ctx)
   let b:typing_ctx = curr_ctx
-  if s:SameBeginning(curr_ctx, old_ctx)
+  if curr_ctx['lnum'] == old_ctx['lnum']
         \ && strlen(old_ctx['typed']) >= 2
         \ && curr_ctx['typed'] ==# old_ctx['typed'][:-2]
     " 单行后退
@@ -842,6 +858,7 @@ function! s:CompleteHandler()
   " 以上所有步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
   " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误，
   " 否则不应该在后续链路做 Hack 了
+  call s:flush()
   call s:CompleteInit()
   call s:CompletorCalling()
 
@@ -902,6 +919,7 @@ function! easycomplete#CompleteAdd(menu_list)
   endif
   let new_menulist = filter(copy(s:NormalizeMenulist(a:menu_list)),
         \ 'v:val.word =~ "'. matched_typing_word . '"')
+  let new_menulist = deepcopy(s:NormalizeMenulist(a:menu_list))
   let menuitems = s:distinct(g:easycomplete_menuitems + new_menulist)
   let start_pos = col('.') - strwidth(typing_word)
   let g:easycomplete_menuitems = deepcopy(menuitems)
@@ -954,8 +972,10 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
-      let result_items = s:SortCompleteItems(a:menuitems, s:GetTypingWord())
-      call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
+      let result_items = s:SortCompleteItems(a:menuitems, s:GetTypingWord())[0 : g:easycomplete_maxlength]
+      " call s:StopAsyncRun()
+      " call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
+      call complete(a:start_pos, result_items)
     else
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()
@@ -969,11 +989,18 @@ function! s:SortCompleteItems(menu_list, typing_word)
   catch
     echom v:exception
   endtry
-  " 精确匹配在前
-  let original_matching_menu = filter(deepcopy(l:items), 'v:val.word =~ "^'. a:typing_word . '"')
-  " 模糊匹配在后
-  let otherwise_matching_menu = filter(deepcopy(l:items), 'v:val.word !~ "^'. a:typing_word . '"')
-  return original_matching_menu + otherwise_matching_menu
+
+  return s:CustomCompleteMenuFilter(l:items, a:typing_word)
+  " " 精确匹配在前
+  " let original_matching_menu = filter(deepcopy(l:items), 'v:val.word =~ "^'. a:typing_word . '"')
+  " " 模糊匹配在后
+  " let otherwise_matching_menu = filter(deepcopy(l:items), 'v:val.word !~ "^'. a:typing_word . '"')
+  " return original_matching_menu + otherwise_matching_menu
+endfunction
+
+function! s:FuzzyMatchResult(menulist, word)
+
+
 endfunction
 
 function! s:SetFirstCompeleHit()
