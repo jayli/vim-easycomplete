@@ -40,9 +40,6 @@ function! s:InitLocalVars()
   " 菜单显示最大 item 数量，默认和 coc 保持一致
   let g:easycomplete_maxlength = 50
 
-  " 执行 complete 的开关，1 则允许 complete()，0，则关闭 complete()
-  let g:easycomplete_render = 1
-
   " 每次first complete过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " TODO: 需要加一个 timeout
   " [
