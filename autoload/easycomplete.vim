@@ -151,6 +151,7 @@ endfunction
 
 " 检查当前注册的插件中所依赖的 command 是否已经安装
 function! easycomplete#checking()
+  call s:flush()
   let amsg = ["Checking lsp cmd tools dependencies:"]
   call add(amsg, "")
   for item in keys(g:easycomplete_source)
