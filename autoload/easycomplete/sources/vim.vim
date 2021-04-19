@@ -14,9 +14,8 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
           \   'vimruntime': expand($VIMRUNTIME),
           \   'runtimepath': &rtp,
           \   'iskeyword': '@,48-57,_,192-255,-#',
-          \   'diagnostic':{'enable':1},
-          \   'indexes':{'runtime':1, 'gap':10, 'count':50, 'runtimepath': 0},
-          \   'suggest': { 'from_vimruntime': 1 , 'from_runtimepath': 0}
+          \   'indexes':{'runtime':"true", 'gap':1, 'count':500, 'runtimepath': "false"},
+          \   'suggest': { 'from_vimruntime': "true" , 'from_runtimepath': "false"}
           \ }
           \ })
   endif

@@ -11,6 +11,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! s:InitLocalVars()
+  " call s:loglog(1)
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -27,8 +28,12 @@ function! s:InitLocalVars()
   let g:easycomplete_menucache = {}
   " 匹配过程中的全量匹配数据，CompleteDone 后置空
   let g:easycomplete_menuitems = []
+  " 匹配过程中的临时数据
+  let g:easycomplete_complete_ctx = {}
   " 保存 v:event.complete_item,判断是否pum处于选中状态
   let g:easycomplete_completed_item = {}
+  " 全局时间
+  let g:start = reltime()
 
   " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
   " 因此需要选择匹配项过程中的过程变量ctx存储
@@ -119,6 +124,7 @@ function! s:BindingTypingCommandOnce()
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
   inoremap <expr> <Up> easycomplete#Up()
   inoremap <expr> <Down> easycomplete#Down()
+  inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 
   augroup easycomplete#NormalBinding
     autocmd!
@@ -198,11 +204,6 @@ function! easycomplete#GotoDefinitionCalling()
   endif
 endfunction
 
-" 
-function! s:LspCompletionUpdate()
-
-endfunction
-
 " Second Complete Entry
 function! s:CompleteTypingMatch(...)
   if (empty(v:completed_item) && s:zizzing()) && !(s:VimColonTyping() || s:VimDotTyping())
@@ -230,7 +231,7 @@ function! s:CompleteTypingMatch(...)
   else
     let word = exists('a:1') ? a:1 : s:GetTypingWord()
     let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
-    let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, word)
+    let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, word)
     if len(filtered_menu) == 0
       call s:CloseCompletionMenu()
       return
@@ -248,12 +249,13 @@ function! s:CompleteTypingMatch(...)
     endif
 
     " complete() 会导致 CompleteChanged 事件, 必须使用异步
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:SecondComplete'), [
-          \   col('.') - strlen(word),
-          \   filtered_menu,
-          \   g_easycomplete_menuitems
-          \ ], 1)
+    " call s:StopAsyncRun()
+    " call s:AsyncRun(function('s:SecondComplete'), [
+    "       \   col('.') - strlen(word),
+    "       \   filtered_menu,
+    "       \   g_easycomplete_menuitems
+    "       \ ], 0)
+    call s:SecondComplete(col('.') - strlen(word), filtered_menu, g_easycomplete_menuitems)
   endif
 endfunction
 
@@ -273,7 +275,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   if len(result) <= 10
     let result = s:uniq(result)
   endif
-  call complete(a:start_pos, result)
+  call easycomplete#_complete(a:start_pos, result)
   " complete() → completedone → s:flush()
   " 这里确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
@@ -289,27 +291,35 @@ function! s:HasKey(obj,keyname)
   return v:false
 endfunction
 
-function! s:CustomCompleteMenuFilter(all_menu, word)
+" TODO 此方法执行约 30ms，需要性能优化
+function! s:CompleteMenuFilter(all_menu, word)
   let word = a:word
   if index(str2list(word), char2nr('.')) >= 0
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
-  " 完整匹配在前
-  let original_matching_menu = sort(
-        \ filter(deepcopy(a:all_menu),
-              \ 'matchstr((empty(v:val.abbr) ? v:val.word : v:val.abbr), "^'. word .'") == "'. word . '"'
-              \ ),
-        \ "s:SortTextComparatorByLength"
-        \ )
 
-  " 模糊匹配在后
-  let otherwise_matching_menu = filter(deepcopy(a:all_menu),
-        \ 'matchstr((empty(v:val.abbr) ? v:val.word : v:val.abbr), "^'. word .'") != "'. word . '"')
+  " 完整匹配
+  let original_matching_menu = []
+  " 模糊匹配
+  let otherwise_matching_menu = []
+
+  for item in a:all_menu
+    let t_word = (empty(item.abbr) ? item.word : item.abbr)
+    if strlen(t_word) < strlen(a:word) | continue | endif
+    if t_word =~ "^" . word
+      call add(original_matching_menu, item)
+    else
+      call add(otherwise_matching_menu, item)
+    endif
+  endfor
+
+  let original_matching_menu = sort(deepcopy(original_matching_menu),
+        \ "s:SortTextComparatorByLength")
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
     if s:FuzzySearch(word, (empty(item.abbr) ? item.word : item.abbr))
-      call add(otherwise_fuzzymatching, deepcopy(item))
+      call add(otherwise_fuzzymatching, item)
     endif
   endfor
   let result = s:distinct(original_matching_menu + otherwise_fuzzymatching)
@@ -544,6 +554,7 @@ endfunction
 
 " 输入和退格监听函数
 function! easycomplete#typing()
+  let g:start = reltime()
   if easycomplete#IsBacking()
     if s:TriggerAlways()
       return ""
@@ -558,7 +569,8 @@ function! easycomplete#typing()
     endif
     if !empty(g:easycomplete_menuitems)
       call s:StopAsyncRun()
-      call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 1)
+      " call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 1)
+      call s:CompleteChangedMatchAction()
     endif
     return ""
   endif
@@ -782,24 +794,34 @@ endfunction
 
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
+  if easycomplete#IsBacking() && s:TriggerAlways()
+    call s:CloseCompleteInfo()
+    call s:CloseCompletionMenu()
+    return
+  endif
   call easycomplete#SetCompletedItem(item)
   " SecondComplete 的前进态走这里，后退态走 easycomplete#typing 函数
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 用 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+    let g:start = reltime()
     call s:CompleteChangedMatchAction()
   endif
   if empty(item)
-    if g:env_is_nvim
-      call easycomplete#popup#MenuPopupChanged([])
-    else
-      call easycomplete#popup#close()
-    endif
+    call s:CloseCompleteInfo()
     return
   endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
   call s:ShowCompleteInfo(thin_info)
+endfunction
+
+function! s:CloseCompleteInfo()
+  if g:env_is_nvim
+    call easycomplete#popup#MenuPopupChanged([])
+  else
+    call easycomplete#popup#close()
+  endif
 endfunction
 
 function! s:ShowCompleteInfo(info)
@@ -985,7 +1007,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = g:easycomplete_menuitems
   let start_pos = col('.') - strwidth(typing_word)
-  let filtered_menu = s:CustomCompleteMenuFilter(g_easycomplete_menuitems, typing_word)
+  let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1083,9 +1105,7 @@ function! s:FirstComplete(start_pos, menuitems)
       if len(result_items) <= 10
         let result_items = s:uniq(result_items)
       endif
-      " call s:StopAsyncRun()
-      " call s:AsyncRun(function('complete'), [a:start_pos, result_items], 1)
-      call complete(a:start_pos, result_items)
+      call easycomplete#_complete(a:start_pos, result_items)
     else
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()
@@ -1093,8 +1113,38 @@ function! s:FirstComplete(start_pos, menuitems)
   endif
 endfunction
 
+function! easycomplete#refresh()
+  call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
+        \ get(g:easycomplete_complete_ctx, 'candidates', []))
+  return ''
+endfunction
+
+function! easycomplete#_complete(start, items)
+  let g:easycomplete_complete_ctx = {
+        \ 'start': a:start,
+        \ 'candidates': a:items,
+        \}
+  if mode() =~# 'i'
+    call feedkeys("\<Plug>EasycompleteRefresh", 'i')
+  endif
+endfunction
+
 function! s:SetFirstCompeleHit()
   let g:easycomplete_first_complete_hit = 1
+endfunction
+
+function! s:speed(...)
+  let ss = exists('a:1') ? " " . a:1 : ""
+  call call(function('s:loglog'), ['->complete speed'. ss, reltimestr(reltime(g:start))])
+endfunction
+
+function! s:StartRecord()
+  let s:easy_start = reltime()
+endfunction
+
+function! s:StopRecord()
+  let sp = reltimestr(reltime(g:start))
+  call call(function('s:loglog'), ['functinal speed', reltimestr(reltime(s:easy_start))])
 endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
