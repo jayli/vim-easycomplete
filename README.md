@@ -113,6 +113,10 @@ au User easycomplete_plugin call easycomplete#RegisterSource({
 - trigger: {string}，是否永远跟随光标执行全量补全（FirstComplete），默认为 ""，如果需要的话，设为"always"，注意'always'会很大程度影响性能
 - `trigger_keys`: {list}，触发补全动作的字符，比如`['.','->',':']`等（暂未实现）
 
+### 六）反馈
+
+→ [创建 issue](https://github.com/jayli/vim-easycomplete/issues/new)
+
 ### 六）License
 
 MIT
