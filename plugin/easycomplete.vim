@@ -38,7 +38,7 @@ else
 endif
 
 " Buildin Plugins
-augroup EasyCompleteRegistSources
+augroup easycomplete#register
   call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],

@@ -10,6 +10,11 @@ if get(g:, 'easycomplete_script_loaded')
 endif
 let g:easycomplete_script_loaded = 1
 
+augroup easycomplete#autocmd
+  autocmd!
+  autocmd User easycomplete_plugin silent
+augroup END
+
 function! s:InitLocalVars()
   " call s:loglog("start logging..")
   if !exists("g:easycomplete_tab_trigger")
@@ -80,24 +85,25 @@ function! easycomplete#Enable()
     return
   endif
   let b:easycomplete_loaded_done= 1
-
-  " Init Global Setting
+  " 初始化全局变量
   call s:InitLocalVars()
   " 必须要确保typing command先绑定
   " 插件里的typing command后绑定
   call s:BindingTypingCommandOnce()
-  " Init plugin configration
+  " 初始化 plugin 全局配置
   call easycomplete#plugin#init()
-  " Init plugins constructor
+  " 执行 plugins 构造函数
   call s:ConstructorCalling()
-  " Init complete cache
+  " 初始化 complete 缓存池
   call s:SetupCompleteCache()
-  " Setup Pmenu hl
+  " 初始化皮肤 Pmenu
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化
   call easycomplete#lsp#enable()
 
+  " 载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
+  doautocmd <nomodeline> User easycomplete_plugin 
 endfunction
 
 function! easycomplete#GetBindingKeys()
@@ -132,7 +138,7 @@ function! s:BindingTypingCommandOnce()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
 
-  " goto definition 通用方法的实现
+  " Goto definition
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
   command! EasyCompleteCheck : call easycomplete#checking()
