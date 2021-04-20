@@ -61,8 +61,8 @@ augroup EasyCompleteRegistSources
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
       \ 'command': 'vim-language-server',
-      \ 'trigger' : 'always'
       \  })
+      " \ 'trigger' : 'always'
 
   call easycomplete#RegisterSource({
       \ 'name': 'cpp',

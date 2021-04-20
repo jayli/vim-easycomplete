@@ -273,9 +273,12 @@ function! s:CompleteMenuFilter(all_menu, word)
   " 模糊匹配
   let otherwise_matching_menu = []
 
+  let count_index = 0
   for item in a:all_menu
     let t_word = (empty(item.abbr) ? item.word : item.abbr)
     if strlen(t_word) < strlen(a:word) | continue | endif
+    let count_index += 1
+    if count_index > g:easycomplete_maxlength | break | endif
     if t_word =~ "^" . word
       call add(original_matching_menu, item)
     else
