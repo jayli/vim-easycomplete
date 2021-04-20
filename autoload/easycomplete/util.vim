@@ -59,6 +59,43 @@ function! easycomplete#util#call(method, args) abort
   endtry
 endfunction
 
+" 性能很差，谨慎使用
+function! easycomplete#util#uniq(menu_list)
+  let tmp_list = deepcopy(a:menu_list)
+  let result_list = []
+  for item in tmp_list
+    if !s:HasItem(result_list, item)
+      call add(result_list, item)
+    endif
+  endfor
+  return result_list
+endfunction
+
+function! s:HasItem(list,item)
+  let flag = v:false
+  for item in a:list
+    if s:SameItem(item,a:item)
+      let flag = v:true
+      break
+    endif
+  endfor
+  return flag
+endfunction
+
+function! s:SameItem(item1,item2)
+  let item1 = a:item1
+  let item2 = a:item2
+  if get(item1, "word") == get(item2, "word")
+        \ && get(item1, "menu") == get(item2, "menu")
+        \ && get(item1, "kind") == get(item2, "kind")
+        \ && get(item1, "abbr") == get(item2, "abbr")
+        \ && get(item1, "info") == get(item2, "info")
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#util#location(path, line, col, ...) abort
   normal! m'
   let l:mods = a:0 ? a:1 : ''
@@ -486,3 +523,55 @@ function! easycomplete#util#contains(a, b)
   endfor
   return l:count
 endfunction
+
+function! easycomplete#util#ProfileStart()
+  exec "profile start profile.log"
+  exec "profile func *"
+  exec "profile file *"
+endfunction
+
+function! easycomplete#util#ProfileStop()
+  exec "profile pause"
+endfunction
+
+"popup 菜单内关键词去重，只做buff、dict和lsp里的keyword去重
+"snippet 不去重
+function! easycomplete#util#distinct(menu_list)
+  if empty(a:menu_list) || len(a:menu_list) == 0
+    return []
+  endif
+
+  let result_items = deepcopy(a:menu_list)
+
+  let buf_list = []
+  for item in a:menu_list
+    if item.menu == "[buf]"
+      call add(buf_list, item.word)
+    endif
+  endfor
+
+  for item in a:menu_list
+    if item.menu == "[S]" || item.menu == "[buf]"
+      continue
+    endif
+
+    let word = has_key(item, "abbr") && !empty(item.abbr) ?
+          \ item.abbr : get(item, "word", "")
+
+    if index(buf_list, word) >= 0
+      call filter(result_items, '!(v:val.menu == "[buf]" && v:val.word ==# "' . word . '")')
+    endif
+  endfor
+  return result_items
+endfunction
+
+" 判断 items 列表中是否包含 keyname 的项
+function! easycomplete#util#HasKey(obj,keyname)
+  for item in a:obj
+    if (empty(item.abbr) ? item.word : item.abbr) ==# a:keyname
+      return v:true
+    endif
+  endfor
+  return v:false
+endfunction
+

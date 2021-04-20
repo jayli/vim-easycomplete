@@ -30,22 +30,19 @@ function! s:InitLocalVars()
   let g:easycomplete_menuitems = []
   " 匹配过程中的临时数据
   let g:easycomplete_complete_ctx = {}
-  " 保存 v:event.complete_item,判断是否pum处于选中状态
+  " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
   let g:easycomplete_completed_item = {}
   " 全局时间
-  let g:start = reltime()
-
+  let g:easycomplete_start = reltime()
   " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
-  " 因此需要选择匹配项过程中的过程变量ctx存储
+  " 需要选择匹配项过程中的过程变量 ctx 暂存下来
   let g:easycomplete_firstcomplete_ctx = {}
-
   " 和 YCM 一样，用做 FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
-
   " 菜单显示最大 item 数量，默认和 coc 保持一致
   let g:easycomplete_maxlength = 50
 
-  " 每次first complete过程中的任务队列，所有队列任务都完成后才显示匹配菜单
+  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " TODO: 需要加一个 timeout
   " [
   "   {
@@ -56,10 +53,8 @@ function! s:InitLocalVars()
   "   }
   " ]
   let g:easycomplete_complete_taskqueue = []
-
   " popupwindow 宽度
   let g:easycomplete_popup_width = 50
-
   " 当前敲入的字符所属的 ctx，用来判断光标前进还是后退
   let b:typing_ctx = easycomplete#context()
 
@@ -114,8 +109,6 @@ function! s:BindingTypingCommandOnce()
   endif
   let g:easycomplete_typing_binding_done = 1
   if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
-    " If ultisnips is installed. Ultisnips' tab binding will conflict with
-    " easycomplete tab binding. So iunmap first.
     " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
     exec "iunmap " . g:easycomplete_tab_trigger
   endif
@@ -128,9 +121,9 @@ function! s:BindingTypingCommandOnce()
 
   augroup easycomplete#NormalBinding
     autocmd!
-    " FirstComplete Action
+    " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
-    " SecondComplete Action
+    " SecondComplete Entry 
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -140,19 +133,12 @@ function! s:BindingTypingCommandOnce()
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
   command! EasyCompleteCheck : call easycomplete#checking()
-  command! EasyCompleteProfileStart : call easycomplete#ProfileStart()
-  command! EasyCompleteProfileStop : call easycomplete#ProfileStop()
+  " 性能调试开启
+  command! EasyCompleteProfileStart : call easycomplete#util#ProfileStart()
+  " 性能调试结束
+  command! EasyCompleteProfileStop : call easycomplete#util#ProfileStop()
+  " 重定向 Tag 的跳转按键绑定
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
-endfunction
-
-function! easycomplete#ProfileStart()
-  exec "profile start profile.log"
-  exec "profile func *"
-  exec "profile file *"
-endfunction
-
-function! easycomplete#ProfileStop()
-  exec "profile pause"
 endfunction
 
 " 检查当前注册的插件中所依赖的 command 是否已经安装
@@ -225,9 +211,10 @@ function! s:CompleteTypingMatch(...)
     call s:flush()
     return
   endif
+
   let l:always_call = s:CompletorCallingAtSecondComplete()
   if l:always_call
-    " 等待 LSP callback → CompleteAdd
+    " 等待 LSP callback → easycomplete#complete() → CompleteAdd
   else
     let word = exists('a:1') ? a:1 : s:GetTypingWord()
     let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
@@ -248,13 +235,6 @@ function! s:CompleteTypingMatch(...)
       return
     endif
 
-    " complete() 会导致 CompleteChanged 事件, 必须使用异步
-    " call s:StopAsyncRun()
-    " call s:AsyncRun(function('s:SecondComplete'), [
-    "       \   col('.') - strlen(word),
-    "       \   filtered_menu,
-    "       \   g_easycomplete_menuitems
-    "       \ ], 0)
     call s:SecondComplete(col('.') - strlen(word), filtered_menu, g_easycomplete_menuitems)
   endif
 endfunction
@@ -270,25 +250,15 @@ endfunction
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = deepcopy(a:easycomplete_menuitems)
   " 避免 completedone 事件递归调用
-  call s:zizz()
   let result = a:menuitems[0 : g:easycomplete_maxlength]
   if len(result) <= 10
-    let result = s:uniq(result)
+    let result = easycomplete#util#uniq(result)
   endif
+  call s:zizz()
   call easycomplete#_complete(a:start_pos, result)
   " complete() → completedone → s:flush()
   " 这里确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
-endfunction
-
-" 判断 items 列表中是否包含 keyname 的项
-function! s:HasKey(obj,keyname)
-  for item in a:obj
-    if (empty(item.abbr) ? item.word : item.abbr) ==# a:keyname
-      return v:true
-    endif
-  endfor
-  return v:false
 endfunction
 
 " TODO 此方法执行约 30ms，需要性能优化
@@ -318,17 +288,13 @@ function! s:CompleteMenuFilter(all_menu, word)
 
   let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
-    if s:FuzzySearch(word, (empty(item.abbr) ? item.word : item.abbr))
+    if easycomplete#util#FuzzySearch(word, (empty(item.abbr) ? item.word : item.abbr))
       call add(otherwise_fuzzymatching, item)
     endif
   endfor
-  let result = s:distinct(original_matching_menu + otherwise_fuzzymatching)
+  let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
-endfunction
-
-function! s:FuzzySearch(needle, haystack)
-  return call('easycomplete#util#FuzzySearch', [a:needle, a:haystack])
 endfunction
 
 function! easycomplete#CompleteDone()
@@ -358,7 +324,6 @@ function! easycomplete#CompleteCursored()
     return v:false
   endif
   return complete_info()['selected'] == -1 ? v:false : v:true
-  " return empty(g:easycomplete_completed_item) ? v:false : v:true
 endfunction
 
 function! easycomplete#SetCompletedItem(item)
@@ -554,7 +519,7 @@ endfunction
 
 " 输入和退格监听函数
 function! easycomplete#typing()
-  let g:start = reltime()
+  let g:easycomplete_start = reltime()
   if easycomplete#IsBacking()
     if s:TriggerAlways()
       return ""
@@ -569,8 +534,7 @@ function! easycomplete#typing()
     endif
     if !empty(g:easycomplete_menuitems)
       call s:StopAsyncRun()
-      " call s:AsyncRun(function('s:CompleteChangedMatchAction'), [], 1)
-      call s:CompleteChangedMatchAction()
+      call s:CompleteMatchAction()
     endif
     return ""
   endif
@@ -692,13 +656,9 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
-function! s:CompletorCallingAtFirstComplete(...)
-  return call('s:CompletorCalling', a:000)
-endfunction
-
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
-function! s:CompletorCalling(...)
+function! s:CompletorCallingAtFirstComplete(...)
   let l:ctx = easycomplete#context()
   call s:ResetCompleteTaskQueue()
   try
@@ -736,7 +696,7 @@ function! s:CompletorCallingAtSecondComplete()
           continue
         else
           call s:LetCompleteTaskQueueAllDone()
-          break " false: break 和 s:CompletorCalling 保持一致
+          break " false: break 和 s:CompletorCallingAtFirstComplete 保持一致
         endif
       endif
     endfor
@@ -785,7 +745,8 @@ function! s:GetTypingWordByGtx()
   return l:ctx['typed'][strlen(l:gtx['typed'])-strlen(l:gtx['typing']):]
 endfunction
 
-function! s:CompleteChangedMatchAction()
+" 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不在重新请求 LSP
+function! s:CompleteMatchAction()
   call s:StopZizz()
   let l:vim_word = s:GetTypingWordByGtx() 
   call s:CompleteTypingMatch(l:vim_word)
@@ -804,8 +765,8 @@ function! easycomplete#CompleteChanged()
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 用 zizzing 来判断 CompleteTypingMatch 是否需要执行
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
-    let g:start = reltime()
-    call s:CompleteChangedMatchAction()
+    let g:easycomplete_start = reltime()
+    call s:CompleteMatchAction()
   endif
   if empty(item)
     call s:CloseCompleteInfo()
@@ -961,7 +922,7 @@ function! s:CompleteInit(...)
   else
     let l:word = a:1
   endif
-  " 这会导致pum闪烁
+  " 这会导致 pum 闪烁
   let g:easycomplete_menuitems = []
   " 用一个延时来避免闪烁
   if exists('g:easycomplete_visual_delay') && g:easycomplete_visual_delay > 0
@@ -994,12 +955,11 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     endif
   endif
 
-  " 关闭 pum
   if easycomplete#CompleteCursored()
     call feedkeys("\<C-E>")
   endif
 
-  " FristComplete 的过滤方法类似 YCM 和 coc
+  " FristComplete 的过滤方法参考 YCM 和 coc 重写了
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
   let g:easycomplete_source[a:plugin_name].complete_result =
@@ -1026,74 +986,6 @@ function! s:CombineAllMenuitems()
   return result
 endfunction
 
-"popup 菜单内关键词去重，只做buff、dict和lsp里的keyword去重
-"snippet 不去重
-function! s:distinct(menu_list)
-  if empty(a:menu_list) || len(a:menu_list) == 0
-    return []
-  endif
-
-  let result_items = deepcopy(a:menu_list)
-
-  let buf_list = []
-  for item in a:menu_list
-    if item.menu == "[buf]"
-      call add(buf_list, item.word)
-    endif
-  endfor
-
-  for item in a:menu_list
-    if item.menu == "[S]" || item.menu == "[buf]"
-      continue
-    endif
-
-    let word = has_key(item, "abbr") && !empty(item.abbr) ?
-          \ item.abbr : get(item, "word", "")
-
-    if index(buf_list, word) >= 0
-      call filter(result_items, '!(v:val.menu == "[buf]" && v:val.word ==# "' . word . '")')
-    endif
-  endfor
-  return result_items
-endfunction
-
-" 性能很差，杜绝使用
-function! s:uniq(menu_list)
-  let tmp_list = deepcopy(a:menu_list)
-  let result_list = []
-  for item in tmp_list
-    if !s:HasItem(result_list, item)
-      call add(result_list, item)
-    endif
-  endfor
-  return result_list
-endfunction
-
-function! s:HasItem(list,item)
-  let flag = v:false
-  for item in a:list
-    if s:SameItem(item,a:item)
-      let flag = v:true
-      break
-    endif
-  endfor
-  return flag
-endfunction
-
-function! s:SameItem(item1,item2)
-  let item1 = a:item1
-  let item2 = a:item2
-  if get(item1, "word") == get(item2, "word")
-        \ && get(item1, "menu") == get(item2, "menu")
-        \ && get(item1, "kind") == get(item2, "kind")
-        \ && get(item1, "abbr") == get(item2, "abbr")
-        \ && get(item1, "info") == get(item2, "info")
-    return v:true
-  else
-    return v:false
-  endif
-endfunction
-
 function! s:FirstComplete(start_pos, menuitems)
   " menuitems 始终不为空 
   call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
@@ -1103,7 +995,7 @@ function! s:FirstComplete(start_pos, menuitems)
     if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
       let result_items = a:menuitems[0 : g:easycomplete_maxlength]
       if len(result_items) <= 10
-        let result_items = s:uniq(result_items)
+        let result_items = easycomplete#util#uniq(result_items)
       endif
       call easycomplete#_complete(a:start_pos, result_items)
     else
@@ -1119,6 +1011,7 @@ function! easycomplete#refresh()
   return ''
 endfunction
 
+" alias of complete()
 function! easycomplete#_complete(start, items)
   let g:easycomplete_complete_ctx = {
         \ 'start': a:start,
@@ -1143,7 +1036,7 @@ function! s:StartRecord()
 endfunction
 
 function! s:StopRecord()
-  let sp = reltimestr(reltime(g:start))
+  let sp = reltimestr(reltime(g:easycomplete_start))
   call call(function('s:loglog'), ['functinal speed', reltimestr(reltime(s:easy_start))])
 endfunction
 
@@ -1257,6 +1150,8 @@ endfunction
 "  TaskQueue: 每个插件都完成后，一并显示匹配菜单
 "  任务队列的设计不完善，当lsp特别慢的时候有可能会等待很长时间，需要加一个超时
 " ----------------------------------------------------------------------
+
+" FirstComplete 过程中调用
 function! s:ResetCompleteTaskQueue()
   let g:easycomplete_complete_taskqueue = []
   let l:ctx = easycomplete#context()
@@ -1269,6 +1164,7 @@ function! s:ResetCompleteTaskQueue()
   endfor
 endfunction
 
+" SecondComplete 过程中调用
 function! s:ResetAlwaysCompleteTaskQueue()
   let g:easycomplete_complete_taskqueue = []
   let l:ctx = easycomplete#context()
