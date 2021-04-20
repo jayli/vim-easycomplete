@@ -252,15 +252,15 @@ endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let tmp_menuitems = deepcopy(a:easycomplete_menuitems)
-  " 避免 completedone 事件递归调用
   let result = a:menuitems[0 : g:easycomplete_maxlength]
   if len(result) <= 10
     let result = easycomplete#util#uniq(result)
   endif
+  " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
   call s:zizz()
   call easycomplete#_complete(a:start_pos, result)
-  " complete() → completedone → s:flush()
-  " 这里确保 g:easycomplete_menuitems 不会被修改
+  " complete() 会触发 completedone 事件，会执行 s:flush()
+  " 所以这里要确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
@@ -280,7 +280,7 @@ function! s:CompleteMenuFilter(all_menu, word)
 
   let count_index = 0
   for item in a:all_menu
-    let item_word = (empty(get(item, 'abbr', '')) ? get(item, 'word'): get(item, 'abbr', ''))
+    let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > g:easycomplete_maxlength | break | endif
     if matchstr(item_word, "^" . word) == word
@@ -292,7 +292,7 @@ function! s:CompleteMenuFilter(all_menu, word)
   endfor
 
   for item in otherwise_matching_menu
-    let item_word = (empty(get(item, 'abbr', '')) ? get(item, 'word'): get(item, 'abbr', ''))
+    let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > g:easycomplete_maxlength | break | endif
     if easycomplete#util#FuzzySearch(word, item_word)
@@ -306,6 +306,10 @@ function! s:CompleteMenuFilter(all_menu, word)
   let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
+endfunction
+
+function! s:GetItemWord(item)
+  return empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
 endfunction
 
 function! easycomplete#CompleteDone()
@@ -376,7 +380,7 @@ function! easycomplete#Down()
   return "\<Down>"
 endfunction
 
-" 参考 asynccomplete 并做了扩展
+" 参考 asynccomplete 并做了扩充
 function! easycomplete#context() abort
   let l:ret = {
         \ 'bufnr':bufnr('%'),
@@ -400,10 +404,12 @@ function! easycomplete#CheckContextSequence(ctx)
   return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
+" 是否回退到 first hit 所处的位置
 function! s:OrigionalPosition()
   return easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
 endfunction
 
+" 外部插件回调 API
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
@@ -412,9 +418,7 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   let l:ctx = easycomplete#context()
   if !s:SameCtx(a:ctx, l:ctx)
     if s:CompleteSourceReady(a:name)
-      " call s:CloseCompletionMenu()
-      " call easycomplete#CursorHoldI()
-      " call s:CallCompeltorByName(a:name, l:ctx)
+      call easycomplete#nill()
     endif
     return
   endif
@@ -613,14 +617,14 @@ function! s:DoComplete(immediately)
   " 特殊字符'->',':','.','::'等 在个语言中的匹配，一般要配合 lsp 一起使用，即
   " lsp给出的结果中就包含了 "a.b.c" 的提示，这时直接执行 SecondComplete 动作
   if !empty(g:easycomplete_menuitems)
-    " hack for vim '.' typing
+    " hack for vim '.' dot typing
     if s:VimDotTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\(\w\+\.\)\{-1,}$')
       call s:CompleteTypingMatch(l:vim_word)
       return v:null
     endif
 
-    " hack for vim ':' typing
+    " hack for vim ':' colon typing
     if s:VimColonTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\w:$')
       call s:CompleteTypingMatch(l:vim_word)
@@ -810,7 +814,7 @@ endfunction
 
 function! easycomplete#SetMenuInfo(name, info, menu_flag)
   for item in g:easycomplete_menuitems
-    let t_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
+    let t_name = s:GetItemWord(item)
     if t_name ==# a:name && get(item, "menu") ==# a:menu_flag
       let item.info = a:info
       break
@@ -854,7 +858,7 @@ endfunction
 
 function! s:DoTabCompleteAction()
   if g:env_is_nvim
-    " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush() 来清
+    " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush()
     " nvim 中改用异步调用
     call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
     call s:SendKeys( "\<ESC>a" )
@@ -998,11 +1002,9 @@ function! s:CombineAllMenuitems()
 endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
-  " menuitems 始终不为空 
   call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
   if s:zizzing() | return | endif
   if s:CheckCompleteTastQueueAllDone()
-    " 为了让 CompleteChanged 事件在 TextChange 之后设置的不同延迟
     if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
       let result_items = a:menuitems[0 : g:easycomplete_maxlength]
       if len(result_items) <= 10
@@ -1022,7 +1024,7 @@ function! easycomplete#refresh()
   return ''
 endfunction
 
-" alias of complete()
+" Alias of complete()
 function! easycomplete#_complete(start, items)
   let g:easycomplete_complete_ctx = {
         \ 'start': a:start,
