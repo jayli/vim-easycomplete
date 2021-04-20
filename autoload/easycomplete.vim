@@ -40,7 +40,8 @@ function! s:InitLocalVars()
   " 和 YCM 一样，用做 FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
   " 菜单显示最大 item 数量，默认和 coc 保持一致
-  let g:easycomplete_maxlength = 50
+  " viml 的跟指性能不佳，适当降低下 maxlength 的阈值
+  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 
   " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " TODO: 需要加一个 timeout
