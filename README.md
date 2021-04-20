@@ -67,11 +67,11 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 #### 2) JavaScript 和 TypeScript
 
-安装 tsserver：`npm -g install typescript`
+安装 [tsserver](https://github.com/microsoft/TypeScript)：`npm -g install typescript`
 
 #### 3) Python 补全
 
-安装 pyls：`pip install python-language-server`
+安装 [pyls](https://github.com/palantir/python-language-server)：`pip install python-language-server`
 
 #### 4) Go 补全
 
@@ -79,11 +79,11 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 #### 5) VimL 补全
 
-安装 vim-language-server，`npm -g install vim-language-server`
+安装 [vim-language-server](https://github.com/iamcco/vim-language-server)，`npm -g install vim-language-server`
 
 #### 6) C++/C 补全
 
-安装 ccls，[参照这里进行安装](https://github.com/MaskRay/ccls)
+安装 [ccls](https://github.com/MaskRay/ccls)，[参照这里进行安装](https://github.com/MaskRay/ccls)
 
 ### 五）支持新语言的插件开发
 
@@ -111,7 +111,7 @@ call easycomplete#RegisterSource({
 - gotodefinition: {string | function}，可以是字符串也可以是function类型，goto 跳转到定义处的函数，可选配置，如果跳转成功则返回 `v:true`，如果跳转未成功则返回`v:false`，交还给`tag` 命令来处理
 - command: {string}，如果有依赖命令行，这里填写，在执行`:EasyCompleteCheck` 时检查命令是否 Ready。
 - trigger: {string}，是否永远跟随光标执行全量补全（FirstComplete），默认为 ""，如果需要的话，设为"always"
-- trigger_keys: {list}，触发补全动作的字符，比如`['.','->',':']`等（暂未实现）
+- `trigger_keys`: {list}，触发补全动作的字符，比如`['.','->',':']`等（暂未实现）
 
 ### 六）License
 
