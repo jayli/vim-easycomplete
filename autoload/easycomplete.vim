@@ -594,6 +594,12 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
+  " sh #!<tab> hack, bugfix #12
+  if &filetype == "sh" && easycomplete#context()['typed'] == "#!"
+    call s:AsyncRun(function('s:CompleteHandler'), [], 0)
+    return v:null
+  endif
+
   if complete_check()
     call s:CloseCompletionMenu()
     call s:StopAsyncRun()
@@ -833,6 +839,10 @@ function! easycomplete#CleverTab()
   if pumvisible()
     call s:zizz()
     return "\<C-N>"
+  elseif &filetype == "sh" && easycomplete#context()['typed'] == "#!"
+    " sh #!<tab> hack, bugfix #12
+    call s:ExpandSnipManually("#!")
+    return ""
   elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
     " 安装了 Ultisnips 后，用 Tab 来前跳
     " call UltiSnips#JumpForwards()
@@ -886,20 +896,25 @@ function! easycomplete#TypeEnterWithPUM()
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
         \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
-    " 判断是否展开代码片段
-    if index(keys(UltiSnips#SnippetsInCurrentScope()), l:word) >= 0
-      call s:CloseCompletionMenu()
-      " let key_str = "\\" . g:UltiSnipsExpandTrigger
-      " call eval('feedkeys("'.key_str.'")')
-      call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
-      return ""
-    endif
+    return s:ExpandSnipManually(l:word)
   endif
   if pumvisible()
     call s:zizz()
     return "\<C-Y>"
   endif
   return "\<CR>"
+endfunction
+
+function! s:ExpandSnipManually(word)
+  try
+    if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
+      call s:CloseCompletionMenu()
+      call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
+      return ""
+    endif
+  catch
+    echom v:exception
+  endtry
 endfunction
 
 function! s:SendKeys( keys )
