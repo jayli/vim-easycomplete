@@ -10,11 +10,11 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
           \ 'name': 'vimls',
           \ 'cmd': {server_info->['vim-language-server', '--stdio']},
           \ 'whitelist': ['vim'],
-          \ 'initializationOptions': {
+          \ 'initialization_options': {
           \   'vimruntime': expand($VIMRUNTIME),
           \   'runtimepath': &rtp,
           \   'iskeyword': '@,48-57,_,192-255,-#',
-          \   'indexes':{'runtime':"true", 'gap':100, 'count':1, 'runtimepath': "true"},
+          \   'indexes':{'runtime':"true", 'gap':100, 'count':3, 'runtimepath': "true"},
           \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
           \   'suggest': { 'fromVimruntime': "true" , 'fromRuntimepath': "true"}
           \ }

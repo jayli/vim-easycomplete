@@ -25,11 +25,12 @@ function! s:GetKeywords(base)
   let bufKeywordList        = s:GetBufKeywordsList(a:base)
   let wrappedBufKeywordList = map(bufKeywordList,
         \ '{"word":v:val,"dup":1,"icase":1,"kind":"w","equal":1,"menu": "[Buf]", "info": ""}')
-  return s:MenuArrayDistinct(extend(
+  let result =  s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
         \       s:GetWrappedDictKeywordList()
         \   ),
         \   a:base)
+  return result
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol)
@@ -107,13 +108,14 @@ function! s:GetWrappedDictKeywordList()
     for item in localdicts
       call add(dictkeywords, {
             \   "word" : item ,
-            \   "kind" : "k",
-            \   "equal":1
-            \   "menu" : "[KW]"
+            \   "kind" : "kw",
+            \   "equal":1,
+            \   "menu" : "[Buf]"
             \ })
     endfor
   endfor
   let b:globalDictKeywords = dictkeywords
+
   return dictkeywords
 endfunction
 
@@ -167,4 +169,8 @@ function! s:MenuArrayDistinct(menuList, base)
   endfor
 
   return menulist_result
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction

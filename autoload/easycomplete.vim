@@ -11,7 +11,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! s:InitLocalVars()
-  " call s:loglog(1)
+  " call s:loglog("start logging..")
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -95,6 +95,8 @@ function! easycomplete#Enable()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化
   call easycomplete#lsp#enable()
+
+  call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
 
 function! easycomplete#GetBindingKeys()
@@ -270,31 +272,36 @@ function! s:CompleteMenuFilter(all_menu, word)
 
   " 完整匹配
   let original_matching_menu = []
-  " 模糊匹配
+  " 非完整匹配
   let otherwise_matching_menu = []
+  " 模糊匹配结果
+  let otherwise_fuzzymatching = []
 
   let count_index = 0
   for item in a:all_menu
-    let t_word = (empty(item.abbr) ? item.word : item.abbr)
-    if strlen(t_word) < strlen(a:word) | continue | endif
-    let count_index += 1
+    let item_word = (empty(get(item, 'abbr', '')) ? get(item, 'word'): get(item, 'abbr', ''))
+    if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > g:easycomplete_maxlength | break | endif
-    if t_word =~ "^" . word
+    if matchstr(item_word, "^" . word) == word
       call add(original_matching_menu, item)
+      let count_index += 1
     else
       call add(otherwise_matching_menu, item)
     endif
   endfor
 
-  let original_matching_menu = sort(deepcopy(original_matching_menu),
-        \ "s:SortTextComparatorByLength")
-
-  let otherwise_fuzzymatching = []
   for item in otherwise_matching_menu
-    if easycomplete#util#FuzzySearch(word, (empty(item.abbr) ? item.word : item.abbr))
+    let item_word = (empty(get(item, 'abbr', '')) ? get(item, 'word'): get(item, 'abbr', ''))
+    if strlen(item_word) < strlen(a:word) | continue | endif
+    if count_index > g:easycomplete_maxlength | break | endif
+    if easycomplete#util#FuzzySearch(word, item_word)
       call add(otherwise_fuzzymatching, item)
+      let count_index += 1
     endif
   endfor
+
+  let original_matching_menu = sort(deepcopy(original_matching_menu),
+        \ "s:SortTextComparatorByLength")
   let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
@@ -968,7 +975,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:easycomplete_source[a:plugin_name].complete_result =
         \ deepcopy(s:NormalizeSort(s:NormalizeMenulist(a:menu_list)))
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
-  let g_easycomplete_menuitems = g:easycomplete_menuitems
+  let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
 
@@ -1217,6 +1224,10 @@ endfunction
 "  Util Method 常用的工具函数
 " ----------------------------------------------------------------------
 
+function! easycomplete#AutoLoadDict()
+  call easycomplete#util#AutoLoadDict()
+endfunction
+
 function! s:SnipSupports()
   try
     call funcref("UltiSnips#RefreshSnippets")
@@ -1299,7 +1310,7 @@ endfunction
 
 " setup a flag for doing nothing for 20ms
 function! s:zizz()
-  let delay = g:env_is_nvim ? 20 : 50
+  let delay = g:env_is_nvim ? 30 : (&filetype == 'vim' ? 50 : 50)
   let g:easycomplete_backing_or_cr = 1
   if exists('s:zizz_timmer') && s:zizz_timmer > 0
     call timer_stop(s:zizz_timmer)
@@ -1352,6 +1363,10 @@ endfunction
 
 function! s:GetTypingWord()
   return easycomplete#util#GetTypingWord()
+endfunction
+
+function! s:HasKey(...)
+  return call('easycomplete#util#HasKey', a:000)
 endfunction
 
 function! s:AsyncRun(...)
