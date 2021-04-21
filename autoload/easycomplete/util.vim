@@ -545,13 +545,13 @@ function! easycomplete#util#distinct(menu_list)
 
   let buf_list = []
   for item in a:menu_list
-    if item.menu == "[buf]"
+    if item.menu == "[buf]" || item.menu == "[dic]"
       call add(buf_list, item.word)
     endif
   endfor
 
   for item in a:menu_list
-    if item.menu == "[S]" || item.menu == "[buf]"
+    if item.menu == "[S]" || (item.menu == "[buf]" || item.menu == '[dic]')
       continue
     endif
 
@@ -559,7 +559,8 @@ function! easycomplete#util#distinct(menu_list)
           \ item.abbr : get(item, "word", "")
 
     if index(buf_list, word) >= 0
-      call filter(result_items, '!(v:val.menu == "[buf]" && v:val.word ==# "' . word . '")')
+      call filter(result_items,
+            \ '!((v:val.menu == "[buf]" || v:val.menu == "[dic]") && v:val.word ==# "' . word . '")')
     endif
   endfor
   return result_items
