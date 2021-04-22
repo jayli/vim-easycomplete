@@ -481,10 +481,24 @@ function! easycomplete#FireCondition()
     return v:false
   endif
 
+  if s:PythonColonTyping()
+    return v:false
+  endif
+
   if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) < 0
     return v:false
   endif
   return v:true
+endfunction
+
+" python 的冒号
+function! s:PythonColonTyping()
+  if &filetype == "python" &&
+        \ easycomplete#context()['typed'] =~ "\\(\\w\\|)\\):$"
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 " C++ 的双冒号

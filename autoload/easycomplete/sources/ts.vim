@@ -301,7 +301,7 @@ function! s:StartTsserver()
     let job_status = easycomplete#job#status(s:tsq_job.job)
     let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:StdOutCallback')})
     if s:tsq_job.job <= 0
-      echoerr "tsserver launch failed"
+      echoerr "tsserver launch failed. Please run 'npm -g install typescript'"
     endif
   endif
 endfunction
