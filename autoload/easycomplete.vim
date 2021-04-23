@@ -524,7 +524,7 @@ endfunction
 " vim 的冒号
 function! s:VimColonTyping()
   if &filetype == "vim" &&
-        \ easycomplete#context()['typed'] =~ "\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \ easycomplete#context()['typed'] =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
     return v:true
   else
     return v:false
@@ -576,6 +576,12 @@ function! easycomplete#typing()
 
   if !easycomplete#FireCondition()
     return ""
+  endif
+
+  if &filetype == 'vim' && easycomplete#context()['char'] == ":"
+    if !s:VimColonTyping()
+      return ""
+    endif
   endif
 
   if s:VimColonTyping()
@@ -910,7 +916,9 @@ function! easycomplete#TypeEnterWithPUM()
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
         \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
-    return s:ExpandSnipManually(l:word)
+    call s:ExpandSnipManually(l:word)
+    call s:zizz()
+    return "\<C-Y>"
   endif
   if pumvisible()
     call s:zizz()
