@@ -16,7 +16,6 @@ augroup easycomplete#autocmd
 augroup END
 
 function! s:InitLocalVars()
-  " call s:loglog("start logging..")
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -107,8 +106,9 @@ function! easycomplete#Enable()
 endfunction
 
 function! easycomplete#GetBindingKeys()
+  " 通用触发跟指匹配的字符绑定，所有文档类型生效
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/.:_'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/._'
   return l:key_liststr
 endfunction
 
@@ -476,19 +476,48 @@ function! s:CallCompeltorByName(name, ctx)
 endfunction
 
 function! easycomplete#FireCondition()
+  return s:NormalTrigger() || s:SemanticTrigger()
+endfunction
+
+" 是否符合某个插件自定义的条件 trigger，包含:true, 不包含:false
+function! s:SemanticTrigger()
+  let flag = v:false
+  for name in keys(g:easycomplete_source)
+    if s:CompleteSourceReady(name) && s:SemanticTriggerForPluginName(name)
+      let flag = v:true
+      break
+    endif
+  endfor
+  return flag
+endfunction
+
+function! s:SemanticTriggerForPluginName(name)
+  let ctx = easycomplete#context()
+  let trigger_keys = get(g:easycomplete_source[a:name], 'semantic_triggers', [])
+  if empty(trigger_keys) | return v:false | endif
+  for item_rgx in trigger_keys
+    if ctx['typed'] =~ item_rgx
+      return v:true
+    endif
+  endfor
+  return v:false
+endfunction
+
+" 是否匹配通用字符 trigger
+function! s:NormalTrigger()
   let l:char = easycomplete#context()["char"]
   if s:zizzing() && index([":",".","_","/",">"], l:char) < 0
     return v:false
   endif
 
-  if s:PythonColonTyping()
-    return v:false
-  endif
+  " if s:PythonColonTyping()
+  "   return v:false
+  " endif
 
-  if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) < 0
-    return v:false
+  if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) >= 0
+    return v:true
   endif
-  return v:true
+  return v:false
 endfunction
 
 " python 的冒号
@@ -578,12 +607,15 @@ function! easycomplete#typing()
     return ""
   endif
 
+  " hack for vim ':' typing
   if &filetype == 'vim' && easycomplete#context()['char'] == ":"
     if !s:VimColonTyping()
       return ""
     endif
   endif
 
+  " vim lsp 返回结果中包含多层的对象，比如 "a.b.c"，这样在输入"." 时就需要匹配
+  " 返回结果中的"."，":" 也是同理，这里只对 viml 做特殊处理
   if s:VimColonTyping()
     " continue
   elseif s:VimDotTyping()
@@ -710,7 +742,7 @@ function! s:CompletorCallingAtFirstComplete(...)
   call s:ResetCompleteTaskQueue()
   try
     for item in keys(g:easycomplete_source)
-      if s:CompleteSourceReady(item)
+      if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
         if l:cprst == v:true " true: go on
           continue
@@ -959,6 +991,7 @@ function! s:CompleteHandler()
   call s:StopAsyncRun()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
+  " 执行 complete action 之前最后一道严格拦截，只对这四个末尾特殊字符放行
   if strwidth(l:ctx['typing']) == 0 && index([':','.','/','>'], l:ctx['char']) < 0
     return
   endif
@@ -1212,7 +1245,7 @@ function! s:ResetCompleteTaskQueue()
   let g:easycomplete_complete_taskqueue = []
   let l:ctx = easycomplete#context()
   for name in keys(g:easycomplete_source)
-    if s:CompleteSourceReady(name)
+    if s:CompleteSourceReady(name) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(name))
       call s:SetCompleteTaskQueue(name, l:ctx, 1, 0)
     else
       call s:SetCompleteTaskQueue(name, l:ctx, 0, 0)
