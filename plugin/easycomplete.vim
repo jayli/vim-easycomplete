@@ -47,7 +47,7 @@ augroup easycomplete#register
 
   call easycomplete#RegisterSource(easycomplete#sources#ts#getConfig({
       \ 'name': 'ts',
-      \ 'whitelist': ['javascript','typescript','javascript.jsx'],
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
@@ -61,6 +61,7 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
       \ 'command': 'vim-language-server',
+      \ 'semantic_triggers':["\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"]
       \  })
       " \ 'trigger' : 'always'
 
@@ -70,7 +71,8 @@ augroup easycomplete#register
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
-      \ 'command': 'ccls'
+      \ 'command': 'ccls',
+      \ 'semantic_triggers':["->$", "::$"]
       \  })
 
   " easycompelte#lsp
