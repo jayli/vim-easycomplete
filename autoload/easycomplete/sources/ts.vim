@@ -85,10 +85,14 @@ function! easycomplete#sources#ts#DefinationCallback(item)
   endif
   let defination = l:definition_info[0]
   let filename = defination.file
-  let start = defination.contextStart
+  let start = get(defination, 'contextStart', {})
 
   call s:UpdateTagStack()
-  call s:location(fnameescape(filename), start.line, start.offset)
+  try
+    call s:location(fnameescape(filename), start.line, start.offset)
+  catch
+    echo printf('%s', v:exception)
+  endtry
 endfunction
 
 function! easycomplete#sources#ts#TsReloadingCallback(item)
