@@ -81,14 +81,19 @@ endfunction
 function! easycomplete#sources#ts#DefinationCallback(item)
   let l:definition_info = get(a:item, 'body')
   if empty(l:definition_info)
+    echo printf('%s', "No defination found")
     return
   endif
   let defination = l:definition_info[0]
-  let filename = defination.file
-  let start = defination.contextStart
+  let filename = get(defination, 'file', '')
+  let start = get(defination, 'contextStart', {})
 
   call s:UpdateTagStack()
-  call s:location(fnameescape(filename), start.line, start.offset)
+  try
+    call s:location(fnameescape(filename), start.line, start.offset)
+  catch
+    echo printf('%s', v:exception)
+  endtry
 endfunction
 
 function! easycomplete#sources#ts#TsReloadingCallback(item)
@@ -557,6 +562,6 @@ function! s:UpdateTagStack() abort
   call easycomplete#util#UpdateTagStack()
 endfunction
 
-function! s:log(msg)
-  call easycomplete#log(a:msg)
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
