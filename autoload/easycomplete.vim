@@ -67,6 +67,11 @@ function! s:InitLocalVars()
   " zizz 标志位
   let g:easycomplete_backing_or_cr = 0
 
+  " 用作 FirstComplete TaskQueue 回调的定时器
+  let s:first_render_timer = 0
+  " FirstCompleteRendering 超时时间
+  let g:easycomplete_first_render_delay = 1000
+
   " completeopt 基础配置
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
@@ -740,6 +745,16 @@ endfunction
 function! s:CompletorCallingAtFirstComplete(...)
   let l:ctx = easycomplete#context()
   call s:ResetCompleteTaskQueue()
+  if s:first_render_timer > 0
+    call timer_stop(s:first_render_timer)
+  endif
+  let s:first_render_timer = timer_start(g:easycomplete_first_render_delay,
+        \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
+        \                             [
+        \                               s:GetCompleteCache(l:ctx['typing'])['start_pos'],
+        \                               s:GetCompleteCache(l:ctx['typing'])['menu_items']
+        \                             ])
+        \ })
   try
     for item in keys(g:easycomplete_source)
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
@@ -1081,17 +1096,26 @@ function! s:FirstComplete(start_pos, menuitems)
   call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
   if s:zizzing() | return | endif
   if s:CheckCompleteTastQueueAllDone()
-    if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
-      let result_items = a:menuitems[0 : g:easycomplete_maxlength]
-      if len(result_items) <= 10
-        let result_items = easycomplete#util#uniq(result_items)
-      endif
-      call easycomplete#_complete(a:start_pos, result_items)
-    else
-      " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
-      " easycomplete#typing() → s:CompleteTypingMatch()
-    endif
+    call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
+endfunction
+
+function! s:FirstCompleteRendering(start_pos, menuitems)
+  if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
+    let result_items = a:menuitems[0 : g:easycomplete_maxlength]
+    if len(result_items) <= 10
+      let result_items = easycomplete#util#uniq(result_items)
+    endif
+    call easycomplete#_complete(a:start_pos, result_items)
+  else
+    " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
+    " easycomplete#typing() → s:CompleteTypingMatch()
+  endif
+  if s:first_render_timer > 0
+    call timer_stop(s:first_render_timer)
+    let s:first_render_timer = 0
+  endif
+  call s:LetCompleteTaskQueueAllDone()
 endfunction
 
 function! easycomplete#refresh()
@@ -1381,6 +1405,12 @@ function! s:AddCompleteCache(word, menulist)
   endif
   let g:easycomplete_menucache["_#_1"] = line('.')  " line num
   let g:easycomplete_menucache["_#_2"] = start_pos  " col num
+endfunction
+
+function! s:GetCompleteCache(word)
+  return {'menu_items':get(g:easycomplete_menucache, a:word, []),
+        \ 'start_pos':g:easycomplete_menucache["_#_2"]
+        \ }
 endfunction
 
 function! s:ResetBacking(...)
