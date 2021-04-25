@@ -110,8 +110,8 @@ au User easycomplete_plugin call easycomplete#RegisterSource({
 - constructor: {string | function}，可以是字符串也可以是function类型，插件构造器，BufEnter 时调用，可选配置
 - gotodefinition: {string | function}，可以是字符串也可以是function类型，goto 跳转到定义处的函数，可选配置，如果跳转成功则返回 `v:true`，如果跳转未成功则返回`v:false`，交还给`tag` 命令来处理
 - command: {string}，如果有依赖命令行，这里填写，在执行`:EasyCompleteCheck` 时检查命令是否 Ready。
-- trigger: {string}，是否永远跟随光标执行全量补全（FirstComplete），默认为 ""，如果需要的话，设为"always"，注意'always'会很大程度影响性能
-- `trigger_keys`: {list}，触发补全动作的字符，比如`['.','->',':']`等（暂未实现）
+- trigger: {string}，是否永远跟随光标执行全量补全（FirstComplete），默认为 ""，如果需要的话，设为"always"，注意'always'会很大程度影响性能，如非必要请不要使用always
+- `semantic_triggers`: {list}，触发补全动作的字符，比如`['.','->',':']`等，可以匹配正则表达式
 
 ### 六）介绍
 
