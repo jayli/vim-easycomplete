@@ -89,6 +89,9 @@ function! easycomplete#Enable()
     return
   endif
   let b:easycomplete_loaded_done= 1
+
+  " 自定义插件
+  doautocmd <nomodeline> User easycomplete_plugin 
   " 初始化全局变量
   call s:InitLocalVars()
   " 必须要确保typing command先绑定
@@ -107,7 +110,6 @@ function! easycomplete#Enable()
 
   " 载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
-  doautocmd <nomodeline> User easycomplete_plugin 
 endfunction
 
 function! easycomplete#GetBindingKeys()

@@ -39,6 +39,7 @@ endif
 
 " Buildin Plugins
 augroup easycomplete#register
+
   call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
@@ -105,4 +106,5 @@ augroup easycomplete#register
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
       \  })
+
 augroup END
