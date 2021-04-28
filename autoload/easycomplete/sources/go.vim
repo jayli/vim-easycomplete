@@ -1,4 +1,3 @@
-" TODO Gocode → gopls
 if exists('g:easycomplete_gopls')
   finish
 endif
