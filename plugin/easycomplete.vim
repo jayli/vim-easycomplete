@@ -76,6 +76,17 @@ augroup easycomplete#register
       \ 'semantic_triggers':["->$", "::$"]
       \  })
 
+  " TODO not ready
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'css',
+      \ 'whitelist': ['css', 'less', 'sass', 'scss'],
+      \ 'completor': 'easycomplete#sources#css#completor',
+      \ 'constructor' :'easycomplete#sources#css#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#css#GotoDefinition',
+      \ 'command': 'css-languageserver',
+      \ 'semantic_triggers':[":$"]
+      \  })
+
   " easycompelte#lsp
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
