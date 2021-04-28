@@ -101,18 +101,23 @@ function! s:GetWrappedDictKeywordList()
     endif
 
     for line in lines
-      call extend(localdicts, split(line,'[^A-Za-z0-9_#]'))
+      if &filetype == "css"
+        call extend(localdicts, split(line,'[^A-Za-z0-9_#-]'))
+      else
+        call extend(localdicts, split(line,'[^A-Za-z0-9_#]'))
+      endif
     endfor
 
     let localdicts = s:ArrayDistinct(localdicts)
     for item in localdicts
       call add(dictkeywords, {
             \   "word" : item ,
-            \   "kind" : "kw",
+            \   "kind" : "w",
             \   "equal":1,
             \   "menu" : "[Dic]"
             \ })
     endfor
+    echom dictkeywords
   endfor
   let b:globalDictKeywords = dictkeywords
 

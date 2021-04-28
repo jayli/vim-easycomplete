@@ -85,6 +85,12 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 安装 [ccls](https://github.com/MaskRay/ccls)，[参照这里进行安装](https://github.com/MaskRay/ccls)
 
+#### 7) CSS 补全
+
+安装 [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin)，`npm install --global vscode-css-languageserver-bin`
+
+由于 css-languageserver 默认不包含 completionProvider，必须要安装 [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) 依赖，Snippets 脚本基于 lua 实现，用户可自行选择安装。
+
 ### 五）支持新语言的插件开发
 
 方便起见，EasyComplete 也支持自己实现新的语言插件，只要遵循 lsp 规范即可。

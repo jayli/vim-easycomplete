@@ -40,22 +40,22 @@ endif
 " Buildin Plugins
 augroup easycomplete#register
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#buf#completor',
       \ })
 
-  call easycomplete#RegisterSource(easycomplete#sources#ts#getConfig({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'ts',
       \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
       \ 'command': 'tsserver'
-      \  }))
+      \  })
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
       \ 'whitelist': ['vim'],
       \ 'completor': 'easycomplete#sources#vim#completor',
@@ -66,7 +66,7 @@ augroup easycomplete#register
       \  })
       " \ 'trigger' : 'always'
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
       \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
       \ 'completor': 'easycomplete#sources#cpp#completor',
@@ -76,8 +76,22 @@ augroup easycomplete#register
       \ 'semantic_triggers':["->$", "::$"]
       \  })
 
+  " css-languageserver 默认不带 completionProvider，必须要安装
+  " snippets-supports
+  " https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support
+  " 用户自行安装
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'css',
+      \ 'whitelist': ['css', 'less', 'sass', 'scss'],
+      \ 'completor': 'easycomplete#sources#css#completor',
+      \ 'constructor' :'easycomplete#sources#css#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#css#gotodefinition',
+      \ 'command': 'css-languageserver',
+      \ 'semantic_triggers':[":$"]
+      \  })
+
   " easycompelte#lsp
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
       \ 'completor': 'easycomplete#sources#py#completor',
@@ -86,7 +100,7 @@ augroup easycomplete#register
       \ 'command': 'pyls'
       \  })
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'go',
       \ 'whitelist': ['go'],
       \ 'completor': 'easycomplete#sources#go#completor',
@@ -95,13 +109,13 @@ augroup easycomplete#register
       \ 'command': 'gopls'
       \  })
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'directory',
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
 
-  call easycomplete#RegisterSource({
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
