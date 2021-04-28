@@ -40,12 +40,6 @@ function! easycomplete#sources#ts#destory()
   call s:DelTmpFiles()
 endfunction
 
-function! easycomplete#sources#ts#getConfig(opts) abort
-  return extend({
-        \ 'refresh_pattern': '\%(\k\|\.\)',
-        \}, a:opts)
-endfunction
-
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
 
