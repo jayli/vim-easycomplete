@@ -117,7 +117,6 @@ function! s:GetWrappedDictKeywordList()
             \   "menu" : "[Dic]"
             \ })
     endfor
-    echom dictkeywords
   endfor
   let b:globalDictKeywords = dictkeywords
 
