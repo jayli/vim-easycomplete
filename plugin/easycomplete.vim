@@ -76,13 +76,16 @@ augroup easycomplete#register
       \ 'semantic_triggers':["->$", "::$"]
       \  })
 
-  " TODO not ready
+  " css-languageserver 默认不带 completionProvider，必须要安装
+  " snippets-supports
+  " https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support
+  " 用户自行安装
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'css',
       \ 'whitelist': ['css', 'less', 'sass', 'scss'],
       \ 'completor': 'easycomplete#sources#css#completor',
       \ 'constructor' :'easycomplete#sources#css#constructor',
-      \ 'gotodefinition': 'easycomplete#sources#css#GotoDefinition',
+      \ 'gotodefinition': 'easycomplete#sources#css#gotodefinition',
       \ 'command': 'css-languageserver',
       \ 'semantic_triggers':[":$"]
       \  })

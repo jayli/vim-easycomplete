@@ -7,8 +7,7 @@ function! easycomplete#sources#css#constructor(opt, ctx)
   if executable('css-languageserver')
     call easycomplete#lsp#register_server({
         \ 'name': 'css-languageserver',
-        \ 'cmd': {server_info->['/usr/local/bin/css-languageserver', '--stdio']},
-        \ 'initialization_options': v:null,
+        \ 'cmd': ['css-languageserver', '--stdio'],
         \ 'allowlist': ['css', 'less', 'sass', 'scss'],
         \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\)$'},
         \ })
