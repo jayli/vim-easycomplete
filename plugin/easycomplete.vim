@@ -14,7 +14,6 @@ let g:easycomplete_plugin_init = 1
 
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
-" 对 ultisnips 的依赖
 
 if (g:env_is_vim && v:version < 802) || (g:env_is_nvim && !has('nvim-0.4.0'))
   echom "EasyComplete requires vim version upper than 802".
@@ -88,6 +87,16 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#css#constructor',
       \ 'gotodefinition': 'easycomplete#sources#css#gotodefinition',
       \ 'command': 'css-languageserver',
+      \ 'semantic_triggers':[":$"]
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'json',
+      \ 'whitelist': ['json'],
+      \ 'completor': 'easycomplete#sources#json#completor',
+      \ 'constructor' :'easycomplete#sources#json#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#json#gotodefinition',
+      \ 'command': 'json-languageserver',
       \ 'semantic_triggers':[":$"]
       \  })
 
