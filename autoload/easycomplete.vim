@@ -127,6 +127,7 @@ function! s:BindingTypingCommandOnce()
   if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
     " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
     exec "iunmap " . g:easycomplete_tab_trigger
+    let g:UltiSnipsExpandTrigger="<Plug>EasycompleteExpandSnippet"
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
@@ -979,8 +980,14 @@ endfunction
 function! s:ExpandSnipManually(word)
   try
     if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
+      " 可直接展开
       call s:CloseCompletionMenu()
       call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
+      return ""
+    elseif empty(UltiSnips#SnippetsInCurrentScope())
+      " 需要展开选项
+      call s:CloseCompletionMenu()
+      call feedkeys("\<Plug>EasycompleteExpandSnippet")
       return ""
     endif
   catch
