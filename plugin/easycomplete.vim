@@ -14,6 +14,7 @@ let g:easycomplete_plugin_init = 1
 
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
+" 对 ultisnips 的依赖
 
 if (g:env_is_vim && v:version < 802) || (g:env_is_nvim && !has('nvim-0.4.0'))
   echom "EasyComplete requires vim version upper than 802".

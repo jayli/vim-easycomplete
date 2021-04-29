@@ -134,6 +134,7 @@ function! s:BindingTypingCommandOnce()
   inoremap <expr> <Up> easycomplete#Up()
   inoremap <expr> <Down> easycomplete#Down()
   inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
+  inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
 
   augroup easycomplete#NormalBinding
     autocmd!
@@ -979,8 +980,14 @@ endfunction
 function! s:ExpandSnipManually(word)
   try
     if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
+      " 可直接展开
       call s:CloseCompletionMenu()
       call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
+      return ""
+    elseif empty(UltiSnips#SnippetsInCurrentScope())
+      " 需要展开选项
+      call s:CloseCompletionMenu()
+      call feedkeys("\<Plug>EasycompleteExpandSnippet")
       return ""
     endif
   catch
