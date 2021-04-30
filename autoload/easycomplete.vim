@@ -1507,6 +1507,10 @@ function! s:loglog(...)
   return call('easycomplete#log#log', a:000)
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
 " ----------------------------------------------------------------------
 " LSP 专用工具函数
 " 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
@@ -1547,7 +1551,7 @@ function! easycomplete#FindLspCompleteServers() abort
   let l:server_names = []
   for l:server_name in easycomplete#lsp#get_allowed_servers()
     let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
-    if has_key(l:init_capabilities, 'completionProvider')
+    if has_key(l:init_capabilities, 'completionProvider') && l:init_capabilities["completionProvider"] != v:null
       " TODO: support triggerCharacters
       call add(l:server_names, l:server_name)
     endif
