@@ -1551,7 +1551,8 @@ function! easycomplete#FindLspCompleteServers() abort
   let l:server_names = []
   for l:server_name in easycomplete#lsp#get_allowed_servers()
     let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
-    if has_key(l:init_capabilities, 'completionProvider') && l:init_capabilities["completionProvider"] != v:null
+    " if has_key(l:init_capabilities, 'completionProvider') && l:init_capabilities["completionProvider"] != v:null
+    if has_key(l:init_capabilities, 'completionProvider')
       " TODO: support triggerCharacters
       call add(l:server_names, l:server_name)
     endif
@@ -1572,6 +1573,7 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     return
   endif
 
+  " TODO 自己实现的有问题
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
 
@@ -1648,6 +1650,8 @@ function! s:GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['word'] = l:completion_item['label']
     endif
+
+    call s:log(l:vim_complete_item['word'])
 
     if l:expandable
       let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
