@@ -40,41 +40,41 @@ endif
 " Buildin Plugins
 augroup easycomplete#register
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'buf',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': 'easycomplete#sources#buf#completor',
-  "     \ })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'buf',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#buf#completor',
+      \ })
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'ts',
-  "     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
-  "     \ 'completor': function('easycomplete#sources#ts#completor'),
-  "     \ 'constructor' :function('easycomplete#sources#ts#constructor'),
-  "     \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
-  "     \ 'command': 'tsserver'
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'ts',
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
+      \ 'completor': function('easycomplete#sources#ts#completor'),
+      \ 'constructor' :function('easycomplete#sources#ts#constructor'),
+      \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
+      \ 'command': 'tsserver'
+      \  })
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'vim',
-  "     \ 'whitelist': ['vim'],
-  "     \ 'completor': 'easycomplete#sources#vim#completor',
-  "     \ 'constructor' :'easycomplete#sources#vim#constructor',
-  "     \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
-  "     \ 'command': 'vim-language-server',
-  "     \ 'semantic_triggers':["\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"]
-  "     \  })
-  "     " \ 'trigger' : 'always'
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'vim',
+      \ 'whitelist': ['vim'],
+      \ 'completor': 'easycomplete#sources#vim#completor',
+      \ 'constructor' :'easycomplete#sources#vim#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
+      \ 'command': 'vim-language-server',
+      \ 'semantic_triggers':["\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"]
+      \  })
+      " \ 'trigger' : 'always'
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'cpp',
-  "     \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
-  "     \ 'completor': 'easycomplete#sources#cpp#completor',
-  "     \ 'constructor' :'easycomplete#sources#cpp#constructor',
-  "     \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
-  "     \ 'command': 'ccls',
-  "     \ 'semantic_triggers':["->$", "::$"]
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'cpp',
+      \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+      \ 'completor': 'easycomplete#sources#cpp#completor',
+      \ 'constructor' :'easycomplete#sources#cpp#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
+      \ 'command': 'ccls',
+      \ 'semantic_triggers':["->$", "::$"]
+      \  })
 
   " css-languageserver 默认不带 completionProvider，必须要安装
   " snippets-supports
@@ -87,7 +87,7 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#css#constructor',
       \ 'gotodefinition': 'easycomplete#sources#css#gotodefinition',
       \ 'command': 'css-languageserver',
-      \ 'semantic_triggers':[":$"]
+      \ 'semantic_triggers':['[^:]:$']
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
@@ -97,38 +97,38 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#json#constructor',
       \ 'gotodefinition': 'easycomplete#sources#json#gotodefinition',
       \ 'command': 'json-languageserver',
-      \ 'semantic_triggers':[":$"]
+      \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
       \  })
 
   " easycompelte#lsp
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'py',
-  "     \ 'whitelist': ['py','python'],
-  "     \ 'completor': 'easycomplete#sources#py#completor',
-  "     \ 'constructor' :'easycomplete#sources#py#constructor',
-  "     \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
-  "     \ 'command': 'pyls'
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'py',
+      \ 'whitelist': ['py','python'],
+      \ 'completor': 'easycomplete#sources#py#completor',
+      \ 'constructor' :'easycomplete#sources#py#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
+      \ 'command': 'pyls'
+      \  })
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'go',
-  "     \ 'whitelist': ['go'],
-  "     \ 'completor': 'easycomplete#sources#go#completor',
-  "     \ 'constructor' :'easycomplete#sources#go#constructor',
-  "     \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
-  "     \ 'command': 'gopls'
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'go',
+      \ 'whitelist': ['go'],
+      \ 'completor': 'easycomplete#sources#go#completor',
+      \ 'constructor' :'easycomplete#sources#go#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
+      \ 'command': 'gopls'
+      \  })
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'directory',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': function('easycomplete#sources#directory#completor'),
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'directory',
+      \ 'whitelist': ['*'],
+      \ 'completor': function('easycomplete#sources#directory#completor'),
+      \  })
 
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'snips',
-  "     \ 'whitelist': ['*'],
-  "     \ 'completor': 'easycomplete#sources#snips#completor',
-  "     \  })
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'snips',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#snips#completor',
+      \  })
 
 augroup END

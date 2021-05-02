@@ -1016,7 +1016,11 @@ function! s:CompleteHandler()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
   " 执行 complete action 之前最后一道严格拦截，只对这四个末尾特殊字符放行
-  if strwidth(l:ctx['typing']) == 0 && index([':','.','/','>'], l:ctx['char']) < 0
+  let l:checking = [':','.','/','>']
+  if &filetype == "json"
+    call extend(l:checking, ['"', "'"])
+  endif
+  if strwidth(l:ctx['typing']) == 0 && index(l:checking, l:ctx['char']) < 0
     return
   endif
 
@@ -1576,6 +1580,7 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   " TODO 自己实现的有问题
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
+  let l:startcol = l:ctx['startcol']
 
   " hack for vim-language-server: 
   "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
@@ -1589,7 +1594,17 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     echom v:exception
   endtry
 
-  call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
+  " hack for json-language-server
+  "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
+  try
+    if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$' 
+      let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
+    endif
+  catch
+    echom v:exception
+  endtry
+
+  call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
 function! s:VimHack_S_ColonMap(key, val)
@@ -1597,6 +1612,14 @@ function! s:VimHack_S_ColonMap(key, val)
         \ && get(a:val, "abbr") ==# get(a:val, "word")
         \ && matchstr(get(a:val, "word"), "^s:") ==  "s:"
     let a:val.word = get(a:val, "word")[2:]
+  endif
+  return a:val
+endfunction
+
+function! s:JsonHack_Q_QuotationMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && matchstr(get(a:val, "word"), '^"') == '"'
+    let a:val.word = get(a:val, "word")[1:]
   endif
   return a:val
 endfunction
@@ -1650,8 +1673,6 @@ function! s:GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['word'] = l:completion_item['label']
     endif
-
-    call s:log(l:vim_complete_item['word'])
 
     if l:expandable
       let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
