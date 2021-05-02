@@ -210,6 +210,19 @@ function! easycomplete#lsp#utils#to_char(expr, lnum, col) abort
     return strchars(strpart(l:linestr, 0, a:col - 1))
 endfunction
 
+function! easycomplete#lsp#utils#make_valid_word(str) abort
+   let l:str = substitute(a:str, '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g')
+   let l:str = substitute(l:str, '\\\(.\)', '\1', 'g')
+   let l:valid = matchstr(l:str, '^[^"'' (<{\[\t\r\n]\+')
+   if empty(l:valid)
+       return l:str
+   endif
+   if l:valid =~# ':$'
+       return l:valid[:-2]
+   endif
+   return l:valid
+endfunction
+
 " polyfill for the neovim wait function
 if exists('*wait')
     function! easycomplete#lsp#utils#_wait(timeout, condition, ...) abort

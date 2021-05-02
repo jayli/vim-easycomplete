@@ -960,6 +960,9 @@ function! easycomplete#CleverShiftTab()
 endfunction
 
 " <CR> 逻辑，判断是否展开代码片段
+" TODO
+"   json 中 ~ 展开后把光标定位到准确，参照：
+"   vim-lsp/autoload/lsp/ui/vim/completion.vim
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
@@ -1016,7 +1019,11 @@ function! s:CompleteHandler()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
   " 执行 complete action 之前最后一道严格拦截，只对这四个末尾特殊字符放行
-  if strwidth(l:ctx['typing']) == 0 && index([':','.','/','>'], l:ctx['char']) < 0
+  let l:checking = [':','.','/','>']
+  if &filetype == "json"
+    call extend(l:checking, ['"'])
+  endif
+  if strwidth(l:ctx['typing']) == 0 && index(l:checking, l:ctx['char']) < 0
     return
   endif
 
@@ -1507,6 +1514,10 @@ function! s:loglog(...)
   return call('easycomplete#log#log', a:000)
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
 " ----------------------------------------------------------------------
 " LSP 专用工具函数
 " 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
@@ -1547,6 +1558,7 @@ function! easycomplete#FindLspCompleteServers() abort
   let l:server_names = []
   for l:server_name in easycomplete#lsp#get_allowed_servers()
     let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
+    " if has_key(l:init_capabilities, 'completionProvider') && l:init_capabilities["completionProvider"] != v:null
     if has_key(l:init_capabilities, 'completionProvider')
       " TODO: support triggerCharacters
       call add(l:server_names, l:server_name)
@@ -1568,8 +1580,10 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     return
   endif
 
+  " TODO 自己实现的有问题
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
+  let l:startcol = l:ctx['startcol']
 
   " hack for vim-language-server: 
   "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
@@ -1583,7 +1597,18 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     echom v:exception
   endtry
 
-  call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], l:matches)
+  " hack for json-language-server
+  "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
+  try
+    if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$' 
+      let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
+      echom l:matches
+    endif
+  catch
+    echom v:exception
+  endtry
+
+  call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
 function! s:VimHack_S_ColonMap(key, val)
@@ -1591,6 +1616,14 @@ function! s:VimHack_S_ColonMap(key, val)
         \ && get(a:val, "abbr") ==# get(a:val, "word")
         \ && matchstr(get(a:val, "word"), "^s:") ==  "s:"
     let a:val.word = get(a:val, "word")[2:]
+  endif
+  return a:val
+endfunction
+
+function! s:JsonHack_Q_QuotationMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && matchstr(get(a:val, "word"), '^"') == '"'
+    let a:val.word = get(a:val, "word")[1:]
   endif
   return a:val
 endfunction
