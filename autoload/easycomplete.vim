@@ -960,6 +960,9 @@ function! easycomplete#CleverShiftTab()
 endfunction
 
 " <CR> 逻辑，判断是否展开代码片段
+" TODO
+"   json 中 ~ 展开后把光标定位到准确，参照：
+"   vim-lsp/autoload/lsp/ui/vim/completion.vim
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
@@ -1018,7 +1021,7 @@ function! s:CompleteHandler()
   " 执行 complete action 之前最后一道严格拦截，只对这四个末尾特殊字符放行
   let l:checking = [':','.','/','>']
   if &filetype == "json"
-    call extend(l:checking, ['"', "'"])
+    call extend(l:checking, ['"'])
   endif
   if strwidth(l:ctx['typing']) == 0 && index(l:checking, l:ctx['char']) < 0
     return
@@ -1599,6 +1602,7 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   try
     if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$' 
       let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
+      echom l:matches
     endif
   catch
     echom v:exception
