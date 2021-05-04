@@ -91,6 +91,10 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 由于 css-languageserver 默认不包含 completionProvider，必须要安装 [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) 依赖，Snippets 脚本基于 lua 实现，用户可自行选择安装。
 
+#### 8) JSON 补全
+
+安装 [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin)，`npm install -g vscode-json-languageserver-bin`
+
 ### 五）支持新语言的插件开发
 
 方便起见，EasyComplete 也支持自己实现新的语言插件，只要遵循 lsp 规范即可。
