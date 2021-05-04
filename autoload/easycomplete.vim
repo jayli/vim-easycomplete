@@ -960,9 +960,6 @@ function! easycomplete#CleverShiftTab()
 endfunction
 
 " <CR> 逻辑，判断是否展开代码片段
-" TODO
-"   json 中 ~ 展开后把光标定位到准确，参照：
-"   vim-lsp/autoload/lsp/ui/vim/completion.vim
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
@@ -975,6 +972,11 @@ function! easycomplete#TypeEnterWithPUM()
   endif
   if pumvisible()
     call s:zizz()
+    " add expandable support for #48
+    if s:expandable(l:item)
+      let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
+      call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
+    endif
     return "\<C-Y>"
   endif
   return "\<CR>"
@@ -1679,10 +1681,19 @@ function! s:GetVimCompletionItems(response, plugin_name)
     endif
 
     if l:expandable
+      let l:origin_word = l:vim_complete_item['word']
+      let l:placeholder_regex = '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}'
       let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
             \ substitute(l:vim_complete_item['word'],
-            \ '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}', '', 'g'))
+            \ l:placeholder_regex, '', 'g'))
+      let l:placeholder_position = match(l:origin_word, l:placeholder_regex)
+      let l:cursor_backing_steps = strlen(l:vim_complete_item['word'][l:placeholder_position:])
       let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
+      if strlen(l:origin_word) > strlen(l:vim_complete_item['word'])
+        let l:vim_complete_item['user_data'] = json_encode({'expandable':1,
+              \ 'placeholder_position': l:placeholder_position,
+              \ 'cursor_backing_steps': l:cursor_backing_steps})
+      endif
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
@@ -1698,6 +1709,22 @@ function! s:GetVimCompletionItems(response, plugin_name)
   endfor
 
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
+endfunction
+
+function! s:expandable(item)
+  if has_key(a:item, 'user_data') && !empty(get(a:item, 'user_data', ''))
+    let user_data_str = get(a:item, 'user_data', '')
+    if !easycomplete#util#IsJson(user_data_str)
+      return v:false
+    endif
+
+    let l:data = json_decode(user_data_str)
+    if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
+      return get(l:data, 'expandable', 0)
+    endif
+  else  
+    return v:false
+  endif
 endfunction
 
 function! s:NormalizeLSPInfo(info)
