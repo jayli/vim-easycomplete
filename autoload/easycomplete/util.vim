@@ -175,6 +175,15 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
   return info
 endfunction
 
+function! easycomplete#util#IsJson(str)
+  try
+    call json_decode(a:str)
+  catch /^Vim\%((\a\+)\)\=:E474/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
 function! easycomplete#util#TagBarExists()
   try
     call funcref("tagbar#StopAutoUpdate")
