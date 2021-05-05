@@ -169,22 +169,38 @@ function! s:NormalizeEntryDetail(item)
 endfunction
 
 function! s:EntriesMap(key, val)
-  return a:val.abbr
+  let abbr = a:val.abbr
+  if strlen(abbr) >= 2 && abbr[-1:] == "~"
+    return abbr[0:-2]
+  endif
+  return abbr
 endfunction
 
 function! s:CompleteMenuMap(key, val)
   let is_func = (a:val.kind ==# "method")
   let val_name = a:val.name
-  return {
+  let ret = {
         \ "abbr": val_name,
         \ "dup": 1,
         \ "icase": 1,
         \ "kind": exists('a:val.kind') ? a:val.kind[0] : "",
         \ "menu": s:menu_flag,
-        \ "word": is_func ? val_name . "(" : val_name,
+        \ "word": val_name,
         \ "info": "",
         \ "equal":1
         \ }
+        " \ "word": is_func ? val_name . "(" : val_name,
+
+  if is_func
+    let ret['word'] = val_name . "()"
+    let ret['abbr'] = val_name . "~"
+    let ret['user_data'] = json_encode({
+          \ 'expandable': 1,
+          \ 'placeholder_position': strlen(val_name) + 1,
+          \ 'cursor_backing_steps': 1
+          \ })
+  endif
+  return ret
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort

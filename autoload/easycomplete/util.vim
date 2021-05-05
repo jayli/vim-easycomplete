@@ -159,12 +159,14 @@ endfunction
 
 function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
+  let t_name = s:TrimWavyLine(t_name)
   let info = ""
   for item in a:all_menu
     if type(item) != type({})
       continue
     endif
     let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
+    let i_name = s:TrimWavyLine(i_name)
     if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
       if has_key(item, "info")
         let info = get(item, "info")
@@ -173,6 +175,13 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     endif
   endfor
   return info
+endfunction
+
+function! s:TrimWavyLine(str)
+  if strlen(a:str) >= 2 && a:str[-1:] == "~"
+    return a:str[0:-2]
+  endif
+  return a:str
 endfunction
 
 function! easycomplete#util#IsJson(str)
@@ -431,8 +440,8 @@ function! easycomplete#util#LspType(c_type)
   return l:type
 endfunction
 
-function! s:log(msg)
-  call easycomplete#util#log(a:msg)
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
 
 function! easycomplete#util#log(...)

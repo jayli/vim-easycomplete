@@ -323,7 +323,11 @@ function! s:CompleteMenuFilter(all_menu, word)
 endfunction
 
 function! s:GetItemWord(item)
-  return empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
+  let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
+  if strlen(t_str) >= 2 && t_str[-1:] == "~"
+    let t_str = t_str[0:-2]
+  endif
+  return t_str
 endfunction
 
 function! easycomplete#CompleteDone()
