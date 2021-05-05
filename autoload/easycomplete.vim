@@ -369,6 +369,9 @@ endfunction
 
 function! easycomplete#IsBacking()
   let curr_ctx = easycomplete#context()
+  if !exists('b:typing_ctx')
+    let b:typing_ctx = easycomplete#context() 
+  endif
   let old_ctx = copy(b:typing_ctx)
   let b:typing_ctx = curr_ctx
   if curr_ctx['lnum'] == old_ctx['lnum']

@@ -77,7 +77,7 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 
 安装 [gopls](https://github.com/golang/tools/tree/master/gopls)：`go get golang.org/x/tools/gopls`
 
-#### 5) VimL 补全
+#### 5) Vim Script 补全
 
 安装 [vim-language-server](https://github.com/iamcco/vim-language-server)，`npm -g install vim-language-server`
 
@@ -94,6 +94,10 @@ EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接�
 #### 8) JSON 补全
 
 安装 [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin)，`npm install -g vscode-json-languageserver-bin`
+
+#### 9) Shell 脚本补全
+
+安装 [bash-language-server](https://github.com/bash-lsp/bash-language-server)，`npm i -g bash-language-server`
 
 ### 五）支持新语言的插件开发
 

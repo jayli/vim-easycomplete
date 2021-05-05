@@ -91,6 +91,16 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'sh',
+      \ 'whitelist': ['sh'],
+      \ 'completor': 'easycomplete#sources#bash#completor',
+      \ 'constructor' :'easycomplete#sources#bash#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#bash#gotodefinition',
+      \ 'command': 'bash-language-server',
+      \  })
+
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
       \ 'whitelist': ['json'],
       \ 'completor': 'easycomplete#sources#json#completor',
