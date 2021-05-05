@@ -19,6 +19,8 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
           \   'suggest': { 'fromVimruntime': "true" , 'fromRuntimepath': "true"}
           \ }
           \ })
+  else
+    echo printf("'vim-language-server' is not avilable, Please install: '%s'", 'npm -g install vim-language-server')
   endif
 endfunction
 

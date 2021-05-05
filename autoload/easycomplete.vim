@@ -968,12 +968,18 @@ function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-  if ( pumvisible() && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
-        \ || ( pumvisible() && s:SnipSupports() && empty(l:item) )
+  " 选中 snippet
+  if ( pumvisible() && !empty(l:item) && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
     call s:ExpandSnipManually(l:word)
     call s:zizz()
     return "\<C-Y>"
   endif
+  " 未选中任何单词，直接回车，直接关闭匹配菜单
+  if pumvisible() && s:SnipSupports() && empty(l:item) 
+    call s:zizz()
+    return "\<C-Y>"
+  endif
+  " 其他选中动作一律插入单词并关闭匹配菜单
   if pumvisible()
     call s:zizz()
     " add expandable support for #48
