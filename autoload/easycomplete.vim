@@ -768,12 +768,13 @@ function! s:CompletorCallingAtFirstComplete(...)
         \                             ])
         \ })
   try
-    for item in keys(g:easycomplete_source)
+    for item in sort(keys(g:easycomplete_source), function('s:SortForDirectory'))
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
         if l:cprst == v:true " true: go on
           continue
         else
+          call s:flush()
           call s:LetCompleteTaskQueueAllDone()
           break " false: break, only use for directory matching
         endif
@@ -783,6 +784,27 @@ function! s:CompletorCallingAtFirstComplete(...)
     echom v:exception
     call s:flush()
   endtry
+endfunction
+
+" TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
+" 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
+" directory. 但在 runtime 中不能很好的执行，因为每个 complete_plugin 的
+" completor 的调用顺序不确定，如果让所有 completor 全都异步，是可以实现排他性
+" complete的，但即便每个调用都是异步，对于 lsp request 已经发出的情况，由于不
+" 能abort掉 lsp 进程，因此还是会有返回值冲刷进 g:easycomplete_menuitems，进而
+" 污染匹配结果。
+"
+" 这里用了一个 Hack 来缓解这个问题，即当前只有 directory 一个插件的情况下，把
+" 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
+" 
+" 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
+" 情况，还清楚，先这样hack掉
+function! s:SortForDirectory(k1, k2)
+  if a:k1 == "directory"
+    return v:false
+  else
+    return v:true
+  endif
 endfunction
 
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 SecondComplete 时调用

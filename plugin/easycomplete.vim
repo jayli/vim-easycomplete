@@ -41,6 +41,12 @@ endif
 augroup easycomplete#register
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'directory',
+      \ 'whitelist': ['*'],
+      \ 'completor': function('easycomplete#sources#directory#completor'),
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#buf#completor',
@@ -127,12 +133,6 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#go#constructor',
       \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
       \ 'command': 'gopls'
-      \  })
-
-  au User easycomplete_plugin call easycomplete#RegisterSource({
-      \ 'name': 'directory',
-      \ 'whitelist': ['*'],
-      \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
