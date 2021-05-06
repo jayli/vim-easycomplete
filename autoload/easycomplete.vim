@@ -566,7 +566,11 @@ endfunction
 " vim 的冒号
 function! s:VimColonTyping()
   if &filetype == "vim" &&
-        \ easycomplete#context()['typed'] =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \ (
+        \   easycomplete#context()['typed'] =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \   ||
+        \   easycomplete#context()['typed'] =~ "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \ )
     return v:true
   else
     return v:false
