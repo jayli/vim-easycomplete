@@ -184,6 +184,10 @@ function! s:TrimWavyLine(str)
   return a:str
 endfunction
 
+function! easycomplete#util#TrimWavyLine(...)
+  return call("s:TrimWavyLine", a:000)
+endfunction
+
 function! easycomplete#util#IsJson(str)
   try
     call json_decode(a:str)

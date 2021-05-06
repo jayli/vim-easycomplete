@@ -169,10 +169,7 @@ function! s:NormalizeEntryDetail(item)
 endfunction
 
 function! s:EntriesMap(key, val)
-  let abbr = a:val.abbr
-  if strlen(abbr) >= 2 && abbr[-1:] == "~"
-    return abbr[0:-2]
-  endif
+  let abbr = easycomplete#util#TrimWavyLine(a:val.abbr)
   return abbr
 endfunction
 

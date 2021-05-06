@@ -324,9 +324,7 @@ endfunction
 
 function! s:GetItemWord(item)
   let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
-  if strlen(t_str) >= 2 && t_str[-1:] == "~"
-    let t_str = t_str[0:-2]
-  endif
+  let t_str = easycomplete#util#TrimWavyLine(t_str)
   return t_str
 endfunction
 
