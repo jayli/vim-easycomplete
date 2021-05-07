@@ -798,7 +798,7 @@ endfunction
 " 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
 " 
 " 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
-" 情况，还清楚，先这样hack掉
+" 情况，还不清楚，先这样hack掉
 function! s:SortForDirectory(k1, k2)
   if a:k1 == "directory"
     return v:false
@@ -996,7 +996,8 @@ function! easycomplete#TypeEnterWithPUM()
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   " 选中 snippet
-  if ( pumvisible() && !empty(l:item) && s:SnipSupports() && get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
+  if ( pumvisible() && !empty(l:item) && s:SnipSupports() &&
+        \ get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
     call s:ExpandSnipManually(l:word)
     call s:zizz()
     return "\<C-Y>"
@@ -1597,7 +1598,6 @@ function! easycomplete#FindLspCompleteServers() abort
   let l:server_names = []
   for l:server_name in easycomplete#lsp#get_allowed_servers()
     let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
-    " if has_key(l:init_capabilities, 'completionProvider') && l:init_capabilities["completionProvider"] != v:null
     if has_key(l:init_capabilities, 'completionProvider')
       " TODO: support triggerCharacters
       call add(l:server_names, l:server_name)
@@ -1613,7 +1613,8 @@ endfunction
 
 function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:ctx = easycomplete#context()
-  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') || !has_key(a:data['response'], 'result')
+  if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
+        \ !has_key(a:data['response'], 'result')
     call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
     echom "lsp error response"
     return
@@ -1828,7 +1829,9 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
     call s:log('Failed to retrieve '. a:type . ' for ' . a:server .
           \ ': ' . easycomplete#lsp#client#error_message(a:data['response']))
   else
-    let a:ctx['list'] = a:ctx['list'] + easycomplete#lsp#utils#location#_lsp_to_vim_list(a:data['response']['result'])
+    let a:ctx['list'] = a:ctx['list'] + easycomplete#lsp#utils#location#_lsp_to_vim_list(
+          \   a:data['response']['result']
+          \ )
   endif
 
   if empty(a:ctx['list'])
