@@ -61,6 +61,15 @@ augroup easycomplete#register
       \ 'command': 'tsserver'
       \  })
 
+  " au User easycomplete_plugin call easycomplete#RegisterSource({
+  "     \ 'name': 'tss',
+  "     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
+  "     \ 'completor': function('easycomplete#sources#tss#completor'),
+  "     \ 'constructor' :function('easycomplete#sources#tss#constructor'),
+  "     \ 'gotodefinition': function('easycomplete#sources#tss#GotoDefinition'),
+  "     \ 'command': 'typescript-language-server'
+  "     \  })
+
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
       \ 'whitelist': ['vim'],
