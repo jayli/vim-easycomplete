@@ -188,6 +188,22 @@ function! easycomplete#util#TrimWavyLine(...)
   return call("s:TrimWavyLine", a:000)
 endfunction
 
+function! easycomplete#util#str2list(expr)
+  if exists("*str2list")
+    return str2list(a:expr)
+  endif
+  if type(a:expr) ==# v:t_list
+    return a:expr
+  endif
+  let l:index = 0
+  let l:arr = []
+  while l:index < strlen(a:expr)
+    call add(l:arr, char2nr(a:expr[l:index]))
+    let l:index += 1
+  endwhile
+  return l:arr
+endfunction
+
 function! easycomplete#util#IsJson(str)
   let flag = v:true
   if a:str == "\r" || a:str == "\n"
@@ -275,8 +291,8 @@ function! s:FuzzySearchVim(needle, haystack)
     return a:needle ==? a:haystack ? v:true : v:false
   endif
 
-  let needle_ls = str2list(tolower(a:needle))
-  let haystack_ls = str2list(tolower(a:haystack))
+  let needle_ls = easycomplete#util#str2list(tolower(a:needle))
+  let haystack_ls = easycomplete#util#str2list(tolower(a:haystack))
 
   let i = 0
   let j = 0
@@ -543,7 +559,7 @@ endfunction
 " b 字符在 a 中出现的次数
 function! easycomplete#util#contains(a, b)
   let l:count = 0
-  for item in str2list(a:a)
+  for item in easycomplete#util#str2list(a:a)
     if item == char2nr(a:b)
       let l:count += 1
     endif
