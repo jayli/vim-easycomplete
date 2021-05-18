@@ -281,7 +281,7 @@ endfunction
 " TODO 此方法执行约 30ms，需要性能优化
 function! s:CompleteMenuFilter(all_menu, word)
   let word = a:word
-  if index(str2list(word), char2nr('.')) >= 0
+  if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
 
@@ -527,7 +527,7 @@ function! s:NormalTrigger()
   "   return v:false
   " endif
 
-  if index(str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) >= 0
+  if index(easycomplete#util#str2list(easycomplete#GetBindingKeys()), char2nr(l:char)) >= 0
     return v:true
   endif
   return v:false
@@ -682,7 +682,7 @@ function! s:DoComplete(immediately)
   endif
 
   " 连续两个 '.' 重新初始化 complete
-  if l:ctx['char'] == '.' && (len(l:ctx['typed']) >= 2 && str2list(l:ctx['typed'])[-2] == char2nr('.'))
+  if l:ctx['char'] == '.' && (len(l:ctx['typed']) >= 2 && easycomplete#util#str2list(l:ctx['typed'])[-2] == char2nr('.'))
     call s:CompleteInit()
     call s:ResetCompleteCache()
   endif
