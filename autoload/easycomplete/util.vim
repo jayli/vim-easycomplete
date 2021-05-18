@@ -189,12 +189,17 @@ function! easycomplete#util#TrimWavyLine(...)
 endfunction
 
 function! easycomplete#util#IsJson(str)
-  try
-    call json_decode(a:str)
-  catch /^Vim\%((\a\+)\)\=:E474/
-    return v:false
-  endtry
-  return v:true
+  let flag = v:true
+  if a:str == "\r" || a:str == "\n"
+    let flag = v:false
+  else
+    try
+      call json_decode(a:str)
+    catch /^Vim\%((\a\+)\)\=:E474/
+      let flag = v:false
+    endtry
+  endif
+  return flag
 endfunction
 
 function! easycomplete#util#TagBarExists()
