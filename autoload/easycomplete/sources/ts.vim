@@ -21,8 +21,15 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:buf_info_map = {}
   let s:notify_callback = {}
   let s:request_seq = 1
-  let b:tsserver_reloading = 0
   let s:menu_flag = "[TS]"
+  let b:tsserver_reloading = 0
+
+  " https://github.com/microsoft/TypeScript/issues/36265
+  " completionEntryDetails 请求很耗时，在完成之前没办法再做 completion 动作
+  " 因此需要标记 completionEntryDetails 的请求状态
+  let b:entry_details_requesting = 0
+  let s:during_entry_details_ctx = 0
+
   " 正在返回的字符串片段，等待所有返回片段拼接成一个完整的json后，执行
   " MessageHandler
   let s:callback_data_str = ""
@@ -40,8 +47,21 @@ function! easycomplete#sources#ts#destory()
   call s:DelTmpFiles()
 endfunction
 
+function! s:EntryDetailsStatusReset()
+  let b:entry_details_requesting = 0
+endfunction
+
+function! s:EntryDetailsIsFetching()
+  return b:entry_details_requesting
+endfunction
+
+function! s:EntryDetailsStatusSetFetching()
+  let b:entry_details_requesting = 1
+endfunction
+
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
+  call s:console('2')
 
   augroup easycomplete#sources#ts#augroup
     autocmd!
@@ -112,8 +132,36 @@ endfunction
 "       ]
 "     }, ...]
 function! easycomplete#sources#ts#EntryDetailsCallback(item)
-  if !pumvisible()
-    return
+  call s:EntryDetailsStatusReset()
+  " if !pumvisible()
+  "   return
+  " endif
+
+  " jayli 待测试
+  if (!pumvisible() && easycomplete#GetFirstRenderTimer() > 0) || pumvisible()
+
+    if easycomplete#GetFirstRenderTimer() > 0
+      call timer_stop(easycomplete#GetFirstRenderTimer())
+      call easycomplete#ResetFirstRenderTimer()
+    endif
+    if !pumvisible()
+      call easycomplete#util#call(function("easycomplete#FirstCompleteRendering"),
+          \       [
+          \         easycomplete#GetCompleteCache(s:during_entry_details_ctx['typing'])['start_pos'],
+          \         easycomplete#GetCompleteCache(s:during_entry_details_ctx['typing'])['menu_items']
+          \       ])
+    endif
+
+    if !empty(s:during_entry_details_ctx)
+      call s:FireTsCompletions(
+            \   s:during_entry_details_ctx['filepath'],
+            \   s:during_entry_details_ctx['lnum'],
+            \   s:during_entry_details_ctx['col'],
+            \   s:during_entry_details_ctx['typing']
+            \ )
+      let s:during_entry_details_ctx = 0
+      return
+    endif
   endif
 
   let l:menu_details = get(a:item, 'body')
@@ -201,12 +249,24 @@ function! s:CompleteMenuMap(key, val)
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
+  call s:console('---------', easycomplete#context()['typed'],'------------')
   call s:TsserverReload()
   call easycomplete#util#RestoreCtx(a:ctx, s:request_seq)
   if a:ctx['char'] == "/"
     return v:true
   endif
-  call s:FireTsCompletions(a:ctx['filepath'], a:ctx['lnum'], a:ctx['col'], a:ctx['typing'])
+  " jayli here
+  " call s:SendCommandOneWay('reloadProjects', {})
+  if s:EntryDetailsIsFetching()
+    let s:during_entry_details_ctx = easycomplete#context()
+  else
+    call s:FireTsCompletions(
+          \   a:ctx['filepath'],
+          \   a:ctx['lnum'],
+          \   a:ctx['col'],
+          \   a:ctx['typing']
+          \ )
+  endif
   " 返回 true 让其他插件的 completor 继续执行
   return v:true
 endfunction
@@ -248,7 +308,15 @@ function! s:FireTsCompletions(file, line, offset, prefix)
 
   " shoule wait for reload done
   call s:WaitForReloadDone()
+  call s:console('fire completion', a:prefix)
   call s:SendCommandAsyncResponse('completions', l:args)
+endfunction
+
+function! s:CommonAsyncCommand(cmd, ctx)
+  let l:args = {'file': a:ctx['filepath'], 'line': a:ctx['lnum'], 'offset': a:ctx['col'], 'prefix': a:ctx['typing']}
+  " shoule wait for reload done
+  call s:WaitForReloadDone()
+  call s:SendCommandAsyncResponse(cmd, l:args)
 endfunction
 
 function! s:WaitForReloadDone()
@@ -267,6 +335,7 @@ endfunction
 function! s:TsCompletionEntryDetails(file, line, offset, entryNames)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'entryNames': a:entryNames}
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
+  call s:EntryDetailsStatusSetFetching()
 endfunction
 
 " 跳转到定义位置
@@ -340,11 +409,20 @@ function! s:ConfigTsserver()
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
+  call s:console('StdOutCallback', s:TsServerIsRunning(), a:event, len(a:data), easycomplete#context()['typed'])
   if a:event != 'stdout'
     return
   endif
   if len(a:data) >=3
     if s:IsJSON(a:data[2])
+      if a:data[2] =~ "completionEntryDetails"
+        call s:log('completionEntryDetails',a:data[2][0:100])
+      else
+        call s:log(a:data[2])
+      endif
+      let r = json_decode(a:data[2])
+      let type_str = get(r, 'type', '') == 'response' ? 'command = '. get(r, 'command', '') : get(r, 'type', '') == 'event' ? 'event = '. get(r, 'event', '') : '--'
+      call s:console('MessageHandler', '完整输出', s:TsServerIsRunning(), type_str, len(a:data[2]))
       call s:MessageHandler(a:data[2])
       let s:callback_data_str = ""
       return
@@ -352,28 +430,31 @@ function! s:StdOutCallback(job_id, data, event)
       let s:callback_data_str = s:callback_data_str . a:data[2]
       return
     endif
-  endif
-
-  " 在 nvim 中不会一次性完整输出，会一个片段一个片段的输出
-  " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
-  " vim 中未发现这个问题
-  if len(a:data) <= 2
+  elseif len(a:data) <= 2
+    " 如果 job 回调不会一次性完整输出，会一个片段一个片段的输出
+    " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
     let s:callback_data_str = s:callback_data_str . a:data[0]
+    call s:console(1)
     if s:IsJSON(s:callback_data_str)
+      call s:console('MessageHandler', '拼接输出', s:callback_data_str[2])
       call s:MessageHandler(s:callback_data_str)
       let s:callback_data_str = ""
       return
     endif
   endif
+
+  " if len(a:data) <= 2
+  "   let s:callback_data_str = s:callback_data_str . a:data[0]
+  "   if s:IsJSON(s:callback_data_str)
+  "     call s:MessageHandler(s:callback_data_str)
+  "     let s:callback_data_str = ""
+  "     return
+  "   endif
+  " endif
 endfunction
 
 function! s:IsJSON(str)
-  try
-    call json_decode(a:str)
-  catch
-    return v:false
-  endtry
-  return v:true
+  return easycomplete#util#IsJson(a:str)
 endfunction
 
 function! s:MessageHandler(msg)
@@ -571,4 +652,8 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction

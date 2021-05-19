@@ -48,7 +48,6 @@ function! s:InitLocalVars()
   let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 
   " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
-  " TODO: 需要加一个 timeout
   " [
   "   {
   "     "ctx": {},
@@ -752,6 +751,14 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
+function! easycomplete#GetFirstRenderTimer()
+  return s:first_render_timer
+endfunction
+
+function! easycomplete#ResetFirstRenderTimer()
+  let s:first_render_timer = 0
+endfunction
+
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCallingAtFirstComplete(...)
@@ -796,7 +803,7 @@ endfunction
 "
 " 这里用了一个 Hack 来缓解这个问题，即当前只有 directory 一个插件的情况下，把
 " 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
-" 
+"
 " 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
 " 情况，还不清楚，先这样hack掉
 function! s:SortForDirectory(k1, k2)
@@ -876,7 +883,7 @@ endfunction
 " 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不在重新请求 LSP
 function! s:CompleteMatchAction()
   call s:StopZizz()
-  let l:vim_word = s:GetTypingWordByGtx() 
+  let l:vim_word = s:GetTypingWordByGtx()
   call s:CompleteTypingMatch(l:vim_word)
   let b:typing_ctx = easycomplete#context()
 endfunction
@@ -1003,7 +1010,7 @@ function! easycomplete#TypeEnterWithPUM()
     return "\<C-Y>"
   endif
   " 未选中任何单词，直接回车，直接关闭匹配菜单
-  if pumvisible() && s:SnipSupports() && empty(l:item) 
+  if pumvisible() && s:SnipSupports() && empty(l:item)
     call s:zizz()
     return "\<C-Y>"
   endif
@@ -1155,6 +1162,10 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
+endfunction
+
+function! easycomplete#FirstCompleteRendering(...)
+  return call("s:FirstCompleteRendering", a:000)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
@@ -1468,6 +1479,10 @@ function! s:GetCompleteCache(word)
   return {'menu_items':get(g:easycomplete_menucache, a:word, []),
         \ 'start_pos':g:easycomplete_menucache["_#_2"]
         \ }
+endfunction
+
+function! easycomplete#GetCompleteCache(...)
+  return call("s:GetCompleteCache", a:000)
 endfunction
 
 function! s:ResetBacking(...)

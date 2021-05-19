@@ -63,7 +63,9 @@ easycomplete 支持常用编程语言的自动补全，且默认支持这三类�
     Plug 'SirVer/ultisnips'
     Plug 'honza/vim-snippets'
 
-EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用。Neovim 0.4.4 中 ultisnips 如果报如下错误：
+EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用。
+
+Neovim 0.4.4 中 ultisnips 如果报如下错误：
 
 
 ```
