@@ -63,7 +63,16 @@ easycomplete 支持常用编程语言的自动补全，且默认支持这三类�
     Plug 'SirVer/ultisnips'
     Plug 'honza/vim-snippets'
 
-EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用
+EasyComplete 已经兼容这两个插件，`PlugInstall` 安装完成后直接可用。Neovim 0.4.4 中 ultisnips 如果报如下错误：
+
+
+```
+Error detected while processing /home/xxx/.vim/plugged/ultisnips/autoload/UltiSnips.vim:
+line    7:
+E319: No "python3" provider found. Run ":checkhealth provider"
+```
+
+说明缺少 python neovim 包，安装 neovim 解决： `pip install neovim`
 
 #### 2) JavaScript 和 TypeScript
 
