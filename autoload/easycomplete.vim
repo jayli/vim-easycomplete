@@ -1034,7 +1034,8 @@ function! s:ExpandSnipManually(word)
       return ""
     endif
   catch
-    echom v:exception
+    " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
+    " echom v:exception
   endtry
 endfunction
 
