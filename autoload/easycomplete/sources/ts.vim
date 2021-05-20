@@ -21,19 +21,21 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:buf_info_map = {}
   let s:notify_callback = {}
   let s:request_seq = 1
+  let s:opt = {}
   let s:menu_flag = "[TS]"
   let b:tsserver_reloading = 0
 
   " https://github.com/microsoft/TypeScript/issues/36265
   " completionEntryDetails 请求很耗时，在完成之前没办法再做 completion 动作
-  " 因此需要标记 completionEntryDetails 的请求状态
+  " 需要标记 completionEntryDetails 的请求状态
   let b:entry_details_requesting = 0
   let s:entry_detail_fetching_timer = 0
 
+  " 用以取回 entry details 时所需的请求携带的 ctx
   let s:request_queue_ctx = {}
 
-  " 正在返回的字符串片段，等待所有返回片段拼接成一个完整的json后，执行
-  " MessageHandler
+  " 正在返回的字符串片段，等待所有返回片段拼接成一个完整的 json 后，执行
+  " MessageHandler，在 neovim 中常用
   let s:callback_data_str = ""
 augroup END
 
@@ -49,18 +51,18 @@ function! easycomplete#sources#ts#destory()
   call s:DelTmpFiles()
 endfunction
 
+" 判断当前是否正在读取 entry details 中
+" 避免 entry detail 太耗时导致 tsserver 响应延迟，进而导致时序错乱
+function! s:EntryDetailsIsFetching()
+  return b:entry_details_requesting
+endfunction
+
 function! s:EntryDetailsStatusReset()
   if s:entry_detail_fetching_timer > 0
     call timer_stop(s:entry_detail_fetching_timer)
     let s:entry_detail_fetching_timer = 0
   endif
   let b:entry_details_requesting = 0
-endfunction
-
-" entry detail 动作耗时很久，需要一个方法来判断
-" 判断当前是否正在读取 entry details 中
-function! s:EntryDetailsIsFetching()
-  return b:entry_details_requesting
 endfunction
 
 function! s:EntryDetailsStatusSetFetching()
@@ -74,16 +76,15 @@ endfunction
 
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
-  call s:console('2')
 
   augroup easycomplete#sources#ts#augroup
     autocmd!
     autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
-    " TODO 因为e出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
+    " TODO 因为 e 出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
     " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
     autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
-    " for #56
+    " hack for #56
     autocmd CompleteChanged *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
       autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
@@ -96,6 +97,9 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
+
+  " 保存插件 Options
+  let s:opt = a:opt
 endfunction
 
 function! easycomplete#sources#ts#init()
@@ -163,17 +167,21 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
     let idx = idx + 1
   endfor
 
-  if easycomplete#CompleteCursored() " && !empty(get(v:event, 'completed_item'))
+  if easycomplete#CompleteCursored()
     let l:item = easycomplete#GetCompletedItem()
     if !empty(l:item)
-      call s:console('show popup')
       call easycomplete#ShowCompleteInfoByItem(l:item)
     endif
   endif
 endfunction
 
+" 最初 Entry Details 的实现方式是跟随 CompleteCallback 来获取，跟随 
+" Completion 动作紧接着读取 EntryDetails 逻辑上是 ok 的，问题是大文
+" 件中 DoFetchEntryDetails 动作很慢，在 2~4s 左右，有时会到 6s，等
+" 待返回值的过程中 tsserver 处于挂起状态，影响交互体验，所以把这个
+" 动作转移到了 CompleteChanged 中，跟随光标移动实时读取当前 item 所
+" 需的 menuinfo，解决 #56 的问题
 function! easycomplete#sources#ts#CompleteChanged()
-  call s:console('--------------------------', v:event.completed_item)
   let l:item = v:event.completed_item
   if !easycomplete#CompleteCursored() | return | endif
   if empty(s:request_queue_ctx)       | return | endif
@@ -181,16 +189,17 @@ function! easycomplete#sources#ts#CompleteChanged()
   if !empty(
         \   easycomplete#util#GetInfoByCompleteItem(
         \      l:item,
-        \      g:easycomplete_source['ts'].complete_result
+        \      g:easycomplete_source[s:opt['name']].complete_result
         \   )
         \ )
     return
   endif
-  call s:DoFetchEntryDetails(
-        \   s:request_queue_ctx,
-        \   [l:item]
-        \ )
-        " \   g:easycomplete_source['ts'].filtered_complete_result[0:1]
+  " 异步执行，避免快速移动光标的闪烁
+  call easycomplete#util#StopAsyncRun()
+  call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'), 
+        \ [s:request_queue_ctx, [l:item]],
+        \ 50)
+  " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
@@ -216,18 +225,13 @@ function! easycomplete#sources#ts#CompleteCallback(item)
     return
   endif
   call s:DoComplete(l:ctx, l:easycomplete_menu_list)
-  " 跟随 Completion 动作紧接着读取 EntryDetails 逻辑上是 ok 的
-  " 问题是大文件中 DoFetchEntryDetails 动作很慢，在 2~4s 左右
-  " 等待过程中 tsserver 处于挂起状态，影响交互体验，所以把这个
-  " 动作转移到了 CompleteChanged 动作中了，参照 #56
-  " call s:DoFetchEntryDetails(l:ctx, l:easycomplete_menu_list)
 endfunction
 
 function! s:DoComplete(ctx, menu_list)
-  call easycomplete#complete('ts', a:ctx, a:ctx['startcol'], a:menu_list)
+  call easycomplete#complete(s:opt['name'], a:ctx, a:ctx['startcol'], a:menu_list)
 endfunction
 
-" 获取 keyword 的 More Info
+" 获取 keyword 的 More Info，menulist 是需要获取 Info 的 item 数组
 function! s:DoFetchEntryDetails(ctx, menu_list)
   let l:entries= map(copy(a:menu_list), function("s:EntriesMap"))
   if type(l:entries) == type([]) && !empty(l:entries)
@@ -257,7 +261,6 @@ function! s:CompleteMenuMap(key, val)
         \ "info": "",
         \ "equal":1
         \ }
-        " \ "word": is_func ? val_name . "(" : val_name,
 
   if is_func
     let ret['word'] = val_name . "()"
@@ -272,7 +275,6 @@ function! s:CompleteMenuMap(key, val)
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
-  call s:console('---------', easycomplete#context()['typed'],'------------')
   call s:TsserverReload()
   call easycomplete#util#RestoreCtx(a:ctx, s:request_seq)
   if a:ctx['char'] == "/"
@@ -301,14 +303,14 @@ function! s:StopTsserver()
   endif
 endfunction
 
-function! s:sendAsyncRequest(line)
+function! s:SendAsyncRequest(line)
   call s:StartTsserver()
   call easycomplete#job#send(s:tsq_job.job, a:line . "\n")
 endfunction
 
 function! s:SendCommandAsyncResponse(cmd, args)
   let l:input = json_encode({'command': a:cmd, 'arguments': a:args, 'type': 'request', 'seq': s:request_seq})
-  call s:sendAsyncRequest(l:input)
+  call s:SendAsyncRequest(l:input)
   let s:request_seq = s:request_seq + 1
 endfunction
 
@@ -329,15 +331,12 @@ endfunction
 "     ]
 function! s:FireTsCompletions(file, line, offset, prefix)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
-
-  " shoule wait for reload done
-  call s:WaitForReloadDone()
+  call s:WaitForReloadDone() " shoule wait for reload done
   call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
 
 function! s:CommonAsyncCommand(cmd, ctx)
   let l:args = {'file': a:ctx['filepath'], 'line': a:ctx['lnum'], 'offset': a:ctx['col'], 'prefix': a:ctx['typing']}
-  " shoule wait for reload done
   call s:WaitForReloadDone()
   call s:SendCommandAsyncResponse(cmd, l:args)
 endfunction
@@ -357,10 +356,8 @@ endfunction
 
 function! s:TsCompletionEntryDetails(file, line, offset, entryNames)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'entryNames': a:entryNames}
-  call s:console('DoFetchEntryDetails fire')
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
   call s:EntryDetailsStatusSetFetching()
-  call s:console('after DoFetchEntryDetails fire, fetching', s:EntryDetailsIsFetching())
 endfunction
 
 " 跳转到定义位置
@@ -434,20 +431,11 @@ function! s:ConfigTsserver()
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
-  call s:console('StdOutCallback', s:TsServerIsRunning(), a:event, len(a:data), easycomplete#context()['typed'])
   if a:event != 'stdout'
     return
   endif
   if len(a:data) >=3
     if s:IsJSON(a:data[2])
-      if a:data[2] =~ "completionEntryDetails"
-        call s:log('completionEntryDetails',a:data[2][0:100])
-      else
-        call s:log(a:data[2])
-      endif
-      let r = json_decode(a:data[2])
-      let type_str = get(r, 'type', '') == 'response' ? 'command = '. get(r, 'command', '') : get(r, 'type', '') == 'event' ? 'event = '. get(r, 'event', '') : '--'
-      call s:console('MessageHandler', '完整输出', s:TsServerIsRunning(), type_str, len(a:data[2]))
       call s:MessageHandler(a:data[2])
       let s:callback_data_str = ""
       return
@@ -459,23 +447,12 @@ function! s:StdOutCallback(job_id, data, event)
     " 如果 job 回调不会一次性完整输出，会一个片段一个片段的输出
     " 需要先拼接每个片段组成一个完整的data，在执行 MessageHandler
     let s:callback_data_str = s:callback_data_str . a:data[0]
-    call s:console(1)
     if s:IsJSON(s:callback_data_str)
-      call s:console('MessageHandler', '拼接输出', s:callback_data_str[2])
       call s:MessageHandler(s:callback_data_str)
       let s:callback_data_str = ""
       return
     endif
   endif
-
-  " if len(a:data) <= 2
-  "   let s:callback_data_str = s:callback_data_str . a:data[0]
-  "   if s:IsJSON(s:callback_data_str)
-  "     call s:MessageHandler(s:callback_data_str)
-  "     let s:callback_data_str = ""
-  "     return
-  "   endif
-  " endif
 endfunction
 
 function! s:IsJSON(str)
@@ -567,7 +544,7 @@ function! s:SetTsServerOpenStatusOK()
   call add(s:tsq_job.opend_files[string(jobid)], expand('%:p'))
 endfunction
 
-" 判断当前buf所在的文件是否已经在 tsserver 中 open 过了
+" 判断当前 buf 所在的文件是否已经在 tsserver 中 open 过了
 function! s:TsServerOpenedFileAlready()
   if !s:TsServerIsRunning()
     return v:false
@@ -676,11 +653,9 @@ function! s:UpdateTagStack() abort
 endfunction
 
 function! s:log(...)
-  return
   return call('easycomplete#util#log', a:000)
 endfunction
 
 function! s:console(...)
-  return
   return call('easycomplete#log#log', a:000)
 endfunction
