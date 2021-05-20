@@ -39,8 +39,11 @@ function! easycomplete#popup#InsertLeave()
 endfunction
 
 function! easycomplete#popup#MenuPopupChanged(info)
-  let s:event = copy(v:event)
-  let s:item = copy(v:event.completed_item)
+  if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
+  let s:event = empty(v:event) ? copy(g:easycomplete_completechanged_event) : copy(v:event)
+  let s:item = has_key(v:event, 'completed_item') ?
+        \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
+
   call easycomplete#popup#DoPopup(a:info)
   let s:info = a:info
 endfunction
@@ -98,6 +101,7 @@ function! s:check(info)
     " call setbufline(s:buf, 1, [rand(srand())])
   endif
 
+
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
 
@@ -108,9 +112,9 @@ function! s:check(info)
         \ 'relative':'editor',
         \ 'style':'minimal'
         \ }
-
+  
   " show relative popup
-  if s:event.scrollbar
+  if get(s:event, 'scrollbar')
     let right_avail_col  = s:event.col + s:event.width + 1
   else
     let right_avail_col  = s:event.col + s:event.width
@@ -268,4 +272,8 @@ function! s:log(msg)
   echohl MoreMsg
   echom '>>> '. string(a:msg)
   echohl NONE
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction

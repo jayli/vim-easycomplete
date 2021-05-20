@@ -47,8 +47,10 @@ function! s:InitLocalVars()
   " viml 的跟指性能不佳，适当降低下 maxlength 的阈值
   let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 
+  " Global CompleteChanged Event：异步回调显示 popup 时借用
+  let g:easycomplete_completechanged_event = {}
+
   " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
-  " TODO: 需要加一个 timeout
   " [
   "   {
   "     "ctx": {},
@@ -140,7 +142,7 @@ function! s:BindingTypingCommandOnce()
     autocmd!
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
-    " SecondComplete Entry 
+    " SecondComplete Entry
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -752,6 +754,14 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
+function! easycomplete#GetFirstRenderTimer()
+  return s:first_render_timer
+endfunction
+
+function! easycomplete#ResetFirstRenderTimer()
+  let s:first_render_timer = 0
+endfunction
+
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCallingAtFirstComplete(...)
@@ -796,7 +806,7 @@ endfunction
 "
 " 这里用了一个 Hack 来缓解这个问题，即当前只有 directory 一个插件的情况下，把
 " 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
-" 
+"
 " 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
 " 情况，还不清楚，先这样hack掉
 function! s:SortForDirectory(k1, k2)
@@ -876,7 +886,7 @@ endfunction
 " 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不在重新请求 LSP
 function! s:CompleteMatchAction()
   call s:StopZizz()
-  let l:vim_word = s:GetTypingWordByGtx() 
+  let l:vim_word = s:GetTypingWordByGtx()
   call s:CompleteTypingMatch(l:vim_word)
   let b:typing_ctx = easycomplete#context()
 endfunction
@@ -900,9 +910,7 @@ function! easycomplete#CompleteChanged()
     call s:CloseCompleteInfo()
     return
   endif
-  let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
-  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
-  call s:ShowCompleteInfo(thin_info)
+  call easycomplete#ShowCompleteInfoByItem(item)
 endfunction
 
 function! s:CloseCompleteInfo()
@@ -911,6 +919,12 @@ function! s:CloseCompleteInfo()
   else
     call easycomplete#popup#close()
   endif
+endfunction
+
+function! easycomplete#ShowCompleteInfoByItem(item)
+  let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
+  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+  call s:ShowCompleteInfo(thin_info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
@@ -1003,7 +1017,7 @@ function! easycomplete#TypeEnterWithPUM()
     return "\<C-Y>"
   endif
   " 未选中任何单词，直接回车，直接关闭匹配菜单
-  if pumvisible() && s:SnipSupports() && empty(l:item) 
+  if pumvisible() && s:SnipSupports() && empty(l:item)
     call s:zizz()
     return "\<C-Y>"
   endif
@@ -1021,6 +1035,9 @@ function! easycomplete#TypeEnterWithPUM()
 endfunction
 
 function! s:ExpandSnipManually(word)
+  if !exists("*UltiSnips#SnippetsInCurrentScope")
+    return ""
+  endif
   try
     if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
       " 可直接展开
@@ -1035,7 +1052,7 @@ function! s:ExpandSnipManually(word)
     endif
   catch
     " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
-    " echom v:exception
+    echom v:exception
   endtry
 endfunction
 
@@ -1131,6 +1148,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
+  let g:easycomplete_source[a:plugin_name].filtered_complete_result = filtered_menu
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1155,6 +1173,10 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
+endfunction
+
+function! easycomplete#FirstCompleteRendering(...)
+  return call("s:FirstCompleteRendering", a:000)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
@@ -1417,6 +1439,8 @@ function! s:flush()
   let g:easycomplete_firstcomplete_ctx = {}
   " reset b:typing_ctx
   let b:typing_ctx = easycomplete#context()
+  " reset Global complete changed event
+  let g:easycomplete_completechanged_event = {}
 
   for sub in keys(g:easycomplete_source)
     let g:easycomplete_source[sub].complete_result = []
@@ -1468,6 +1492,10 @@ function! s:GetCompleteCache(word)
   return {'menu_items':get(g:easycomplete_menucache, a:word, []),
         \ 'start_pos':g:easycomplete_menucache["_#_2"]
         \ }
+endfunction
+
+function! easycomplete#GetCompleteCache(...)
+  return call("s:GetCompleteCache", a:000)
 endfunction
 
 function! s:ResetBacking(...)
@@ -1761,7 +1789,7 @@ function! s:expandable(item)
     if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
       return get(l:data, 'expandable', 0)
     endif
-  else  
+  else
     return v:false
   endif
 endfunction
