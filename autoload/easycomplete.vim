@@ -1035,6 +1035,9 @@ function! easycomplete#TypeEnterWithPUM()
 endfunction
 
 function! s:ExpandSnipManually(word)
+  if !exists("*UltiSnips#SnippetsInCurrentScope")
+    return ""
+  endif
   try
     if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
       " 可直接展开
@@ -1049,7 +1052,7 @@ function! s:ExpandSnipManually(word)
     endif
   catch
     " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
-    " echom v:exception
+    echom v:exception
   endtry
 endfunction
 
