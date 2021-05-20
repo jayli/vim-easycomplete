@@ -370,15 +370,20 @@ endfunction
 function! easycomplete#IsBacking()
   let curr_ctx = easycomplete#context()
   if !exists('b:typing_ctx')
-    let b:typing_ctx = easycomplete#context() 
+    let b:typing_ctx = easycomplete#context()
   endif
   let old_ctx = copy(b:typing_ctx)
   let b:typing_ctx = curr_ctx
   if curr_ctx['lnum'] == old_ctx['lnum']
         \ && strlen(old_ctx['typed']) >= 2
-        \ && curr_ctx['typed'] ==# old_ctx['typed'][:-2]
-    " 单行后退
-    return v:true
+    if curr_ctx['typed'] ==# old_ctx['typed'][:-2]
+      " 单行后退
+      return v:true
+    endif
+    if curr_ctx['typed'] ==# old_ctx['typed']
+      " 单行在 Normal 模式下按下 s 键
+      return v:true
+    endif
   elseif old_ctx['lnum'] == curr_ctx['lnum'] + 1 && old_ctx['col'] == 1
     " 隔行后退
     return v:true
