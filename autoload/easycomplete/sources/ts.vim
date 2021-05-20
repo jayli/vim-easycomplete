@@ -28,7 +28,9 @@ augroup easycomplete#sources#ts#InitLocalVars
   " completionEntryDetails 请求很耗时，在完成之前没办法再做 completion 动作
   " 因此需要标记 completionEntryDetails 的请求状态
   let b:entry_details_requesting = 0
-  let s:during_entry_details_ctx = 0
+  let s:entry_detail_fetching_timer = 0
+
+  let s:request_queue_ctx = {}
 
   " 正在返回的字符串片段，等待所有返回片段拼接成一个完整的json后，执行
   " MessageHandler
@@ -48,14 +50,25 @@ function! easycomplete#sources#ts#destory()
 endfunction
 
 function! s:EntryDetailsStatusReset()
+  if s:entry_detail_fetching_timer > 0
+    call timer_stop(s:entry_detail_fetching_timer)
+    let s:entry_detail_fetching_timer = 0
+  endif
   let b:entry_details_requesting = 0
 endfunction
 
+" entry detail 动作耗时很久，需要一个方法来判断
+" 判断当前是否正在读取 entry details 中
 function! s:EntryDetailsIsFetching()
   return b:entry_details_requesting
 endfunction
 
 function! s:EntryDetailsStatusSetFetching()
+  if s:entry_detail_fetching_timer > 0
+    call timer_stop(s:entry_detail_fetching_timer)
+  endif
+  let s:entry_detail_fetching_timer = timer_start(5000,
+        \ { -> easycomplete#util#call(function("s:EntryDetailsStatusReset"), []) })
   let b:entry_details_requesting = 1
 endfunction
 
@@ -70,6 +83,8 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
     " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
     autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    " for #56
+    autocmd CompleteChanged *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
       autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     endif
@@ -133,35 +148,8 @@ endfunction
 "     }, ...]
 function! easycomplete#sources#ts#EntryDetailsCallback(item)
   call s:EntryDetailsStatusReset()
-  " if !pumvisible()
-  "   return
-  " endif
-
-  " jayli 待测试
-  if (!pumvisible() && easycomplete#GetFirstRenderTimer() > 0) || pumvisible()
-
-    if easycomplete#GetFirstRenderTimer() > 0
-      call timer_stop(easycomplete#GetFirstRenderTimer())
-      call easycomplete#ResetFirstRenderTimer()
-    endif
-    if !pumvisible()
-      call easycomplete#util#call(function("easycomplete#FirstCompleteRendering"),
-          \       [
-          \         easycomplete#GetCompleteCache(s:during_entry_details_ctx['typing'])['start_pos'],
-          \         easycomplete#GetCompleteCache(s:during_entry_details_ctx['typing'])['menu_items']
-          \       ])
-    endif
-
-    if !empty(s:during_entry_details_ctx)
-      call s:FireTsCompletions(
-            \   s:during_entry_details_ctx['filepath'],
-            \   s:during_entry_details_ctx['lnum'],
-            \   s:during_entry_details_ctx['col'],
-            \   s:during_entry_details_ctx['typing']
-            \ )
-      let s:during_entry_details_ctx = 0
-      return
-    endif
+  if !pumvisible()
+    return
   endif
 
   let l:menu_details = get(a:item, 'body')
@@ -174,6 +162,36 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
     call easycomplete#SetMenuInfo(get(item, "name"), l:info, s:menu_flag)
     let idx = idx + 1
   endfor
+
+  if easycomplete#CompleteCursored() " && !empty(get(v:event, 'completed_item'))
+    let l:item = easycomplete#GetCompletedItem()
+    if !empty(l:item)
+      call s:console('show popup')
+      call easycomplete#ShowCompleteInfoByItem(l:item)
+    endif
+  endif
+endfunction
+
+function! easycomplete#sources#ts#CompleteChanged()
+  call s:console('--------------------------', v:event.completed_item)
+  let l:item = v:event.completed_item
+  if !easycomplete#CompleteCursored() | return | endif
+  if empty(s:request_queue_ctx)       | return | endif
+  if s:EntryDetailsIsFetching()       | return | endif
+  if !empty(
+        \   easycomplete#util#GetInfoByCompleteItem(
+        \      l:item,
+        \      g:easycomplete_source['ts'].complete_result
+        \   )
+        \ )
+    return
+  endif
+  call s:DoFetchEntryDetails(
+        \   s:request_queue_ctx,
+        \   [l:item]
+        \ )
+        " \   g:easycomplete_source['ts'].filtered_complete_result[0:1]
+  let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
 " job complete 回调
@@ -192,12 +210,17 @@ function! easycomplete#sources#ts#CompleteCallback(item)
         \                       "s:sortTextComparator"), 'v:val.kind != "warning"'),
         \ function("s:CompleteMenuMap"))
   let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
+  let s:request_queue_ctx = l:ctx
   " 如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作
   if !easycomplete#CheckContextSequence(l:ctx)
     return
   endif
   call s:DoComplete(l:ctx, l:easycomplete_menu_list)
-  call s:DoFetchEntryDetails(l:ctx, l:easycomplete_menu_list)
+  " 跟随 Completion 动作紧接着读取 EntryDetails 逻辑上是 ok 的
+  " 问题是大文件中 DoFetchEntryDetails 动作很慢，在 2~4s 左右
+  " 等待过程中 tsserver 处于挂起状态，影响交互体验，所以把这个
+  " 动作转移到了 CompleteChanged 动作中了，参照 #56
+  " call s:DoFetchEntryDetails(l:ctx, l:easycomplete_menu_list)
 endfunction
 
 function! s:DoComplete(ctx, menu_list)
@@ -255,20 +278,21 @@ function! easycomplete#sources#ts#completor(opt, ctx) abort
   if a:ctx['char'] == "/"
     return v:true
   endif
-  " jayli here
-  " call s:SendCommandOneWay('reloadProjects', {})
-  if s:EntryDetailsIsFetching()
-    let s:during_entry_details_ctx = easycomplete#context()
-  else
-    call s:FireTsCompletions(
-          \   a:ctx['filepath'],
-          \   a:ctx['lnum'],
-          \   a:ctx['col'],
-          \   a:ctx['typing']
-          \ )
-  endif
+  call s:TsFlush()
+  call s:FireTsCompletions(
+        \   a:ctx['filepath'],
+        \   a:ctx['lnum'],
+        \   a:ctx['col'],
+        \   a:ctx['typing']
+        \ )
   " 返回 true 让其他插件的 completor 继续执行
   return v:true
+endfunction
+
+function! s:TsFlush()
+  let s:request_queue_ctx = {}
+  call s:EntryDetailsStatusReset()
+  let g:easycomplete_completechanged_event = {}
 endfunction
 
 function! s:StopTsserver()
@@ -308,7 +332,6 @@ function! s:FireTsCompletions(file, line, offset, prefix)
 
   " shoule wait for reload done
   call s:WaitForReloadDone()
-  call s:console('fire completion', a:prefix)
   call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
 
@@ -334,8 +357,10 @@ endfunction
 
 function! s:TsCompletionEntryDetails(file, line, offset, entryNames)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'entryNames': a:entryNames}
+  call s:console('DoFetchEntryDetails fire')
   call s:SendCommandAsyncResponse('completionEntryDetails', l:args)
   call s:EntryDetailsStatusSetFetching()
+  call s:console('after DoFetchEntryDetails fire, fetching', s:EntryDetailsIsFetching())
 endfunction
 
 " 跳转到定义位置
@@ -651,9 +676,11 @@ function! s:UpdateTagStack() abort
 endfunction
 
 function! s:log(...)
+  return
   return call('easycomplete#util#log', a:000)
 endfunction
 
 function! s:console(...)
+  return
   return call('easycomplete#log#log', a:000)
 endfunction

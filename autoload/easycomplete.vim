@@ -47,6 +47,9 @@ function! s:InitLocalVars()
   " viml 的跟指性能不佳，适当降低下 maxlength 的阈值
   let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 
+  " Global CompleteChanged Event：异步回调显示 popup 时借用
+  let g:easycomplete_completechanged_event = {}
+
   " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " [
   "   {
@@ -139,7 +142,7 @@ function! s:BindingTypingCommandOnce()
     autocmd!
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
-    " SecondComplete Entry 
+    " SecondComplete Entry
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -907,9 +910,7 @@ function! easycomplete#CompleteChanged()
     call s:CloseCompleteInfo()
     return
   endif
-  let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
-  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
-  call s:ShowCompleteInfo(thin_info)
+  call easycomplete#ShowCompleteInfoByItem(item)
 endfunction
 
 function! s:CloseCompleteInfo()
@@ -918,6 +919,12 @@ function! s:CloseCompleteInfo()
   else
     call easycomplete#popup#close()
   endif
+endfunction
+
+function! easycomplete#ShowCompleteInfoByItem(item)
+  let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
+  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+  call s:ShowCompleteInfo(thin_info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
@@ -1138,6 +1145,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
   let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
+  let g:easycomplete_source[a:plugin_name].filtered_complete_result = filtered_menu
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1428,6 +1436,8 @@ function! s:flush()
   let g:easycomplete_firstcomplete_ctx = {}
   " reset b:typing_ctx
   let b:typing_ctx = easycomplete#context()
+  " reset Global complete changed event
+  let g:easycomplete_completechanged_event = {}
 
   for sub in keys(g:easycomplete_source)
     let g:easycomplete_source[sub].complete_result = []
@@ -1776,7 +1786,7 @@ function! s:expandable(item)
     if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
       return get(l:data, 'expandable', 0)
     endif
-  else  
+  else
     return v:false
   endif
 endfunction
