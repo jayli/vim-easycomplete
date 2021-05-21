@@ -13,57 +13,94 @@ function! easycomplete#installer#LspServerDir() abort
   return s:lsp_servers_dir
 endfunction
 
+function! easycomplete#installer#GetCommand(name)
+  let opt = easycomplete#GetOptions(a:name)
+  if empty(opt)
+    echom 'error'
+    return ''
+  endif
+  let cmd = opt['command']
+  if executable(cmd)
+    return cmd
+  endif
+  let local_cmd = easycomplete#installer#LspServerDir() . '/' . a:name . '/' . cmd
+  if executable(local_cmd)
+    return local_cmd
+  endif
+  return ''
+endfunction
+
 function! easycomplete#installer#install(name) abort
 
   let opt = easycomplete#GetOptions(a:name)
-  let install_script = easycomplete#installer#InstallerDir() . '/' . a:name . '.sh'
+  let l:install_script = easycomplete#installer#InstallerDir() . '/' . a:name . '.sh'
+  let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . a:name
 
-  call s:log(install_script)
-  if !filereadable(install_script)
+  call s:log(l:install_script)
+  if !filereadable(l:install_script)
     echom '安装文件不存在'
     return
   endif
 
-  return
-  " if !empty(a:command) && !lsp_settings#utils#valid_name(a:command)
-  "   call lsp_settings#utils#error('Invalid server name')
-  "   return
-  " endif
-  " let l:entry = s:vim_lsp_installer(a:ft, a:command)
-  " if empty(l:entry)
-  "   call lsp_settings#utils#error('Server not found')
-  "   return
-  " endif
-  " if len(l:entry) < 2
-  "   call lsp_settings#utils#error('Server could not be installed. See :messages for details.')
-  "   return
-  " endif
-  " if empty(a:bang) && confirm(printf('Install %s ?', l:entry[0]), "&Yes\n&Cancel") !=# 1
-  "   return
-  " endif
-  " let l:server_install_dir = lsp_settings#servers_dir() . '/' . l:entry[0]
-  " if isdirectory(l:server_install_dir)
-  "   call lsp_settings#utils#msg('Uninstalling ' . l:entry[0])
-  "   call delete(l:server_install_dir, 'rf')
-  " endif
-  " call mkdir(l:server_install_dir, 'p')
-  " call lsp_settings#utils#msg('Installing ' . l:entry[0])
-  " if has('nvim')
-  "   split new
-  "   call termopen(l:entry[1], {'cwd': l:server_install_dir, 'on_exit': function('s:vim_lsp_install_server_post', [l:entry[0]])}) | startinsert
-  " else
-  "   let l:bufnr = term_start(l:entry[1], {'cwd': l:server_install_dir})
-  "   let l:job = term_getjob(l:bufnr)
-  "   if l:job != v:null
-  "     call job_setoptions(l:job, {'exit_cb': function('s:vim_lsp_install_server_post', [l:entry[0]])})
-  "   endif
-  " endif
+  if confirm(printf('Install %s lsp server?', a:name), "&Yes\n&Cancel") !=# 1
+    return
+  endif
+
+  if isdirectory(l:lsp_server_dir)
+    echom 'Uninstalling ' . a:name
+    call delete(l:lsp_server_dir, 'rf')
+  endif
+
+  call mkdir(l:lsp_server_dir, 'p')
+  echom 'Installing ' . a:name . '...'
+
+  call setfperm(l:install_script, 'rwxr-xr-x')
+  call setfperm(easycomplete#installer#InstallerDir() . '/npm_install.sh', 'rwxr-xr-x')
+
+  if has('nvim')
+    split new
+    call termopen(l:install_script, {'cwd': l:lsp_server_dir, 'on_exit': function('s:InstallServerPost', [a:name])})
+    startinsert
+  else
+    let l:bufnr = term_start(l:install_script, {'cwd': l:lsp_server_dir})
+    let l:job = term_getjob(l:bufnr)
+    if l:job != v:null
+      call job_setoptions(l:job, {'exit_cb': function('s:InstallServerPost', [a:name])})
+    endif
+  endif
 endfunction
 
-function! s:log(msg)
-  echohl MoreMsg
-  echom '>>> '. string(a:msg)
-  echohl NONE
+" neovim passes third argument as 'exit' while vim passes only 2 arguments
+function! s:InstallServerPost(command, job, code, ...) abort
+  if a:code != 0
+    return
+  endif
+  if s:executable(a:command)
+    call easycomplete#Enable()
+  endif
+  echom 'Installed ' . a:command
+endfunction
+
+function! s:executable(cmd) abort
+  if executable(a:cmd)
+    return 1
+  endif
+  let plug_name = easycomplete#GetPlugNameByCommand(a:cmd)
+  if empty(plug_name) | return 0 | endif
+  let local_cmd = easycomplete#installer#LspServerDir() . '/' . plug_name . '/' . a:cmd
+  if !filereadable(local_cmd) | return 0 | endif
+  if executable(local_cmd)
+    return 1
+  endif
+  return 0
+endfunction
+
+function! easycomplete#installer#executable(...)
+  return call("s:executable", a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
 
 function! s:console(...)

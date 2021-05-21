@@ -1190,6 +1190,17 @@ function! easycomplete#FirstCompleteRendering(...)
   return call("s:FirstCompleteRendering", a:000)
 endfunction
 
+function! easycomplete#GetPlugNameByCommand(cmd)
+  let plug_name = ""
+  for name in keys(g:easycomplete_source)
+    if a:cmd == get(g:easycomplete_source[name], 'command', '')
+      let plug_name = name
+      break
+    endif
+  endfor
+  return plug_name
+endfunction
+
 function! s:FirstCompleteRendering(start_pos, menuitems)
   if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
     let result_items = a:menuitems[0 : g:easycomplete_maxlength]
