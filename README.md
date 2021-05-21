@@ -54,7 +54,7 @@ easycomplete 支持常用编程语言的自动补全，且默认支持这三类�
 - 文件路径补全：默认支持
 - 字典单词补全：默认支持
 
-依赖 lsp 的编程语言补全：
+依赖 lsp 的编程语言补全，通常需要对应 lsp 引擎支持，一般可以在 Vim 中执行 `EasyCompleteInstallServer ${plugin-name}` 安装依赖。
 
 #### 1) 代码片段补全和展开
 
@@ -78,7 +78,7 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 
 #### 2) JavaScript 和 TypeScript
 
-安装 [tsserver](https://github.com/microsoft/TypeScript)：`npm -g install typescript`
+依赖 [tsserver](https://github.com/microsoft/TypeScript)，在 Vim 中执行 `EasyCompleteInstallServer ts` 安装依赖，或者全局安装 tsserver: `npm -g install typescript`
 
 #### 3) Python 补全
 
@@ -90,7 +90,7 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 
 #### 5) Vim Script 补全
 
-安装 [vim-language-server](https://github.com/iamcco/vim-language-server)，`npm -g install vim-language-server`
+依赖 [vim-language-server](https://github.com/iamcco/vim-language-server)，安装：`EasyCompleteInstallServer vim`
 
 #### 6) C++/C 补全
 
@@ -98,17 +98,17 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 
 #### 7) CSS 补全
 
-安装 [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin)，`npm install --global vscode-css-languageserver-bin`
+依赖 [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) （css-languageserver），安装：`EasyCompleteInstallServer css`
 
 由于 css-languageserver 默认不包含 completionProvider，必须要安装 [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) 依赖，Snippets 脚本基于 lua 实现，用户可自行选择安装。
 
 #### 8) JSON 补全
 
-安装 [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin)，`npm install -g vscode-json-languageserver-bin`
+依赖 [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin)，安装：`EasyCompleteInstallServer json`
 
 #### 9) Shell 脚本补全
 
-安装 [bash-language-server](https://github.com/bash-lsp/bash-language-server)，`npm i -g bash-language-server`
+依赖 [bash-language-server](https://github.com/bash-lsp/bash-language-server)，在 Vim 中执行 `EasyCompleteInstallServer ts` 安装依赖，或者全局安装 `npm i -g bash-language-server`
 
 ### 五）支持新语言的插件开发
 

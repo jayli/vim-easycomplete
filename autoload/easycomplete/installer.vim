@@ -64,7 +64,7 @@ function! easycomplete#installer#install(name) abort
   endif
 
   call mkdir(l:lsp_server_dir, 'p')
-  call easycomplete#util#info('Installing', a:name, '...')
+  call easycomplete#util#info('Installing', a:name, 'lsp server ...')
 
   if has('nvim')
     split new
@@ -87,7 +87,7 @@ function! s:InstallServerPost(command, job, code, ...) abort
   if s:executable(a:command)
     call easycomplete#Enable()
   endif
-  call easycomplete#util#info('Installed', a:command)
+  call easycomplete#util#info('Done!', a:command, 'lsp server installed successfully!')
 endfunction
 
 function! s:executable(cmd) abort

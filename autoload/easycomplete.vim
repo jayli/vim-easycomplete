@@ -767,7 +767,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     call easycomplete#util#info('Plugin command name is not defined.')
     return
   endif
-  if !easycomplete#installer#executable('bash-language-server')
+  if !easycomplete#installer#executable(cmd)
     call easycomplete#util#info("'".cmd."' is not avilable.",
           \ "Please Install: ':EasyCompleteInstallServer ".a:opt['name']."' ")
     return
@@ -1632,6 +1632,12 @@ endfunction
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
 function! easycomplete#DoLspComplete(opt, ctx)
+  echom easycomplete#installer#GetCommand(a:opt['name'])
+  if empty(easycomplete#installer#GetCommand(a:opt['name']))
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+    return v:true
+  endif
+
   let l:info = easycomplete#FindLspCompleteServers()
   let l:ctx = easycomplete#context()
   if empty(l:info['server_names'])
@@ -1852,6 +1858,9 @@ endfunction
 " LSP definition 跳转的通用封装
 " file_exts 文件后缀
 function! easycomplete#DoLspDefinition(file_exts)
+  if empty(easycomplete#installer#GetCommand(a:opt['name']))
+    return v:false
+  endif
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
     return easycomplete#LspDefinition()
