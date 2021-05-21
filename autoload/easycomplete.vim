@@ -148,6 +148,8 @@ function! s:BindingTypingCommandOnce()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
 
+  " 安装 lsp 依赖
+  command! -nargs=1 EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
   " Goto definition
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
@@ -1178,6 +1180,10 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
+endfunction
+
+function! easycomplete#GetOptions(name)
+  return get(g:easycomplete_source, a:name, {})
 endfunction
 
 function! easycomplete#FirstCompleteRendering(...)
