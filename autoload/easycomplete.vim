@@ -761,6 +761,20 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
+function! easycomplete#RegisterLspServer(opt, config)
+  let cmd = get(a:opt, 'command', '')
+  if empty(cmd)
+    call easycomplete#util#info('Plugin command name is not defined.')
+    return
+  endif
+  if !easycomplete#installer#executable('bash-language-server')
+    call easycomplete#util#info("'".cmd."' is not avilable.",
+          \ "Please Install: ':EasyCompleteInstallServer ".a:opt['name']."' ")
+    return
+  endif
+  call easycomplete#lsp#register_server(a:config)
+endfunction
+
 function! easycomplete#GetFirstRenderTimer()
   return s:first_render_timer
 endfunction

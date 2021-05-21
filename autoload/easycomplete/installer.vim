@@ -3,6 +3,16 @@
 let s:installer_dir = expand('<sfile>:h:h') . '/easycomplete/installer'
 let s:root_dir = expand('<sfile>:h:h')
 let s:data_dir = expand('~/.config/vim-easycomplete')
+" LSP Server 安装目录，目录结构：
+" ~/.config/vim-easycomplete/
+"     └─ servers/
+"         ├─ sh/                           <------  plugin name
+"         │   ├─ bash-language-server      <------  command
+"         │   ├─ package.json
+"         │   └─ node_modules/
+"         └─ css/                          <------  plugin name
+"             ├─ css-language-server       <------  command
+"             ...
 let s:lsp_servers_dir = s:data_dir . '/servers'
 
 function! easycomplete#installer#InstallerDir() abort
@@ -16,7 +26,7 @@ endfunction
 function! easycomplete#installer#GetCommand(name)
   let opt = easycomplete#GetOptions(a:name)
   if empty(opt)
-    echom 'error'
+    call easycomplete#util#info('error', 'plugin options is null')
     return ''
   endif
   let cmd = opt['command']
@@ -31,14 +41,16 @@ function! easycomplete#installer#GetCommand(name)
 endfunction
 
 function! easycomplete#installer#install(name) abort
-
   let opt = easycomplete#GetOptions(a:name)
   let l:install_script = easycomplete#installer#InstallerDir() . '/' . a:name . '.sh'
   let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . a:name
 
-  call s:log(l:install_script)
+  " prepare auth of exec script
+  call setfperm(l:install_script, 'rwxr-xr-x')
+  call setfperm(easycomplete#installer#InstallerDir() . '/npm_install.sh', 'rwxr-xr-x')
+
   if !filereadable(l:install_script)
-    echom '安装文件不存在'
+    call easycomplete#util#info('Error,', 'Install script is not exist.')
     return
   endif
 
@@ -47,15 +59,12 @@ function! easycomplete#installer#install(name) abort
   endif
 
   if isdirectory(l:lsp_server_dir)
-    echom 'Uninstalling ' . a:name
+    call easycomplete#util#info('Uninstalling', a:name)
     call delete(l:lsp_server_dir, 'rf')
   endif
 
   call mkdir(l:lsp_server_dir, 'p')
-  echom 'Installing ' . a:name . '...'
-
-  call setfperm(l:install_script, 'rwxr-xr-x')
-  call setfperm(easycomplete#installer#InstallerDir() . '/npm_install.sh', 'rwxr-xr-x')
+  call easycomplete#util#info('Installing', a:name, '...')
 
   if has('nvim')
     split new
@@ -78,7 +87,7 @@ function! s:InstallServerPost(command, job, code, ...) abort
   if s:executable(a:command)
     call easycomplete#Enable()
   endif
-  echom 'Installed ' . a:command
+  call easycomplete#util#info('Installed', a:command)
 endfunction
 
 function! s:executable(cmd) abort
@@ -88,7 +97,6 @@ function! s:executable(cmd) abort
   let plug_name = easycomplete#GetPlugNameByCommand(a:cmd)
   if empty(plug_name) | return 0 | endif
   let local_cmd = easycomplete#installer#LspServerDir() . '/' . plug_name . '/' . a:cmd
-  if !filereadable(local_cmd) | return 0 | endif
   if executable(local_cmd)
     return 1
   endif
