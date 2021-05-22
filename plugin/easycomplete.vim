@@ -15,7 +15,12 @@ let g:easycomplete_plugin_init = 1
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
 
-if (g:env_is_vim && v:version < 802) || (g:env_is_nvim && !has('nvim-0.4.0'))
+" VIM 最低版本 8.2
+" Neo 最低版本 0.4.0
+" TODO：不支持 Windows，Gvim 中未完整测试
+if (g:env_is_vim && v:version < 802) ||
+      \ (g:env_is_nvim && !has('nvim-0.4.0')) ||
+      \ (has('win32') || has('win64'))
   echom "EasyComplete requires vim version upper than 802".
         \ " or nvim version upper than 0.4.0"
   finish
