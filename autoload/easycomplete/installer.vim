@@ -48,6 +48,8 @@ function! easycomplete#installer#install(name) abort
   " prepare auth of exec script
   call setfperm(l:install_script, 'rwxr-xr-x')
   call setfperm(easycomplete#installer#InstallerDir() . '/npm_install.sh', 'rwxr-xr-x')
+  call setfperm(easycomplete#installer#InstallerDir() . '/pip_install.sh', 'rwxr-xr-x')
+  call setfperm(easycomplete#installer#InstallerDir() . '/go_install.sh', 'rwxr-xr-x')
 
   if !filereadable(l:install_script)
     call easycomplete#util#info('Error,', 'Install script is not exist.')
