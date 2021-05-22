@@ -470,23 +470,44 @@ function! s:log(...)
 endfunction
 
 function! easycomplete#util#log(...)
+  let l:res = call('s:NormalizeLogMsg', a:000)
+  call s:MsgLog(l:res, 'WarningMsg')
+endfunction
+
+function! easycomplete#util#info(...)
+  let l:res = call('s:NormalizeLogMsg', a:000)
+  call s:MsgLog(l:res, 'MoreMsg')
+endfunction
+
+function! s:NormalizeLogMsg(...)
   let l:args = a:000
   let l:res = ""
   if empty(a:000)
     let l:res = ""
   elseif len(a:000) == 1
-    if index([2,7], type(a:000))
+    if type(a:1) == type("")
+      let l:res = a:1
+    elseif index([2,7], type(a:000))
       let l:res = string(a:1)
     else
       let l:res = a:1
     endif
   else
     for item in l:args
-      let l:res = l:res . " " . json_encode(item)
+      if type(item) == type("")
+        let l:res = l:res . " " . item
+      else
+        let l:res = l:res . " " . json_encode(item)
+      endif
     endfor
   endif
-  echohl MoreMsg
-  echom '>>> '. l:res
+  return l:res
+endfunction
+
+function! s:MsgLog(res, style)
+  redraw
+  exec 'echohl ' . a:style
+  echom printf('>>> %s', a:res)
   echohl NONE
 endfunction
 

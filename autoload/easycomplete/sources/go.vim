@@ -4,21 +4,19 @@ endif
 let g:easycomplete_gopls = 1
 
 function! easycomplete#sources#go#constructor(opt, ctx)
-  if executable('gopls')
-    call easycomplete#lsp#register_server({
-        \ 'name': 'gopls',
-        \ 'cmd': {server_info->['gopls']},
-        \ 'initialization_options':  {
-        \     'completeUnimported': v:true,
-        \     'matcher': 'fuzzy',
-        \     'codelenses': {
-        \         'generate': v:true,
-        \         'test': v:true,
-        \     },
-        \ },
-        \ 'allowlist': ['go'],
-        \ })
-  endif
+  call easycomplete#RegisterLspServer(a:opt, {
+      \ 'name': 'gopls',
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'initialization_options':  {
+      \     'completeUnimported': v:true,
+      \     'matcher': 'fuzzy',
+      \     'codelenses': {
+      \         'generate': v:true,
+      \         'test': v:true,
+      \     },
+      \ },
+      \ 'allowlist': ['go'],
+      \ })
 endfunction
 
 function! easycomplete#sources#go#completor(opt, ctx) abort

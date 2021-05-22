@@ -4,14 +4,12 @@ endif
 let g:easycomplete_css = 1
 
 function! easycomplete#sources#css#constructor(opt, ctx)
-  if executable('css-languageserver')
-    call easycomplete#lsp#register_server({
-        \ 'name': 'css-languageserver',
-        \ 'cmd': ['css-languageserver', '--stdio'],
-        \ 'allowlist': ['css', 'less', 'sass', 'scss'],
-        \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\)$'},
-        \ })
-  endif
+  call easycomplete#RegisterLspServer(a:opt, {
+    \ 'name': 'css-languageserver',
+    \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), '--stdio'],
+    \ 'allowlist': ['css', 'less', 'sass', 'scss'],
+    \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\)$'},
+    \ })
 endfunction
 
 function! easycomplete#sources#css#completor(opt, ctx) abort

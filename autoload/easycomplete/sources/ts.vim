@@ -76,6 +76,9 @@ endfunction
 
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
+  if !s:TsserverIsReady()
+    return
+  endif
 
   augroup easycomplete#sources#ts#augroup
     autocmd!
@@ -275,6 +278,10 @@ function! s:CompleteMenuMap(key, val)
 endfunction
 
 function! easycomplete#sources#ts#completor(opt, ctx) abort
+  if !easycomplete#installer#executable('tsserver')
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+    return v:true
+  endif
   call s:TsserverReload()
   call easycomplete#util#RestoreCtx(a:ctx, s:request_seq)
   if a:ctx['char'] == "/"
@@ -373,6 +380,9 @@ function! s:GotoDefinition(file, line, offset)
 endfunction
 
 function! easycomplete#sources#ts#GotoDefinition(...)
+  if !easycomplete#installer#executable('tsserver')
+    return v:false
+  endif
   let ext = tolower(easycomplete#util#extention())
   if index(["js","jsx","ts","tsx"], ext) >= 0
     let l:ctx = easycomplete#context()
@@ -393,18 +403,32 @@ function! s:TsServerIsRunning()
   return job_status == 'run' ? v:true : v:false
 endfunction
 
+function! s:TsserverIsReady()
+  if !easycomplete#installer#executable('tsserver')
+    call easycomplete#util#info("Please Install tsserver by ",
+          \ "':EasyCompleteInstallServer ts' or 'npm -g install typescript'")
+    return v:false
+  endif
+  return v:true
+endfunction
+
 function! s:StartTsserver()
   if !s:TsServerIsRunning()
-    let l:cmd = "tsserver --locale en"
-    if !executable("tsserver")
+    if !s:TsserverIsReady()
+      return
+    endif
+
+    let l:command = easycomplete#installer#GetCommand("ts")
+    if empty(l:command)
       echom '[easycomplete] tsserver is not installed. Try "npm -g install typescript".'
       return 0
     endif
 
     let job_status = easycomplete#job#status(s:tsq_job.job)
-    let s:tsq_job.job = easycomplete#job#start(l:cmd, {'on_stdout': function('s:StdOutCallback')})
+    let s:tsq_job.job = easycomplete#job#start(l:command . " --locale en",
+          \ {'on_stdout': function('s:StdOutCallback')})
     if s:tsq_job.job <= 0
-      echoerr "tsserver launch failed. Please run 'npm -g install typescript'"
+      echoerr "tsserver launch failed."
     endif
   endif
 endfunction

@@ -148,6 +148,8 @@ function! s:BindingTypingCommandOnce()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
 
+  " 安装 lsp 依赖
+  command! -nargs=1 EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
   " Goto definition
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
@@ -171,8 +173,8 @@ function! easycomplete#checking()
       continue
     endif
     let l:command = get(g:easycomplete_source[item], 'command')
-    let l:flag_txt = executable(l:command) ? "*ready*" : "|missing|"
-    let l:flag_ico = executable(l:command) ? "√" : "×"
+    let l:flag_txt = easycomplete#installer#executable(l:command) ? "*ready*" : "|missing|"
+    let l:flag_ico = easycomplete#installer#executable(l:command) ? "√" : "×"
     let l:msg = "[".l:flag_ico."]" . " " . l:name . ": `" . l:command . "` " . l:flag_txt
     call add(amsg, l:msg)
   endfor
@@ -759,6 +761,20 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
+function! easycomplete#RegisterLspServer(opt, config)
+  let cmd = get(a:opt, 'command', '')
+  if empty(cmd)
+    call easycomplete#util#info('Plugin command name is not defined.')
+    return
+  endif
+  if !easycomplete#installer#executable(cmd)
+    call easycomplete#util#info("'".cmd."' is not avilable.",
+          \ "Please Install: ':EasyCompleteInstallServer ".a:opt['name']."' ")
+    return
+  endif
+  call easycomplete#lsp#register_server(a:config)
+endfunction
+
 function! easycomplete#GetFirstRenderTimer()
   return s:first_render_timer
 endfunction
@@ -1180,8 +1196,23 @@ function! s:FirstComplete(start_pos, menuitems)
   endif
 endfunction
 
+function! easycomplete#GetOptions(name)
+  return get(g:easycomplete_source, a:name, {})
+endfunction
+
 function! easycomplete#FirstCompleteRendering(...)
   return call("s:FirstCompleteRendering", a:000)
+endfunction
+
+function! easycomplete#GetPlugNameByCommand(cmd)
+  let plug_name = ""
+  for name in keys(g:easycomplete_source)
+    if a:cmd == get(g:easycomplete_source[name], 'command', '')
+      let plug_name = name
+      break
+    endif
+  endfor
+  return plug_name
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
@@ -1601,6 +1632,12 @@ endfunction
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
 function! easycomplete#DoLspComplete(opt, ctx)
+  echom easycomplete#installer#GetCommand(a:opt['name'])
+  if empty(easycomplete#installer#GetCommand(a:opt['name']))
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+    return v:true
+  endif
+
   let l:info = easycomplete#FindLspCompleteServers()
   let l:ctx = easycomplete#context()
   if empty(l:info['server_names'])
@@ -1821,6 +1858,9 @@ endfunction
 " LSP definition 跳转的通用封装
 " file_exts 文件后缀
 function! easycomplete#DoLspDefinition(file_exts)
+  if empty(easycomplete#installer#GetCommand(a:opt['name']))
+    return v:false
+  endif
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
     return easycomplete#LspDefinition()

@@ -5,14 +5,11 @@ let g:easycomplete_sources_py = 1
 
 function! easycomplete#sources#py#constructor(opt, ctx)
   " 注册 lsp
-  if executable('pyls')
-    " pip install python-language-server
-    call easycomplete#lsp#register_server({
-          \ 'name': 'pyls',
-          \ 'cmd': {server_info->['pyls']},
-          \ 'allowlist': ['python'],
-          \ })
-  endif
+  call easycomplete#RegisterLspServer(a:opt, {
+      \ 'name': 'pyls',
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'allowlist': ['python'],
+      \ })
 endfunction
 
 function! easycomplete#sources#py#completor(opt, ctx) abort

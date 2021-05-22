@@ -4,14 +4,12 @@ endif
 let g:easycomplete_sources_cpp = 1
 
 function! easycomplete#sources#cpp#constructor(opt, ctx)
-  if executable('ccls')
-    call easycomplete#lsp#register_server({
-        \ 'name': 'ccls',
-        \ 'cmd': {server_info->['ccls']},
-        \ 'initialization_options': {'cache': {'directory': '/tmp/ccls/cache'}},
-        \ 'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
-        \ })
-  endif
+  call easycomplete#RegisterLspServer(a:opt, {
+      \ 'name': 'ccls',
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'initialization_options': {'cache': {'directory': '/tmp/ccls/cache'}},
+      \ 'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+      \ })
 endfunction
 
 function! easycomplete#sources#cpp#completor(opt, ctx) abort

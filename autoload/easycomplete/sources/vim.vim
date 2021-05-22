@@ -4,24 +4,19 @@ endif
 let g:easycomplete_sources_vim = 1
 
 function! easycomplete#sources#vim#constructor(opt, ctx)
-  if executable('vim-language-server')
-    " TODO 首次 lsp 返回的不是匹配全集
-    call easycomplete#lsp#register_server({
-          \ 'name': 'vimls',
-          \ 'cmd': {server_info->['vim-language-server', '--stdio']},
-          \ 'whitelist': ['vim'],
-          \ 'initialization_options': {
-          \   'vimruntime': expand($VIMRUNTIME),
-          \   'runtimepath': &rtp,
-          \   'iskeyword': '@,48-57,_,192-255,-#',
-          \   'indexes':{'runtime':"true", 'gap':100, 'count':3, 'runtimepath': "true"},
-          \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
-          \   'suggest': { 'fromVimruntime': "true" , 'fromRuntimepath': "true"}
-          \ }
-          \ })
-  else
-    echo printf("'vim-language-server' is not avilable, Please install: '%s'", 'npm -g install vim-language-server')
-  endif
+  call easycomplete#RegisterLspServer(a:opt, {
+      \ 'name': 'vimls',
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
+      \ 'whitelist': ['vim'],
+      \ 'initialization_options': {
+      \   'vimruntime': expand($VIMRUNTIME),
+      \   'runtimepath': &rtp,
+      \   'iskeyword': '@,48-57,_,192-255,-#',
+      \   'indexes':{'runtime':"true", 'gap':100, 'count':3, 'runtimepath': "true"},
+      \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
+      \   'suggest': { 'fromVimruntime': "true" , 'fromRuntimepath': "true"}
+      \ }
+      \ })
 endfunction
 
 function! easycomplete#sources#vim#completor(opt, ctx) abort

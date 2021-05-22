@@ -114,7 +114,6 @@ augroup easycomplete#register
       \ 'command': 'bash-language-server',
       \  })
 
-
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
       \ 'whitelist': ['json'],
@@ -125,7 +124,6 @@ augroup easycomplete#register
       \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
       \  })
 
-  " easycompelte#lsp
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
@@ -133,6 +131,15 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
       \ 'command': 'pyls'
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'java',
+      \ 'whitelist': ['java'],
+      \ 'completor': 'easycomplete#sources#java#completor',
+      \ 'constructor' :'easycomplete#sources#java#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#java#GotoDefinition',
+      \ 'command': 'eclipse-jdt-ls'
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
