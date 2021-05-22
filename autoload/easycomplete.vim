@@ -173,8 +173,8 @@ function! easycomplete#checking()
       continue
     endif
     let l:command = get(g:easycomplete_source[item], 'command')
-    let l:flag_txt = executable(l:command) ? "*ready*" : "|missing|"
-    let l:flag_ico = executable(l:command) ? "√" : "×"
+    let l:flag_txt = easycomplete#installer#executable(l:command) ? "*ready*" : "|missing|"
+    let l:flag_ico = easycomplete#installer#executable(l:command) ? "√" : "×"
     let l:msg = "[".l:flag_ico."]" . " " . l:name . ": `" . l:command . "` " . l:flag_txt
     call add(amsg, l:msg)
   endfor
