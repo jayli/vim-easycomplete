@@ -311,13 +311,17 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
   " 模糊匹配结果
   let otherwise_fuzzymatching = []
 
+  " dam: 性能参数
+  " - dam 越小速度越快，精度越差
+  " - dam 越大速度越慢，精度越好
+  let dam = 60
   let count_index = 0
   " --- 0.020
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > a:maxlength | break | endif
-    if matchstr(item_word, "^" . word) == word
+    if matchstr(item_word, "^" . word) == word && count_index < dam
       call add(original_matching_menu, item)
       let count_index += 1
     else
