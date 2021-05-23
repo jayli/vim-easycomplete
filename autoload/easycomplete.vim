@@ -28,12 +28,16 @@ function! s:InitLocalVars()
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " 匹配过程中的 Cache，主要处理 <BS> 和 <CR> 键
+  " 匹配过程中的 Cache，主要处理 <BS> 和 <CR> 后显示 Complete 历史
   let g:easycomplete_menucache = {}
   " 匹配过程中的全量匹配数据，CompleteDone 后置空
   let g:easycomplete_menuitems = []
-  " 匹配过程中的临时数据
+  " 显式匹配菜单所需的临时 items，是被切割后的数据
   let g:easycomplete_complete_ctx = {}
+  " 隐式匹配菜单所需的临时 items，是完整的过程匹配结果缓存
+  " 主要用作性能优化，代替 CompleteTypingMatch 中基于 g:easycomplete_menuitems
+  " 的全量过滤，使用非全量过滤以提高速度
+  let g:easycomplete_stunt_menuitems= []
   " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
   let g:easycomplete_completed_item = {}
   " 全局时间，用作标记每次补全动作性能统计的时间起始点
@@ -238,10 +242,18 @@ function! s:CompleteTypingMatch(...)
     " 等待 LSP callback → easycomplete#complete() → CompleteAdd
   else
     let word = exists('a:1') ? a:1 : s:GetTypingWord()
-    let g_easycomplete_menuitems = deepcopy([] + g:easycomplete_menuitems)
-    let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, word)
+    let local_menuitems = []
+    " jayli
+    " let g:easycomplete_stunt_menuitems = []
+    if !empty(g:easycomplete_stunt_menuitems)
+      let local_menuitems = g:easycomplete_stunt_menuitems
+    else
+      let local_menuitems = deepcopy([] + g:easycomplete_menuitems)
+    endif
+    let filtered_menu = s:CompleteMenuFilter(local_menuitems, word, 500)
     if len(filtered_menu) == 0
       call s:CloseCompletionMenu()
+      let g:easycomplete_stunt_menuitems = []
       return
     endif
 
@@ -256,7 +268,7 @@ function! s:CompleteTypingMatch(...)
       return
     endif
 
-    call s:SecondComplete(col('.') - strlen(word), filtered_menu, g_easycomplete_menuitems)
+    call s:SecondComplete(col('.') - strlen(word), filtered_menu, g:easycomplete_menuitems, word)
   endif
 endfunction
 
@@ -268,8 +280,9 @@ function! s:PrepareInfoPlaceHolder(key, val)
   return a:val
 endfunction
 
-function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
+function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let tmp_menuitems = deepcopy(a:easycomplete_menuitems)
+  let g:easycomplete_stunt_menuitems = deepcopy(a:menuitems)
   let result = a:menuitems[0 : g:easycomplete_maxlength]
   if len(result) <= 10
     let result = easycomplete#util#uniq(result)
@@ -277,6 +290,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
   call s:zizz()
   call easycomplete#_complete(a:start_pos, result)
+  call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
   " 所以这里要确保 g:easycomplete_menuitems 不会被修改
   let g:easycomplete_menuitems = tmp_menuitems
@@ -284,7 +298,7 @@ endfunction
 
 " jayli
 " TODO 此方法执行约 30ms，需要性能优化
-function! s:CompleteMenuFilter(all_menu, word)
+function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
@@ -299,10 +313,10 @@ function! s:CompleteMenuFilter(all_menu, word)
 
   let count_index = 0
   " --- 0.020
-  for item in a:all_menu
+  for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
-    if count_index > g:easycomplete_maxlength | break | endif
+    if count_index > a:maxlength | break | endif
     if matchstr(item_word, "^" . word) == word
       call add(original_matching_menu, item)
       let count_index += 1
@@ -315,7 +329,7 @@ function! s:CompleteMenuFilter(all_menu, word)
   for item in otherwise_matching_menu
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
-    if count_index > g:easycomplete_maxlength | break | endif
+    if count_index > a:maxlength | break | endif
     if easycomplete#util#FuzzySearch(word, item_word)
       call add(otherwise_fuzzymatching, item)
       let count_index += 1
@@ -617,6 +631,7 @@ endfunction
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
   if easycomplete#IsBacking()
+    let g:easycomplete_stunt_menuitems = []
     if s:TriggerAlways()
       return ""
     endif
@@ -628,9 +643,12 @@ function! easycomplete#typing()
       call s:flush()
       return ""
     endif
+    let g:easycomplete_stunt_menuitems = []
     if !empty(g:easycomplete_menuitems)
       call s:StopAsyncRun()
-      call s:CompleteMatchAction()
+      let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
+      call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
+            \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
     endif
     return ""
   endif
@@ -778,7 +796,20 @@ function! easycomplete#RegisterLspServer(opt, config)
           \ "Please Install: ':EasyCompleteInstallServer ".a:opt['name']."' ")
     return
   endif
+  let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
   call easycomplete#lsp#register_server(a:config)
+endfunction
+
+function! s:GetPluginNameByLspName(lsp_name)
+  let plugin_name = ""
+  for item in keys(g:easycomplete_source)
+    let lsp = get(g:easycomplete_source[item], 'lsp', {})
+    if !empty(lsp) && lsp['name'] ==# a:lsp_name
+      let plugin_name = item
+      break
+    endif
+  endfor
+  return plugin_name
 endfunction
 
 function! easycomplete#GetFirstRenderTimer()
@@ -910,7 +941,7 @@ function! s:GetTypingWordByGtx()
   return l:ctx['typed'][strlen(l:gtx['typed'])-strlen(l:gtx['typing']):]
 endfunction
 
-" 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不在重新请求 LSP
+" 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不再重新请求 LSP
 function! s:CompleteMatchAction()
   call s:StopZizz()
   let l:vim_word = s:GetTypingWordByGtx()
@@ -1174,8 +1205,9 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
-  let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
-  let g:easycomplete_source[a:plugin_name].filtered_complete_result = filtered_menu
+  " let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
+  let filtered_menu = g_easycomplete_menuitems
+  " let g:easycomplete_source[a:plugin_name].filtered_complete_result = s:CompleteMenuFilter(a:menu_list, typing_word, 500)
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1183,7 +1215,6 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     return v:null
   endtry
   if g:env_is_vim | call popup_clear() | endif
-  call s:AddCompleteCache(typing_word, filtered_menu)
 endfunction
 
 function! s:CombineAllMenuitems()
@@ -1222,21 +1253,28 @@ function! easycomplete#GetPlugNameByCommand(cmd)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
-  if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
-    let result_items = a:menuitems[0 : g:easycomplete_maxlength]
-    if len(result_items) <= 10
-      let result_items = easycomplete#util#uniq(result_items)
+  try
+    if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
+      let filtered_menu = s:CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 500)
+      let g:easycomplete_stunt_menuitems = deepcopy(filtered_menu)
+      let result_items = filtered_menu[0 : g:easycomplete_maxlength]
+      if len(result_items) <= 10
+        let result_items = easycomplete#util#uniq(result_items)
+      endif
+      call easycomplete#_complete(a:start_pos, result_items)
+      call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
+    else
+      " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
+      " easycomplete#typing() → s:CompleteTypingMatch()
     endif
-    call easycomplete#_complete(a:start_pos, result_items)
-  else
-    " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
-    " easycomplete#typing() → s:CompleteTypingMatch()
-  endif
-  if s:first_render_timer > 0
-    call timer_stop(s:first_render_timer)
-    let s:first_render_timer = 0
-  endif
-  call s:LetCompleteTaskQueueAllDone()
+    if s:first_render_timer > 0
+      call timer_stop(s:first_render_timer)
+      let s:first_render_timer = 0
+    endif
+    call s:LetCompleteTaskQueueAllDone()
+  catch
+    echom v:exception
+  endtry
 endfunction
 
 function! easycomplete#refresh()
@@ -1262,7 +1300,7 @@ endfunction
 
 function! s:speed(...)
   let ss = exists('a:1') ? " " . a:1 : ""
-  call call(function('s:loglog'), ['->complete speed'. ss, reltimestr(reltime(g:start))])
+  call call(function('s:console'), ['->complete speed'. ss, reltimestr(reltime(g:start))])
 endfunction
 
 " aop 测试函数调用性能用，四种调用方式
@@ -1295,7 +1333,7 @@ endfunction
 function! s:StopRecord(...)
   let msg = exists('a:1') ? a:1 : "functinal speed"
   let sp = reltimestr(reltime(g:easycomplete_start))
-  call call(function('s:loglog'), [msg, reltimestr(reltime(s:easy_start))])
+  call call(function('s:console'), [msg, reltimestr(reltime(s:easy_start))])
 endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
@@ -1491,21 +1529,14 @@ endfunction
 
 " 清空全局配置
 function! s:flush()
-  " reset menuitems
   let g:easycomplete_menuitems = []
-  " reset first_complete_hit
+  let g:easycomplete_stunt_menuitems = []
   let g:easycomplete_first_complete_hit = 0
-  " reset current selected complete item
   call s:ResetCompletedItem()
-  " reset complete menu cache
   call s:ResetCompleteCache()
-  " reset docomplete task
   call s:ResetCompleteTaskQueue()
-  " reset global first complete ctx
   let g:easycomplete_firstcomplete_ctx = {}
-  " reset b:typing_ctx
   let b:typing_ctx = easycomplete#context()
-  " reset Global complete changed event
   let g:easycomplete_completechanged_event = {}
 
   for sub in keys(g:easycomplete_source)
@@ -1886,9 +1917,6 @@ endfunction
 " LSP definition 跳转的通用封装
 " file_exts 文件后缀
 function! easycomplete#DoLspDefinition(file_exts)
-  if empty(easycomplete#installer#GetCommand(a:opt['name']))
-    return v:false
-  endif
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
     return easycomplete#LspDefinition()
@@ -1908,6 +1936,10 @@ function! easycomplete#LspDefinition() abort
     return v:false
   endif
   let l:server = easycomplete#FindLspCompleteServers()['server_names'][0]
+  let l:plugin_name = s:GetPluginNameByLspName(l:server)
+  if empty(easycomplete#installer#GetCommand(l:plugin_name))
+    return v:false
+  endif
   let l:ctx = { 'counter': len(l:server), 'list':[], 'jump_if_one': 1, 'mods': '', 'in_preview': 0 }
 
   let l:params = {
