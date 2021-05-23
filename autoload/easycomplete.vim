@@ -48,13 +48,13 @@ function! s:InitLocalVars()
   " 和 YCM 一样，用做 FirstComplete 标志位
   let g:easycomplete_first_complete_hit = 0
   " 菜单显示最大 item 数量，默认和 coc 保持一致
-  " viml 的跟指性能不佳，适当降低下 maxlength 的阈值
+  " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
   let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
-
   " Global CompleteChanged Event：异步回调显示 popup 时借用
   let g:easycomplete_completechanged_event = {}
 
-  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
+  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单，结构
+  " 如下：
   " [
   "   {
   "     "ctx": {},
@@ -64,7 +64,6 @@ function! s:InitLocalVars()
   "   }
   " ]
   let g:easycomplete_complete_taskqueue = []
-  " popupwindow 宽度
   let g:easycomplete_popup_width = 50
   " 当前敲入的字符所属的 ctx，用来判断光标前进还是后退
   let b:typing_ctx = easycomplete#context()
@@ -72,10 +71,9 @@ function! s:InitLocalVars()
   " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
   " zizz 标志位
   let g:easycomplete_backing_or_cr = 0
-
   " 用作 FirstComplete TaskQueue 回调的定时器
   let s:first_render_timer = 0
-  " FirstCompleteRendering 超时时间
+  " FirstCompleteRendering 超时时间，应对 LSP 的超时
   let g:easycomplete_first_render_delay = 1000
 
   " completeopt 基础配置
@@ -90,31 +88,25 @@ endfunction
 
 " EasyComplete 入口函数
 function! easycomplete#Enable()
-  " 每个 BufferEnter 时调用
+  " 插件要求在每个 BufferEnter 时调用
   if exists("b:easycomplete_loaded_done")
     return
   endif
   let b:easycomplete_loaded_done= 1
 
-  " 自定义插件
-  doautocmd <nomodeline> User easycomplete_plugin 
-  " 初始化全局变量
+  " 自定义插件事件
+  doautocmd <nomodeline> User easycomplete_plugin
   call s:InitLocalVars()
   " 必须要确保typing command先绑定
   " 插件里的typing command后绑定
   call s:BindingTypingCommandOnce()
-  " 初始化 plugin 全局配置
   call easycomplete#plugin#init()
-  " 执行 plugins 构造函数
   call s:ConstructorCalling()
-  " 初始化 complete 缓存池
   call s:SetupCompleteCache()
-  " 初始化皮肤 Pmenu
   call easycomplete#ui#SetScheme()
-  " lsp 服务初始化
+  " lsp 服务初始化必须要放在按键绑定之后
   call easycomplete#lsp#enable()
-
-  " 载入本地字典
+  " 字典载入耗时较久，延迟载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
 
@@ -296,8 +288,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
-" jayli
-" TODO 此方法执行约 30ms，需要性能优化
 function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
