@@ -24,7 +24,7 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
 
-  " 全局 Complete 注册插件
+  " 全局 Complete 注册插件，插件不等同 LSP Server
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
@@ -36,7 +36,7 @@ function! s:InitLocalVars()
   let g:easycomplete_complete_ctx = {}
   " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
   let g:easycomplete_completed_item = {}
-  " 全局时间
+  " 全局时间，用作标记每次补全动作性能统计的时间起始点
   let g:easycomplete_start = reltime()
   " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
   " 需要选择匹配项过程中的过程变量 ctx 暂存下来
@@ -282,6 +282,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
+" jayli
 " TODO 此方法执行约 30ms，需要性能优化
 function! s:CompleteMenuFilter(all_menu, word)
   let word = a:word
@@ -297,6 +298,7 @@ function! s:CompleteMenuFilter(all_menu, word)
   let otherwise_fuzzymatching = []
 
   let count_index = 0
+  " --- 0.020
   for item in a:all_menu
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
@@ -309,6 +311,7 @@ function! s:CompleteMenuFilter(all_menu, word)
     endif
   endfor
 
+  " --- 0.0001
   for item in otherwise_matching_menu
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
@@ -319,9 +322,12 @@ function! s:CompleteMenuFilter(all_menu, word)
     endif
   endfor
 
+  " --- 0.0033
   let original_matching_menu = sort(deepcopy(original_matching_menu),
         \ "s:SortTextComparatorByLength")
+  " --- 0.0005
   let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
+  " --- 0.0008
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
 endfunction
@@ -1259,13 +1265,37 @@ function! s:speed(...)
   call call(function('s:loglog'), ['->complete speed'. ss, reltimestr(reltime(g:start))])
 endfunction
 
+" aop 测试函数调用性能用，四种调用方式
+" call s:emit(function('s:foo'))
+" call s:emit('easycomplete#foo')
+" call s:emit(function('s:foo'), [123])
+" call s:emit('easycomplete#foo', [123])
+function! s:emit(...)
+  let Method = a:1
+  let args = exists('a:2') ? a:2 : []
+  call s:StartRecord()
+  try
+    let res = easycomplete#util#call(Method, args)
+  catch /.*/
+    echom v:exception
+    return 0
+  endtry
+  call s:StopRecord()
+  return res
+endfunction
+
+" 性能调试用，使用方式
+"   call s:StartRecord()
+"   call s:DoSth()
+"   call s:StopRecord()
 function! s:StartRecord()
   let s:easy_start = reltime()
 endfunction
 
-function! s:StopRecord()
+function! s:StopRecord(...)
+  let msg = exists('a:1') ? a:1 : "functinal speed"
   let sp = reltimestr(reltime(g:easycomplete_start))
-  call call(function('s:loglog'), ['functinal speed', reltimestr(reltime(s:easy_start))])
+  call call(function('s:loglog'), [msg, reltimestr(reltime(s:easy_start))])
 endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
@@ -1632,7 +1662,6 @@ endfunction
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
 function! easycomplete#DoLspComplete(opt, ctx)
-  echom easycomplete#installer#GetCommand(a:opt['name'])
   if empty(easycomplete#installer#GetCommand(a:opt['name']))
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
@@ -1711,9 +1740,8 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   " hack for json-language-server
   "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
   try
-    if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$' 
+    if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
       let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
-      echom l:matches
     endif
   catch
     echom v:exception

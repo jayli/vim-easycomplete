@@ -479,6 +479,10 @@ function! easycomplete#util#info(...)
   call s:MsgLog(l:res, 'MoreMsg')
 endfunction
 
+function! easycomplete#util#NormalizeLogMsg(...)
+  return call("s:NormalizeLogMsg", a:000)
+endfunction
+
 function! s:NormalizeLogMsg(...)
   let l:args = a:000
   let l:res = ""

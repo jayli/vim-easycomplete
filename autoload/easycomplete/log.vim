@@ -52,21 +52,8 @@ function! easycomplete#log#log(...)
     return
   endif
 
-  let l:args = a:000
-  let l:res = ""
-  if empty(a:000)
-    let l:res = ""
-  elseif len(a:000) == 1
-    if index([2,7], type(a:000))
-      let l:res = string(a:1)
-    else
-      let l:res = a:1
-    endif
-  else
-    for item in l:args
-      let l:res = l:res . " " . json_encode(item)
-    endfor
-  endif
+  let l:res = call('easycomplete#util#NormalizeLogMsg', a:000)
+
   if executable('tail')
     call s:InitLogFile()
     call s:InitLogWindow()
