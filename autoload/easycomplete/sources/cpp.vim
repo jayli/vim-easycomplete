@@ -7,7 +7,7 @@ function! easycomplete#sources#cpp#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'ccls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
-      \ 'initialization_options': {'cache': {'directory': '/tmp/ccls/cache'}},
+      \ 'initialization_options':{'cache': {'directory': '/tmp/ccls/cache'},'completion': {'detailedLabel': v:false}},
       \ 'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
       \ })
 endfunction
@@ -17,7 +17,7 @@ function! easycomplete#sources#cpp#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cpp#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cpp","c","h"])
+  return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp"])
 endfunction
 
 function! s:log(...)
