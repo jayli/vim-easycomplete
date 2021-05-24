@@ -24,7 +24,8 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
 
-  " 全局 Complete 注册插件，插件不等同 LSP Server
+  " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
+  "   g:easycomplete_source['vim'].lsp 指向 lsp config
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
