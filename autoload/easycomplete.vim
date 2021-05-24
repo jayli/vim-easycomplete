@@ -289,6 +289,8 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
+" maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃
+" 这样来防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -302,17 +304,22 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
   " 模糊匹配结果
   let otherwise_fuzzymatching = []
 
-  " dam: 性能参数
-  " - dam 越小速度越快，精度越差
-  " - dam 越大速度越慢，精度越好
-  let dam = 60
+  " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
+  " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
+  " 精度越好，但下面这两种情况往往会大面积存在
+  "
+  " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
+  " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
+  "   最好，这时 dam 越小越好
+  "
+  " 折中设置 dam 为 100
+  let dam = 100
   let count_index = 0
-  " --- 0.020
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > a:maxlength | break | endif
-    if matchstr(item_word, "^" . word) == word && count_index < dam
+    if stridx(item_word, word) == 0 && count_index < dam
       call add(original_matching_menu, item)
       let count_index += 1
     else
@@ -320,7 +327,6 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
     endif
   endfor
 
-  " --- 0.0001
   for item in otherwise_matching_menu
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
@@ -331,12 +337,9 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
     endif
   endfor
 
-  " --- 0.0033
   let original_matching_menu = sort(deepcopy(original_matching_menu),
         \ "s:SortTextComparatorByLength")
-  " --- 0.0005
   let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
-  " --- 0.0008
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
 endfunction
@@ -1192,7 +1195,9 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     call feedkeys("\<C-E>")
   endif
 
-  " FristComplete 的过滤方法参考 YCM 和 coc 重写了
+  " FristComplete 的过滤方法参照 YCM 和 coc 重写了
+  " 为了避免重复过滤，去掉了这里的 CompleteMenuFilter 动作
+  " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
   let g:easycomplete_source[a:plugin_name].complete_result =
@@ -1200,9 +1205,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
-  " let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
   let filtered_menu = g_easycomplete_menuitems
-  " let g:easycomplete_source[a:plugin_name].filtered_complete_result = s:CompleteMenuFilter(a:menu_list, typing_word, 500)
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1313,7 +1316,7 @@ function! s:emit(...)
     echom v:exception
     return 0
   endtry
-  call s:StopRecord()
+  call s:StopRecord(string(Method))
   return res
 endfunction
 
