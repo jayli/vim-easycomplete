@@ -199,7 +199,7 @@ function! easycomplete#sources#ts#CompleteChanged()
   endif
   " 异步执行，避免快速移动光标的闪烁
   call easycomplete#util#StopAsyncRun()
-  call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'), 
+  call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'),
         \ [s:request_queue_ctx, [l:item]],
         \ 50)
   " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构

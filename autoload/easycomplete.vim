@@ -29,21 +29,20 @@ function! s:InitLocalVars()
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " 匹配过程中的 Cache，主要处理 <BS> 和 <CR> 后显示 Complete 历史
+  " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
   let g:easycomplete_menucache = {}
   " 匹配过程中的全量匹配数据，CompleteDone 后置空
   let g:easycomplete_menuitems = []
-  " 显式匹配菜单所需的临时 items，是被切割后的数据
+  " 显示 complete menu 所需的临时 items，根据 maxlength 截断
   let g:easycomplete_complete_ctx = {}
-  " 隐式匹配菜单所需的临时 items，是完整的过程匹配结果缓存
-  " 主要用作性能优化，代替 CompleteTypingMatch 中基于 g:easycomplete_menuitems
-  " 的全量过滤，使用非全量过滤以提高速度
+  " 隐式匹配菜单所需的临时 items，缓存全量匹配菜单数据，用以给
+  " SecondComplete 提速用
   let g:easycomplete_stunt_menuitems= []
   " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
   let g:easycomplete_completed_item = {}
-  " 全局时间，用作标记每次补全动作性能统计的时间起始点
+  " 全局时间的标记，性能统计时用
   let g:easycomplete_start = reltime()
-  " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
+  " HACK: 当从 pum 最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
   " 需要选择匹配项过程中的过程变量 ctx 暂存下来
   let g:easycomplete_firstcomplete_ctx = {}
   " 和 YCM 一样，用做 FirstComplete 标志位
@@ -66,7 +65,7 @@ function! s:InitLocalVars()
   " ]
   let g:easycomplete_complete_taskqueue = []
   let g:easycomplete_popup_width = 50
-  " 当前敲入的字符所属的 ctx，用来判断光标前进还是后退
+  " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
   let b:typing_ctx = easycomplete#context()
 
   " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
@@ -74,10 +73,9 @@ function! s:InitLocalVars()
   let g:easycomplete_backing_or_cr = 0
   " 用作 FirstComplete TaskQueue 回调的定时器
   let s:first_render_timer = 0
-  " FirstCompleteRendering 超时时间，应对 LSP 的超时
+  " FirstCompleteRendering 中 LSP 的超时时间
   let g:easycomplete_first_render_delay = 1000
 
-  " completeopt 基础配置
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
@@ -95,11 +93,11 @@ function! easycomplete#Enable()
   endif
   let b:easycomplete_loaded_done= 1
 
-  " 自定义插件事件
   doautocmd <nomodeline> User easycomplete_plugin
   call s:InitLocalVars()
-  " 必须要确保typing command先绑定
-  " 插件里的typing command后绑定
+  " 要主意绑定顺序：
+  "  - 必须要确保typing command先绑定
+  "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
   call easycomplete#plugin#init()
   call s:ConstructorCalling()
@@ -113,6 +111,7 @@ endfunction
 
 function! easycomplete#GetBindingKeys()
   " 通用触发跟指匹配的字符绑定，所有文档类型生效
+  " 另外每个插件可自定义触发按键，在插件的 semantic_triggers 中定义
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/._'
   return l:key_liststr
@@ -147,7 +146,7 @@ function! s:BindingTypingCommandOnce()
 
   " 安装 lsp 依赖
   command! -nargs=1 EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
-  " Goto definition
+  " Goto definition 命令
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
   command! EasyCompleteCheck : call easycomplete#checking()
@@ -214,7 +213,7 @@ function! s:CompleteTypingMatch(...)
     return
   endif
   let l:char = easycomplete#context()["char"]
-  " exit on None ASCII typing
+  " 非 ASCII 码时终止
   if char2nr(l:char) < 33 || char2nr(l:char) > 126
     call s:CloseCompletionMenu()
     call s:flush()
@@ -236,8 +235,6 @@ function! s:CompleteTypingMatch(...)
   else
     let word = exists('a:1') ? a:1 : s:GetTypingWord()
     let local_menuitems = []
-    " jayli
-    " let g:easycomplete_stunt_menuitems = []
     if !empty(g:easycomplete_stunt_menuitems)
       let local_menuitems = g:easycomplete_stunt_menuitems
     else
@@ -445,17 +442,15 @@ function! easycomplete#context() abort
   return l:ret
 endfunction
 
-" 检查 ctx 和当前 ctx 是否一致
 function! easycomplete#CheckContextSequence(ctx)
   return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
-" 是否回退到 first hit 所处的位置
 function! s:OrigionalPosition()
   return easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
 endfunction
 
-" 外部插件回调 API
+" 外部插件回调的 API
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
@@ -763,8 +758,8 @@ function! s:DoComplete(immediately)
   return v:null
 endfunction
 
-" Sample:
-" call easycomplete#RegisterSource(easycomplete#sources#buffer#get_source_options({
+" 插件注册样例:
+" call easycomplete#RegisterSource({
 "     \ 'name': 'buffer',
 "     \ 'allowlist': ['*'],
 "     \ 'blocklist': ['go'],
@@ -772,7 +767,7 @@ endfunction
 "     \ 'config': {
 "     \    'max_buffer_size': 5000000,
 "     \  },
-"     \ }))
+"     \ })
 function! easycomplete#RegisterSource(opt)
   if !has_key(a:opt, "name")
     return
@@ -837,12 +832,12 @@ function! s:CompletorCallingAtFirstComplete(...)
     for item in sort(keys(g:easycomplete_source), function('s:SortForDirectory'))
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
-        if l:cprst == v:true " true: go on
+        if l:cprst == v:true " true: 继续
           continue
         else
           call s:flush()
           call s:LetCompleteTaskQueueAllDone()
-          break " false: break, only use for directory matching
+          break " false: break, 只在 directory 文件目录匹配时使用
         endif
       endif
     endfor
@@ -1005,7 +1000,6 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
   endfor
 endfunction
 
-"CleverTab tab
 function! easycomplete#CleverTab()
   if pumvisible()
     call s:zizz()
@@ -1060,7 +1054,7 @@ function! easycomplete#CleverShiftTab()
   return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
 
-" <CR> 逻辑，判断是否展开代码片段
+" <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
@@ -1080,7 +1074,7 @@ function! easycomplete#TypeEnterWithPUM()
   " 其他选中动作一律插入单词并关闭匹配菜单
   if pumvisible()
     call s:zizz()
-    " add expandable support for #48
+    " 新增 expandable 支持 for #48
     if s:expandable(l:item)
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
@@ -1754,7 +1748,7 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  " hack for vim-language-server: 
+  " hack for vim-language-server:
   "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
   "   g:b:l:a: 都是正确的，只有 s: 不正确
   "   需要修改 word 为 insertText.slice(2)
