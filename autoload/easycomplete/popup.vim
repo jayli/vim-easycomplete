@@ -112,7 +112,7 @@ function! s:check(info)
         \ 'relative':'editor',
         \ 'style':'minimal'
         \ }
-  
+
   " show relative popup
   if get(s:event, 'scrollbar')
     let right_avail_col  = s:event.col + s:event.width + 1

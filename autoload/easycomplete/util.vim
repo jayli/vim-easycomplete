@@ -261,27 +261,36 @@ function! s:nSort(a, b)
 endfunction
 
 function! easycomplete#util#FuzzySearch(needle, haystack)
-  " 实测 vim script 速度更快，这里始终使用 VIM 的实现
-  " Python 实现的执行速度 ---
-  " FUNCTION  easycomplete#util#FuzzySearch()
-  "     Defined: ~/.vim/bundle/vim-easycomplete/autoload/easycomplete/util.vim:184
-  " Called 201 times
-  " Total time:   0.056193
-  "  Self time:   0.005171
-  " VIM 实现的执行速度 --- 
-  " FUNCTION  easycomplete#util#FuzzySearch()
-  "     Defined: ~/.vim/bundle/vim-easycomplete/autoload/easycomplete/util.vim:184
-  " Called 201 times
-  " Total time:   0.031811
-  "  Self time:   0.004698
-  if v:false && has("pythonx")
-    return s:FuzzySearchPy(a:needle, a:haystack)
+  " 性能测试：356 次调用实测情况
+  "  - s:FuzzySearchRegx 速度最快
+  "  - s:FuzzySearchCustom 速度次之
+  "  - s:FuzzySearchPy 速度最差
+  return s:FuzzySearchRegx(a:needle, a:haystack) " 0.027728
+  return s:FuzzySearchCustom(a:needle, a:haystack) " 0.041983
+  return s:FuzzySearchPy(a:needle, a:haystack) " 0.088703
+endfunction
+
+function! s:FuzzySearchRegx(needle, haystack)
+  let tlen = strlen(a:haystack)
+  let qlen = strlen(a:needle)
+  if qlen > tlen
+    return v:false
+  endif
+  if qlen == tlen
+    return a:needle ==? a:haystack ? v:true : v:false
+  endif
+
+  let needle_ls = map(easycomplete#util#str2list(tolower(a:needle)), {_, val -> nr2char(val)})
+  let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]*")
+
+  if match(tolower(a:haystack), needle_ls_regx) >= 0
+    return v:true
   else
-    return s:FuzzySearchVim(a:needle, a:haystack)
+    return v:false
   endif
 endfunction
 
-function! s:FuzzySearchVim(needle, haystack)
+function! s:FuzzySearchCustom(needle, haystack)
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)
   if qlen > tlen

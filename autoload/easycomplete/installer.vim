@@ -1,5 +1,4 @@
 " Installer for every lsp server
-
 let s:installer_dir = expand('<sfile>:h:h') . '/easycomplete/installer'
 let s:root_dir = expand('<sfile>:h:h')
 let s:data_dir = expand('~/.config/vim-easycomplete')
@@ -81,7 +80,6 @@ function! easycomplete#installer#install(name) abort
   endif
 endfunction
 
-" neovim passes third argument as 'exit' while vim passes only 2 arguments
 function! s:InstallServerPost(command, job, code, ...) abort
   if a:code != 0
     return

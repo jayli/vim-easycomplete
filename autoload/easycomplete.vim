@@ -24,25 +24,25 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
 
-  " 全局 Complete 注册插件，插件不等同 LSP Server
+  " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
+  "   g:easycomplete_source['vim'].lsp 指向 lsp config
   if !exists("g:easycomplete_source")
     let g:easycomplete_source  = {}
   endif
-  " 匹配过程中的 Cache，主要处理 <BS> 和 <CR> 后显示 Complete 历史
+  " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
   let g:easycomplete_menucache = {}
   " 匹配过程中的全量匹配数据，CompleteDone 后置空
   let g:easycomplete_menuitems = []
-  " 显式匹配菜单所需的临时 items，是被切割后的数据
+  " 显示 complete menu 所需的临时 items，根据 maxlength 截断
   let g:easycomplete_complete_ctx = {}
-  " 隐式匹配菜单所需的临时 items，是完整的过程匹配结果缓存
-  " 主要用作性能优化，代替 CompleteTypingMatch 中基于 g:easycomplete_menuitems
-  " 的全量过滤，使用非全量过滤以提高速度
+  " 隐式匹配菜单所需的临时 items，缓存全量匹配菜单数据，用以给
+  " SecondComplete 提速用
   let g:easycomplete_stunt_menuitems= []
   " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
   let g:easycomplete_completed_item = {}
-  " 全局时间，用作标记每次补全动作性能统计的时间起始点
+  " 全局时间的标记，性能统计时用
   let g:easycomplete_start = reltime()
-  " HACK: 当从pum最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
+  " HACK: 当从 pum 最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
   " 需要选择匹配项过程中的过程变量 ctx 暂存下来
   let g:easycomplete_firstcomplete_ctx = {}
   " 和 YCM 一样，用做 FirstComplete 标志位
@@ -65,7 +65,7 @@ function! s:InitLocalVars()
   " ]
   let g:easycomplete_complete_taskqueue = []
   let g:easycomplete_popup_width = 50
-  " 当前敲入的字符所属的 ctx，用来判断光标前进还是后退
+  " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
   let b:typing_ctx = easycomplete#context()
 
   " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
@@ -73,10 +73,9 @@ function! s:InitLocalVars()
   let g:easycomplete_backing_or_cr = 0
   " 用作 FirstComplete TaskQueue 回调的定时器
   let s:first_render_timer = 0
-  " FirstCompleteRendering 超时时间，应对 LSP 的超时
+  " FirstCompleteRendering 中 LSP 的超时时间
   let g:easycomplete_first_render_delay = 1000
 
-  " completeopt 基础配置
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
@@ -94,11 +93,11 @@ function! easycomplete#Enable()
   endif
   let b:easycomplete_loaded_done= 1
 
-  " 自定义插件事件
   doautocmd <nomodeline> User easycomplete_plugin
   call s:InitLocalVars()
-  " 必须要确保typing command先绑定
-  " 插件里的typing command后绑定
+  " 要主意绑定顺序：
+  "  - 必须要确保typing command先绑定
+  "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
   call easycomplete#plugin#init()
   call s:ConstructorCalling()
@@ -112,6 +111,7 @@ endfunction
 
 function! easycomplete#GetBindingKeys()
   " 通用触发跟指匹配的字符绑定，所有文档类型生效
+  " 另外每个插件可自定义触发按键，在插件的 semantic_triggers 中定义
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
                     \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/._'
   return l:key_liststr
@@ -146,7 +146,7 @@ function! s:BindingTypingCommandOnce()
 
   " 安装 lsp 依赖
   command! -nargs=1 EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
-  " Goto definition
+  " Goto definition 命令
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
   command! EasyCompleteCheck : call easycomplete#checking()
@@ -213,7 +213,7 @@ function! s:CompleteTypingMatch(...)
     return
   endif
   let l:char = easycomplete#context()["char"]
-  " exit on None ASCII typing
+  " 非 ASCII 码时终止
   if char2nr(l:char) < 33 || char2nr(l:char) > 126
     call s:CloseCompletionMenu()
     call s:flush()
@@ -235,8 +235,6 @@ function! s:CompleteTypingMatch(...)
   else
     let word = exists('a:1') ? a:1 : s:GetTypingWord()
     let local_menuitems = []
-    " jayli
-    " let g:easycomplete_stunt_menuitems = []
     if !empty(g:easycomplete_stunt_menuitems)
       let local_menuitems = g:easycomplete_stunt_menuitems
     else
@@ -288,6 +286,8 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
+" maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃
+" 这样来防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -301,17 +301,22 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
   " 模糊匹配结果
   let otherwise_fuzzymatching = []
 
-  " dam: 性能参数
-  " - dam 越小速度越快，精度越差
-  " - dam 越大速度越慢，精度越好
-  let dam = 60
+  " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
+  " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
+  " 精度越好，但下面这两种情况往往会大面积存在
+  "
+  " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
+  " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
+  "   最好，这时 dam 越小越好
+  "
+  " 折中设置 dam 为 100
+  let dam = 100
   let count_index = 0
-  " --- 0.020
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > a:maxlength | break | endif
-    if matchstr(item_word, "^" . word) == word && count_index < dam
+    if stridx(item_word, word) == 0 && count_index < dam
       call add(original_matching_menu, item)
       let count_index += 1
     else
@@ -319,7 +324,6 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
     endif
   endfor
 
-  " --- 0.0001
   for item in otherwise_matching_menu
     let item_word = s:GetItemWord(item)
     if strlen(item_word) < strlen(a:word) | continue | endif
@@ -330,12 +334,9 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
     endif
   endfor
 
-  " --- 0.0033
   let original_matching_menu = sort(deepcopy(original_matching_menu),
         \ "s:SortTextComparatorByLength")
-  " --- 0.0005
   let result = easycomplete#util#distinct(original_matching_menu + otherwise_fuzzymatching)
-  " --- 0.0008
   let filtered_menu = map(result, function("s:PrepareInfoPlaceHolder"))
   return filtered_menu
 endfunction
@@ -441,17 +442,15 @@ function! easycomplete#context() abort
   return l:ret
 endfunction
 
-" 检查 ctx 和当前 ctx 是否一致
 function! easycomplete#CheckContextSequence(ctx)
   return s:SameCtx(a:ctx, easycomplete#context())
 endfunction
 
-" 是否回退到 first hit 所处的位置
 function! s:OrigionalPosition()
   return easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
 endfunction
 
-" 外部插件回调 API
+" 外部插件回调的 API
 function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
@@ -759,8 +758,8 @@ function! s:DoComplete(immediately)
   return v:null
 endfunction
 
-" Sample:
-" call easycomplete#RegisterSource(easycomplete#sources#buffer#get_source_options({
+" 插件注册样例:
+" call easycomplete#RegisterSource({
 "     \ 'name': 'buffer',
 "     \ 'allowlist': ['*'],
 "     \ 'blocklist': ['go'],
@@ -768,7 +767,7 @@ endfunction
 "     \ 'config': {
 "     \    'max_buffer_size': 5000000,
 "     \  },
-"     \ }))
+"     \ })
 function! easycomplete#RegisterSource(opt)
   if !has_key(a:opt, "name")
     return
@@ -833,12 +832,12 @@ function! s:CompletorCallingAtFirstComplete(...)
     for item in sort(keys(g:easycomplete_source), function('s:SortForDirectory'))
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
-        if l:cprst == v:true " true: go on
+        if l:cprst == v:true " true: 继续
           continue
         else
           call s:flush()
           call s:LetCompleteTaskQueueAllDone()
-          break " false: break, only use for directory matching
+          break " false: break, 只在 directory 文件目录匹配时使用
         endif
       endif
     endfor
@@ -1001,7 +1000,6 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
   endfor
 endfunction
 
-"CleverTab tab
 function! easycomplete#CleverTab()
   if pumvisible()
     call s:zizz()
@@ -1056,7 +1054,7 @@ function! easycomplete#CleverShiftTab()
   return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
 
-" <CR> 逻辑，判断是否展开代码片段
+" <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
@@ -1076,7 +1074,7 @@ function! easycomplete#TypeEnterWithPUM()
   " 其他选中动作一律插入单词并关闭匹配菜单
   if pumvisible()
     call s:zizz()
-    " add expandable support for #48
+    " 新增 expandable 支持 for #48
     if s:expandable(l:item)
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
@@ -1191,7 +1189,9 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     call feedkeys("\<C-E>")
   endif
 
-  " FristComplete 的过滤方法参考 YCM 和 coc 重写了
+  " FristComplete 的过滤方法参照 YCM 和 coc 重写了
+  " 为了避免重复过滤，去掉了这里的 CompleteMenuFilter 动作
+  " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
   let g:easycomplete_source[a:plugin_name].complete_result =
@@ -1199,9 +1199,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
-  " let filtered_menu = s:CompleteMenuFilter(g_easycomplete_menuitems, typing_word)
   let filtered_menu = g_easycomplete_menuitems
-  " let g:easycomplete_source[a:plugin_name].filtered_complete_result = s:CompleteMenuFilter(a:menu_list, typing_word, 500)
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1312,7 +1310,7 @@ function! s:emit(...)
     echom v:exception
     return 0
   endtry
-  call s:StopRecord()
+  call s:StopRecord(string(Method))
   return res
 endfunction
 
@@ -1750,7 +1748,7 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  " hack for vim-language-server: 
+  " hack for vim-language-server:
   "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
   "   g:b:l:a: 都是正确的，只有 s: 不正确
   "   需要修改 word 为 insertText.slice(2)

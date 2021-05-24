@@ -5,8 +5,6 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
-" finish
-
 if get(g:, 'easycomplete_plugin_init')
   finish
 endif
@@ -25,13 +23,6 @@ if (g:env_is_vim && v:version < 802) ||
         \ " or nvim version upper than 0.4.0"
   finish
 endif
-
-" augroup FileTypeChecking
-"   let ext = substitute(expand('%p'),"^.\\+[\\.]","","g")
-"   if ext ==# "ts"
-"     finish
-"   endif
-" augroup END
 
 if has('vim_starting')
   augroup EasyCompleteStart
@@ -65,15 +56,6 @@ augroup easycomplete#register
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
       \ 'command': 'tsserver'
       \  })
-
-  " au User easycomplete_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'tss',
-  "     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
-  "     \ 'completor': function('easycomplete#sources#tss#completor'),
-  "     \ 'constructor' :function('easycomplete#sources#tss#constructor'),
-  "     \ 'gotodefinition': function('easycomplete#sources#tss#GotoDefinition'),
-  "     \ 'command': 'typescript-language-server'
-  "     \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
