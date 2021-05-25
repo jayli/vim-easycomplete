@@ -101,7 +101,6 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
 
-  " 保存插件 Options
   let s:opt = a:opt
 endfunction
 
@@ -178,7 +177,7 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
   endif
 endfunction
 
-" 最初 Entry Details 的实现方式是跟随 CompleteCallback 来获取，跟随 
+" 最初 Entry Details 的实现方式是跟随 CompleteCallback 来获取，跟随
 " Completion 动作紧接着读取 EntryDetails 逻辑上是 ok 的，问题是大文
 " 件中 DoFetchEntryDetails 动作很慢，在 2~4s 左右，有时会到 6s，等
 " 待返回值的过程中 tsserver 处于挂起状态，影响交互体验，所以把这个
@@ -406,7 +405,7 @@ endfunction
 function! s:TsserverIsReady()
   if !easycomplete#installer#executable('tsserver')
     call easycomplete#util#info("Please Install tsserver by ",
-          \ "':EasyCompleteInstallServer ts' or 'npm -g install typescript'")
+          \ "':EasyCompleteInstallServer' or 'npm -g install typescript'")
     return v:false
   endif
   return v:true
