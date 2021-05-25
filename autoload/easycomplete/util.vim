@@ -25,6 +25,37 @@ function! easycomplete#util#extention()
   return ext_part
 endfunction
 
+function! easycomplete#util#GetAttachedPlugins()
+  let all_plugins = easycomplete#GetAllPlugins()
+  let ft = &filetype
+  let attached_plugins = []
+  for name in keys(all_plugins)
+    let plugin = get(all_plugins, name)
+    if empty(plugin) | continue | endif
+    let whitelist = get(plugin, 'whitelist')
+    if index(whitelist, ft) >= 0
+      call add(attached_plugins, plugin)
+    endif
+  endfor
+  return attached_plugins
+endfunction
+
+" 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
+" tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
+" 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
+" Server 的补全 Plugin 对象，而不返回一个数组
+function! easycomplete#util#GetLspPlugin()
+  let attached_plugins = easycomplete#util#GetAttachedPlugins()
+  let ret_plugin = {}
+  for plugin in attached_plugins
+    if has_key(plugin, 'gotodefinition') && has_key(plugin, 'command')
+      let ret_plugin = plugin
+      break
+    endif
+  endfor
+  return ret_plugin
+endfunction
+
 " 运行一个全局的 Timer，只在 complete 的时候用
 " 参数：method, args, timer
 " method 必须是一个全局方法,

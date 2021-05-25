@@ -40,9 +40,9 @@ function! easycomplete#installer#GetCommand(name)
 endfunction
 
 function! easycomplete#installer#install(name) abort
-  let opt = easycomplete#GetOptions(a:name)
-  let l:install_script = easycomplete#installer#InstallerDir() . '/' . a:name . '.sh'
-  let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . a:name
+  let l:name = empty(a:name) ? easycomplete#util#GetLspPlugin()['name'] : a:name
+  let l:install_script = easycomplete#installer#InstallerDir() . '/' . l:name . '.sh'
+  let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . l:name
 
   " prepare auth of exec script
   call setfperm(l:install_script, 'rwxr-xr-x')
@@ -51,31 +51,31 @@ function! easycomplete#installer#install(name) abort
   call setfperm(easycomplete#installer#InstallerDir() . '/go_install.sh', 'rwxr-xr-x')
 
   if !filereadable(l:install_script)
-    call easycomplete#util#info('Error,', 'Install script is not exist.')
+    call easycomplete#util#info('Error,', 'Install script is not found.')
     return
   endif
 
-  if confirm(printf('Install %s lsp server?', a:name), "&Yes\n&Cancel") !=# 1
+  if confirm(printf('Install %s lsp server?', l:name), "&Yes\n&Cancel") !=# 1
     return
   endif
 
   if isdirectory(l:lsp_server_dir)
-    call easycomplete#util#info('Uninstalling', a:name)
+    call easycomplete#util#info('Uninstalling', l:name)
     call delete(l:lsp_server_dir, 'rf')
   endif
 
   call mkdir(l:lsp_server_dir, 'p')
-  call easycomplete#util#info('Installing', a:name, 'lsp server ...')
+  call easycomplete#util#info('Installing', l:name, 'lsp server ...')
 
   if has('nvim')
     split new
-    call termopen(l:install_script, {'cwd': l:lsp_server_dir, 'on_exit': function('s:InstallServerPost', [a:name])})
+    call termopen(l:install_script, {'cwd': l:lsp_server_dir, 'on_exit': function('s:InstallServerPost', [l:name])})
     startinsert
   else
     let l:bufnr = term_start(l:install_script, {'cwd': l:lsp_server_dir})
     let l:job = term_getjob(l:bufnr)
     if l:job != v:null
-      call job_setoptions(l:job, {'exit_cb': function('s:InstallServerPost', [a:name])})
+      call job_setoptions(l:job, {'exit_cb': function('s:InstallServerPost', [l:name])})
     endif
   endif
 endfunction

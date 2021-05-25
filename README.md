@@ -71,13 +71,15 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 | py               | Python                | pyls                 | Yes                | python/pip     |
 | java             | Java                  | eclipse-jdt-ls       | Yes                | java/jdk       |
 | go               | Go                    | gopls                | Yes                | go             |
-| snips            | 代码片段补全          |ultisnips/vim-snippets| No                 | 不需要         |
+| snips            | 代码片段补全          |ultisnips/vim-snippets| 不需要             | 不需要         |
 
 比如安装 tsserver，在 vim 中执行
 
 ```
 :EasyCompleteInstallServer ts
 ```
+
+或者直接在打开的 ts 文件中执行`:EasyCompleteInstallServer`
 
 ### 五）各语言 LSP 依赖安装说明
 

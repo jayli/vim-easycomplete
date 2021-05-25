@@ -145,7 +145,7 @@ function! s:BindingTypingCommandOnce()
   augroup END
 
   " 安装 lsp 依赖
-  command! -nargs=1 EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
+  command! -nargs=? EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
   " Goto definition 命令
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
@@ -185,6 +185,10 @@ function! easycomplete#checking()
     let ix = ix + 1
     call setbufline(bufnr(""), ix, line)
   endfor
+endfunction
+
+function! easycomplete#GetAllPlugins()
+  return g:easycomplete_source
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
@@ -786,7 +790,7 @@ function! easycomplete#RegisterLspServer(opt, config)
   endif
   if !easycomplete#installer#executable(cmd)
     call easycomplete#util#info("'".cmd."' is not avilable.",
-          \ "Please Install: ':EasyCompleteInstallServer ".a:opt['name']."' ")
+          \ "Please Install: ':EasyCompleteInstallServer'")
     return
   endif
   let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
