@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I've remove all non-essential requirements and environment dependencies so that it has minimum redundancy.For example, it requires vim script only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I've remove all non-essential requirements and environment dependencies so that it has minimum redundancy. For example, it requires vim script only, and you don't even have to add one line of configuration if you want.
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
 
@@ -53,7 +53,7 @@ You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
 
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
 
-Typing `./` or '../' to trigger directory completion suggestion.
+Typing `./` or `../` to trigger directory completion suggestion.
 
 Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if you need.
 
@@ -99,10 +99,10 @@ More info about semantic completion for each supported language:
 
 - JavaScript & TypeScript: [tsserver](https://github.com/microsoft/TypeScript) required.
 - Python: [pyls](https://github.com/palantir/python-language-server) required. (`pip install python-language-server`)
-- Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (go get golang.org/x/tools/gopls`)
+- Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (`go get golang.org/x/tools/gopls`)
 - Vim Script: [vim-language-server](https://github.com/iamcco/vim-language-server) required.
 - C++/C：Install ccls with `brew install ccls`. If you want to install latest version. Please install it manually [following this guide](https://github.com/MaskRay/ccls).
-- CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver is not support CompletionProvider by default. Because it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) ready，You must install it manually.
+- CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver is not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/) required.
@@ -128,7 +128,7 @@ Which means python neovim package is missing. Fix it via `pip install neovim`.
 
 ### Add custom completion plugin
 
-Take snip as an example [source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim) without lsp server. Another example with lsp server support is easier. [source](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/py.vim).
+Take snip as an example ([source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)) without lsp server. Another example with lsp server support is easier. [source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/py.vim).
 
 ### Issues
 
