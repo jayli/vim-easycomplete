@@ -65,7 +65,7 @@ EasyComplete support keywords/dictionary/directory completion by default.
 
 #### Semantic Completion for Other Languages
 
-Most Language require LSP Server. Install missing LSP Server with `:EasyCompleteInstallServer` for current filetype (recommended).
+Most Language require LSP Server. Install missing LSP Server with `:EasyCompleteInstallServer` for current filetype (recommended). LSP Server will be installed in `~/.config/vim-easycomplete/servers`.
 
 ```
 :EasyCompleteInstall
