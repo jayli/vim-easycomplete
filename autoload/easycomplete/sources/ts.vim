@@ -211,16 +211,17 @@ function! easycomplete#sources#ts#CompleteCallback(item)
     return
   endif
 
+  let l:request_req = get(a:item, 'request_seq')
+  let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
   let l:raw_list = get(a:item, 'body')
   if empty(l:raw_list)
+    call s:DoComplete(l:ctx, [])
     return
   endif
 
-  let l:request_req = get(a:item, 'request_seq')
   let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list),
         \                       "s:sortTextComparator"), 'v:val.kind != "warning"'),
         \ function("s:CompleteMenuMap"))
-  let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
   let s:request_queue_ctx = l:ctx
   " 如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作
   if !easycomplete#CheckContextSequence(l:ctx)

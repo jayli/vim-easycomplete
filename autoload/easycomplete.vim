@@ -81,8 +81,10 @@ function! s:InitLocalVars()
   " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
   " zizz 标志位
   let g:easycomplete_backing_or_cr = 0
+
   " 用作 FirstComplete TaskQueue 回调的定时器
   let s:first_render_timer = 0
+
   " FirstCompleteRendering 中 LSP 的超时时间
   let g:easycomplete_first_render_delay = 1000
 
