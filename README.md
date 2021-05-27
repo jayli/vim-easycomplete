@@ -59,6 +59,16 @@ Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if yo
 
 Typing `:h easycomplete` for help.
 
+All commands:
+
+| Command                           | Description                              | 
+|-----------------------------------|------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
+| `:EasyCompleteCheck`              | Checking LSP server                      |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
+
 ### Language Support
 
 EasyComplete support keywords/dictionary/directory completion by default.
@@ -128,11 +138,22 @@ Which means python neovim package is missing. Fix it via `pip install neovim`.
 
 ### Add custom completion plugin
 
-Take snip as an example ([source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)) without lsp server. Another example with lsp server support is easier. [source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/py.vim).
+Take snip as an example ([source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)) without lsp server.
+
+```
+au User easycomplete_plugin call easycomplete#RegisterSource({
+    \ 'name': 'snips',
+    \ 'whitelist': ['*'],
+    \ 'completor': 'easycomplete#sources#snips#completor',
+    \ 'constructor': 'easycomplete#sources#snips#constructor',
+    \  })
+```
+
+Another example with lsp server support is easier. [source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/py.vim). By the way, you don't have to writing an omnifunc for Vim's omnicomplete.
 
 ### Issues
 
-If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new).
+[WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>.
 
 ### License
 
