@@ -38,8 +38,16 @@ function! easycomplete#installer#GetCommand(name)
   return ''
 endfunction
 
-function! easycomplete#installer#install(name) abort
-  let l:name = empty(a:name) ? easycomplete#util#GetLspPlugin()['name'] : a:name
+function! easycomplete#installer#install(...) abort
+  echom 's'
+  let lsp_plugin = easycomplete#util#GetLspPlugin()
+  if (!exists('a:1') || empty('a:1')) && !has_key(lsp_plugin, 'name')
+    call easycomplete#util#info('Error,', 'Unknown filetype.')
+    return
+  endif
+  let l:name = exists('a:1') ?
+            \ ( a:1 == "" ? easycomplete#util#GetLspPlugin()['name'] : a:1)
+            \ : easycomplete#util#GetLspPlugin()['name']
   let l:install_script = easycomplete#installer#InstallerDir() . '/' . l:name . '.sh'
   let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . l:name
 

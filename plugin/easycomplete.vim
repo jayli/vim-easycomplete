@@ -27,7 +27,7 @@ endif
 if has('vim_starting')
   augroup EasyCompleteStart
     autocmd!
-    autocmd BufReadPost * call easycomplete#Enable()
+    autocmd BufReadPost,BufNewFile * call easycomplete#Enable()
   augroup END
 else
   call easycomplete#Enable()
