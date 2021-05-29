@@ -103,6 +103,7 @@ All supported languages:
 | py               | Python                | pyls                 | Yes                | python/pip      |
 | java             | Java                  | eclipse-jdt-ls       | Yes                | java/jdk        |
 | go               | Go                    | gopls                | Yes                | go              |
+| lua              | Lua                   | emmylua-ls           | Yes                | java/jdk        |
 | snips            | Snippets Support      |ultisnips/vim-snippets| No                 | None            |
 
 More info about semantic completion for each supported language:
@@ -116,6 +117,7 @@ More info about semantic completion for each supported language:
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/) required.
+- Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
 
 #### Snippet Support
 

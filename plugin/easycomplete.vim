@@ -139,6 +139,15 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'lua',
+      \ 'whitelist': ['lua'],
+      \ 'completor': 'easycomplete#sources#lua#completor',
+      \ 'constructor' :'easycomplete#sources#lua#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
+      \ 'command': 'emmylua-ls'
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',

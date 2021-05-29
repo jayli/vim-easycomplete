@@ -1,9 +1,7 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
 " Description:  A minimalism style complete plugin for vim
-"
-"               More Info:
-"               <https://github.com/jayli/vim-easycomplete>
+" More Info:    <https://github.com/jayli/vim-easycomplete>
 
 if get(g:, 'easycomplete_script_loaded')
   finish
@@ -107,7 +105,7 @@ function! easycomplete#Enable()
 
   doautocmd <nomodeline> User easycomplete_plugin
   call s:InitLocalVars()
-  " 要主意绑定顺序：
+  " 要注意绑定顺序：
   "  - 必须要确保typing command先绑定
   "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
@@ -302,8 +300,9 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let g:easycomplete_menuitems = tmp_menuitems
 endfunction
 
-" maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃
-" 这样来防止 all_menu 过大时过滤耗时太久，一般设在 500
+" 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
+" maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
+" 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -636,7 +635,7 @@ function! s:TriggerAlways()
   return flag
 endfunction
 
-" 输入和退格监听函数
+" 正常输入和退格监听函数
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
   if easycomplete#IsBacking()
@@ -724,7 +723,8 @@ function! s:DoComplete(immediately)
   endif
 
   " 连续两个 '.' 重新初始化 complete
-  if l:ctx['char'] == '.' && (len(l:ctx['typed']) >= 2 && easycomplete#util#str2list(l:ctx['typed'])[-2] == char2nr('.'))
+  if l:ctx['char'] == '.' &&
+        \ (len(l:ctx['typed']) >= 2 && easycomplete#util#str2list(l:ctx['typed'])[-2] == char2nr('.'))
     call s:CompleteInit()
     call s:ResetCompleteCache()
   endif
@@ -1071,7 +1071,7 @@ endfunction
 
 function! s:DoTabCompleteAction()
   if g:env_is_nvim
-    " Hack nvim，nvim 中，在 DoComplete 中 mode() 有时是 n，这会导致调用 flush()
+    " Hack nvim，nvim 中，在 DoComplete 中 mode() 会是 n，导致调用 flush()
     " nvim 中改用异步调用
     call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
     call s:SendKeys( "\<ESC>a" )
