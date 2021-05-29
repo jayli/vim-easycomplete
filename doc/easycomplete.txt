@@ -7,32 +7,120 @@ EasyComplete                                                     *easycomplete*
 
 ===============================================================================
 
-介绍
+Introduction
 
-EasyComplete 是一个简单到爆的 VIM 自动完成插件，装完即用，什么都不用配置
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order
+to provide the best performance and experience. I remove all non-essential
+requirements and environment dependencies so that it has minimum redundancy.
 
-EasyComplete 只包含补全和 LSP 提供的定义跳转功能。不包含文件语法检查、错误提示、
-单词语义提示等，以 VIM 的方式来使用 EasyComplete。
+For example, it requires vim script only, and you don't even have to add one
+line of configuration if you want.
+
+Vim-Easycomplete is easy to install and use. It contains these features:
+
+- Buffer keywords and dictionary support
+- Directory and file completion support
+- Goto definition support for all languages
+- Full LSP support
+- LSP Server installation with one command
+- Snippet support with ultisnips.
 
 ===============================================================================
 
-安装：参照文档 <https://github.com/jayli/vim-easycomplete>
+Installation
 
-使用：默认按键绑定只有 <Tab> 和 <S-Tab>
+Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD.
+For neovim users, 0.4.4 is required (Of course, latest is recommended).
 
-- <Tab>: 激活自动补全窗口
-- <S-Tab>: 向上选择补全窗口选项，或者在插入模式中插入 <Tab>
-- <C-]>: 定义跳转
-- <C-t>: tag 的跳回
+Configuration
 
-如果 Tab 与你的习惯不符，可以通过 `g:easycomplete_tab_trigger="<c-k>"` 来设置
+It use Tab to trigger completion suggestions. You can change this setting by
 
-目前支持的功能列表:
+  let g:easycomplete_tab_trigger="<c-space>"
 
-- buf.vim buffer 关键词匹配和字典匹配
-- directory.vim 目录和文件匹配
-- snips.vim 代码片段支持，来自 ultisnips
-- ts.vim js和ts语法支持, 绑定了 `<C-]>` 用作定义跳转
-- 更多语言支持参照<https://github.com/jayli/vim-easycomplete>
+There are four build-in popup menu themes for default styles confliction: `dark`,
+`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be 
+ignored in most cases.
+
+===============================================================================
+
+Useage
+
+You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
+Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t`
+for jumping back (Same as tags jumping). 
+
+Or you can use `:EasyCompleteGotoDefinition` command.
+
+Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP
+Server is not ready, Use `:EasyCompleteInstallServer` to install.
+
+Typing `./` or `../` to trigger directory completion suggestion.
+
+Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if
+you need.
+
+Typing `:h easycomplete` for help.
+
+All commands:
+
+| Command                       | Description                              | 
+| ----------------------------- | ---------------------------------------- |
+| `:EasyCompleteInstallServer`    | Install LSP server for current fileytpe  |
+| `:EasyCompleteGotoDefinition`   | Goto definition position                 |
+| `:EasyCompleteCheck`            | Checking LSP server                      |
+| `:EasyCompleteProfileStart`     | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`      | Stop record diagnostics  message         |
+
+===============================================================================
+
+Language Support
+
+EasyComplete support keywords/dictionary/directory completion by default.
+
+Most Language require LSP Server. Install missing LSP Server with
+`:EasyCompleteInstallServer` for current filetype (recommended). LSP Server
+will be installed in `~/.config/vim-easycomplete/servers`. >
+
+  :EasyCompleteInstall
+
+Or you can install a lsp server with specified plugin name (not recommended).
+
+Take typescript/javascript for example: >
+
+  :EasyCompleteInstallServer ts
+
+All supported languages:
+
+| Plugin Name | Languages             | Language Server        | Installer |
+| ----------- | --------------------- | ---------------------- | --------- |
+| directory   | directory suggestion  | No Need                | No        |
+| buf         | keywords & dictionary | No Need                | No        |
+| ts          | JavaScript/TypeScript | tsserver               | Yes       |
+| vim         | Vim                   | vim-language-server    | Yes       |
+| cpp         | C/C++                 | ccls                   | Yes       |
+| css         | CSS                   | css-languageserver     | Yes       |
+| sh          | Bash                  | bash-language-server   | Yes       |
+| json        | JSON                  | json-languageserver    | Yes       |
+| py          | Python                | pyls                   | Yes       |
+| java        | Java                  | eclipse-jdt-ls         | Yes       |
+| go          | Go                    | gopls                  | Yes       |
+| lua         | Lua                   | emmylua-ls             | Yes       |
+| snips       | Snippets Support      | ultisnips/vim-snippets | No        |
+
+EasyComplete needs ultisnips and vim-snippets for snippets support. This
+two plugin is compatible with EasyComplete out of the box. Install with
+vim-plug: >
+
+  Plug 'SirVer/ultisnips'
+  Plug 'honza/vim-snippets'
+
+===============================================================================
+
+Help
+
+[WIP] If you have bug reports or feature suggestions, please use the issue tracker
+
+  https://github.com/jayli/vim-easycomplete/issues/new
 
 -EOF-
