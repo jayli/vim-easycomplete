@@ -940,6 +940,22 @@ endfunction
 
 " 这个函数只能在 SecondComplete 过程中使用
 " 用来根据 g:easycomplete_firstcomplete_ctx 和 ctx 做 diff 算出 typing word
+"   For example:
+"     步骤1. 输入 app 按 Tab 执行 FristComplete
+"         app<Tab>
+"         append
+"         appendTo
+"         apple
+"         appleId
+"         applyBufline
+"
+"     步骤2. 继续输入 end 执行 SecondComplete
+"         append<Typing>
+"         append
+"         appendTo
+"       这时 SecondComplete 中根据`end`过滤 FristComplete 返回的全量匹配词表
+"       GetTypingWordByGtx() 即返回 `end` 被带入到 CompleteTypingMatch() 中
+"
 " Gtx 即 g:easycomplete_firstcomplete_ctx
 function! s:GetTypingWordByGtx()
   if empty(g:easycomplete_firstcomplete_ctx)
