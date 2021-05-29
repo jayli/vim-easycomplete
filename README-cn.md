@@ -1,6 +1,6 @@
 # Vim-EasyComplete VIM/NVIM 补全插件
 
-[中文](README-cn.md) | [English](README.md)
+中文 | [English](README.md)
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -8,7 +8,7 @@
 
 [余杭区](https://baike.baidu.com/item/%E4%BD%99%E6%9D%AD%E5%8C%BA/161196)最好用的 VIM/NVIM 自动补全插件
 
-<img src="https://gw.alicdn.com/imgextra/i3/O1CN01Pjgr601zUR2hBpiXd_!!6000000006717-1-tps-793-413.gif" width=580>
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01b9yaSh1hINXsztxUy_!!6000000004254-1-tps-699-394.gif" width=580>
 
 ### 一）安装
 
