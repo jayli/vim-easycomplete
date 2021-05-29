@@ -73,6 +73,7 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 | py               | Python                | pyls                 | Yes                | python/pip     |
 | java             | Java                  | eclipse-jdt-ls       | Yes                | java/jdk       |
 | go               | Go                    | gopls                | Yes                | go             |
+| lua              | Lua                   | emmylua-ls           | Yes                | java/jdk       |
 | snips            | 代码片段补全          |ultisnips/vim-snippets| 不需要             | 不需要         |
 
 比如安装 tsserver，在 vim 中执行

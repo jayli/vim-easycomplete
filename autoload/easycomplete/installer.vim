@@ -1,4 +1,3 @@
-" Installer for every lsp server
 let s:installer_dir = expand('<sfile>:h:h') . '/easycomplete/installer'
 let s:root_dir = expand('<sfile>:h:h')
 let s:data_dir = expand('~/.config/vim-easycomplete')
@@ -46,9 +45,9 @@ function! easycomplete#installer#install(name) abort
 
   " prepare auth of exec script
   call setfperm(l:install_script, 'rwxr-xr-x')
-  call setfperm(easycomplete#installer#InstallerDir() . '/npm_install.sh', 'rwxr-xr-x')
-  call setfperm(easycomplete#installer#InstallerDir() . '/pip_install.sh', 'rwxr-xr-x')
-  call setfperm(easycomplete#installer#InstallerDir() . '/go_install.sh', 'rwxr-xr-x')
+  for script_name in ['/npm_install.sh', '/pip_install.sh', '/go_install.sh']
+    call setfperm(easycomplete#installer#InstallerDir() . script_name, 'rwxr-xr-x')
+  endfor
 
   if !filereadable(l:install_script)
     call easycomplete#util#info('Error,', 'Install script is not found.')
@@ -69,7 +68,10 @@ function! easycomplete#installer#install(name) abort
 
   if has('nvim')
     split new
-    call termopen(l:install_script, {'cwd': l:lsp_server_dir, 'on_exit': function('s:InstallServerPost', [l:name])})
+    call termopen(l:install_script, {
+          \ 'cwd': l:lsp_server_dir,
+          \ 'on_exit': function('s:InstallServerPost', [l:name])
+          \ })
     startinsert
   else
     let l:bufnr = term_start(l:install_script, {'cwd': l:lsp_server_dir})
