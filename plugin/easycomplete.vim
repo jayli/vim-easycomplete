@@ -70,7 +70,7 @@ augroup easycomplete#register
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
-      \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+      \ 'whitelist': ["c", "cc", "cpp", "c++", "objc", "objcpp"],
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
@@ -90,6 +90,16 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#css#gotodefinition',
       \ 'command': 'css-languageserver',
       \ 'semantic_triggers':['[^:]:$']
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'html',
+      \ 'whitelist': ['html'],
+      \ 'completor': 'easycomplete#sources#html#completor',
+      \ 'constructor' :'easycomplete#sources#html#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#html#gotodefinition',
+      \ 'command': 'html-languageserver',
+      \ 'semantic_triggers':['[^<]<$']
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({

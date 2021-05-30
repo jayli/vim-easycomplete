@@ -68,6 +68,7 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 | vim              | Vim                   | vim-language-server    | Yes                | node/npm       |
 | cpp              | C/C++                 | ccls                   | Yes                | ruby/brew      |
 | css              | CSS                   | css-languageserver     | Yes                | node/npm       |
+| html             | html                  | html-languageserver    | Yes                | node/npm       |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm       |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm       |
 | py               | Python                | pyls                   | Yes                | python/pip     |
@@ -114,9 +115,11 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 - Vim Script：依赖 [vim-language-server](https://github.com/iamcco/vim-language-server)
 - C++/C：`brew install ccls` 安装非新版 ccls，如果需要最新版 ccls，需手动安装 [ccls](https://github.com/MaskRay/ccls)，[参照这里](https://github.com/MaskRay/ccls)
 - CSS：依赖 [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) (css-languageserver)，由于 css-languageserver 默认不包含 completionProvider，必须要安装 [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) 依赖，Snippets 脚本基于 lua 实现，用户可自行选择安装。
+- html：依赖 [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin)，默认不支持 CompletionProvider，需手动安装 Snippets.
 - JSON：依赖 [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin)
 - Shell：依赖 [bash-language-server](https://github.com/bash-lsp/bash-language-server)
 - Java：依赖 [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/)，[eclipse-jdt-ls-latest.tar.gz](http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz) 的下载如果很慢，建议手动安装 eclipse-jdt-ls。
+- Groovy：依赖[groovy-language-server](https://github.com/prominic/groovy-language-server)。
 
 ### 六）支持新语言的插件开发
 
