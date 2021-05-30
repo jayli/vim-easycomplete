@@ -11,5 +11,6 @@ DIR=\$(cd \$(dirname \$0); pwd)
 java -jar \$DIR/build/libs/groovy-language-server-all.jar \$*
 EOF
 
+cp build/libs/grvy-all.jar build/libs/groovy-language-server-all.jar
 chmod +x groovy-language-server
 

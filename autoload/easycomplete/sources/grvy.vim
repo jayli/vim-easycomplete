@@ -5,8 +5,9 @@ let g:easycomplete_sources_grvy = 1
 
 function! easycomplete#sources#grvy#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'groovyls',
+      \ 'name': 'groovy-language-server',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'root_uri':{server_info-> "file://". fnamemodify(expand('%'), ':p:h')},
       \ 'allowlist': ['groovy'],
       \ })
 endfunction
