@@ -99,6 +99,7 @@ All supported languages:
 | cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |
 | css              | CSS                   | css-languageserver     | Yes                | node/npm        |
 | html             | HTML                  | html-languageserver    | Yes                | node/npm        |
+| yml              | YAML                  | yaml-language-server   | Yes                | node/npm        |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm        |
 | py               | Python                | pyls                   | Yes                | python/pip      |
@@ -122,6 +123,7 @@ More info about semantic completion for each supported language:
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/) required.
 - Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
+- Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
 
 #### Snippet Support
 

@@ -103,6 +103,15 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'yml',
+      \ 'whitelist': ['yaml'],
+      \ 'completor': 'easycomplete#sources#yaml#completor',
+      \ 'constructor' :'easycomplete#sources#yaml#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#yaml#gotodefinition',
+      \ 'command': 'yaml-language-server',
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'sh',
       \ 'whitelist': ['sh'],
       \ 'completor': 'easycomplete#sources#bash#completor',

@@ -71,6 +71,7 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 | html             | html                  | html-languageserver    | Yes                | node/npm       |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm       |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm       |
+| yml              | Yaml                  | yaml-language-server   | Yes                | node/npm       |
 | py               | Python                | pyls                   | Yes                | python/pip     |
 | java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk       |
 | go               | Go                    | gopls                  | Yes                | go             |
@@ -120,6 +121,7 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 - Shell：依赖 [bash-language-server](https://github.com/bash-lsp/bash-language-server)
 - Java：依赖 [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/)，[eclipse-jdt-ls-latest.tar.gz](http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz) 的下载如果很慢，建议手动安装 eclipse-jdt-ls。
 - Groovy：依赖[groovy-language-server](https://github.com/prominic/groovy-language-server)。
+- Yaml：依赖 [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)。
 
 ### 六）支持新语言的插件开发
 

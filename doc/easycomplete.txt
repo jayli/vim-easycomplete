@@ -103,6 +103,7 @@ All supported languages:
 | html        | html                  | html-languageserver    | Yes       |
 | sh          | Bash                  | bash-language-server   | Yes       |
 | json        | JSON                  | json-languageserver    | Yes       |
+| yml         | Yaml                  | yaml-language-server   | Yes       |
 | py          | Python                | pyls                   | Yes       |
 | java        | Java                  | eclipse-jdt-ls         | Yes       |
 | go          | Go                    | gopls                  | Yes       |
