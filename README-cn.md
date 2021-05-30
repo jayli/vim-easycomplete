@@ -2,7 +2,7 @@
 
 中文 | [English](README.md)
 
-![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
+![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
 <img src="https://gw.alicdn.com/imgextra/i1/O1CN01ldj7Zb1xovXKSOfXY_!!6000000006491-2-tps-640-477.png" width=300>
 

@@ -4,7 +4,7 @@
 
 > A Fast Code Completion Plugin for VIM/NVIM with no redundancy.
 
-![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg)
+![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
 Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I remove all non-essential requirements and environment dependencies so that it has minimum redundancy. For example, it requires vim script only, and you don't even have to add one line of configuration if you want.
 
