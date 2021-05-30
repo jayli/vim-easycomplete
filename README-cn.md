@@ -60,21 +60,22 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 
 依赖 [LSP Server](https://microsoft.github.io/language-server-protocol/implementors/servers/) 的编程语言补全，通常需要对应 LSP 引擎支持，一般可以在 Vim 中执行 `:EasyCompleteInstallServer ${Plugin_Name}` 安装依赖。Plugin Name 为对应补全插件名称：
 
-| 插件名称         | 补全类型/支持语言     | LSP Server 命令      | 快捷安装 LSP 依赖  | 环境依赖       |
-|------------------|-----------------------|:--------------------:|:------------------:|:--------------:|
-| directory        | 文件路径补全          | 不需要               | 不需要             | 不需要         |
-| buf              | 关键词/字典补全       | 不需要               | 不需要             | 不需要         |
-| ts               | JavaScript/TypeScript | tsserver             | Yes                | node/npm       |
-| vim              | Vim                   | vim-language-server  | Yes                | node/npm       |
-| cpp              | C/C++                 | ccls                 | Yes                | ruby/brew      |
-| css              | CSS                   | css-languageserver   | Yes                | node/npm       |
-| sh               | Bash                  | bash-language-server | Yes                | node/npm       |
-| json             | JSON                  | json-languageserver  | Yes                | node/npm       |
-| py               | Python                | pyls                 | Yes                | python/pip     |
-| java             | Java                  | eclipse-jdt-ls       | Yes                | java/jdk       |
-| go               | Go                    | gopls                | Yes                | go             |
-| lua              | Lua                   | emmylua-ls           | Yes                | java/jdk       |
-| snips            | 代码片段补全          |ultisnips/vim-snippets| 不需要             | 不需要         |
+| 插件名称         | 补全类型/支持语言     | LSP Server 命令        | 快捷安装 LSP 依赖  | 环境依赖       |
+|------------------|-----------------------|:----------------------:|:------------------:|:--------------:|
+| directory        | 文件路径补全          | 不需要                 | 不需要             | 不需要         |
+| buf              | 关键词/字典补全       | 不需要                 | 不需要             | 不需要         |
+| ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm       |
+| vim              | Vim                   | vim-language-server    | Yes                | node/npm       |
+| cpp              | C/C++                 | ccls                   | Yes                | ruby/brew      |
+| css              | CSS                   | css-languageserver     | Yes                | node/npm       |
+| sh               | Bash                  | bash-language-server   | Yes                | node/npm       |
+| json             | JSON                  | json-languageserver    | Yes                | node/npm       |
+| py               | Python                | pyls                   | Yes                | python/pip     |
+| java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk       |
+| go               | Go                    | gopls                  | Yes                | go             |
+| lua              | Lua                   | emmylua-ls             | Yes                | java/jdk       |
+| grvy             | groovy                | groovy-language-server | Yes                | java/jdk       |
+| snips            | 代码片段补全          | ultisnips/vim-snippets | 不需要             | 不需要         |
 
 比如安装 tsserver，在 vim 中执行
 

@@ -106,6 +106,7 @@ All supported languages:
 | java        | Java                  | eclipse-jdt-ls         | Yes       |
 | go          | Go                    | gopls                  | Yes       |
 | lua         | Lua                   | emmylua-ls             | Yes       |
+| grvy        | groovy                | groovy-language-server | Yes       |
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |
 
 EasyComplete needs ultisnips and vim-snippets for snippets support. This

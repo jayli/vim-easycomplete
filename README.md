@@ -90,21 +90,22 @@ Or you can install a lsp server with specified plugin name (not recommended). Ta
 All supported languages:
 
 
-| Plugin Name      | Languages             | Language Server      | Installer          | Env requirements|
-|------------------|-----------------------|:--------------------:|:------------------:|:---------------:|
-| directory        | directory suggestion  | No Need              | No                 | None            |
-| buf              | keywords & dictionary | No Need              | No                 | None            |
-| ts               | JavaScript/TypeScript | tsserver             | Yes                | node/npm        |
-| vim              | Vim                   | vim-language-server  | Yes                | node/npm        |
-| cpp              | C/C++                 | ccls                 | Yes                | ruby/brew       |
-| css              | CSS                   | css-languageserver   | Yes                | node/npm        |
-| sh               | Bash                  | bash-language-server | Yes                | node/npm        |
-| json             | JSON                  | json-languageserver  | Yes                | node/npm        |
-| py               | Python                | pyls                 | Yes                | python/pip      |
-| java             | Java                  | eclipse-jdt-ls       | Yes                | java/jdk        |
-| go               | Go                    | gopls                | Yes                | go              |
-| lua              | Lua                   | emmylua-ls           | Yes                | java/jdk        |
-| snips            | Snippets Support      |ultisnips/vim-snippets| No                 | None            |
+| Plugin Name      | Languages             | Language Server        | Installer          | Env requirements|
+|------------------|-----------------------|:----------------------:|:------------------:|:---------------:|
+| directory        | directory suggestion  | No Need                | No                 | None            |
+| buf              | keywords & dictionary | No Need                | No                 | None            |
+| ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm        |
+| vim              | Vim                   | vim-language-server    | Yes                | node/npm        |
+| cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |
+| css              | CSS                   | css-languageserver     | Yes                | node/npm        |
+| sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
+| json             | JSON                  | json-languageserver    | Yes                | node/npm        |
+| py               | Python                | pyls                   | Yes                | python/pip      |
+| java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk        |
+| go               | Go                    | gopls                  | Yes                | go              |
+| lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
+| grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
+| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | None            |
 
 More info about semantic completion for each supported language:
 
