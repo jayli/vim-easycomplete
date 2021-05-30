@@ -139,6 +139,15 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'grvy',
+      \ 'whitelist': ['groovy'],
+      \ 'completor': 'easycomplete#sources#grvy#completor',
+      \ 'constructor' :'easycomplete#sources#grvy#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#grvy#GotoDefinition',
+      \ 'command': 'groovy-language-server'
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'lua',
       \ 'whitelist': ['lua'],
       \ 'completor': 'easycomplete#sources#lua#completor',
