@@ -295,9 +295,11 @@ function! easycomplete#util#FuzzySearch(needle, haystack)
   " 性能测试：356 次调用实测情况
   "  - s:FuzzySearchRegx 速度最快
   "  - s:FuzzySearchCustom 速度次之
+  "  - s:FuzzySearchSpeedUp 速度次之
   "  - s:FuzzySearchPy 速度最差
   return s:FuzzySearchRegx(a:needle, a:haystack) " 0.027728
   return s:FuzzySearchCustom(a:needle, a:haystack) " 0.041983
+  return s:FuzzySearchSpeedUp(a:needle, a:haystack) " 0.054845
   return s:FuzzySearchPy(a:needle, a:haystack) " 0.088703
 endfunction
 
@@ -319,6 +321,36 @@ function! s:FuzzySearchRegx(needle, haystack)
   else
     return v:false
   endif
+endfunction
+
+function! s:FuzzySearchSpeedUp(needle, haystack)
+  let tlen = strlen(a:haystack)
+  let qlen = strlen(a:needle)
+  if qlen > tlen
+    return v:false
+  endif
+  if qlen == tlen
+    return a:needle ==? a:haystack ? v:true : v:false
+  endif
+
+  let needle_ls = easycomplete#util#str2list(tolower(a:needle))
+  let haystack_ls = easycomplete#util#str2list(tolower(a:haystack))
+
+  let cursor_n = 0
+  let cursor_h = 0
+  let matched = v:false
+
+  while cursor_h < len(haystack_ls)
+    if haystack_ls[cursor_h] == needle_ls[cursor_n]
+      if cursor_n == len(needle_ls) - 1
+        let matched = v:true
+        break
+      endif
+      let cursor_n += 1
+    endif
+    let cursor_h += 1
+  endwhile
+  return matched
 endfunction
 
 function! s:FuzzySearchCustom(needle, haystack)
