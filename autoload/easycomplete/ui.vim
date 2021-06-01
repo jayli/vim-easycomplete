@@ -12,7 +12,7 @@ function! easycomplete#ui#SetScheme()
   let l:scheme_config = {
         \   'dark':[[111, 235],[255, 238],[-1,  235],[-1,  234]],
         \   'light':[[234, 251],[255, 26],[-1,  251],[-1,  247]],
-        \   'rider':[[249, 237],[231, 25],[-1,  237],[-1,  239]],
+        \   'rider':[[251, 237],[231, 25],[-1,  237],[-1,  239]],
         \   'sharp':[[255, 237],[235, 255],[-1, 245],[-1,  255]]
         \ }
   if has_key(l:scheme_config, g:easycomplete_scheme)
