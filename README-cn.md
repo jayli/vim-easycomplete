@@ -77,6 +77,7 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 | go               | Go                    | gopls                  | Yes                | go             |
 | rb               | Ruby                  | solargraph             | Yes                | ruby/bundle    |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk       |
+| nim              | Nim                   | nimlsp                 | Yes                | nim/nimble     |
 | grvy             | groovy                | groovy-language-server | Yes                | java/jdk       |
 | snips            | 代码片段补全          | ultisnips/vim-snippets | 不需要             | 不需要         |
 
@@ -124,6 +125,7 @@ E319: No "python3" provider found. Run ":checkhealth provider"
 - Groovy：依赖[groovy-language-server](https://github.com/prominic/groovy-language-server)。
 - Yaml：依赖 [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)。
 - Ruby: 依赖 [solargraph](https://github.com/castwide/solargraph)。
+- Nim：依赖 [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) 的下载往往很慢，最好手动安装。
 
 ### 六）支持新语言的插件开发
 

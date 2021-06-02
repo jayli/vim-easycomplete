@@ -158,6 +158,15 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'nim',
+      \ 'whitelist': ['nim'],
+      \ 'completor': 'easycomplete#sources#nim#completor',
+      \ 'constructor' :'easycomplete#sources#nim#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#nim#GotoDefinition',
+      \ 'command': 'nimlsp'
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
       \ 'whitelist': ['groovy'],
       \ 'completor': 'easycomplete#sources#grvy#completor',

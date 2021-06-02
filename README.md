@@ -107,6 +107,7 @@ All supported languages:
 | go               | Go                    | gopls                  | Yes                | go              |
 | rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
+| nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
 | grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
 | snips            | Snippets Support      | ultisnips/vim-snippets | No                 | None            |
 
@@ -126,6 +127,7 @@ More info about semantic completion for each supported language:
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
 - Ruby: [solargraph](https://github.com/castwide/solargraph) required.
+- Nim: [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) downloading is very slow, You'd better intall minlsp manually.
 
 #### Snippet Support
 

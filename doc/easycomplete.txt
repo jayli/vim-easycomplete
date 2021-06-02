@@ -109,6 +109,7 @@ All supported languages:
 | go          | Go                    | gopls                  | Yes       |
 | rb          | Ruby                  | solargraph             | Yes       |
 | lua         | Lua                   | emmylua-ls             | Yes       |
+| nim         | Nim                   | nimlsp                 | Yes       |
 | grvy        | groovy                | groovy-language-server | Yes       |
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |
 
