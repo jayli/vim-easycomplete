@@ -107,6 +107,7 @@ All supported languages:
 | py          | Python                | pyls                   | Yes       |
 | java        | Java                  | eclipse-jdt-ls         | Yes       |
 | go          | Go                    | gopls                  | Yes       |
+| rb          | Ruby                  | solargraph             | Yes       |
 | lua         | Lua                   | emmylua-ls             | Yes       |
 | grvy        | groovy                | groovy-language-server | Yes       |
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |

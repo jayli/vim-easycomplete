@@ -1,0 +1,24 @@
+if exists('g:easycomplete_rb')
+  finish
+endif
+let g:easycomplete_rb = 1
+
+function! easycomplete#sources#ruby#constructor(opt, ctx)
+  call easycomplete#RegisterLspServer(a:opt, {
+      \ 'name': 'solargraph',
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'stdio']},
+      \ 'initialization_options':  {
+      \     'diagnostics': 'true'
+      \ },
+      \ 'allowlist': ['ruby'],
+      \ })
+endfunction
+
+function! easycomplete#sources#ruby#completor(opt, ctx) abort
+  return easycomplete#DoLspComplete(a:opt, a:ctx)
+endfunction
+
+function! easycomplete#sources#ruby#GotoDefinition(...)
+  return easycomplete#DoLspDefinition(["rb"])
+endfunction
+

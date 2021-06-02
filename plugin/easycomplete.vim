@@ -176,6 +176,15 @@ augroup easycomplete#register
       \  })
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
+      \ 'name': 'rb',
+      \ 'whitelist': ['ruby'],
+      \ 'completor': 'easycomplete#sources#ruby#completor',
+      \ 'constructor' :'easycomplete#sources#ruby#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#ruby#GotoDefinition',
+      \ 'command': 'solargraph'
+      \  })
+
+  au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',

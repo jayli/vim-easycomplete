@@ -105,6 +105,7 @@ All supported languages:
 | py               | Python                | pyls                   | Yes                | python/pip      |
 | java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk        |
 | go               | Go                    | gopls                  | Yes                | go              |
+| rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
 | grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
 | snips            | Snippets Support      | ultisnips/vim-snippets | No                 | None            |
@@ -124,6 +125,7 @@ More info about semantic completion for each supported language:
 - Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
+- Ruby: [solargraph](https://github.com/castwide/solargraph) required.
 
 #### Snippet Support
 
