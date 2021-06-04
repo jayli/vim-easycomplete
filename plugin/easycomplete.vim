@@ -50,7 +50,7 @@ augroup easycomplete#register
 
   au User easycomplete_plugin call easycomplete#RegisterSource({
       \ 'name': 'ts',
-      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
