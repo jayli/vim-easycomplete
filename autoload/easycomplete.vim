@@ -61,6 +61,9 @@ function! s:InitLocalVars()
   " Global CompleteChanged Event：异步回调显示 popup 时借用
   let g:easycomplete_completechanged_event = {}
 
+  " 用来判断是否是 c-v 粘贴
+  let g:easycomplete_insert_char = ''
+
   " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单，结构
   " 如下：
   " [
@@ -150,6 +153,7 @@ function! s:BindingTypingCommandOnce()
     autocmd TextChangedI * call easycomplete#typing()
     " SecondComplete Entry
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
+    autocmd InsertCharPre * call easycomplete#InsertCharPre()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
@@ -635,6 +639,14 @@ function! s:TriggerAlways()
   return flag
 endfunction
 
+function! easycomplete#InsertCharPre()
+  let g:easycomplete_insert_char = v:char
+endfunction
+
+function! s:ResetInsertChar()
+  let g:easycomplete_insert_char = ""
+endfunction
+
 " 正常输入和退格监听函数
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
@@ -658,6 +670,12 @@ function! easycomplete#typing()
       call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
             \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
     endif
+    return ""
+  endif
+
+  " 判断是否是 C-V 粘贴
+  call s:AsyncRun(function('s:ResetInsertChar'), [], 10)
+  if empty(g:easycomplete_insert_char)
     return ""
   endif
 
