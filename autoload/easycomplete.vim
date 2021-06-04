@@ -1093,8 +1093,8 @@ function! easycomplete#TypeEnterWithPUM()
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   " 选中 snippet
   if ( pumvisible() && !empty(l:item) && s:SnipSupports() &&
-        \ get(l:item, "menu") ==# "[S]" && get(l:item, "word") ==# l:word )
-    call s:ExpandSnipManually(l:word)
+        \ get(l:item, "menu") ==# "[S]" )
+    call s:ExpandSnipManually(get(l:item, "word"))
     call s:zizz()
     return "\<C-Y>"
   endif
