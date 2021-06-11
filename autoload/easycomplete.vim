@@ -994,6 +994,9 @@ endfunction
 
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
+  if easycomplete#CompleteCursored()
+    return
+  endif
   if easycomplete#IsBacking() && s:TriggerAlways()
     call s:CloseCompleteInfo()
     call s:CloseCompletionMenu()
