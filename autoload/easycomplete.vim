@@ -995,6 +995,7 @@ endfunction
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
   if easycomplete#CompleteCursored()
+    call easycomplete#SetCompletedItem(item)
     return
   endif
   if easycomplete#IsBacking() && s:TriggerAlways()
