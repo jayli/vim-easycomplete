@@ -994,10 +994,6 @@ endfunction
 
 function! easycomplete#CompleteChanged()
   let item = v:event.completed_item
-  if easycomplete#CompleteCursored()
-    call easycomplete#SetCompletedItem(item)
-    return
-  endif
   if easycomplete#IsBacking() && s:TriggerAlways()
     call s:CloseCompleteInfo()
     call s:CloseCompletionMenu()
@@ -1007,7 +1003,7 @@ function! easycomplete#CompleteChanged()
   " SecondComplete 的前进态走这里，后退态走 easycomplete#typing 函数
   " 为了避免循环调用: CompleteChanged → complete() → CompleteChanged
   " 用 zizzing 来判断 CompleteTypingMatch 是否需要执行
-  if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
+  if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing() && empty(item)
     let g:easycomplete_start = reltime()
     call s:CompleteMatchAction()
   endif
