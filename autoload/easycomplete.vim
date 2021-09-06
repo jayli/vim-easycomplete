@@ -10,7 +10,8 @@ let g:easycomplete_script_loaded = 1
 
 augroup easycomplete#autocmd
   autocmd!
-  autocmd User easycomplete_plugin silent
+  autocmd User easycomplete_default_plugin silent
+  autocmd User easycomplete_custom_plugin silent
 augroup END
 
 function! s:InitLocalVars()
@@ -106,7 +107,8 @@ function! easycomplete#Enable()
   endif
   let b:easycomplete_loaded_done= 1
 
-  doautocmd <nomodeline> User easycomplete_plugin
+  doautocmd <nomodeline> User easycomplete_default_plugin
+  doautocmd <nomodeline> User easycomplete_custom_plugin
   call s:InitLocalVars()
   " 要注意绑定顺序：
   "  - 必须要确保typing command先绑定

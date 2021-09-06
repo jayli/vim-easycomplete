@@ -15,7 +15,8 @@ function! easycomplete#sources#tss#constructor(opt, ctx)
           \ 'semantic_highlight': {},
           \ })
   else
-    echo printf("'vim-language-server' is not avilable, Please install: '%s'", 'npm -g install vim-language-server')
+    call s:log(printf("'typescript-language-server' is not avilable, Please install: '%s'",
+          \ 'npm -g install typescript-language-server'))
   endif
 endfunction
 

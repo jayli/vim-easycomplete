@@ -5,10 +5,10 @@
 "                :helptags ~/.vim/doc
 "                :h EasyComplete
 
-if get(g:, 'easycomplete_plugin_init')
+if get(g:, 'easycomplete_default_plugin_init')
   finish
 endif
-let g:easycomplete_plugin_init = 1
+let g:easycomplete_default_plugin_init = 1
 
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
@@ -36,19 +36,19 @@ endif
 " Buildin Plugins
 augroup easycomplete#register
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'directory',
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#buf#completor',
       \ })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'ts',
       \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
@@ -57,7 +57,7 @@ augroup easycomplete#register
       \ 'command': 'tsserver'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
       \ 'whitelist': ['vim'],
       \ 'completor': 'easycomplete#sources#vim#completor',
@@ -68,7 +68,7 @@ augroup easycomplete#register
       \  })
       " \ 'trigger' : 'always'
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
       \ 'whitelist': ["c", "cc", "cpp", "c++", "objc", "objcpp"],
       \ 'completor': 'easycomplete#sources#cpp#completor',
@@ -82,7 +82,7 @@ augroup easycomplete#register
   " snippets-supports
   " https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support
   " 用户自行安装
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'css',
       \ 'whitelist': ['css', 'less', 'sass', 'scss'],
       \ 'completor': 'easycomplete#sources#css#completor',
@@ -92,7 +92,7 @@ augroup easycomplete#register
       \ 'semantic_triggers':['[^:]:$']
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
       \ 'whitelist': ['html'],
       \ 'completor': 'easycomplete#sources#html#completor',
@@ -102,7 +102,7 @@ augroup easycomplete#register
       \ 'semantic_triggers':['[^<]<$']
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'yml',
       \ 'whitelist': ['yaml'],
       \ 'completor': 'easycomplete#sources#yaml#completor',
@@ -111,7 +111,7 @@ augroup easycomplete#register
       \ 'command': 'yaml-language-server',
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'sh',
       \ 'whitelist': ['sh'],
       \ 'completor': 'easycomplete#sources#bash#completor',
@@ -120,7 +120,7 @@ augroup easycomplete#register
       \ 'command': 'bash-language-server',
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
       \ 'whitelist': ['json'],
       \ 'completor': 'easycomplete#sources#json#completor',
@@ -130,7 +130,7 @@ augroup easycomplete#register
       \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
       \ 'completor': 'easycomplete#sources#py#completor',
@@ -139,7 +139,7 @@ augroup easycomplete#register
       \ 'command': 'pyls'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'java',
       \ 'whitelist': ['java'],
       \ 'completor': 'easycomplete#sources#java#completor',
@@ -148,7 +148,7 @@ augroup easycomplete#register
       \ 'command': 'eclipse-jdt-ls'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'go',
       \ 'whitelist': ['go'],
       \ 'completor': 'easycomplete#sources#go#completor',
@@ -157,7 +157,7 @@ augroup easycomplete#register
       \ 'command': 'gopls'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'nim',
       \ 'whitelist': ['nim'],
       \ 'completor': 'easycomplete#sources#nim#completor',
@@ -166,7 +166,7 @@ augroup easycomplete#register
       \ 'command': 'nimlsp'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
       \ 'whitelist': ['groovy'],
       \ 'completor': 'easycomplete#sources#grvy#completor',
@@ -175,7 +175,7 @@ augroup easycomplete#register
       \ 'command': 'groovy-language-server'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'lua',
       \ 'whitelist': ['lua'],
       \ 'completor': 'easycomplete#sources#lua#completor',
@@ -184,7 +184,7 @@ augroup easycomplete#register
       \ 'command': 'emmylua-ls'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rb',
       \ 'whitelist': ['ruby'],
       \ 'completor': 'easycomplete#sources#ruby#completor',
@@ -193,7 +193,7 @@ augroup easycomplete#register
       \ 'command': 'solargraph'
       \  })
 
-  au User easycomplete_plugin call easycomplete#RegisterSource({
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
