@@ -1032,7 +1032,11 @@ endfunction
 
 function! s:ShowCompleteInfo(info)
   if easycomplete#util#TagBarExists()
-    call tagbar#StopAutoUpdate()
+    try
+      call tagbar#StopAutoUpdate()
+    catch /^Vim\%((\a\+)\)\=:E216/
+      " Do Nothing
+    endtry
   endif
   call easycomplete#popup#MenuPopupChanged(a:info)
   return
