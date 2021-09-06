@@ -25,7 +25,7 @@ Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD. For n
 
 For vim-plug:
 
-```
+```vim
 Plug 'jayli/vim-easycomplete'
 ```
 
@@ -33,7 +33,7 @@ Run `:PlugInstall`.
 
 For dein.vim
 
-```
+```vim
 call dein#add('jayli/vim-easycomplete')
 ```
 
@@ -41,7 +41,7 @@ call dein#add('jayli/vim-easycomplete')
 
 It use Tab to trigger completion suggestions. You can change this setting by
 
-```
+```vim
 let g:easycomplete_tab_trigger="<c-space>"
 ```
 
@@ -77,13 +77,13 @@ EasyComplete support keywords/dictionary/directory completion by default.
 
 Most Language require LSP Server. Install missing LSP Server with `:EasyCompleteInstallServer` for current filetype (recommended). LSP Server will be installed in `~/.config/vim-easycomplete/servers`.
 
-```
+```vim
 :EasyCompleteInstall
 ```
 
 Or you can install a lsp server with specified plugin name (not recommended). Take typescript/javascript for example:
 
-```
+```vim
 :EasyCompleteInstallServer ts
 ```
 
@@ -133,14 +133,14 @@ More info about semantic completion for each supported language:
 
 EasyComplete needs [ultisnips](https://github.com/SirVer/ultisnips) and [vim-snippets](https://github.com/honza/vim-snippets) for snippets support. This two plugin is compatible with EasyComplete out of the box. Install with vim-plug:
 
-```
+```vim
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 ```
 
 You may meet this error in neovim 0.4.4 with ultisnips:
 
-```
+```vim
 Error detected while processing /home/xxx/.vim/plugged/ultisnips/autoload/UltiSnips.vim:
 line    7:
 E319: No "python3" provider found. Run ":checkhealth provider"
@@ -152,7 +152,7 @@ Which means python neovim package is missing. Fix it via `pip install neovim`.
 
 Take snip as an example ([source file](https://github.com/jayli/vim-easycomplete/blob/master/autoload/easycomplete/sources/snips.vim)) without lsp server.
 
-```
+```vim
 au User easycomplete_custom_plugin call easycomplete#RegisterSource({
     \ 'name': 'snips',
     \ 'whitelist': ['*'],
@@ -165,7 +165,7 @@ Another example with lsp server support is easier. [source file](https://github.
 
 You can redefine a completion plugin via `easycomplete_custom_plugin` event with the same name of default lsp plugin. For example. We replace `ts` plugin's lsp server `tsserver` by `typescript-language-server`. Copy this code in your `.vimrc`:
 
-```
+```vim
 au User easycomplete_custom_plugin call easycomplete#RegisterSource({
     \ 'name': 'ts',
     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
