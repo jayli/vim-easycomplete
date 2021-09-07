@@ -36,8 +36,8 @@ function! s:InitCommand()
   autocmd!
   autocmd QuitPre * call easycomplete#log#quit()
 
-  command! -nargs=0 -complete=command CleanLog call easycomplete#log#clean()
-  command! -nargs=0 -complete=command CloseLog call easycomplete#log#close()
+  command! -nargs=? -complete=command CleanLog call easycomplete#log#clean()
+  command! -nargs=? -complete=command CloseLog call easycomplete#log#close()
   command! -nargs=1 -complete=command Log call easycomplete#log#log(<args>)
 
 endfunction

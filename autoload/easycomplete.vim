@@ -335,6 +335,9 @@ function! s:CompleteMenuFilter(all_menu, word, maxlength)
   let count_index = 0
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
+    if item_word[0] == "_"
+      let item_word = substitute(item_word, "_\\+", "", "")
+    endif
     if strlen(item_word) < strlen(a:word) | continue | endif
     if count_index > a:maxlength | break | endif
     if stridx(item_word, word) == 0 && count_index < dam
