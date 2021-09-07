@@ -92,8 +92,8 @@ All supported languages:
 
 | Plugin Name      | Languages             | Language Server        | Installer          | Env requirements|
 |------------------|-----------------------|:----------------------:|:------------------:|:---------------:|
-| directory        | directory suggestion  | No Need                | No                 | None            |
-| buf              | keywords & dictionary | No Need                | No                 | None            |
+| directory        | directory suggestion  | No Need                | No Need            | None            |
+| buf              | keywords & dictionary | No Need                | No Need            | None            |
 | ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm        |
 | vim              | Vim                   | vim-language-server    | Yes                | node/npm        |
 | cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |

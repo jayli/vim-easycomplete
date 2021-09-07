@@ -1115,8 +1115,15 @@ function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
+  " 选中目录
+  if (pumvisible() && !empty(l:item) && get(l:item, "menu") ==# "[Dir]")
+    call s:CloseCompletionMenu()
+    call s:flush()
+    call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
+    return "\<C-Y>"
+  endif
   " 选中 snippet
-  if ( pumvisible() && !empty(l:item) && s:SnipSupports() &&
+  if (pumvisible() && !empty(l:item) && s:SnipSupports() &&
         \ get(l:item, "menu") ==# "[S]" )
     call s:ExpandSnipManually(get(l:item, "word"))
     call s:zizz()
@@ -1162,7 +1169,7 @@ function! s:ExpandSnipManually(word)
   endtry
 endfunction
 
-function! s:SendKeys( keys )
+function! s:SendKeys(keys)
   call feedkeys(a:keys, 'in')
 endfunction
 
