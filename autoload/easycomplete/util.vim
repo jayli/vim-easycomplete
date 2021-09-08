@@ -84,7 +84,7 @@ function! easycomplete#util#call(method, args) abort
       call call(a:method, a:args)
     endif
     let g:easycomplete_popup_timer = -1
-    redraw
+    " redraw " bugfix: redraw 会造成光标的闪烁
   catch /.*/
     return 0
   endtry
