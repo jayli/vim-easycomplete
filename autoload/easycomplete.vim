@@ -820,12 +820,22 @@ endfunction
 function! easycomplete#RegisterLspServer(opt, config)
   let cmd = get(a:opt, 'command', '')
   if empty(cmd)
-    call easycomplete#util#info('Plugin command name is not defined.')
+    let l:not_defined_msg = 'Plugin command name is not defined.'
+    " Bugfix for #83
+    if g:env_is_nvim
+      call s:AsyncRun(function("easycomplete#util#info"), [l:not_defined_msg], 1)
+    else
+      call easycomplete#util#info(l:not_defined_msg)
+    endif
     return
   endif
   if !easycomplete#installer#executable(cmd)
-    call easycomplete#util#info("'".cmd."' is not avilable.",
-          \ "Please Install: ':EasyCompleteInstallServer'")
+    let l:lsp_installing_msg = "'".cmd."' is not avilable. Install: ':EasyCompleteInstallServer'"
+    if g:env_is_nvim
+      call s:AsyncRun(function("easycomplete#util#info"), [l:lsp_installing_msg], 1)
+    else
+      call easycomplete#util#info(l:lsp_installing_msg)
+    endif
     return
   endif
   let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
