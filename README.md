@@ -146,7 +146,7 @@ line    7:
 E319: No "python3" provider found. Run ":checkhealth provider"
 ```
 
-Which means python neovim package is missing. Fix it via `pip install neovim`.
+Which means python neovim package is missing. Fix it via `pip3 install neovim`.
 
 ### Add custom completion plugin
 
@@ -170,7 +170,7 @@ au User easycomplete_custom_plugin call easycomplete#RegisterSource({
     \ 'name': 'ts',
     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
     \ 'completor': function('g:Tss_Completor'),
-    \ 'constructor' :function('g:Tss_Constructor'),
+    \ 'constructor': function('g:Tss_Constructor'),
     \ 'gotodefinition': function('g:Tss_GotoDefinition'),
     \ 'command': 'typescript-language-server'
     \  })
