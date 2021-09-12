@@ -36,3 +36,11 @@ function! easycomplete#sources#snips#constructor(...)
   " Do Nothing
 endfunction
 
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:once(...)
+  return call('easycomplete#util#once', a:000)
+endfunction
+

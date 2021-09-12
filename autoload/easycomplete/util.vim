@@ -541,6 +541,14 @@ function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
 
+function! easycomplete#util#once(...)
+  if get(g:, 'easycomplete_log_once')
+    return
+  endif
+  let g:easycomplete_log_once = 1
+  return call('easycomplete#util#log', a:000)
+endfunction
+
 function! easycomplete#util#log(...)
   let l:res = call('s:NormalizeLogMsg', a:000)
   call s:MsgLog(l:res, 'WarningMsg')
