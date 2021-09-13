@@ -725,13 +725,13 @@ function! easycomplete#util#HasKey(obj,keyname)
 endfunction
 
 function! easycomplete#util#AutoLoadDict()
-	for buf in getbufinfo()
-		let filetype = getbufvar(buf.bufnr,'&filetype')
-		for path in split(globpath(&rtp,
-					\ '**/vim-easycomplete/dict/'. filetype . '.*'),"\n")
-			if len(path) != 0 && strridx(&dictionary, path) < 0
-				silent execute 'setlocal dictionary+='.fnameescape(path)
-			endif
-		endfor
-	endfor
+  for buf in getbufinfo()
+    let filetype = getbufvar(buf.bufnr,'&filetype')
+    for path in split(globpath(&rtp,
+          \ '**/vim-easycomplete/dict/'. filetype . '.*'),"\n")
+      if len(path) != 0 && strridx(&dictionary, path) < 0
+        silent execute 'setlocal dictionary+='.fnameescape(path)
+      endif
+    endfor
+  endfor
 endfunction
