@@ -154,9 +154,9 @@ Take snip as an example ([source file](https://github.com/jayli/vim-easycomplete
 
 ```vim
 au User easycomplete_custom_plugin call easycomplete#RegisterSource({
-    \ 'name': 'snips',
-    \ 'whitelist': ['*'],
-    \ 'completor': 'easycomplete#sources#snips#completor',
+    \ 'name':        'snips',
+    \ 'whitelist':   ['*'],
+    \ 'completor':   'easycomplete#sources#snips#completor',
     \ 'constructor': 'easycomplete#sources#snips#constructor',
     \  })
 ```
