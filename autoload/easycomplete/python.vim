@@ -13,3 +13,12 @@ function! easycomplete#python#FuzzySearchPy(needle, haystack)
   py3 vim.command("let ret = %s"% EasyCompleteUtil.fuzzy_search(vim.eval("needle"), vim.eval("haystack")))
   return ret
 endfunction
+
+function! easycomplete#python#GetSnippetsCodeInfo(snip_object)
+  echom a:snip_object.filepath
+  echom a:snip_object.line_number
+  py3 filepath = vim.eval("a:snip_object.filepath")
+  py3 line_number = int(vim.eval("a:snip_object.line_number"))
+  py3 vim.command('let ret = %s'% EasyCompleteUtil.snippets_code_info(filepath, line_number))
+  return ret
+endfunction

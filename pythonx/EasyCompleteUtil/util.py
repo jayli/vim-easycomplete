@@ -54,4 +54,7 @@ def fuzzy_search(needle, haystack):
             return 0
         return 1
 
+def snippets_code_info(filename, line_number):
+    return json.dumps('11\'"111')
+
 # vim:ts=4:sw=4:sts=4

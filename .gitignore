@@ -2,3 +2,4 @@
 .netrwhist
 ./bundle/YouCompleteMe
 ./bundle/YouCompleteMe/*
+pythonx/EasyCompleteUtil/__pycache__/
