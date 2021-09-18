@@ -25,6 +25,9 @@ def normalize_sort(items):
 
 # Fuzzy search
 def fuzzy_search(needle, haystack):
+    """
+    判断是否符合模糊匹配的规则，实测性能不如 viml 的实现
+    """
     flag = 1
     tlen = len(haystack)
     qlen = len(needle)
@@ -55,6 +58,9 @@ def fuzzy_search(needle, haystack):
         return 1
 
 def snippets_code_info(filename, line_number):
+    """
+    根据文件路径和行号，从标准 snippets 格式中获得展开后的语义化的代码片段
+    """
     return json.dumps('11\'"111')
 
 # vim:ts=4:sw=4:sts=4

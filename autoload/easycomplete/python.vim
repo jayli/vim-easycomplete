@@ -15,8 +15,8 @@ function! easycomplete#python#FuzzySearchPy(needle, haystack)
 endfunction
 
 function! easycomplete#python#GetSnippetsCodeInfo(snip_object)
-  echom a:snip_object.filepath
-  echom a:snip_object.line_number
+  " echom a:snip_object.filepath
+  " echom a:snip_object.line_number
   py3 filepath = vim.eval("a:snip_object.filepath")
   py3 line_number = int(vim.eval("a:snip_object.line_number"))
   py3 vim.command('let ret = %s'% EasyCompleteUtil.snippets_code_info(filepath, line_number))
