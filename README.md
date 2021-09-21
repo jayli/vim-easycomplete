@@ -8,7 +8,7 @@
 
 Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I remove all non-essential requirements and environment dependencies so that it has minimum redundancy. For example, it requires vim script only, and you don't even have to add one line of configuration if you want.
 
-<img src="screenshot.gif" width=580 />
+![](screenshot.gif)
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
