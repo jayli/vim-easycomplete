@@ -1583,6 +1583,9 @@ function! easycomplete#AutoLoadDict()
 endfunction
 
 function! s:SnipSupports()
+  if !has("python3")
+    return v:false
+  endif
   try
     call funcref("UltiSnips#RefreshSnippets")
   catch /^Vim\%((\a\+)\)\=:E700/
