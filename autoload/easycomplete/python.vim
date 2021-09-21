@@ -29,7 +29,9 @@ function! easycomplete#python#FuzzySearchPy(needle, haystack)
   if !s:PreparePythonEnvironment() | return 0 | endif
   let needle = tolower(a:needle)
   let haystack = tolower(a:haystack)
-  py3 vim.command("let ret = %s"% EasyCompleteUtil.fuzzy_search(vim.eval("needle"), vim.eval("haystack")))
+  py3 needle = vim.eval("needle")
+  py3 haystack = vim.eval("haystack")
+  py3 vim.command("let ret = %s"% EasyCompleteUtil.fuzzy_search(needle, haystack))
   return ret
 endfunction
 
