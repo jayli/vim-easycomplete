@@ -794,7 +794,7 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   "
   " 折中设置 dam 为 100
   let regx_com_times = 0
-  let dam = 50 
+  let dam = 100
   let count_index = 0
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
@@ -826,11 +826,9 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   "   endif
   " endfor
 
-  call s:log(regx_com_times, count_index)
-
   let result = original_matching_menu + otherwise_fuzzymatching
   let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
-  return filtered_menu 
+  return filtered_menu
 endfunction
 
 function! s:GetItemWord(item)

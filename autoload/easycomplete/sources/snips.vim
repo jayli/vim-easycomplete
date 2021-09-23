@@ -27,6 +27,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     " call s:log(code_info)
     call add(suggestions, {
           \ 'word' : trigger,
+          \ 'abbr' : trigger . '~',
           \ 'kind' : 'S',
           \ 'menu' : '[S]',
           \ 'info' : description
