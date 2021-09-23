@@ -35,6 +35,15 @@ function! easycomplete#python#FuzzySearchPy(needle, haystack)
   return ret
 endfunction
 
+function! easycomplete#python#CompleteMenuFilterPy(all_menu, word, maxlength)
+  if !s:PreparePythonEnvironment() | return a:all_menu | endif
+  py3 all_menu = vim.eval("a:all_menu")
+  py3 word = vim.eval("a:word")
+  py3 maxlength = int(vim.eval("a:maxlength"))
+  py3 vim.command('let ret = %s'% EasyCompleteUtil.complete_menu_filter(all_menu, word, maxlength))
+  return ret
+endfunction
+
 function! easycomplete#python#GetSnippetsCodeInfo(snip_object)
   if !s:PreparePythonEnvironment() | return "" | endif
   py3 filepath = vim.eval("a:snip_object.filepath")

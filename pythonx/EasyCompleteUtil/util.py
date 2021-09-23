@@ -63,4 +63,9 @@ def snippets_code_info(filename, line_number):
     """
     return json.dumps('11\'"111')
 
+def complete_menu_filter(all_menu, word, maxlength):
+    """
+    """
+    return json.dumps(all_menu)
+
 # vim:ts=4:sw=4:sts=4

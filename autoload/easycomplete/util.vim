@@ -313,14 +313,10 @@ function! s:FuzzySearchRegx(needle, haystack)
     return a:needle ==? a:haystack ? v:true : v:false
   endif
 
-  let needle_ls = map(easycomplete#util#str2list(tolower(a:needle)), {_, val -> nr2char(val)})
-  let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]*")
+  let needle_ls = map(easycomplete#util#str2list(a:needle), { _, val -> nr2char(val)})
+  let needle_ls_regx = "^" . join(needle_ls, "[a-zA-Z0-9_#:\.]*")
 
-  if match(tolower(a:haystack), needle_ls_regx) >= 0
-    return v:true
-  else
-    return v:false
-  endif
+  return (match(a:haystack, needle_ls_regx) == 0) ? v:true : v:false
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)
@@ -735,3 +731,156 @@ function! easycomplete#util#AutoLoadDict()
     endfor
   endfor
 endfunction
+
+" 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
+" maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
+" 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
+function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
+  return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
+  return a:all_menu
+  return s:CompleteMenuSimpleFilter(a:all_menu, a:word, a:maxlength)
+  return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
+endfunction
+
+function! s:CompleteMenuSimpleFilter(all_menu, word, maxlength)
+  let word = a:word
+  if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
+    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
+  endif
+
+  " 完整匹配
+  let original_matching_menu = []
+  " 非完整匹配
+  let otherwise_matching_menu = []
+  " 模糊匹配结果
+  let otherwise_fuzzymatching = []
+
+  let count_index = 0
+  for item in deepcopy(a:all_menu)
+    let item_word = s:GetItemWord(item)
+    if strlen(item_word) < strlen(a:word) | continue | endif
+    if count_index > a:maxlength | break | endif
+    if stridx(item_word, word) == 0
+      call add(original_matching_menu, item)
+      let count_index += 1
+    else
+      call add(otherwise_matching_menu, item)
+    endif
+  endfor
+
+  return original_matching_menu
+endfunction
+
+function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
+  let word = a:word
+  if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
+    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
+  endif
+
+  " 完整匹配
+  let original_matching_menu = []
+  " 非完整匹配
+  let otherwise_matching_menu = []
+  " 模糊匹配结果
+  let otherwise_fuzzymatching = []
+
+  " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
+  " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
+  " 精度越好，但下面这两种情况往往会大面积存在
+  "
+  " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
+  " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
+  "   最好，这时 dam 越小越好
+  "
+  " 折中设置 dam 为 100
+  let regx_com_times = 0
+  let dam = 50 
+  let count_index = 0
+  for item in deepcopy(a:all_menu)
+    let item_word = s:GetItemWord(item)
+    if item_word[0] == "_"
+      let item_word = substitute(item_word, "_\\+", "", "")
+    endif
+    if strlen(item_word) < strlen(a:word) | continue | endif
+    if count_index > a:maxlength | break | endif
+    let regx_com_times += 1
+    if stridx(item_word, word) == 0 && count_index < dam
+      call add(original_matching_menu, item)
+      let count_index += 1
+    elseif s:FuzzySearchRegx(word, item_word)
+      call add(otherwise_fuzzymatching, item)
+      let count_index += 1
+    else
+      call add(otherwise_matching_menu, item)
+    endif
+  endfor
+
+  " for item in otherwise_matching_menu
+  "   let item_word = s:GetItemWord(item)
+  "   if strlen(item_word) < strlen(a:word) | continue | endif
+  "   if count_index > a:maxlength | break | endif
+  "   let regx_com_times += 1
+  "   if s:FuzzySearchRegx(word, item_word)
+  "     call add(otherwise_fuzzymatching, item)
+  "     let count_index += 1
+  "   endif
+  " endfor
+
+  call s:log(regx_com_times, count_index)
+
+  let result = original_matching_menu + otherwise_fuzzymatching
+  let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
+  return filtered_menu 
+endfunction
+
+function! s:GetItemWord(item)
+  let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
+  let t_str = easycomplete#util#TrimWavyLine(t_str)
+  return t_str
+endfunction
+
+" TODO 性能优化，4 次调用 0.08 s
+function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
+  let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
+        \ a:entry1.abbr : get(a:entry1, "word","")
+  let k2 = has_key(a:entry2, "abbr") && !empty(a:entry2.abbr) ?
+        \ a:entry2.abbr : get(a:entry2, "word","")
+  if strlen(k1) > strlen(k2)
+    return v:true
+  else
+    return v:false
+  endif
+  return v:false
+endfunction
+
+function! easycomplete#util#PrepareInfoPlaceHolder(key, val)
+  if !(has_key(a:val, "info") && type(a:val.info) == type("") && !empty(a:val.info))
+    let a:val.info = ""
+  endif
+  let a:val.equal = 1
+  return a:val
+endfunction
+
+" TODO 性能优化，4 次调用 0.09 s
+function! easycomplete#util#SortTextComparatorByAlphabet(entry1, entry2)
+  let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
+        \ a:entry1.abbr : get(a:entry1, "word","")
+  let k2 = has_key(a:entry2, "abbr") && !empty(a:entry2.abbr) ?
+        \ a:entry2.abbr : get(a:entry2, "word","")
+  if match(k1, "_") == 0
+    return v:true
+  endif
+  if k1 > k2
+    return v:true
+  else
+    return v:false
+  endif
+  return v:false
+endfunction
+
+function! easycomplete#util#GetItemWord(...)
+  return call("s:GetItemWord", a:000)
+endfunction
+
+
+
