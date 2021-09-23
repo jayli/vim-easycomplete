@@ -689,13 +689,13 @@ function! easycomplete#util#distinct(menu_list)
 
   let buf_list = []
   for item in a:menu_list
-    if item.menu == "[B]" || item.menu == "[dic]"
+    if item.menu == "[B]" || item.menu == "[D]"
       call add(buf_list, item.word)
     endif
   endfor
 
   for item in a:menu_list
-    if item.menu == "[S]" || (item.menu == "[B]" || item.menu == '[dic]')
+    if item.menu == "[S]" || (item.menu == "[B]" || item.menu == '[D]')
       continue
     endif
 
@@ -704,7 +704,7 @@ function! easycomplete#util#distinct(menu_list)
 
     if index(buf_list, word) >= 0
       call filter(result_items,
-            \ '!((v:val.menu == "[B]" || v:val.menu == "[dic]") && v:val.word ==# "' . word . '")')
+            \ '!((v:val.menu == "[B]" || v:val.menu == "[D]") && v:val.word ==# "' . word . '")')
     endif
   endfor
   return result_items
@@ -737,38 +737,14 @@ endfunction
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
-  return a:all_menu
   return s:CompleteMenuSimpleFilter(a:all_menu, a:word, a:maxlength)
   return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
 endfunction
 
+" TODO
 function! s:CompleteMenuSimpleFilter(all_menu, word, maxlength)
-  let word = a:word
-  if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
-    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
-  endif
-
-  " 完整匹配
-  let original_matching_menu = []
-  " 非完整匹配
-  let otherwise_matching_menu = []
-  " 模糊匹配结果
-  let otherwise_fuzzymatching = []
-
-  let count_index = 0
-  for item in deepcopy(a:all_menu)
-    let item_word = s:GetItemWord(item)
-    if strlen(item_word) < strlen(a:word) | continue | endif
-    if count_index > a:maxlength | break | endif
-    if stridx(item_word, word) == 0
-      call add(original_matching_menu, item)
-      let count_index += 1
-    else
-      call add(otherwise_matching_menu, item)
-    endif
-  endfor
-
-  return original_matching_menu
+  " TODO
+  return a:all_menu 
 endfunction
 
 function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
@@ -793,9 +769,11 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   "   最好，这时 dam 越小越好
   "
   " 折中设置 dam 为 100
-  let regx_com_times = 0
   let dam = 100
+  let regx_com_times = 0
   let count_index = 0
+
+  " 这里用单循环来遍历主要是处于性能最优考虑，非精度最优
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
     if item_word[0] == "_"
@@ -807,24 +785,13 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
     if stridx(item_word, word) == 0 && count_index < dam
       call add(original_matching_menu, item)
       let count_index += 1
-    elseif s:FuzzySearchRegx(word, item_word)
+    elseif easycomplete#util#FuzzySearch(word, item_word)
       call add(otherwise_fuzzymatching, item)
       let count_index += 1
     else
       call add(otherwise_matching_menu, item)
     endif
   endfor
-
-  " for item in otherwise_matching_menu
-  "   let item_word = s:GetItemWord(item)
-  "   if strlen(item_word) < strlen(a:word) | continue | endif
-  "   if count_index > a:maxlength | break | endif
-  "   let regx_com_times += 1
-  "   if s:FuzzySearchRegx(word, item_word)
-  "     call add(otherwise_fuzzymatching, item)
-  "     let count_index += 1
-  "   endif
-  " endfor
 
   let result = original_matching_menu + otherwise_fuzzymatching
   let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
@@ -879,6 +846,4 @@ endfunction
 function! easycomplete#util#GetItemWord(...)
   return call("s:GetItemWord", a:000)
 endfunction
-
-
 

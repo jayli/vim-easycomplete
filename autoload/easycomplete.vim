@@ -386,7 +386,7 @@ function! easycomplete#context() abort
   let line = getline(l:ret['lnum']) " 当前行内容
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标前敲入的内容
   let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " 当前单个字符
-  let l:ret['typing'] = s:GetTypingWord() " 当前敲入的单词 
+  let l:ret['typing'] = s:GetTypingWord() " 当前敲入的单词
   let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 单词起始位置
   return l:ret
 endfunction
@@ -1292,6 +1292,7 @@ endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
 " TODO PY 和 VIM 实现的一致性
+" 因为需要对全量列表进行排序，所以只在 FirstComplete 之前的数据准备时使用
 function! s:NormalizeSort(items)
   if has("pythonx")
     return s:NormalizeSortPY(a:items)
@@ -1329,28 +1330,19 @@ function! s:NormalizeMenulist(arr)
   for item in a:arr
     if type(item) == type("")
       let l:menu_item = {
-            \ 'word': item,
-            \ 'menu': '',
-            \ 'user_data': '',
-            \ 'info': '',
-            \ 'kind': '',
-            \ 'equal' : 1,
-            \ 'dup': 1,
-            \ 'abbr': '' }
+            \ 'word': item,    'menu': '',
+            \ 'user_data': '', 'info': '',
+            \ 'kind': '',      'equal' : 1,
+            \ 'dup': 1,        'abbr': '' }
       call add(l:menu_list, l:menu_item)
     endif
     if type(item) == type({})
       call add(l:menu_list, extend({
-            \   'word': '',
-            \   'menu': '',
-            \   'user_data': '',
-            \   'equal': 1,
-            \   'dup': 1,
-            \   'info': '',
-            \   'kind': '',
-            \   'abbr': ''
-            \ },
-            \ item ))
+            \   'word': '',      'menu': '',
+            \   'user_data': '', 'equal': 1,
+            \   'dup': 1,        'info': '',
+            \   'kind': '',      'abbr': ''
+            \ },  item ))
     endif
   endfor
   return l:menu_list
