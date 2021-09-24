@@ -721,7 +721,9 @@ function! easycomplete#util#HasKey(obj,keyname)
 endfunction
 
 function! easycomplete#util#AutoLoadDict()
-  let g:easycomplete_dict = []
+  if !exists("g:easycomplete_dict")
+    let g:easycomplete_dict = []
+  endif
   if index(g:easycomplete_dict, &filetype) >= 0
     return
   endif
@@ -742,14 +744,7 @@ endfunction
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
-  return s:CompleteMenuSimpleFilter(a:all_menu, a:word, a:maxlength)
   return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
-endfunction
-
-" TODO
-function! s:CompleteMenuSimpleFilter(all_menu, word, maxlength)
-  " TODO
-  return a:all_menu 
 endfunction
 
 function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
