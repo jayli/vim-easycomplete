@@ -721,14 +721,19 @@ function! easycomplete#util#HasKey(obj,keyname)
 endfunction
 
 function! easycomplete#util#AutoLoadDict()
-  for buf in getbufinfo()
-    let filetype = getbufvar(buf.bufnr,'&filetype')
-    for path in split(globpath(&rtp,
-          \ '**/vim-easycomplete/dict/'. filetype . '.*'),"\n")
+  let g:easycomplete_dict = []
+  if index(g:easycomplete_dict, &filetype) >= 0
+    return
+  endif
+  call add(g:easycomplete_dict, &filetype)
+  for es_path in split(&rtp, ",")
+    if stridx(es_path, "vim-easycomplete") >= 0
+      let path =  globpath(es_path, 'dict/' . &filetype . '.txt')
       if len(path) != 0 && strridx(&dictionary, path) < 0
-        silent execute 'setlocal dictionary+='.fnameescape(path)
+        silent noa execute 'setlocal dictionary+='.fnameescape(path)
       endif
-    endfor
+      break
+    endif
   endfor
 endfunction
 
