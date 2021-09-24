@@ -776,7 +776,7 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   " 这里用单循环来遍历主要是处于性能最优考虑，非精度最优
   for item in deepcopy(a:all_menu)
     let item_word = s:GetItemWord(item)
-    if item_word[0] == "_"
+    if a:word[0] != "_" && item_word[0] == "_"
       let item_word = substitute(item_word, "_\\+", "", "")
     endif
     if strlen(item_word) < strlen(a:word) | continue | endif
@@ -793,6 +793,7 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
     endif
   endfor
 
+  call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
   let result = original_matching_menu + otherwise_fuzzymatching
   let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
   return filtered_menu

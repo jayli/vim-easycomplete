@@ -283,7 +283,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let g:easycomplete_stunt_menuitems = deepcopy(a:menuitems)
   let result = a:menuitems[0 : g:easycomplete_maxlength]
   let result = easycomplete#util#distinct(result)
-  call sort(result, "s:SortTextComparatorByLength")
   if len(result) <= 10
     let result = easycomplete#util#uniq(result)
   endif
@@ -1210,7 +1209,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let g:easycomplete_stunt_menuitems = deepcopy(filtered_menu)
       let result = filtered_menu[0 : g:easycomplete_maxlength]
       let result = easycomplete#util#distinct(result)
-      call sort(result, "s:SortTextComparatorByLength")
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
       endif
