@@ -15,8 +15,10 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " 这里异步和非异步都可以
   " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
-  " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])})
-  call easycomplete#util#AsyncRun(function('s:CompleteHandler'), [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
+  " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing,
+  "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
+  call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
+        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
   return v:true
 endfunction
 
@@ -24,7 +26,7 @@ endfunction
 function! s:GetKeywords(base)
   let bufKeywordList        = s:GetBufKeywordsList(a:base)
   let wrappedBufKeywordList = map(bufKeywordList,
-        \ '{"word":v:val,"dup":1,"icase":1,"kind":"w","equal":1,"menu": "[B]", "info": ""}')
+        \ '{"word":v:val,"dup":1,"icase":1,"kind":"","equal":1,"menu": "[B]", "info": ""}')
   let result =  s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
         \       s:GetWrappedDictKeywordList()
@@ -112,7 +114,7 @@ function! s:GetWrappedDictKeywordList()
     for item in localdicts
       call add(dictkeywords, {
             \   "word" : item ,
-            \   "kind" : "w",
+            \   "kind" : "",
             \   "equal":1,
             \   "menu" : "[D]"
             \ })

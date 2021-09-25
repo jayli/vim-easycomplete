@@ -1,3 +1,5 @@
+
+" 兼容非 python3 场景，确保不报错
 function! s:PreparePythonEnvironment()
   if get(g:, 'easycomplete_python3_ready') == 2
     return v:true
@@ -35,6 +37,7 @@ function! easycomplete#python#FuzzySearchPy(needle, haystack)
   return ret
 endfunction
 
+" TODO
 function! easycomplete#python#CompleteMenuFilterPy(all_menu, word, maxlength)
   if !s:PreparePythonEnvironment() | return a:all_menu | endif
   py3 all_menu = vim.eval("a:all_menu")

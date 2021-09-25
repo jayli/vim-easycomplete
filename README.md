@@ -6,9 +6,9 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I remove all non-essential requirements and environment dependencies so that it has minimum redundancy. For example, it requires vim script only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I remove all non-essential requirements and environment dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
 
-![](screenshot.gif)
+![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
@@ -17,7 +17,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - Goto definition support for all languages
 - Full LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
 - LSP Server installation with one command
-- Snippet support with ultisnips.
+- Snippet support with ultisnips. (python3 required)
 
 ### Installation
 
@@ -61,7 +61,7 @@ Typing `:h easycomplete` for help.
 
 All commands:
 
-| Command                           | Description                              | 
+| Command                           | Description                              |
 |-----------------------------------|------------------------------------------|
 | `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
 | `:EasyCompleteGotoDefinition`     | Goto definition position                 |

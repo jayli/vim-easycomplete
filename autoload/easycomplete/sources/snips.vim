@@ -21,15 +21,18 @@ function! easycomplete#sources#snips#completor(opt, ctx)
 
   for trigger in keys(snippets)
     let description = get(snippets, trigger)
-    let description = empty(description) ? "Code Snippet:" : description
+    let description = empty(description) ? "Snippet: " . trigger : description
     let snip_object = s:get_snip_object(trigger, g:current_ulti_dict_info)
     " TODO Vim 性能比 Python 快五倍
-    " let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
-    let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
+    if has('python3')
+      let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
+    else
+      let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
+    endif
     call add(suggestions, {
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
-          \ 'kind' : 'S',
+          \ 'kind' : 's',
           \ 'menu' : '[S]',
           \ 'info' : [description, "-----"] + code_info
           \ })
