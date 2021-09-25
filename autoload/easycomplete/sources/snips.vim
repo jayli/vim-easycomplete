@@ -22,15 +22,16 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   for trigger in keys(snippets)
     let description = get(snippets, trigger)
     let snip_object = s:get_snip_object(trigger, g:current_ulti_dict_info)
-    let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
+    " let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
+    let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
     " jayli here
-    call s:log(code_info)
+    " call s:log(strtrans(code_info))
     call add(suggestions, {
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
           \ 'kind' : 'S',
           \ 'menu' : '[S]',
-          \ 'info' : description . "\n" . code_info
+          \ 'info' : description
           \ })
   endfor
 

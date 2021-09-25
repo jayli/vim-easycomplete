@@ -848,3 +848,34 @@ function! easycomplete#util#GetItemWord(...)
   return call("s:GetItemWord", a:000)
 endfunction
 
+function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
+  let filepath = a:snip_object.filepath
+  let line_number = a:snip_object.line_number
+
+  if !exists('g:easycomplete_snip_files')
+    let g:easycomplete_snip_files = {}
+  endif
+  if has_key(g:easycomplete_snip_files, filepath)
+    let snip_ctx = get(g:easycomplete_snip_files, filepath)
+  else
+    let snip_ctx = readfile(filepath)
+    let g:easycomplete_snip_files[filepath] = snip_ctx
+  endif
+
+  let cursor_line = line_number
+
+  while cursor_line + 1 < len(snip_ctx)
+    if match(snip_ctx[cursor_line + 1], '\(snippet\|endsnippet\)') == 0
+      break
+    else
+      let cursor_line += 1
+    endif
+  endwhile
+  let start_line_index = line_number
+  let end_line_index = cursor_line
+
+  let code_original_info = snip_ctx[start_line_index:end_line_index]
+  let code_info = join(code_original_info, "\n")
+  return code_info
+endfunction
+

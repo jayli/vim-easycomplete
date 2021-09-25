@@ -82,6 +82,7 @@ def snippets_code_info(filename, line_number):
 
     code_original_info = snip_ctx[start_line_index:end_line_index + 1]
     code_info = "".join(code_original_info)
+    log(code_info)
     return json.dumps(code_info)
 
 def complete_menu_filter(all_menu, word, maxlength):
