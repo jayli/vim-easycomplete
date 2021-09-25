@@ -64,25 +64,24 @@ def snippets_code_info(filename, line_number):
     """
     根据文件路径和行号，从标准 snippets 格式中获得展开后的语义化的代码片段
     """
-    fo = open(filename, "r")
+    # log('----------------------------')
+    # log(filename)
+    # log(line_number)
+    fo = open(filename, "r", encoding="utf-8-sig")
     snip_ctx = fo.readlines()
     fo.close()
     cursor_line = line_number
-    while cursor_line <= len(snip_ctx):
-        if snip_ctx[cursor_line].find("snippet") == 0:
+    while cursor_line + 1 < len(snip_ctx):
+        if snip_ctx[cursor_line + 1].find("snippet") == 0:
             break
         else:
             cursor_line += 1
 
-    start_line = line_number
-    end_line = cursor_line
+    start_line_index = line_number
+    end_line_index = cursor_line
 
-    code_original_info = snip_ctx[start_line:end_line]
+    code_original_info = snip_ctx[start_line_index:end_line_index + 1]
     code_info = "".join(code_original_info)
-    # log('-----')
-    # log(filename + ' ' + str(line_number))
-    # log(code_original_info)
-    # log("\n")
     return json.dumps(code_info)
 
 def complete_menu_filter(all_menu, word, maxlength):
