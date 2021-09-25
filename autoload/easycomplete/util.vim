@@ -874,8 +874,6 @@ function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   let start_line_index = line_number
   let end_line_index = cursor_line
 
-  let code_original_info = snip_ctx[start_line_index:end_line_index]
-  let code_info = join(code_original_info, "\n")
-  return code_info
+  return snip_ctx[start_line_index:end_line_index]
 endfunction
 
