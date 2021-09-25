@@ -432,7 +432,9 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     for item in a:info
       let modified_info_item = easycomplete#util#ModifyInfoByMaxwidth(item, maxwidth)
       if type(modified_info_item) == type("")
-        let t_maxwidth = strlen(modified_info_item)
+        if strlen(modified_info_item) > t_maxwidth
+          let t_maxwidth = strlen(modified_info_item)
+        endif
         call add(t_info, modified_info_item)
       endif
       if type(modified_info_item) == type([])
@@ -446,7 +448,12 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     for item in t_info
       " 构造分割线
       if trim(item) =~ "^-\\+$"
-        let t_info[l:count] = repeat("-", maxwidth)
+        if t_maxwidth < maxwidth
+          let t_maxwidth += 1
+        elseif t_maxwidth == maxwidth
+          let t_maxwidth += 2
+        endif
+        let t_info[l:count] = repeat("-", t_maxwidth)
         break
       endif
       let l:count += 1
@@ -744,6 +751,7 @@ endfunction
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
+  " TODO
   return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
 endfunction
 
@@ -848,6 +856,10 @@ function! easycomplete#util#GetItemWord(...)
   return call("s:GetItemWord", a:000)
 endfunction
 
+" Same as easycomplete#python#GetSnippetsCodeInfo
+" 实测 vim 性能比 python 快五倍
+" 27 次调用，py 用时 0.012392
+" 27 次调用，vim 用时0.002804
 function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   let filepath = a:snip_object.filepath
   let line_number = a:snip_object.line_number

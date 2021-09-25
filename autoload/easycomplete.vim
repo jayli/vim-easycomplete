@@ -1292,7 +1292,7 @@ endfunction
 " TODO PY 和 VIM 实现的一致性
 " 因为需要对全量列表进行排序，所以只在 FirstComplete 之前的数据准备时使用
 function! s:NormalizeSort(items)
-  if has("pythonx")
+  if has("python3")
     return s:NormalizeSortPY(a:items)
   else
     return s:NormalizeSortVIM(a:items)

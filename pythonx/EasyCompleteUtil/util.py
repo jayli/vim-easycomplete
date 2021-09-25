@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
+# encoding: utf-8
 import json
 import vim
+import re
+
+SNIPPETS_FILES_CTX = {}
 
 # Normal sort
 def _get_key(el):
@@ -60,19 +64,24 @@ def fuzzy_search(needle, haystack):
 def log(msg):
     print(msg)
 
+# py vs vim，vim 性能极好
+# 27 次调用，py 用时 0.012392
+# 27 次调用，vim 用时0.002804
 def snippets_code_info(filename, line_number):
     """
     根据文件路径和行号，从标准 snippets 格式中获得展开后的语义化的代码片段
     """
-    # log('----------------------------')
-    # log(filename)
-    # log(line_number)
-    fo = open(filename, "r", encoding="utf-8-sig")
-    snip_ctx = fo.readlines()
-    fo.close()
+    if filename in SNIPPETS_FILES_CTX.keys():
+        snip_ctx = SNIPPETS_FILES_CTX.get(filename, False)
+    else:
+        fo = open(filename, "r", encoding="utf-8-sig")
+        snip_ctx = fo.readlines()
+        SNIPPETS_FILES_CTX.setdefault(filename, snip_ctx)
+        fo.close()
+
     cursor_line = line_number
     while cursor_line + 1 < len(snip_ctx):
-        if snip_ctx[cursor_line + 1].find("snippet") == 0:
+        if re.compile(r"^(snippet|endsnippet)").match(snip_ctx[cursor_line + 1]):
             break
         else:
             cursor_line += 1
@@ -81,9 +90,8 @@ def snippets_code_info(filename, line_number):
     end_line_index = cursor_line
 
     code_original_info = snip_ctx[start_line_index:end_line_index + 1]
-    code_info = "".join(code_original_info)
-    log(code_info)
-    return json.dumps(code_info)
+    ret_array = list(map(lambda line: re.sub(r"\n$", "", line), code_original_info))
+    return json.dumps(ret_array)
 
 def complete_menu_filter(all_menu, word, maxlength):
     """
