@@ -8,7 +8,7 @@ function! easycomplete#sources#cpp#constructor(opt, ctx)
       \ 'name': 'ccls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'initialization_options':{'cache': {'directory': '/tmp/ccls/cache'},'completion': {'detailedLabel': v:false}},
-      \ 'allowlist': ["c", "cc", "cpp", "c++", "objc", "objcpp"],
+      \ 'allowlist': ["c", "cc", "cpp", "c++", "objc", "objcpp", "hpp"],
       \ })
 endfunction
 
@@ -17,7 +17,7 @@ function! easycomplete#sources#cpp#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cpp#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp","m"])
+  return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp","m","hpp"])
 endfunction
 
 function! s:log(...)
