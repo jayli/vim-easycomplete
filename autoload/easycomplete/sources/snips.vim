@@ -20,9 +20,14 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   call UltiSnips#SnippetsInCurrentScope(1)
 
   for trigger in keys(snippets)
-    let description = get(snippets, trigger)
-    let description = empty(description) ? "Snippet: " . trigger : description
-    let snip_object = s:get_snip_object(trigger, g:current_ulti_dict_info)
+    " trigger 有可能是 i|n 这类包含特殊字符情况
+    try
+      let description = get(snippets, trigger, "")
+      let description = empty(description) ? "Snippet: " . trigger : description
+      let snip_object = s:get_snip_object(trigger, g:current_ulti_dict_info)
+    catch /^Vim\%((\a\+)\)\=:E684/
+      continue
+    endtry
     " TODO Vim 性能比 Python 快五倍
     if has('python3')
       let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)

@@ -44,6 +44,7 @@ function! easycomplete#python#CompleteMenuFilterPy(all_menu, word, maxlength)
   py3 word = vim.eval("a:word")
   py3 maxlength = int(vim.eval("a:maxlength"))
   py3 vim.command('let ret = %s'% EasyCompleteUtil.complete_menu_filter(all_menu, word, maxlength))
+  echom ret
   return ret
 endfunction
 

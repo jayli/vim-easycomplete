@@ -196,7 +196,7 @@ augroup easycomplete#register
   " TODO 还未调通
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
-      \ 'whitelist': ['cmake'],
+      \ 'whitelist': ['cmake','make'],
       \ 'completor': 'easycomplete#sources#cmake#completor',
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',

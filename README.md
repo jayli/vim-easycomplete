@@ -102,14 +102,15 @@ All supported languages:
 | yml              | YAML                  | yaml-language-server   | Yes                | node/npm        |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm        |
-| py               | Python                | pyls                   | Yes                | python/pip      |
-| java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk        |
+| py               | Python                | pyls                   | Yes                | python3/pip3    |
+| java             | Java                  | eclipse-jdt-ls         | Yes                | java11/jdk      |
 | go               | Go                    | gopls                  | Yes                | go              |
 | rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
 | nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
 | grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
-| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | None            |
+| cmake            | cmake                 | cmake-language-server  | Yes                | python3/pip3    |
+| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
 
 More info about semantic completion for each supported language:
 

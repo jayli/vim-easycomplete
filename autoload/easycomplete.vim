@@ -1681,7 +1681,6 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-
   " hack for vim-language-server:
   "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
   "   g:b:l:a: 都是正确的，只有 s: 不正确
