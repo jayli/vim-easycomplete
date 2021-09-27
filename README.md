@@ -102,6 +102,7 @@ All supported languages:
 | css              | CSS                   | css-languageserver     | Yes                | node/npm        |
 | html             | HTML                  | html-languageserver    | Yes                | node/npm        |
 | yml              | YAML                  | yaml-language-server   | Yes                | node/npm        |
+| xml              | Xml                   | lemminx                | Yes                | java/jdk        |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm        |
 | py               | Python                | pyls                   | Yes                | python3/pip3    |
@@ -131,6 +132,7 @@ More info about semantic completion for each supported language:
 - Kotlin: [kotlin-language-server](https://github.com/fwcd/kotlin-language-server) required.
 - Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
 - Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
+- Xml: [lemminx](https://github.com/eclipse/lemminx) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
 - Ruby: [solargraph](https://github.com/castwide/solargraph) required.

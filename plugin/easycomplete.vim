@@ -211,6 +211,15 @@ augroup easycomplete#register
       \ 'command': 'rust-analyzer'
       \  })
 
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'xml',
+      \ 'whitelist': ['xml'],
+      \ 'completor': 'easycomplete#sources#xml#completor',
+      \ 'constructor' :'easycomplete#sources#xml#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#xml#GotoDefinition',
+      \ 'command': 'lemminx'
+      \  })
+
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
