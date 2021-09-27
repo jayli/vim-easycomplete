@@ -76,16 +76,16 @@ EasyComplete support keywords/dictionary/directory completion by default.
 
 #### Semantic Completion for Other Languages
 
-Most Language require LSP Server. Install missing LSP Server with `:EasyCompleteInstallServer` for current filetype (recommended). LSP Server will be installed in `~/.config/vim-easycomplete/servers`.
+Most Language require LSP Server. Install missing LSP Server with `:InstallLspServer` for current filetype (recommended). LSP Server will be installed in `~/.config/vim-easycomplete/servers`.
 
 ```vim
-:EasyCompleteInstall
+:InstallLspServer
 ```
 
 Or you can install a lsp server with specified plugin name (not recommended). Take typescript/javascript for example:
 
 ```vim
-:EasyCompleteInstallServer ts
+:InstallLspServer ts
 ```
 
 All supported languages:
@@ -95,6 +95,7 @@ All supported languages:
 |------------------|-----------------------|:----------------------:|:------------------:|:---------------:|
 | directory        | directory suggestion  | No Need                | No Need            | None            |
 | buf              | keywords & dictionary | No Need                | No Need            | None            |
+| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
 | ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm        |
 | vim              | Vim                   | vim-language-server    | Yes                | node/npm        |
 | cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |
@@ -109,10 +110,10 @@ All supported languages:
 | rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
 | nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
+| rust             | Rust                  | rust-analyzer          | Yes                | None            |
 | kt               | Kotlin                | kotlin-language-server | Yes                | java/jdk        |
 | grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
 | cmake            | cmake                 | cmake-language-server  | Yes                | python3/pip3    |
-| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
 
 More info about semantic completion for each supported language:
 
@@ -128,6 +129,7 @@ More info about semantic completion for each supported language:
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
 - Cmake: [cmake-language-server](https://github.com/regen100/cmake-language-server) required.
 - Kotlin: [kotlin-language-server](https://github.com/fwcd/kotlin-language-server) required.
+- Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
 - Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.

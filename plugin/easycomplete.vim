@@ -202,6 +202,15 @@ augroup easycomplete#register
       \ 'command': 'kotlin-language-server'
       \  })
 
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'rust',
+      \ 'whitelist': ['rust'],
+      \ 'completor': 'easycomplete#sources#rust#completor',
+      \ 'constructor' :'easycomplete#sources#rust#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#rust#GotoDefinition',
+      \ 'command': 'rust-analyzer'
+      \  })
+
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
