@@ -5,258 +5,258 @@ let s:undefined_token = '__callbag_undefined__'
 let s:str_type = type('')
 
 function! easycomplete#lsp#callbag#undefined() abort
-    return s:undefined_token
+  return s:undefined_token
 endfunction
 
 function! easycomplete#lsp#callbag#isUndefined(d) abort
-    return type(a:d) == s:str_type && a:d ==# s:undefined_token
+  return type(a:d) == s:str_type && a:d ==# s:undefined_token
 endfunction
 
 function! s:noop(...) abort
 endfunction
 
 function! s:createArrayWithSize(size, defaultValue) abort
-    let l:i = 0
-    let l:array = []
-    while l:i < a:size
-        call add(l:array, a:defaultValue)
-        let l:i = l:i + 1
-    endwhile
-    return l:array
+  let l:i = 0
+  let l:array = []
+  while l:i < a:size
+    call add(l:array, a:defaultValue)
+    let l:i = l:i + 1
+  endwhile
+  return l:array
 endfunction
 
 " mark
 " pipe() {{{
 function! easycomplete#lsp#callbag#pipe(...) abort
-    let l:Res = a:1
-    let l:i = 1
-    while l:i < a:0
-        let l:Res = a:000[l:i](l:Res)
-        let l:i = l:i + 1
-    endwhile
-    return l:Res
+  let l:Res = a:1
+  let l:i = 1
+  while l:i < a:0
+    let l:Res = a:000[l:i](l:Res)
+    let l:i = l:i + 1
+  endwhile
+  return l:Res
 endfunction
 " }}}
 
 " mark
 " makeSubject() {{{
 function! easycomplete#lsp#callbag#makeSubject() abort
-    let l:data = { 'sinks': [] }
-    return function('s:makeSubjectFactory', [l:data])
+  let l:data = { 'sinks': [] }
+  return function('s:makeSubjectFactory', [l:data])
 endfunction
 
 function! s:makeSubjectFactory(data, t, d) abort
-    if a:t == 0
-        let l:Sink = a:d
-        call add(a:data['sinks'], l:Sink)
-        call l:Sink(0, function('s:makeSubjectSinkCallback', [a:data, l:Sink]))
-    else
-        let l:zinkz = copy(a:data['sinks'])
-        let l:i = 0
-        let l:n = len(l:zinkz)
-        while l:i < l:n
-            let l:Sink = l:zinkz[l:i]
-            let l:j = -1
-            let l:found = 0
-            for l:Item in a:data['sinks']
-                let l:j += 1
-                if l:Item == l:Sink
-                    let l:found = 1
-                    break
-                endif
-            endfor
+  if a:t == 0
+    let l:Sink = a:d
+    call add(a:data['sinks'], l:Sink)
+    call l:Sink(0, function('s:makeSubjectSinkCallback', [a:data, l:Sink]))
+  else
+    let l:zinkz = copy(a:data['sinks'])
+    let l:i = 0
+    let l:n = len(l:zinkz)
+    while l:i < l:n
+      let l:Sink = l:zinkz[l:i]
+      let l:j = -1
+      let l:found = 0
+      for l:Item in a:data['sinks']
+        let l:j += 1
+        if l:Item == l:Sink
+          let l:found = 1
+          break
+        endif
+      endfor
 
-            if l:found
-                call l:Sink(a:t, a:d)
-            endif
-            let l:i += 1
-        endwhile
-    endif
+      if l:found
+        call l:Sink(a:t, a:d)
+      endif
+      let l:i += 1
+    endwhile
+  endif
 endfunction
 
 function! s:makeSubjectSinkCallback(data, Sink, t, d) abort
-    if a:t == 2
-        let l:i = -1
-        let l:found = 0
-        for l:Item in a:data['sinks']
-            let l:i += 1
-            if l:Item == a:Sink
-                let l:found = 1
-                break
-            endif
-        endfor
-        if l:found
-            call remove(a:data['sinks'], l:i)
-        endif
+  if a:t == 2
+    let l:i = -1
+    let l:found = 0
+    for l:Item in a:data['sinks']
+      let l:i += 1
+      if l:Item == a:Sink
+        let l:found = 1
+        break
+      endif
+    endfor
+    if l:found
+      call remove(a:data['sinks'], l:i)
     endif
+  endif
 endfunction
 " }}}
 
 " mark
 " create() {{{
 function! easycomplete#lsp#callbag#create(...) abort
-    let l:data = {}
-    if a:0 > 0
-        let l:data['prod'] = a:1
-    endif
-    return function('s:createProd', [l:data])
+  let l:data = {}
+  if a:0 > 0
+    let l:data['prod'] = a:1
+  endif
+  return function('s:createProd', [l:data])
 endfunction
 
 function! s:createProd(data, start, sink) abort
-    if a:start != 0 | return | endif
-    let a:data['sink'] = a:sink
-    if !has_key(a:data, 'prod') || type(a:data['prod']) != type(function('s:noop'))
-        call a:sink(0, function('s:noop'))
-        call a:sink(2, easycomplete#lsp#callbag#undefined())
-        return
-    endif
-    let a:data['end'] = 0
-    call a:sink(0, function('s:createSinkCallback', [a:data]))
-    if a:data['end'] | return | endif
-    let a:data['clean'] = a:data['prod'](function('s:createNext', [a:data]), function('s:createError', [a:data]), function('s:createComplete', [a:data]))
+  if a:start != 0 | return | endif
+  let a:data['sink'] = a:sink
+  if !has_key(a:data, 'prod') || type(a:data['prod']) != type(function('s:noop'))
+    call a:sink(0, function('s:noop'))
+    call a:sink(2, easycomplete#lsp#callbag#undefined())
+    return
+  endif
+  let a:data['end'] = 0
+  call a:sink(0, function('s:createSinkCallback', [a:data]))
+  if a:data['end'] | return | endif
+  let a:data['clean'] = a:data['prod'](function('s:createNext', [a:data]), function('s:createError', [a:data]), function('s:createComplete', [a:data]))
 endfunction
 
 function! s:createSinkCallback(data, t, ...) abort
-    if !a:data['end']
-        let a:data['end'] = (a:t == 2)
-        if a:data['end'] && has_key(a:data, 'clean') && type(a:data['clean']) == type(function('s:noop'))
-            call a:data['clean']()
-        endif
+  if !a:data['end']
+    let a:data['end'] = (a:t == 2)
+    if a:data['end'] && has_key(a:data, 'clean') && type(a:data['clean']) == type(function('s:noop'))
+      call a:data['clean']()
     endif
+  endif
 endfunction
 
 function! s:createNext(data, d) abort
-    if !a:data['end'] | call a:data['sink'](1, a:d) | endif
+  if !a:data['end'] | call a:data['sink'](1, a:d) | endif
 endfunction
 
 function! s:createError(data, e) abort
-    if !a:data['end'] && !easycomplete#lsp#callbag#isUndefined(a:e)
-        let a:data['end'] = 1
-        call a:data['sink'](2, a:e)
-    endif
+  if !a:data['end'] && !easycomplete#lsp#callbag#isUndefined(a:e)
+    let a:data['end'] = 1
+    call a:data['sink'](2, a:e)
+  endif
 endfunction
 
 function! s:createComplete(data) abort
-    if !a:data['end']
-        let a:data['end'] = 1
-        call a:data['sink'](2, easycomplete#lsp#callbag#undefined())
-    endif
+  if !a:data['end']
+    let a:data['end'] = 1
+    call a:data['sink'](2, easycomplete#lsp#callbag#undefined())
+  endif
 endfunction
 " }}}
 
 " mark
 " lazy() {{{
 function! easycomplete#lsp#callbag#lazy(F) abort
-    let l:data = { 'F': a:F }
-    return function('s:lazyFactory', [l:data])
+  let l:data = { 'F': a:F }
+  return function('s:lazyFactory', [l:data])
 endfunction
 
 function! s:lazyFactory(data, start, sink) abort
-    if a:start != 0 | return | endif
-    let a:data['sink'] = a:sink
-    let a:data['unsubed'] = 0
-    call a:data['sink'](0, function('s:lazySinkCallback', [a:data]))
-    call a:data['sink'](1, a:data['F']())
-    if !a:data['unsubed'] | call a:data['sink'](2, easycomplete#lsp#callbag#undefined()) | endif
+  if a:start != 0 | return | endif
+  let a:data['sink'] = a:sink
+  let a:data['unsubed'] = 0
+  call a:data['sink'](0, function('s:lazySinkCallback', [a:data]))
+  call a:data['sink'](1, a:data['F']())
+  if !a:data['unsubed'] | call a:data['sink'](2, easycomplete#lsp#callbag#undefined()) | endif
 endfunction
 
 function! s:lazySinkCallback(data, t, d) abort
-    if a:t == 2 | let a:data['unsubed'] = 1 | endif
+  if a:t == 2 | let a:data['unsubed'] = 1 | endif
 endfunction
 " }}}
 
 " mark
 " subscribe() {{{
 function! easycomplete#lsp#callbag#subscribe(...) abort
-    let l:data = {}
-    if a:0 > 0 && type(a:1) == type({}) " a:1 { next, error, complete }
-        if has_key(a:1, 'next') | let l:data['next'] = a:1['next'] | endif
-        if has_key(a:1, 'error') | let l:data['error'] = a:1['error'] | endif
-        if has_key(a:1, 'complete') | let l:data['complete'] = a:1['complete'] | endif
-    else " a:1 = next, a:2 = error, a:3 = complete
-        if a:0 >= 1 | let l:data['next'] = a:1 | endif
-        if a:0 >= 2 | let l:data['error'] = a:2 | endif
-        if a:0 >= 3 | let l:data['complete'] = a:3 | endif
-    endif
-    return function('s:subscribeListener', [l:data])
+  let l:data = {}
+  if a:0 > 0 && type(a:1) == type({}) " a:1 { next, error, complete }
+    if has_key(a:1, 'next') | let l:data['next'] = a:1['next'] | endif
+    if has_key(a:1, 'error') | let l:data['error'] = a:1['error'] | endif
+    if has_key(a:1, 'complete') | let l:data['complete'] = a:1['complete'] | endif
+  else " a:1 = next, a:2 = error, a:3 = complete
+    if a:0 >= 1 | let l:data['next'] = a:1 | endif
+    if a:0 >= 2 | let l:data['error'] = a:2 | endif
+    if a:0 >= 3 | let l:data['complete'] = a:3 | endif
+  endif
+  return function('s:subscribeListener', [l:data])
 endfunction
 
 function! s:subscribeListener(data, source) abort
-    call a:source(0, function('s:subscribeSourceCallback', [a:data]))
-    return function('s:subscribeDispose', [a:data])
+  call a:source(0, function('s:subscribeSourceCallback', [a:data]))
+  return function('s:subscribeDispose', [a:data])
 endfunction
 
 function! s:subscribeSourceCallback(data, t, d) abort
-    if a:t == 0 | let a:data['talkback'] = a:d | endif
-    if a:t == 1 && has_key(a:data, 'next') | call a:data['next'](a:d) | endif
-    if a:t == 1 || a:t == 0 | call a:data['talkback'](1, easycomplete#lsp#callbag#undefined()) | endif
-    if a:t == 2 && easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'complete') | call a:data['complete']() | endif
-    if a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'error') | call a:data['error'](a:d) | endif
+  if a:t == 0 | let a:data['talkback'] = a:d | endif
+  if a:t == 1 && has_key(a:data, 'next') | call a:data['next'](a:d) | endif
+  if a:t == 1 || a:t == 0 | call a:data['talkback'](1, easycomplete#lsp#callbag#undefined()) | endif
+  if a:t == 2 && easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'complete') | call a:data['complete']() | endif
+  if a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'error') | call a:data['error'](a:d) | endif
 endfunction
 
 function! s:subscribeDispose(data, ...) abort
-    if has_key(a:data, 'talkback') | call a:data['talkback'](2, easycomplete#lsp#callbag#undefined()) | endif
+  if has_key(a:data, 'talkback') | call a:data['talkback'](2, easycomplete#lsp#callbag#undefined()) | endif
 endfunction
 " }}}
 
 " mark
 " {{{
 function! easycomplete#lsp#callbag#share(source) abort
-    let l:data = { 'source': a:source, 'sinks': [] }
-    return function('s:shareFactory', [l:data])
+  let l:data = { 'source': a:source, 'sinks': [] }
+  return function('s:shareFactory', [l:data])
 endfunction
 
 function! s:shareFactory(data, start, sink) abort
-    if a:start != 0 | return | endif
-    call add(a:data['sinks'], a:sink)
+  if a:start != 0 | return | endif
+  call add(a:data['sinks'], a:sink)
 
-    let a:data['talkback'] = function('s:shareTalkbackCallback', [a:data, a:sink])
+  let a:data['talkback'] = function('s:shareTalkbackCallback', [a:data, a:sink])
 
-    if len(a:data['sinks']) == 1
-        call a:data['source'](0, function('s:shareSourceCallback', [a:data, a:sink]))
-        return
-    endif
+  if len(a:data['sinks']) == 1
+    call a:data['source'](0, function('s:shareSourceCallback', [a:data, a:sink]))
+    return
+  endif
 
-    call a:sink(0, a:data['talkback'])
+  call a:sink(0, a:data['talkback'])
 endfunction
 
 function! s:shareTalkbackCallback(data, sink, t, d) abort
-    if a:t == 2
-        let l:i = 0
-        let l:found = 0
-        while l:i < len(a:data['sinks'])
-            if a:data['sinks'][l:i] == a:sink
-                let l:found = 1
-                break
-            endif
-            let l:i += 1
-        endwhile
+  if a:t == 2
+    let l:i = 0
+    let l:found = 0
+    while l:i < len(a:data['sinks'])
+      if a:data['sinks'][l:i] == a:sink
+        let l:found = 1
+        break
+      endif
+      let l:i += 1
+    endwhile
 
-        if l:found
-            call remove(a:data['sinks'], l:i)
-        endif
-
-        if empty(a:data['sinks'])
-            call a:data['sourceTalkback'](2, easycomplete#lsp#callbag#undefined())
-        endif
-    else
-        call a:data['sourceTalkback'](a:t, a:d)
+    if l:found
+      call remove(a:data['sinks'], l:i)
     endif
+
+    if empty(a:data['sinks'])
+      call a:data['sourceTalkback'](2, easycomplete#lsp#callbag#undefined())
+    endif
+  else
+    call a:data['sourceTalkback'](a:t, a:d)
+  endif
 endfunction
 
 function! s:shareSourceCallback(data, sink, t, d) abort
-    if a:t == 0
-        let a:data['sourceTalkback'] = a:d
-        call a:sink(0, a:data['talkback'])
-    else
-        for l:S in a:data['sinks']
-            call l:S(a:t, a:d)
-        endfor
-    endif
-    if a:t == 2
-        let a:data['sinks'] = []
-    endif
+  if a:t == 0
+    let a:data['sourceTalkback'] = a:d
+    call a:sink(0, a:data['talkback'])
+  else
+    for l:S in a:data['sinks']
+      call l:S(a:t, a:d)
+    endfor
+  endif
+  if a:t == 2
+    let a:data['sinks'] = []
+  endif
 endfunction
 " }}}
 
-" vim:ts=4:sw=4:ai:foldmethod=marker:foldlevel=0:
+" vim:ts=2:sw=2:ai:foldmethod=marker:foldlevel=0:

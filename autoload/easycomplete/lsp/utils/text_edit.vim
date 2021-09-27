@@ -1,17 +1,17 @@
 function! easycomplete#lsp#utils#text_edit#apply_text_edits(uri, text_edits) abort
-    let l:current_bufname = bufname('%')
-    let l:target_bufname = easycomplete#lsp#utils#uri_to_path(a:uri)
-    let l:cursor_position = easycomplete#lsp#get_position()
+  let l:current_bufname = bufname('%')
+  let l:target_bufname = easycomplete#lsp#utils#uri_to_path(a:uri)
+  let l:cursor_position = easycomplete#lsp#get_position()
 
-    call s:_switch(l:target_bufname)
-    for l:text_edit in s:_normalize(a:text_edits)
-        call s:_apply(bufnr(l:target_bufname), l:text_edit, l:cursor_position)
-    endfor
-    call s:_switch(l:current_bufname)
+  call s:_switch(l:target_bufname)
+  for l:text_edit in s:_normalize(a:text_edits)
+    call s:_apply(bufnr(l:target_bufname), l:text_edit, l:cursor_position)
+  endfor
+  call s:_switch(l:current_bufname)
 
-    if bufnr(l:current_bufname) == bufnr(l:target_bufname)
-        call cursor(easycomplete#lsp#utils#position#lsp_to_vim('%', l:cursor_position))
-    endif
+  if bufnr(l:current_bufname) == bufnr(l:target_bufname)
+    call cursor(easycomplete#lsp#utils#position#lsp_to_vim('%', l:cursor_position))
+  endif
 endfunction
 
 " @summary Use this to convert textedit to vim list that is compatible with
@@ -20,22 +20,22 @@ endfunction
 " @param text_edit = TextEdit | TextEdit[]
 " @returns []
 function! easycomplete#lsp#utils#text_edit#_lsp_to_vim_list(uri, text_edit) abort
-    let l:result = []
-    let l:cache = {}
-    if type(a:text_edit) == type([]) " TextEdit[]
-        for l:text_edit in a:text_edit
-            let l:vim_loc = s:lsp_text_edit_item_to_vim(a:uri, l:text_edit, l:cache)
-            if !empty(l:vim_loc)
-                call add(l:result, l:vim_loc)
-            endif
-        endfor
-    else " TextEdit
-        let l:vim_loc = s:lsp_text_edit_item_to_vim(a:uri, a:text_edit, l:cache)
-        if !empty(l:vim_loc)
-            call add(l:result, l:vim_loc)
-        endif
+  let l:result = []
+  let l:cache = {}
+  if type(a:text_edit) == type([]) " TextEdit[]
+    for l:text_edit in a:text_edit
+      let l:vim_loc = s:lsp_text_edit_item_to_vim(a:uri, l:text_edit, l:cache)
+      if !empty(l:vim_loc)
+        call add(l:result, l:vim_loc)
+      endif
+    endfor
+  else " TextEdit
+    let l:vim_loc = s:lsp_text_edit_item_to_vim(a:uri, a:text_edit, l:cache)
+    if !empty(l:vim_loc)
+      call add(l:result, l:vim_loc)
     endif
-    return l:result
+  endif
+  return l:result
 endfunction
 
 " @param uri = DocumentUri
@@ -48,29 +48,29 @@ endfunction
 "   'text',
 " }
 function! s:lsp_text_edit_item_to_vim(uri, text_edit, cache) abort
-    if !easycomplete#lsp#utils#is_file_uri(a:uri)
-        return v:null
-    endif
+  if !easycomplete#lsp#utils#is_file_uri(a:uri)
+    return v:null
+  endif
 
-    let l:path = easycomplete#lsp#utils#uri_to_path(a:uri)
-    let l:range = a:text_edit['range']
-    let [l:line, l:col] = easycomplete#lsp#utils#position#lsp_to_vim(l:path, l:range['start'])
+  let l:path = easycomplete#lsp#utils#uri_to_path(a:uri)
+  let l:range = a:text_edit['range']
+  let [l:line, l:col] = easycomplete#lsp#utils#position#lsp_to_vim(l:path, l:range['start'])
 
-    let l:index = l:line - 1
-    if has_key(a:cache, l:path)
-        let l:text = a:cache[l:path][l:index]
+  let l:index = l:line - 1
+  if has_key(a:cache, l:path)
+    let l:text = a:cache[l:path][l:index]
+  else
+    let l:contents = getbufline(l:path, 1, '$')
+    if !empty(l:contents)
+      let l:text = get(l:contents, l:index, '')
     else
-        let l:contents = getbufline(l:path, 1, '$')
-        if !empty(l:contents)
-            let l:text = get(l:contents, l:index, '')
-        else
-            let l:contents = readfile(l:path)
-            let a:cache[l:path] = l:contents
-            let l:text = get(l:contents, l:index, '')
-        endif
+      let l:contents = readfile(l:path)
+      let a:cache[l:path] = l:contents
+      let l:text = get(l:contents, l:index, '')
     endif
+  endif
 
-    return {
+  return {
         \ 'filename': l:path,
         \ 'lnum': l:line,
         \ 'col': l:col,
@@ -82,54 +82,54 @@ endfunction
 " _apply
 "
 function! s:_apply(bufnr, text_edit, cursor_position) abort
-    " create before/after line.
-    let l:start_line = getline(a:text_edit['range']['start']['line'] + 1)
-    let l:end_line = getline(a:text_edit['range']['end']['line'] + 1)
-    let l:before_line = strcharpart(l:start_line, 0, a:text_edit['range']['start']['character'])
-    let l:after_line = strcharpart(l:end_line, a:text_edit['range']['end']['character'], strchars(l:end_line) - a:text_edit['range']['end']['character'])
+  " create before/after line.
+  let l:start_line = getline(a:text_edit['range']['start']['line'] + 1)
+  let l:end_line = getline(a:text_edit['range']['end']['line'] + 1)
+  let l:before_line = strcharpart(l:start_line, 0, a:text_edit['range']['start']['character'])
+  let l:after_line = strcharpart(l:end_line, a:text_edit['range']['end']['character'], strchars(l:end_line) - a:text_edit['range']['end']['character'])
 
-    " create new lines.
-    let l:new_lines = easycomplete#lsp#utils#_split_by_eol(a:text_edit['newText'])
-    let l:new_lines[0] = l:before_line . l:new_lines[0]
-    let l:new_lines[-1] = l:new_lines[-1] . l:after_line
+  " create new lines.
+  let l:new_lines = easycomplete#lsp#utils#_split_by_eol(a:text_edit['newText'])
+  let l:new_lines[0] = l:before_line . l:new_lines[0]
+  let l:new_lines[-1] = l:new_lines[-1] . l:after_line
 
   " save length.
-    let l:new_lines_len = len(l:new_lines)
-    let l:range_len = (a:text_edit['range']['end']['line'] - a:text_edit['range']['start']['line']) + 1
+  let l:new_lines_len = len(l:new_lines)
+  let l:range_len = (a:text_edit['range']['end']['line'] - a:text_edit['range']['start']['line']) + 1
 
-    " fixendofline
-    let l:buffer_length = len(getbufline(a:bufnr, '^', '$'))
-    " let l:should_fixendofline = lsp#utils#buffer#_get_fixendofline(a:bufnr)
-    let l:should_fixendofline = getbufvar(a:bufnr, '&endofline') || getbufvar(a:bufnr, '&fixendofline')
-    let l:should_fixendofline = l:should_fixendofline && l:new_lines[-1] ==# ''
-    let l:should_fixendofline = l:should_fixendofline && l:buffer_length <= a:text_edit['range']['end']['line']
-    let l:should_fixendofline = l:should_fixendofline && a:text_edit['range']['end']['character'] == 0
-    if l:should_fixendofline
-        call remove(l:new_lines, -1)
-    endif
+  " fixendofline
+  let l:buffer_length = len(getbufline(a:bufnr, '^', '$'))
+  " let l:should_fixendofline = lsp#utils#buffer#_get_fixendofline(a:bufnr)
+  let l:should_fixendofline = getbufvar(a:bufnr, '&endofline') || getbufvar(a:bufnr, '&fixendofline')
+  let l:should_fixendofline = l:should_fixendofline && l:new_lines[-1] ==# ''
+  let l:should_fixendofline = l:should_fixendofline && l:buffer_length <= a:text_edit['range']['end']['line']
+  let l:should_fixendofline = l:should_fixendofline && a:text_edit['range']['end']['character'] == 0
+  if l:should_fixendofline
+    call remove(l:new_lines, -1)
+  endif
 
-    " fix cursor pos
-    if a:text_edit['range']['end']['line'] < a:cursor_position['line']
-        " fix cursor line
-        let a:cursor_position['line'] += l:new_lines_len - l:range_len
-    elseif a:text_edit['range']['end']['line'] == a:cursor_position['line'] && a:text_edit['range']['end']['character'] <= a:cursor_position['character']
-        " fix cursor line and col
-        let a:cursor_position['line'] += l:new_lines_len - l:range_len
-        let l:end_character = strchars(l:new_lines[-1]) - strchars(l:after_line)
-        let l:end_offset = a:cursor_position['character'] - a:text_edit['range']['end']['character']
-        let a:cursor_position['character'] = l:end_character + l:end_offset
-    endif
+  " fix cursor pos
+  if a:text_edit['range']['end']['line'] < a:cursor_position['line']
+    " fix cursor line
+    let a:cursor_position['line'] += l:new_lines_len - l:range_len
+  elseif a:text_edit['range']['end']['line'] == a:cursor_position['line'] && a:text_edit['range']['end']['character'] <= a:cursor_position['character']
+    " fix cursor line and col
+    let a:cursor_position['line'] += l:new_lines_len - l:range_len
+    let l:end_character = strchars(l:new_lines[-1]) - strchars(l:after_line)
+    let l:end_offset = a:cursor_position['character'] - a:text_edit['range']['end']['character']
+    let a:cursor_position['character'] = l:end_character + l:end_offset
+  endif
 
-    " append or delete lines.
-    if l:new_lines_len > l:range_len
-        call append(a:text_edit['range']['start']['line'], repeat([''], l:new_lines_len - l:range_len))
-    elseif l:new_lines_len < l:range_len
-        let l:offset = l:range_len - l:new_lines_len
-        call s:delete(a:bufnr, a:text_edit['range']['start']['line'] + 1, a:text_edit['range']['start']['line'] + l:offset)
-    endif
+  " append or delete lines.
+  if l:new_lines_len > l:range_len
+    call append(a:text_edit['range']['start']['line'], repeat([''], l:new_lines_len - l:range_len))
+  elseif l:new_lines_len < l:range_len
+    let l:offset = l:range_len - l:new_lines_len
+    call s:delete(a:bufnr, a:text_edit['range']['start']['line'] + 1, a:text_edit['range']['start']['line'] + l:offset)
+  endif
 
-    " set lines.
-    call setline(a:text_edit['range']['start']['line'] + 1, l:new_lines)
+  " set lines.
+  call setline(a:text_edit['range']['start']['line'] + 1, l:new_lines)
 endfunction
 
 "
@@ -170,9 +170,9 @@ function! s:_check(text_edits) abort
     let l:range = a:text_edits[0].range
     for l:text_edit in a:text_edits[1 : -1]
       if l:range.end.line > l:text_edit.range.start.line || (
-      \   l:range.end.line == l:text_edit.range.start.line &&
-      \   l:range.end.character > l:text_edit.range.start.character
-      \ )
+            \   l:range.end.line == l:text_edit.range.start.line &&
+            \   l:range.end.character > l:text_edit.range.start.character
+            \ )
         echom 'text_edit: range overlapped.'
       endif
       let l:range = l:text_edit.range
@@ -208,12 +208,12 @@ endfunction
 "
 function! s:delete(bufnr, start, end) abort
   if exists('*deletebufline')
-      call deletebufline(a:bufnr, a:start, a:end)
+    call deletebufline(a:bufnr, a:start, a:end)
   else
-      let l:foldenable = &foldenable
-      setlocal nofoldenable
-      execute printf('%s,%sdelete _', a:start, a:end)
-      let &foldenable = l:foldenable
+    let l:foldenable = &foldenable
+    setlocal nofoldenable
+    execute printf('%s,%sdelete _', a:start, a:end)
+    let &foldenable = l:foldenable
   endif
 endfunction
 
