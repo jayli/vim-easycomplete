@@ -193,7 +193,16 @@ augroup easycomplete#register
       \ 'command': 'solargraph'
       \  })
 
-  " TODO 还未调通
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'kt',
+      \ 'whitelist': ['kotlin'],
+      \ 'completor': 'easycomplete#sources#kotlin#completor',
+      \ 'constructor' :'easycomplete#sources#kotlin#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#kotlin#GotoDefinition',
+      \ 'command': 'kotlin-language-server'
+      \  })
+
+  " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
       \ 'whitelist': ['cmake','make'],

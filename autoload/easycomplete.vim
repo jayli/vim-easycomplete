@@ -163,6 +163,7 @@ function! s:BindingTypingCommandOnce()
 
   " 安装 lsp 依赖
   command! -nargs=? EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
+  command! -nargs=? InstallLspServer call easycomplete#installer#install(<q-args>)
   " Goto definition 命令
   command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
   " 检查插件依赖的命令工具是否已经安装
@@ -751,7 +752,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     return
   endif
   if !easycomplete#installer#executable(cmd)
-    let l:lsp_installing_msg = "'". cmd ."' is not avilable. Install: ':EasyCompleteInstallServer'"
+    let l:lsp_installing_msg = "'". cmd ."' is not avilable. Do ':InstallLspServer'"
     if g:env_is_nvim
       call s:AsyncRun(function("easycomplete#util#info"), [l:lsp_installing_msg], 1)
     else

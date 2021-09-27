@@ -406,7 +406,7 @@ endfunction
 function! s:TsserverIsReady()
   if !easycomplete#installer#executable('tsserver')
     call easycomplete#util#info("Please Install tsserver by ",
-          \ "':EasyCompleteInstallServer' or 'npm -g install typescript'")
+          \ "':InstallLspServer' or 'npm -g install typescript'")
     return v:false
   endif
   return v:true

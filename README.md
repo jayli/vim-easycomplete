@@ -64,6 +64,7 @@ All commands:
 | Command                           | Description                              |
 |-----------------------------------|------------------------------------------|
 | `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
 | `:EasyCompleteGotoDefinition`     | Goto definition position                 |
 | `:EasyCompleteCheck`              | Checking LSP server                      |
 | `:EasyCompleteProfileStart`       | Start record diagnostics message         |
@@ -108,6 +109,7 @@ All supported languages:
 | rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
 | nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
+| kt               | Kotlin                | kotlin-language-server | Yes                | java/jdk        |
 | grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
 | cmake            | cmake                 | cmake-language-server  | Yes                | python3/pip3    |
 | snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
@@ -124,6 +126,8 @@ More info about semantic completion for each supported language:
 - HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) manually.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
+- Cmake: [cmake-language-server](https://github.com/regen100/cmake-language-server) required.
+- Kotlin: [kotlin-language-server](https://github.com/fwcd/kotlin-language-server) required.
 - Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
