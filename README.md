@@ -45,7 +45,7 @@ It use Tab to trigger completion suggestions. You can change this setting by
 let g:easycomplete_tab_trigger="<c-space>"
 ```
 
-There are four build-in popup menu themes for default styles confliction: `dark`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
+There are four build-in popup menu themes for default styles confliction: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
 
 ### Useage
 
