@@ -301,7 +301,8 @@ function! easycomplete#CompleteDone()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
-  if pumvisible() || empty(v:completed_item)
+  " bugfix for #88
+  if pumvisible() || (empty(v:completed_item) && g:easycomplete_first_complete_hit != 1)
     call s:zizz()
     return
   endif

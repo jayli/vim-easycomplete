@@ -181,7 +181,8 @@ augroup easycomplete#register
       \ 'completor': 'easycomplete#sources#lua#completor',
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
-      \ 'command': 'emmylua-ls'
+      \ 'command': 'emmylua-ls',
+      \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -208,7 +209,8 @@ augroup easycomplete#register
       \ 'completor': 'easycomplete#sources#rust#completor',
       \ 'constructor' :'easycomplete#sources#rust#constructor',
       \ 'gotodefinition': 'easycomplete#sources#rust#GotoDefinition',
-      \ 'command': 'rust-analyzer'
+      \ 'command': 'rust-analyzer',
+      \ 'semantic_triggers':["::$"]
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({

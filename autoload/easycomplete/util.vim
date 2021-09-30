@@ -116,11 +116,11 @@ endfunction
 function! s:SameItem(item1,item2)
   let item1 = a:item1
   let item2 = a:item2
-  if get(item1, "word") == get(item2, "word")
-        \ && get(item1, "menu") == get(item2, "menu")
-        \ && get(item1, "kind") == get(item2, "kind")
-        \ && get(item1, "abbr") == get(item2, "abbr")
-        \ && get(item1, "info") == get(item2, "info")
+  if get(item1, "word") ==# get(item2, "word")
+        \ && get(item1, "menu") ==# get(item2, "menu")
+        \ && get(item1, "kind") ==# get(item2, "kind")
+        \ && get(item1, "abbr") ==# get(item2, "abbr")
+        \ && get(item1, "info") ==# get(item2, "info")
     return v:true
   else
     return v:false
