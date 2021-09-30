@@ -75,7 +75,7 @@ augroup easycomplete#register
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
       \ 'command': 'ccls',
-      \ 'semantic_triggers':["->$", "::$"]
+      \ 'semantic_triggers':["[^->]->$", "[^:]::$"]
       \  })
 
   " css-languageserver 默认不带 completionProvider，必须要安装
