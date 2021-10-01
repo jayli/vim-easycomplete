@@ -1683,13 +1683,17 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  " hack for vim-language-server:
-  "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
-  "   g:b:l:a: 都是正确的，只有 s: 不正确
-  "   需要修改 word 为 insertText.slice(2)
   try
+    " hack for vim-language-server:
+    "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
+    "   g:b:l:a: 都是正确的，只有 s: 不正确
+    "   需要修改 word 为 insertText.slice(2)
     if &filetype == 'vim' && l:ctx['typed'] =~ "s:\\w\\{-}$"
       let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
+    elseif &filetype == "xml" && l:ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理
+      let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
+    elseif &filetype == "xml" && l:ctx['typed'] =~ "</$" " </> 的处理
+      let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
     endif
   catch
     echom v:exception
@@ -1706,6 +1710,21 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   endtry
 
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
+endfunction
+
+function! s:XmlHack_S_ColonMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && get(a:val, "abbr") =~ "\\w\\:\\w\\{-}\\~$"
+    let abbr = a:val.abbr
+    let a:val.word = substitute(substitute(abbr, "^\\w\\{-}\\:", "", 'g'), "\\~$", "", 'g')
+    let a:val.user_data = ""
+  elseif has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && trim(get(a:val, "word")) =~ "/[:a-zA-Z0-9]\\{-}>$"
+    let word = trim(a:val.word)
+    let a:val.word = substitute(word, "^<\\{-}/", "", 'g')
+    let a:val.user_data = ""
+  endif
+  return a:val
 endfunction
 
 function! s:VimHack_S_ColonMap(key, val)
@@ -1765,10 +1784,13 @@ function! s:GetVimCompletionItems(response, plugin_name)
       endif
     endif
 
-    if has_key(l:completion_item, 'textEdit') &&
-          \ type(l:completion_item['textEdit']) == type({}) &&
-          \ has_key(l:completion_item['textEdit'], 'nextText')
-      let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
+    if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({})
+      if has_key(l:completion_item['textEdit'], 'nextText')
+        let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
+      endif
+      if has_key(l:completion_item['textEdit'], 'newText')
+        let l:vim_complete_item['word'] = l:completion_item['textEdit']['newText']
+      endif
     elseif has_key(l:completion_item, 'insertText') && !empty(l:completion_item['insertText'])
       let l:vim_complete_item['word'] = l:completion_item['insertText']
     else
@@ -1810,7 +1832,10 @@ function! s:GetVimCompletionItems(response, plugin_name)
 
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
-  let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
+
+  if index(['nim','kotlin'], &filetype) >= 0
+    let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
+  endif
 
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
 endfunction

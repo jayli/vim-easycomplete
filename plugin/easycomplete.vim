@@ -219,7 +219,8 @@ augroup easycomplete#register
       \ 'completor': 'easycomplete#sources#xml#completor',
       \ 'constructor' :'easycomplete#sources#xml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#xml#GotoDefinition',
-      \ 'command': 'lemminx'
+      \ 'command': 'lemminx',
+      \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \  })
 
   " TODO cmake-languageserver 本身有 bug，等其更新
