@@ -14,7 +14,8 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
       \   'iskeyword': '@,48-57,_,192-255,-#',
       \   'indexes':{'runtime':"true", 'gap':100, 'count':3, 'runtimepath': "true"},
       \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
-      \   'suggest': { 'fromVimruntime': "true" , 'fromRuntimepath': "true"}
+      \   'diagnostic': {"enable": v:true},
+      \   'suggest': { 'fromVimruntime': v:true , 'fromRuntimepath': v:true}
       \ }
       \ })
 endfunction
