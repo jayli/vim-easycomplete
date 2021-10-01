@@ -314,9 +314,9 @@ function! s:FuzzySearchRegx(needle, haystack)
   endif
 
   let needle_ls = map(easycomplete#util#str2list(a:needle), { _, val -> nr2char(val)})
-  let needle_ls_regx = "^" . join(needle_ls, "[a-zA-Z0-9_#:\.]*")
+  let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]*")
 
-  return (match(a:haystack, needle_ls_regx) == 0) ? v:true : v:false
+  return (match(a:haystack, needle_ls_regx) >= 0) ? v:true : v:false
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)

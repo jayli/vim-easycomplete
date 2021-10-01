@@ -675,7 +675,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 150
+    let word_first_type_delay = 50
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -1789,6 +1789,14 @@ function! s:GetVimCompletionItems(response, plugin_name)
               \ 'placeholder_position': l:placeholder_position,
               \ 'cursor_backing_steps': l:cursor_backing_steps})
       endif
+    elseif l:completion_item['label'] =~ ".(.*)$"
+      let l:vim_complete_item['abbr'] = l:completion_item['label']
+      let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
+      let l:vim_complete_item["user_data"] = json_encode({
+        \ 'expandable': 1,
+        \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
+        \ 'cursor_backing_steps': 1
+        \ })
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
@@ -1802,6 +1810,7 @@ function! s:GetVimCompletionItems(response, plugin_name)
 
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
+  let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
 
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
 endfunction
