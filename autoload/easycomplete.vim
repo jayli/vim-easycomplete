@@ -1206,7 +1206,7 @@ endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
   try
-    if easycomplete#CheckContextSequence(g:easycomplete_firstcomplete_ctx)
+    if s:OrigionalPosition()
       let filtered_menu = easycomplete#util#CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 500)
       let g:easycomplete_stunt_menuitems = deepcopy(filtered_menu)
       let result = filtered_menu[0 : g:easycomplete_maxlength]
@@ -1809,4 +1809,19 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
       " do nothing
     endif
   endif
+endfunction
+
+" todo
+" jayli
+function! easycomplete#LspDignosticsRequest(info, plugin_name) abort
+  let l:server_name = a:info['server_names'][0]
+  call easycomplete#lsp#send_request(l:server_name, {
+        \ 'method': 'textDocument/publishDiagnostics',
+        \ 'params': {
+        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
+        \   'position': easycomplete#lsp#get_position(),
+        \   'context': { 'triggerKind': 1 }
+        \ },
+        \ 'on_notification': function('s:HandleLspCompletion', [l:server_name, a:plugin_name])
+        \ })
 endfunction
