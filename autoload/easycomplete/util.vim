@@ -40,22 +40,6 @@ function! easycomplete#util#GetAttachedPlugins()
   return attached_plugins
 endfunction
 
-" 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
-" tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
-" 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
-" Server 的补全 Plugin 对象，而不返回一个数组
-function! easycomplete#util#GetLspPlugin()
-  let attached_plugins = easycomplete#util#GetAttachedPlugins()
-  let ret_plugin = {}
-  for plugin in attached_plugins
-    if has_key(plugin, 'gotodefinition') && has_key(plugin, 'command')
-      let ret_plugin = plugin
-      break
-    endif
-  endfor
-  return ret_plugin
-endfunction
-
 " 运行一个全局的 Timer，只在 complete 的时候用
 " 参数：method, args, timer
 " method 必须是一个全局方法,
@@ -502,44 +486,6 @@ function! easycomplete#util#GetTypingWord()
   return word
 endfunction
 
-function! easycomplete#util#LspType(c_type)
-  let l:kinds = {
-      \ 'Text' : 1,
-      \ 'Method' : 2,
-      \ 'Function' : 3,
-	    \ 'Constructor' : 4,
-      \ 'Field' : 5,
-      \ 'Variable' : 6,
-      \ 'Class' : 7,
-      \ 'Interface' : 8,
-      \ 'Module' : 9,
-      \ 'Property' : 10,
-      \ 'Unit' : 11,
-      \ 'Value' : 12,
-      \ 'Enum' : 13,
-      \ 'Keyword' : 14,
-      \ 'Snippet' : 15,
-      \ 'Color' : 16,
-      \ 'File' : 17,
-      \ 'Reference' : 18,
-      \ 'Folder' : 19,
-      \ 'EnumMember' : 20,
-      \ 'Constant' : 21,
-      \ 'Struct' : 22,
-      \ 'Event' : 23,
-      \ 'Operator' : 24,
-      \ 'TypeParameter' : 25
-      \ }
-  let l:type = ""
-  for item in keys(l:kinds)
-    if a:c_type == l:kinds[item]
-      let l:type = tolower(item[0])
-      break
-    endif
-  endfor
-  return l:type
-endfunction
-
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
@@ -889,3 +835,180 @@ function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   return snip_ctx[start_line_index:end_line_index]
 endfunction
 
+function! easycomplete#util#expandable(item)
+  if has_key(a:item, 'user_data') && !empty(get(a:item, 'user_data', ''))
+    let user_data_str = get(a:item, 'user_data', '')
+    if !easycomplete#util#IsJson(user_data_str)
+      return v:false
+    endif
+
+    let l:data = json_decode(user_data_str)
+    if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
+      return get(l:data, 'expandable', 0)
+    endif
+  else
+    return v:false
+  endif
+endfunction
+
+" 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
+" tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
+" 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
+" Server 的补全 Plugin 对象，而不返回一个数组
+function! easycomplete#util#GetLspPlugin()
+  let attached_plugins = easycomplete#util#GetAttachedPlugins()
+  let ret_plugin = {}
+  for plugin in attached_plugins
+    if has_key(plugin, 'gotodefinition') && has_key(plugin, 'command')
+      let ret_plugin = plugin
+      break
+    endif
+  endfor
+  return ret_plugin
+endfunction
+
+function! easycomplete#util#LspType(c_type)
+  let l:kinds = {
+      \ 'Text':          1,  'Method':      2,
+      \ 'Function':      3,  'Constructor': 4,
+      \ 'Field':         5,  'Variable':    6,
+      \ 'Class':         7,  'Interface':   8,
+      \ 'Module':        9,  'Property':    10,
+      \ 'Unit':          11, 'Value':       12,
+      \ 'Enum':          13, 'Keyword':     14,
+      \ 'Snippet':       15, 'Color':       16,
+      \ 'File':          17, 'Reference':   18,
+      \ 'Folder':        19, 'EnumMember':  20,
+      \ 'Constant':      21, 'Struct':      22,
+      \ 'Event':         23, 'Operator':    24,
+      \ 'TypeParameter': 25
+      \ }
+  let l:type = ""
+  for item in keys(l:kinds)
+    if a:c_type == l:kinds[item]
+      let l:type = tolower(item[0])
+      break
+    endif
+  endfor
+  return l:type
+endfunction
+
+function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
+  let l:result = a:response['result']
+  if type(l:result) == type([])
+    let l:items = l:result
+    let l:incomplete = 0
+  elseif type(l:result) == type({})
+    let l:items = l:result['items']
+    let l:incomplete = l:result['isIncomplete']
+  else
+    let l:items = []
+    let l:incomplete = 0
+  endif
+
+  let l:vim_complete_items = []
+  for l:completion_item in l:items
+    let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
+    let l:vim_complete_item = {
+          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
+          \ 'dup': 1,
+          \ 'menu' : "[". toupper(a:plugin_name) ."]",
+          \ 'empty': 1,
+          \ 'icase': 1,
+          \ }
+
+    " 如果 label 中包含括号 且过长
+    if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
+      if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
+        let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
+      endif
+    endif
+
+    if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({})
+      if has_key(l:completion_item['textEdit'], 'nextText')
+        let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
+      endif
+      if has_key(l:completion_item['textEdit'], 'newText')
+        let l:vim_complete_item['word'] = l:completion_item['textEdit']['newText']
+      endif
+    elseif has_key(l:completion_item, 'insertText') && !empty(l:completion_item['insertText'])
+      let l:vim_complete_item['word'] = l:completion_item['insertText']
+    else
+      let l:vim_complete_item['word'] = l:completion_item['label']
+    endif
+
+    if l:expandable
+      let l:origin_word = l:vim_complete_item['word']
+      let l:placeholder_regex = '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}'
+      let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
+            \ substitute(l:vim_complete_item['word'],
+            \ l:placeholder_regex, '', 'g'))
+      let l:placeholder_position = match(l:origin_word, l:placeholder_regex)
+      let l:cursor_backing_steps = strlen(l:vim_complete_item['word'][l:placeholder_position:])
+      let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
+      if strlen(l:origin_word) > strlen(l:vim_complete_item['word'])
+        let l:vim_complete_item['user_data'] = json_encode({'expandable':1,
+              \ 'placeholder_position': l:placeholder_position,
+              \ 'cursor_backing_steps': l:cursor_backing_steps})
+      endif
+    elseif l:completion_item['label'] =~ ".(.*)$"
+      let l:vim_complete_item['abbr'] = l:completion_item['label']
+      let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
+      let l:vim_complete_item["user_data"] = json_encode({
+        \ 'expandable': 1,
+        \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
+        \ 'cursor_backing_steps': 1
+        \ })
+    else
+      let l:vim_complete_item['abbr'] = l:completion_item['label']
+    endif
+
+    let l:t_info = s:NormalizeLspInfo(get(l:completion_item, "documentation", ""))
+    if !empty(get(l:completion_item, "detail", ""))
+      let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
+    else
+      let l:vim_complete_item['info'] = l:t_info
+    endif
+
+    let l:vim_complete_items += [l:vim_complete_item]
+  endfor
+
+  if index(['nim','kotlin'], &filetype) >= 0
+    let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
+  endif
+
+  return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
+endfunction
+
+function! s:NormalizeLspInfo(info)
+  let l:li = split(a:info, "\n")
+  let l:str = []
+
+  for item in l:li
+    if item ==# ''
+      call add(l:str, item)
+    else
+      if len(l:str) == 0
+        call add(l:str, item)
+      else
+        let l:old = l:str[len(l:str) - 1]
+        let l:str[len(l:str) - 1] = l:old . " " . item
+      endif
+    endif
+  endfor
+  return l:str
+endfunction
+
+" s:find_complete_servers() 获取 LSP Complete Server 信息
+function! easycomplete#util#FindLspServers() abort
+  let l:server_names = []
+  for l:server_name in easycomplete#lsp#get_allowed_servers()
+    let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
+    if has_key(l:init_capabilities, 'completionProvider')
+      " TODO: support triggerCharacters
+      call add(l:server_names, l:server_name)
+    endif
+  endfor
+
+  return { 'server_names': l:server_names }
+endfunction

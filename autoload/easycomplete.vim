@@ -57,7 +57,7 @@ function! s:InitLocalVars()
 
   " 菜单显示最大 item 数量，默认和 coc 保持一致
   " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
-  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
+  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 50 : 50)
 
   " Global CompleteChanged Event：异步回调显示 popup 时借用
   let g:easycomplete_completechanged_event = {}
@@ -1035,7 +1035,7 @@ function! easycomplete#TypeEnterWithPUM()
   if pumvisible()
     call s:zizz()
     " 新增 expandable 支持 for #48
-    if s:expandable(l:item)
+    if easycomplete#util#expandable(l:item)
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
     endif
@@ -1625,7 +1625,7 @@ function! easycomplete#DoLspComplete(opt, ctx)
     return v:true
   endif
 
-  let l:info = easycomplete#FindLspCompleteServers()
+  let l:info = easycomplete#util#FindLspServers()
   let l:ctx = easycomplete#context()
   if empty(l:info['server_names'])
     call easycomplete#complete(a:opt['name'], l:ctx, l:ctx['startcol'], [])
@@ -1649,24 +1649,6 @@ function! easycomplete#LspCompleteRequest(info, plugin_name) abort
         \ },
         \ 'on_notification': function('s:HandleLspCompletion', [l:server_name, a:plugin_name])
         \ })
-endfunction
-
-" s:find_complete_servers() 获取 LSP Complete Server 信息
-function! easycomplete#FindLspCompleteServers() abort
-  let l:server_names = []
-  for l:server_name in easycomplete#lsp#get_allowed_servers()
-    let l:init_capabilities = easycomplete#lsp#get_server_capabilities(l:server_name)
-    if has_key(l:init_capabilities, 'completionProvider')
-      " TODO: support triggerCharacters
-      call add(l:server_names, l:server_name)
-    endif
-  endfor
-
-  return { 'server_names': l:server_names }
-endfunction
-
-function! easycomplete#HandleLspComplete(...)
-  return call('s:HandleLspComplete', a:000)
 endfunction
 
 function! s:HandleLspCompletion(server_name, plugin_name, data) abort
@@ -1712,6 +1694,15 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
+function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
+  let l:result = a:data['response']['result']
+  let l:response = a:data['response']
+
+  " 这里包含了 info document 和 matches
+  let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name)
+  return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
+endfunction
+
 function! s:XmlHack_S_ColonMap(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
         \ && get(a:val, "abbr") =~ "\\w\\:\\w\\{-}\\~$"
@@ -1744,137 +1735,6 @@ function! s:JsonHack_Q_QuotationMap(key, val)
   return a:val
 endfunction
 
-function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
-  let l:result = a:data['response']['result']
-  let l:response = a:data['response']
-
-  " 这里包含了 info document 和 matches
-  let l:completion_result = s:GetVimCompletionItems(l:response, a:plugin_name)
-  return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
-endfunction
-
-function! s:GetVimCompletionItems(response, plugin_name)
-  let l:result = a:response['result']
-  if type(l:result) == type([])
-    let l:items = l:result
-    let l:incomplete = 0
-  elseif type(l:result) == type({})
-    let l:items = l:result['items']
-    let l:incomplete = l:result['isIncomplete']
-  else
-    let l:items = []
-    let l:incomplete = 0
-  endif
-
-  let l:vim_complete_items = []
-  for l:completion_item in l:items
-    let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
-    let l:vim_complete_item = {
-          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
-          \ 'dup': 1,
-          \ 'menu' : "[". toupper(a:plugin_name) ."]",
-          \ 'empty': 1,
-          \ 'icase': 1,
-          \ }
-
-    " 如果 label 中包含括号 且过长
-    if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
-      if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
-        let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
-      endif
-    endif
-
-    if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({})
-      if has_key(l:completion_item['textEdit'], 'nextText')
-        let l:vim_complete_item['word'] = l:completion_item['textEdit']['nextText']
-      endif
-      if has_key(l:completion_item['textEdit'], 'newText')
-        let l:vim_complete_item['word'] = l:completion_item['textEdit']['newText']
-      endif
-    elseif has_key(l:completion_item, 'insertText') && !empty(l:completion_item['insertText'])
-      let l:vim_complete_item['word'] = l:completion_item['insertText']
-    else
-      let l:vim_complete_item['word'] = l:completion_item['label']
-    endif
-
-    if l:expandable
-      let l:origin_word = l:vim_complete_item['word']
-      let l:placeholder_regex = '\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}'
-      let l:vim_complete_item['word'] = easycomplete#lsp#utils#make_valid_word(
-            \ substitute(l:vim_complete_item['word'],
-            \ l:placeholder_regex, '', 'g'))
-      let l:placeholder_position = match(l:origin_word, l:placeholder_regex)
-      let l:cursor_backing_steps = strlen(l:vim_complete_item['word'][l:placeholder_position:])
-      let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
-      if strlen(l:origin_word) > strlen(l:vim_complete_item['word'])
-        let l:vim_complete_item['user_data'] = json_encode({'expandable':1,
-              \ 'placeholder_position': l:placeholder_position,
-              \ 'cursor_backing_steps': l:cursor_backing_steps})
-      endif
-    elseif l:completion_item['label'] =~ ".(.*)$"
-      let l:vim_complete_item['abbr'] = l:completion_item['label']
-      let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
-      let l:vim_complete_item["user_data"] = json_encode({
-        \ 'expandable': 1,
-        \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
-        \ 'cursor_backing_steps': 1
-        \ })
-    else
-      let l:vim_complete_item['abbr'] = l:completion_item['label']
-    endif
-
-    let l:t_info = s:NormalizeLSPInfo(get(l:completion_item, "documentation", ""))
-    if !empty(get(l:completion_item, "detail", ""))
-      let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
-    else
-      let l:vim_complete_item['info'] = l:t_info
-    endif
-
-    let l:vim_complete_items += [l:vim_complete_item]
-  endfor
-
-  if index(['nim','kotlin'], &filetype) >= 0
-    let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
-  endif
-
-  return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
-endfunction
-
-function! s:expandable(item)
-  if has_key(a:item, 'user_data') && !empty(get(a:item, 'user_data', ''))
-    let user_data_str = get(a:item, 'user_data', '')
-    if !easycomplete#util#IsJson(user_data_str)
-      return v:false
-    endif
-
-    let l:data = json_decode(user_data_str)
-    if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
-      return get(l:data, 'expandable', 0)
-    endif
-  else
-    return v:false
-  endif
-endfunction
-
-function! s:NormalizeLSPInfo(info)
-  let l:li = split(a:info, "\n")
-  let l:str = []
-
-  for item in l:li
-    if item ==# ''
-      call add(l:str, item)
-    else
-      if len(l:str) == 0
-        call add(l:str, item)
-      else
-        let l:old = l:str[len(l:str) - 1]
-        let l:str[len(l:str) - 1] = l:old . " " . item
-      endif
-    endif
-  endfor
-  return l:str
-endfunction
-
 " LSP definition 跳转的通用封装
 " file_exts 文件后缀
 function! easycomplete#DoLspDefinition(file_exts)
@@ -1892,11 +1752,11 @@ function! easycomplete#LspDefinition() abort
   " typeDefinition => type definition
   let l:method = "definition"
   let l:operation = substitute(l:method, '\u', ' \l\0', 'g')
-  let l:servers = easycomplete#FindLspCompleteServers()['server_names']
+  let l:servers = easycomplete#util#FindLspServers()['server_names']
   if empty(l:servers)
     return v:false
   endif
-  let l:server = easycomplete#FindLspCompleteServers()['server_names'][0]
+  let l:server = easycomplete#util#FindLspServers()['server_names'][0]
   let l:plugin_name = s:GetPluginNameByLspName(l:server)
   if empty(easycomplete#installer#GetCommand(l:plugin_name))
     return v:false
