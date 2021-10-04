@@ -57,7 +57,7 @@ function! s:InitLocalVars()
 
   " 菜单显示最大 item 数量，默认和 coc 保持一致
   " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
-  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 50 : 50)
+  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 
   " Global CompleteChanged Event：异步回调显示 popup 时借用
   let g:easycomplete_completechanged_event = {}
@@ -120,6 +120,9 @@ function! easycomplete#Enable()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
   call easycomplete#lsp#enable()
+  call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
+        \ {'cb':function('easycomplete#HandleLspDiagnostic')}
+        \ ], 150)
   " 字典载入耗时较久，延迟载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
@@ -151,6 +154,8 @@ function! s:BindingTypingCommandOnce()
 
   augroup easycomplete#NormalBinding
     autocmd!
+    autocmd BufWritePost * call easycomplete#DoLspDignostics()
+    autocmd BufEnter * call easycomplete#DoLspDignostics()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
     " SecondComplete Entry
@@ -207,6 +212,20 @@ endfunction
 
 function! easycomplete#GetAllPlugins()
   return g:easycomplete_source
+endfunction
+
+function! easycomplete#GetCurrentLspContext()
+  let l:ctx = easycomplete#context()
+  let l:ctx_name = ''
+  for item in keys(g:easycomplete_source)
+    if s:CompleteSourceReady(item)
+      if has_key(get(g:easycomplete_source, item), "gotodefinition")
+        let l:ctx_name = item
+        break
+      endif
+    endif
+  endfor
+  return get(g:easycomplete_source, item, {})
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
@@ -1811,17 +1830,23 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
   endif
 endfunction
 
-" todo
-" jayli
-function! easycomplete#LspDignosticsRequest(info, plugin_name) abort
-  let l:server_name = a:info['server_names'][0]
-  call easycomplete#lsp#send_request(l:server_name, {
-        \ 'method': 'textDocument/publishDiagnostics',
-        \ 'params': {
-        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-        \   'position': easycomplete#lsp#get_position(),
-        \   'context': { 'triggerKind': 1 }
-        \ },
-        \ 'on_notification': function('s:HandleLspCompletion', [l:server_name, a:plugin_name])
-        \ })
+function! easycomplete#DoLspDignostics()
+  let opt = easycomplete#GetCurrentLspContext()
+  if empty(easycomplete#installer#GetCommand(opt['name']))
+    call easycomplete#util#once('lsp is not ready')
+    return
+  endif
+
+  let l:info = easycomplete#util#FindLspServers()
+  let l:ctx = easycomplete#context()
+  if empty(l:info['server_names'])
+    call easycomplete#util#once('lsp initialize failed')
+    return
+  endif
+  call easycomplete#lsp#notify_diagnostics_update()
+endfunction
+
+function! easycomplete#HandleLspDiagnostic(...) abort
+  echom "ok"
+  call s:log(a:000)
 endfunction

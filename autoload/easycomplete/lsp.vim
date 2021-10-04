@@ -247,6 +247,48 @@ function! easycomplete#lsp#send_request(server_name, request) abort
         \)
 endfunction
 
+" function! lsp#internal#diagnostics#state#_enable() abort
+function! easycomplete#lsp#diagnostics_enable(opt) abort
+
+  let Callback = a:opt.cb
+
+    let s:Dispose = easycomplete#lsp#callbag#pipe(
+        \ easycomplete#lsp#callbag#merge(
+        \   easycomplete#lsp#callbag#pipe(
+        \       easycomplete#lsp#stream(),
+        \       easycomplete#lsp#callbag#filter({x->has_key(x, 'server') && has_key(x, 'response')
+        \           && get(x['response'], 'method', '') ==# 'textDocument/publishDiagnostics'}),
+        \       easycomplete#lsp#callbag#tap({x->Callback(x['server'], x['response'])}),
+        \   ),
+        \   easycomplete#lsp#callbag#pipe(
+        \       easycomplete#lsp#stream(),
+        \       easycomplete#lsp#callbag#filter({x->has_key(x, 'server') && has_key(x, 'response')
+        \           && get(x['response'], 'method', '') ==# '$/vimlsp/lsp_server_exit' }),
+        \       easycomplete#lsp#callbag#tap({x->s:on_exit(x['response'])}),
+        \   ),
+        \ ),
+        \ easycomplete#lsp#callbag#subscribe(),
+        \ )
+
+    call s:notify_diagnostics_update()
+endfunction
+
+" call s:notify_diagnostics_update()
+" call s:notify_diagnostics_update('server')
+" call s:notify_diagnostics_update('server', 'uri')
+function! s:notify_diagnostics_update(...) abort
+    let l:data = { 'server': '$vimlsp', 'response': { 'method': '$/vimlsp/lsp_diagnostics_updated', 'params': {} } }
+    " if a:0 > 0 | let l:data['response']['params']['server'] = a:1 | endif
+    " if a:0 > 1 | let l:data['response']['params']['uri'] = a:2 | endif
+    call easycomplete#lsp#stream(1, l:data)
+    " doautocmd <nomodeline> User lsp_diagnostics_updated
+endfunction
+
+function! easycomplete#lsp#notify_diagnostics_update()
+  call s:notify_diagnostics_update()
+endfunction
+
+
 function! easycomplete#lsp#get_text_document_identifier(...) abort
   let l:buf = a:0 > 0 ? a:1 : bufnr('%')
   return { 'uri': easycomplete#lsp#utils#get_buffer_uri(l:buf) }

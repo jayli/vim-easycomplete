@@ -233,6 +233,10 @@ function! easycomplete#util#IsJson(str)
   return flag
 endfunction
 
+function! easycomplete#util#GetCurrentFullFileName()
+  return 'file://' . fnameescape(fnamemodify(bufname("%"),':p'))
+endfunction
+
 function! easycomplete#util#TagBarExists()
   try
     call funcref("tagbar#StopAutoUpdate")
