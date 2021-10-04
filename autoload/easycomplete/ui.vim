@@ -28,6 +28,39 @@ function! easycomplete#ui#SetScheme()
   endif
 endfunction
 
+" Get back ground color form a GroupName {{{
+function! easycomplete#ui#GetBgColor(name)
+  return easycomplete#ui#GetHiColor(a:name, "bg")
+endfunction "}}}
+
+" Get back ground color form a GroupName {{{
+function! easycomplete#ui#GetFgColor(name)
+  return easycomplete#ui#GetHiColor(a:name, "fg")
+endfunction "}}}
+
+" Get color from a scheme group {{{
+function! easycomplete#ui#GetHiColor(hiName, sufix)
+  let sufix = empty(a:sufix) ? "bg" : a:sufix
+  let hlString = easycomplete#ui#HighlightArgs(a:hiName)
+  if has("gui_running")
+    " Gui color name
+    let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\w\\+")
+    if my_color != ''
+      return my_color
+    endif
+  else
+    let my_color= matchstr(hlString,"\\(\\scterm" .sufix. "=\\)\\@<=\\w\\+")
+    if my_color!= ''
+      return my_color
+    endif
+  endif
+  return 'none'
+endfunction " }}}
+
+" Hilight {{{
+function! easycomplete#ui#HighlightArgs(name)
+  return 'hi ' . substitute(split(execute('hi ' . a:name), '\n')[0], '\<xxx\>', '', '')
+endfunction "}}}
 
 " Goto Window {{{
 function! easycomplete#ui#GotoWindow(winid) abort

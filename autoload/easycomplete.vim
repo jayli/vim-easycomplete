@@ -120,8 +120,9 @@ function! easycomplete#Enable()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
   call easycomplete#lsp#enable()
+  call easycomplete#sign#init()
   call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
-        \ {'cb':function('easycomplete#HandleLspDiagnostic')}
+        \ {'callback':function('easycomplete#HandleLspDiagnostic')}
         \ ], 150)
   " 字典载入耗时较久，延迟载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
@@ -155,7 +156,7 @@ function! s:BindingTypingCommandOnce()
   augroup easycomplete#NormalBinding
     autocmd!
     autocmd BufWritePost * call easycomplete#DoLspDignostics()
-    autocmd BufEnter * call easycomplete#DoLspDignostics()
+    " autocmd BufEnter * call easycomplete#DoLspDignostics()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
     " SecondComplete Entry
@@ -1830,6 +1831,10 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
   endif
 endfunction
 
+function! easycomplete#lint()
+  call easycomplete#DoLspDignostics()
+endfunction
+
 function! easycomplete#DoLspDignostics()
   let opt = easycomplete#GetCurrentLspContext()
   if empty(easycomplete#installer#GetCommand(opt['name']))
@@ -1846,7 +1851,8 @@ function! easycomplete#DoLspDignostics()
   call easycomplete#lsp#notify_diagnostics_update()
 endfunction
 
-function! easycomplete#HandleLspDiagnostic(...) abort
-  echom "ok"
-  call s:log(a:000)
+function! easycomplete#HandleLspDiagnostic(server, response) abort
+  call easycomplete#sign#flush()
+  call easycomplete#sign#cache(a:response)
+  call easycomplete#sign#refresh()
 endfunction

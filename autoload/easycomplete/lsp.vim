@@ -249,10 +249,8 @@ endfunction
 
 " function! lsp#internal#diagnostics#state#_enable() abort
 function! easycomplete#lsp#diagnostics_enable(opt) abort
-
-  let Callback = a:opt.cb
-
-    let s:Dispose = easycomplete#lsp#callbag#pipe(
+  let Callback = a:opt.callback
+  let s:Dispose = easycomplete#lsp#callbag#pipe(
         \ easycomplete#lsp#callbag#merge(
         \   easycomplete#lsp#callbag#pipe(
         \       easycomplete#lsp#stream(),
@@ -270,7 +268,7 @@ function! easycomplete#lsp#diagnostics_enable(opt) abort
         \ easycomplete#lsp#callbag#subscribe(),
         \ )
 
-    call s:notify_diagnostics_update()
+  call s:notify_diagnostics_update()
 endfunction
 
 " call s:notify_diagnostics_update()

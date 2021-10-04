@@ -233,8 +233,12 @@ function! easycomplete#util#IsJson(str)
   return flag
 endfunction
 
-function! easycomplete#util#GetCurrentFullFileName()
-  return 'file://' . fnameescape(fnamemodify(bufname("%"),':p'))
+function! easycomplete#util#GetFullName(fname)
+  return fnameescape(fnamemodify(a:fname,':p'))
+endfunction
+
+function! easycomplete#util#GetCurrentFullName()
+  return easycomplete#util#GetFullName(bufname("%"))
 endfunction
 
 function! easycomplete#util#TagBarExists()
@@ -853,6 +857,11 @@ function! easycomplete#util#expandable(item)
   else
     return v:false
   endif
+endfunction
+
+" 去掉前缀 file://...
+function! easycomplete#util#TrimFileName(str)
+  return substitute(a:str, "^file:\/\/", "", "i")
 endfunction
 
 " 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
