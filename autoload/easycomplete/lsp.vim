@@ -7,6 +7,7 @@ let s:last_command_id = 0
 let s:notification_callbacks = [] " { name, callback }
 let s:undefined_token = '__callbag_undefined__'
 let s:str_type = type('')
+let s:diagnostics_state = {}
 
 let s:default_symbol_kinds = {
       \ '1': 'file',
@@ -275,6 +276,8 @@ endfunction
 " call s:notify_diagnostics_update('server')
 " call s:notify_diagnostics_update('server', 'uri')
 function! s:notify_diagnostics_update(...) abort
+  call s:console('s:notify_diagnostics_update(...)',a:000)
+  call s:console('--->', 'notify_diagnostics_update')
     let l:data = { 'server': '$vimlsp', 'response': { 'method': '$/vimlsp/lsp_diagnostics_updated', 'params': {} } }
     " if a:0 > 0 | let l:data['response']['params']['server'] = a:1 | endif
     " if a:0 > 1 | let l:data['response']['params']['uri'] = a:2 | endif
@@ -1352,3 +1355,6 @@ function! s:Length(lines, start_line, start_char, end_line, end_char) abort
   return l:result
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction

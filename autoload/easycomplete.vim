@@ -15,6 +15,7 @@ augroup easycomplete#autocmd
 augroup END
 
 function! s:InitLocalVars()
+  call s:console(1)
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -155,7 +156,7 @@ function! s:BindingTypingCommandOnce()
 
   augroup easycomplete#NormalBinding
     autocmd!
-    autocmd BufWritePost * call easycomplete#DoLspDignostics()
+    autocmd BufWritePost * call easycomplete#lint()
     " autocmd BufEnter * call easycomplete#DoLspDignostics()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
@@ -1852,7 +1853,8 @@ function! easycomplete#DoLspDignostics()
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
+  call s:console("<----",a:response['params'])
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(a:response)
-  call easycomplete#sign#refresh()
+  call easycomplete#sign#render()
 endfunction

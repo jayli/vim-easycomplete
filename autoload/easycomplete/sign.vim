@@ -1,7 +1,6 @@
 
 
 " params 信息的缓存
-" {'method': 'textDocument/publishDiagnostics', 'jsonrpc': '2.0', 'params': {'uri': 'file:///Users/bachi/.vim/bundle/vim-easycomplete/autoload/easycomplete/sign.vim', 'diagnostics: [{'source': 'vimlsp', 'message': 'E125: Illegal argument: a:opt', 'severity': 1, 'range': {'end': {'character': 39, 'line': 19}, 'start': {'character': 38, 'line': 19}}}]}}
 let g:easycomplete_diagnostics_cache = {}
 
 let g:easycomplete_diagnostics_config = {
@@ -26,11 +25,11 @@ function! easycomplete#sign#flush()
     return
   endif
 
-  let lsp_server = server_info['server_names'][0]
+  " let lsp_server = server_info['server_names'][0]
   " file:///...
   let diagnostics_uri = g:easycomplete_diagnostics_cache['params']['uri']
   let diagnostics_list = g:easycomplete_diagnostics_cache['params']['diagnostics']
-  let fn = easycomplete#util#TrimFileName(easycomplete#util#GetFullName(diagnostics_uri)))
+  let fn = easycomplete#util#TrimFileName(easycomplete#util#GetFullName(diagnostics_uri))
   let l:count = 1
   while l:count <= len(diagnostics_list)
     call execute("sign unplace " . l:count . " file=" . fn)
@@ -64,19 +63,16 @@ function! easycomplete#sign#init()
 endfunction
 
 function! easycomplete#sign#cache(response)
+  echom g:easycomplete_diagnostics_cache
   let g:easycomplete_diagnostics_cache = deepcopy(a:response)
 endfunction
 
-function! easycomplete#sign#update()
-  call easycomplete#DoLspDignostics()
-endfunction
-
-function! easycomplete#sign#refresh()
+function! easycomplete#sign#render()
   if !exists("g:easycomplete_diagnostics_cache.params.diagnostics")
     return
   endif
 
-  let uri = substitute(g:easycomplete_diagnostics_cache['params']['uri'], "file://", "", "i")
+  let uri = g:easycomplete_diagnostics_cache['params']['uri']
   let l:count = 1
   while l:count <= len(g:easycomplete_diagnostics_cache['params']['diagnostics'])
     let item = g:easycomplete_diagnostics_cache['params']['diagnostics'][count]
@@ -84,11 +80,12 @@ function! easycomplete#sign#refresh()
     " sign place 1 line=10 name=error_holder file=/Users/bachi/ttt/ttt.vim
     let fn = easycomplete#util#TrimFileName(uri)
     let cmd = "sign place " . l:count . " line=".line." name=error_holder file=" . fn
-    echom '-------'
-    echom cmd
-    echom item['message']
     call execute(cmd)
     let l:count += 1
     if l:count > 100 | break | endif
   endwhile
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
