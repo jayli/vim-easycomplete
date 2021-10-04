@@ -1016,3 +1016,16 @@ function! easycomplete#util#FindLspServers() abort
 
   return { 'server_names': l:server_names }
 endfunction
+
+" deletebufline {{{
+function! util#deletebufline(bn, fl, ll)
+  " version <= 801 deletebufline dos not exists
+  if exists("deletebufline")
+    call deletebufline(a:bn, a:fl, a:ll)
+  else
+    let current_winid = bufwinid(bufnr(""))
+    call easycomplete#ui#GotoWindow(bufwinid(a:bn))
+    call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
+    call easycomplete#ui#GotoWindow(current_winid)
+  endif
+endfunction " }}}

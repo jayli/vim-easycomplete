@@ -101,7 +101,6 @@ function! s:check(info)
     " call setbufline(s:buf, 1, [rand(srand())])
   endif
 
-
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
 
