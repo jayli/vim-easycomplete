@@ -4,10 +4,10 @@
 let g:easycomplete_diagnostics_cache = {}
 
 let g:easycomplete_diagnostics_config = {
-      \ 'error':       {'type': 1, 'prompt_text': '>>', 'color': 'red'    },
-      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'color': 'yellow' },
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'color': 'blue'   },
-      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'color': 'green'  }
+      \ 'error':       {'type': 1, 'prompt_text': '>>', 'color': ['red',    '#FF0000']},
+      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'color': ['yellow', '#FFFF00']},
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'color': ['blue',   '#00FFFF']},
+      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'color': ['green',  '#00FF00'] }
       \ }
 
 function! easycomplete#sign#GetStyle(msg_type)
@@ -58,6 +58,8 @@ function! easycomplete#sign#init()
           \ 'linehl=' . opt[key].LineStyle
           \ ]
     exec join(sign_cmd, " ")
+    " jayli
+    " call easycomplete#ui#hi()
   endfor
   call execute('sign define place_holder text='. opt.error.prompt_text . ' texthl=PlaceHolder')
 endfunction

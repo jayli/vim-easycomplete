@@ -62,3 +62,16 @@ function! easycomplete#ui#HighlightArgs(name)
   return 'hi ' . substitute(split(execute('hi ' . a:name), '\n')[0], '\<xxx\>', '', '')
 endfunction "}}}
 
+" Set color {{{
+function! easycomplete#ui#hi(group, fg, bg, attr)
+  let prefix = has("gui_running") ? "gui" : "cterm"
+  if !empty(a:fg) && a:fg != -1
+    call execute(join(['hi', a:group, prefix . "fg=" . a:fg ], " "))
+  endif
+  if !empty(a:bg) && a:bg != -1
+    call execute(join(['hi', a:group, prefix . "bg=" . a:bg ], " "))
+  endif
+  if !empty(a:attr) && a:attr != ""
+    call execute(join(['hi', a:group, prefix . "=" . a:attr ], " "))
+  endif
+endfunction " }}}
