@@ -12,6 +12,9 @@ let g:easycomplete_default_plugin_init = 1
 
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
+let g:env_is_gui = has("gui_running") ? v:true : v:false
+let g:env_is_cterm = has("gui_running") ? v:false : v:true
+let g:easycomplete_config = {}
 
 " VIM 最低版本 8.2
 " Neo 最低版本 0.4.0

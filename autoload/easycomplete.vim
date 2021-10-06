@@ -35,10 +35,12 @@ function! easycomplete#Enable()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
   call easycomplete#lsp#enable()
-  call easycomplete#sign#init()
-  call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
-        \ {'callback':function('easycomplete#HandleLspDiagnostic')}
-        \ ], 150)
+  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call easycomplete#sign#init()
+    call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
+          \ {'callback':function('easycomplete#HandleLspDiagnostic')}
+          \ ], 150)
+  endif
   " 字典载入耗时较久，延迟载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
@@ -155,6 +157,7 @@ function! s:BindingTypingCommandOnce()
   augroup easycomplete#NormalBinding
     autocmd!
     autocmd BufWritePost * call easycomplete#lint()
+    autocmd CursorMoved * call easycomplete#CursorMoved()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
     " SecondComplete Entry
@@ -329,6 +332,10 @@ endfunction
 
 function! easycomplete#InsertLeave()
   call easycomplete#popup#InsertLeave()
+  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call easycomplete#lint()
+    call easycomplete#sign#LintCurrentLine()
+  endif
   call s:flush()
 endfunction
 
@@ -1793,6 +1800,17 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
   endif
 endfunction
 
+" lsp 各项配置检查是否通过
+function! easycomplete#ok(str)
+  let flag = v:false
+  if exists(a:str) && get(g:, a:str, 0) == 0
+    let flag = v:false
+  endif
+  let flag = v:true
+  let g:easycomplete_config[a:str] = flag
+  return flag
+endfunction
+
 function! easycomplete#lint()
   if !easycomplete#util#LspServerReady() | return | endif
   call easycomplete#lsp#notify_diagnostics_update()
@@ -1800,8 +1818,16 @@ function! easycomplete#lint()
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
-  call s:console("<----",a:response['params'])
+  " call s:console("<----",a:response['params'])
+  call easycomplete#sign#hold()
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(a:response)
+
   call easycomplete#sign#render()
+endfunction
+
+function! easycomplete#CursorMoved()
+  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call easycomplete#sign#LintCurrentLine()
+  endif
 endfunction

@@ -71,7 +71,7 @@ function! easycomplete#ui#hi(group, fg, bg, attr)
   if !empty(a:bg) && a:bg != -1
     call execute(join(['hi', a:group, prefix . "bg=" . a:bg ], " "))
   endif
-  if !empty(a:attr) && a:attr != ""
+  if exists("a:attr") && !empty(a:attr) && a:attr != ""
     call execute(join(['hi', a:group, prefix . "=" . a:attr ], " "))
   endif
 endfunction " }}}
