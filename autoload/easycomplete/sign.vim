@@ -76,6 +76,113 @@ function! easycomplete#sign#init()
   endfor
   call execute('sign define place_holder text='. opt['error'].prompt_text . ' texthl=PlaceHolder')
   call easycomplete#ui#hi('PlaceHolder', sign_column_bg, sign_column_bg, "")
+  call easycomplete#sign#command()
+endfunction
+
+function! easycomplete#sign#command()
+  command! EasyCompleteNextDiagnostic : call easycomplete#sign#next()
+  command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
+endfunction
+
+function! easycomplete#sign#next()
+  let origin_diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  if easycomplete#sign#DiagnosticsIsEmpty(origin_diagnostics)
+    return
+  endif
+  let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
+  let cursor_index = easycomplete#sign#CursorIndex()[0]
+  if len(diagnostics) == 1
+    call easycomplete#sign#jump(0)
+    return
+  endif
+  if cursor_index == len(diagnostics)
+    call easycomplete#sign#jump(0)
+    return
+  endif
+  call easycomplete#sign#jump(cursor_index)
+endfunction
+
+function! easycomplete#sign#previous()
+  let origin_diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  if easycomplete#sign#DiagnosticsIsEmpty(origin_diagnostics)
+    return
+  endif
+  let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
+  let cursor_index = easycomplete#sign#CursorIndex()[0]
+  let equal_flag = easycomplete#sign#CursorIndex()[1]
+  if len(diagnostics) == 1
+    call easycomplete#sign#jump(0)
+    return
+  endif
+  if cursor_index >= len(diagnostics)
+    call easycomplete#sign#jump(cursor_index - 1 - equal_flag)
+    return
+  endif
+  if cursor_index == 0
+    call easycomplete#sign#jump(len(diagnostics) - 1)
+    return
+  endif
+  call easycomplete#sign#jump(cursor_index - 1 - equal_flag)
+endfunction
+
+function! easycomplete#sign#CursorIndex()
+  let origin_diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
+  let ctx = easycomplete#context()
+  let current_line = ctx["lnum"]
+  let current_col = ctx["col"]
+  let cursor_index = len(diagnostics)
+  let equal_flag = 0
+  let l:count = 0
+  while l:count < len(diagnostics)
+    let item = diagnostics[l:count]
+    let l:line = get(item, 'range')['start']['line'] + 1
+    let l:col = get(item, 'range')['start']['character']
+    if current_line < l:line
+      let cursor_index = l:count
+      break
+    endif
+    if current_line == l:line && current_col < l:col
+      let cursor_index = l:count
+      break
+    endif
+    if current_line == l:line && current_col - 1 == l:col
+      let equal_flag = 1
+    endif
+    let l:count += 1
+  endwhile
+  " cursor_index 是光标位置在 diagnostics 里的位置
+  return [cursor_index, equal_flag]
+endfunction
+
+function! easycomplete#sign#jump(diagnostics_index)
+  let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  let item = diagnostics[a:diagnostics_index]
+  let l:line = get(item, 'range')['start']['line'] + 1
+  let l:col = get(item, 'range')['start']['character']
+  call cursor(l:line, l:col + 1)
+  call easycomplete#sign#LintCurrentLine()
+endfunction
+
+" 返回当前文件所有合法的lint
+function! easycomplete#sign#ValidDiagnostics(diagnostics)
+  if empty(a:diagnostics)
+    return []
+  endif
+  let bufline = len(getbufline(bufnr(''),1,'$'))
+  if bufline == 0
+    return []
+  endif
+  let arr = []
+  let l:count = 0
+  while l:count < len(a:diagnostics)
+    let item = a:diagnostics[l:count]
+    if item['range']['start']['line'] + 1 <= bufline
+      call add(arr, item)
+    endif
+    let l:count += 1
+  endwhile
+  return arr
 endfunction
 
 function! easycomplete#sign#DiagnosticsIsEmpty(diagnostics)

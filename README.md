@@ -15,6 +15,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - Buffer keywords and dictionary support
 - Directory and file completion support
 - Goto definition support for all languages
+- Language lint
 - Full LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
 - LSP Server installation with one command
 - Snippet support with ultisnips. (python3 required)
@@ -51,6 +52,15 @@ There are four build-in popup menu themes for default styles confliction: `blue`
 
 You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can use `:EasyCompleteGotoDefinition` command.
 
+Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. For example:
+
+```vim
+nmap <C-j> :EasyCompleteNextDiagnostic<CR>
+nmap <C-k> :EasyCompletePreviousDiagnostic<CR>
+```
+
+Use `let g:easycomplete_diagnostics_enable = 0` to disable language diagnostics.
+
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
 
 Typing `./` or `../` to trigger directory completion suggestion.
@@ -69,6 +79,8 @@ All commands:
 | `:EasyCompleteCheck`              | Checking LSP server                      |
 | `:EasyCompleteProfileStart`       | Start record diagnostics message         |
 | `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
 
 ### Language Support
 
