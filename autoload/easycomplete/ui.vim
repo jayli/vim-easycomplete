@@ -62,23 +62,3 @@ function! easycomplete#ui#HighlightArgs(name)
   return 'hi ' . substitute(split(execute('hi ' . a:name), '\n')[0], '\<xxx\>', '', '')
 endfunction "}}}
 
-" Goto Window {{{
-function! easycomplete#ui#GotoWindow(winid) abort
-  if a:winid == bufwinid(bufnr(""))
-    return
-  endif
-  for window in range(1, winnr('$'))
-    call s:GotoWinnr(window)
-    if a:winid == bufwinid(bufnr(""))
-      break
-    endif
-  endfor
-endfunction " }}}
-
-" s:goto_win(winnr) {{{
-function! s:GotoWinnr(winnr) abort
-  let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
-        \ : 'wincmd ' . a:winnr
-  noautocmd execute cmd
-  call execute('redraw','silent!')
-endfunction " }}}

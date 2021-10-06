@@ -67,7 +67,12 @@ function! easycomplete#sign#cache(response)
   let g:easycomplete_diagnostics_cache = deepcopy(a:response)
 endfunction
 
-function! easycomplete#sign#render()
+" pass diagnostics response object form lsp
+function! easycomplete#sign#render(...)
+  if exists("a:1")
+    call easycomplete#sign#cache(a:1)
+  endif
+
   if !exists("g:easycomplete_diagnostics_cache.params.diagnostics")
     return
   endif

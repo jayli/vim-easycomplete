@@ -1777,9 +1777,7 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
     call easycomplete#lsp#utils#error('No ' . a:type .' found')
   else
     call easycomplete#util#UpdateTagStack()
-
     let l:loc = a:ctx['list'][0]
-
     if len(a:ctx['list']) == 1 && a:ctx['jump_if_one'] && !a:ctx['in_preview']
       call easycomplete#lsp#utils#location#_open_vim_list_item(l:loc, a:ctx['mods'])
       echo 'Retrieved ' . a:type
