@@ -1026,6 +1026,21 @@ function! easycomplete#util#FindLspServers() abort
   return { 'server_names': l:server_names }
 endfunction
 
+function! easycomplete#util#LspServerReady()
+  let opt = easycomplete#GetCurrentLspContext()
+  if empty(easycomplete#installer#GetCommand(opt['name']))
+    " 当前并未曾注册过 LSP
+    return v:false
+  endif
+  let l:info = easycomplete#util#FindLspServers()
+  let l:ctx = easycomplete#context()
+  if empty(l:info['server_names'])
+    " LSP 启动失败
+    return v:false
+  endif
+  return v:true
+endfunction
+
 " deletebufline {{{
 function! util#deletebufline(bn, fl, ll)
   " version <= 801 deletebufline dos not exists

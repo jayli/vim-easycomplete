@@ -142,6 +142,15 @@ function! s:on_text_document_did_open(...) abort
   endfor
 endfunction
 
+function! easycomplete#lsp#ensure_flush_all()
+  let l:buf = bufnr('%')
+  if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
+  if getcmdwintype() !=# '' | return | endif
+  for l:server_name in easycomplete#lsp#get_allowed_servers(l:buf)
+    call s:ensure_flush(l:buf, l:server_name, function('s:Noop'))
+  endfor
+endfunction
+
 function! s:fire_lsp_buffer_enabled(server_name, buf, ...) abort
   if a:buf == bufnr('%')
     " doautocmd <nomodeline> User lsp_buffer_enabled
@@ -272,17 +281,16 @@ function! easycomplete#lsp#diagnostics_enable(opt) abort
   call s:notify_diagnostics_update()
 endfunction
 
+" 没看出来这个函数有什么用
 " call s:notify_diagnostics_update()
 " call s:notify_diagnostics_update('server')
 " call s:notify_diagnostics_update('server', 'uri')
 function! s:notify_diagnostics_update(...) abort
-  call s:console('s:notify_diagnostics_update(...)',a:000)
-  call s:console('--->', 'notify_diagnostics_update')
-    let l:data = { 'server': '$vimlsp', 'response': { 'method': '$/vimlsp/lsp_diagnostics_updated', 'params': {} } }
-    " if a:0 > 0 | let l:data['response']['params']['server'] = a:1 | endif
-    " if a:0 > 1 | let l:data['response']['params']['uri'] = a:2 | endif
-    call easycomplete#lsp#stream(1, l:data)
-    " doautocmd <nomodeline> User lsp_diagnostics_updated
+  let l:data = { 'server': '$vimlsp', 'response': { 'method': '$/vimlsp/lsp_diagnostics_updated', 'params': {} } }
+  " if a:0 > 0 | let l:data['response']['params']['server'] = a:1 | endif
+  " if a:0 > 1 | let l:data['response']['params']['uri'] = a:2 | endif
+  call easycomplete#lsp#stream(1, l:data)
+  " doautocmd <nomodeline> User lsp_diagnostics_updated
 endfunction
 
 function! easycomplete#lsp#notify_diagnostics_update()
@@ -360,14 +368,14 @@ function! s:request_cancel(ctx) abort
   " send the actual cancel request
   let a:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
         \ easycomplete#lsp#notification(a:ctx['server_name'], {
-        \   'method': '$/cancelRequest',
-        \   'params': { 'id': a:ctx['request_id'] },
-        \ }),
-        \ easycomplete#lsp#callbag#subscribe({
-        \   'error':{e->s:send_request_dispose(a:ctx)},
-        \   'complete':{->s:send_request_dispose(a:ctx)},
-        \ })
-        \)
+          \   'method': '$/cancelRequest',
+          \   'params': { 'id': a:ctx['request_id'] },
+          \ }),
+          \ easycomplete#lsp#callbag#subscribe({
+          \   'error':{e->s:send_request_dispose(a:ctx)},
+          \   'complete':{->s:send_request_dispose(a:ctx)},
+          \ })
+          \)
 endfunction
 
 function! easycomplete#lsp#notification(server_name, request) abort
@@ -439,14 +447,14 @@ function! s:ensure_init(buf, server_name, cb) abort
   let l:request = {
         \   'method': 'initialize',
         \   'params': {
-        \     'processId': getpid(),
-        \     'clientInfo': { 'name': 'vim-lsp' },
-        \     'capabilities': l:capabilities,
-        \     'rootUri': l:root_uri,
-        \     'rootPath': easycomplete#lsp#utils#uri_to_path(l:root_uri),
-        \     'trace': 'off',
-        \   },
-        \ }
+          \     'processId': getpid(),
+          \     'clientInfo': { 'name': 'vim-lsp' },
+          \     'capabilities': l:capabilities,
+          \     'rootUri': l:root_uri,
+          \     'rootPath': easycomplete#lsp#utils#uri_to_path(l:root_uri),
+          \     'trace': 'off',
+          \   },
+          \ }
 
   if has_key(l:server_info, 'initialization_options')
     let l:request.params['initializationOptions'] = l:server_info['initialization_options']
@@ -472,7 +480,6 @@ function! s:throw_step_error(s) abort
 endfunction
 
 function! s:ensure_flush(buf, server_name, cb) abort
-  " jayli
   call easycomplete#lsp#utils#step#start([
         \ {s->s:ensure_start(a:buf, a:server_name, s.callback)},
         \ {s->s:is_step_error(s) ? s:throw_step_error(s) : s:ensure_init(a:buf, a:server_name, s.callback)},
@@ -511,10 +518,10 @@ function! s:ensure_changed(buf, server_name, cb) abort
   call s:send_notification(a:server_name, {
         \ 'method': 'textDocument/didChange',
         \ 'params': {
-        \   'textDocument': s:get_versioned_text_document_identifier(a:buf, l:buffer_info),
-        \   'contentChanges': s:text_changes(a:buf, a:server_name),
-        \ }
-        \ })
+          \   'textDocument': s:get_versioned_text_document_identifier(a:buf, l:buffer_info),
+          \   'contentChanges': s:text_changes(a:buf, a:server_name),
+          \ }
+          \ })
   " call lsp#ui#vim#folding#send_request(a:server_name, a:buf, 0)
   call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
 
@@ -637,9 +644,9 @@ function! s:ensure_open(buf, server_name, cb) abort
   call s:send_notification(a:server_name, {
         \ 'method': 'textDocument/didOpen',
         \ 'params': {
-        \   'textDocument': s:get_text_document(a:buf, a:server_name, l:buffer_info)
-        \ },
-        \ })
+          \   'textDocument': s:get_text_document(a:buf, a:server_name, l:buffer_info)
+          \ },
+          \ })
 
   call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
 
@@ -679,12 +686,12 @@ function! s:folding_send_request(server_name, buf, sync) abort
   call easycomplete#lsp#send_request(a:server_name, {
         \ 'method': 'textDocument/foldingRange',
         \ 'params': {
-        \   'textDocument': easycomplete#lsp#get_text_document_identifier(a:buf)
-        \ },
-        \ 'on_notification': function('s:handle_fold_request', [a:server_name]),
-        \ 'sync': a:sync,
-        \ 'bufnr': a:buf
-        \ })
+          \   'textDocument': easycomplete#lsp#get_text_document_identifier(a:buf)
+          \ },
+          \ 'on_notification': function('s:handle_fold_request', [a:server_name]),
+          \ 'sync': a:sync,
+          \ 'bufnr': a:buf
+          \ })
 endfunction
 
 function! s:handle_fold_request(server, data) abort
@@ -786,9 +793,9 @@ function! s:ensure_conf(buf, server_name, cb) abort
     call s:send_notification(a:server_name, {
           \ 'method': 'workspace/didChangeConfiguration',
           \ 'params': {
-          \   'settings': l:workspace_config,
-          \ }
-          \ })
+            \   'settings': l:workspace_config,
+            \ }
+            \ })
   endif
   let l:msg = s:new_rpc_success('configuration sent', { 'server_name': a:server_name })
   call s:log(l:msg)
@@ -1096,22 +1103,22 @@ endfunction
 function! s:new_rpc_success(message, data) abort
   return {
         \ 'response': {
-        \   'message': a:message,
-        \   'data': extend({ '__data__': 'vim-lsp'}, a:data),
-        \ }
-        \ }
+          \   'message': a:message,
+          \   'data': extend({ '__data__': 'vim-lsp'}, a:data),
+          \ }
+          \ }
 endfunction
 
 function! s:new_rpc_error(message, data) abort
   return {
         \ 'response': {
-        \   'error': {
-        \       'code': 0,
-        \       'message': a:message,
-        \       'data': extend({ '__error__': 'vim-lsp'}, a:data),
-        \   },
-        \ }
-        \ }
+          \   'error': {
+            \       'code': 0,
+            \       'message': a:message,
+            \       'data': extend({ '__error__': 'vim-lsp'}, a:data),
+            \   },
+            \ }
+            \ }
 endfunction
 
 function! s:request_on_notification(ctx, id, data, event) abort
@@ -1147,95 +1154,95 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
   " Sorted alphabetically
   return {
         \   'textDocument': {
-        \       'codeAction': {
-        \         'dynamicRegistration': v:false,
-        \         'codeActionLiteralSupport': {
-        \           'codeActionKind': {
-        \             'valueSet': ['', 'quickfix', 'refactor', 'refactor.extract', 'refactor.inline', 'refactor.rewrite', 'source', 'source.organizeImports'],
-        \           }
-        \         },
-        \         'disabledSupport': v:true,
-        \       },
-        \       'codeLens': {
-        \           'dynamicRegistration': v:false,
-        \       },
-        \       'completion': {
-        \           'dynamicRegistration': v:false,
-        \           'completionItem': {
-        \              'documentationFormat': ['markdown', 'plaintext'],
-        \              'snippetSupport': v:false,
-        \              'resolveSupport': {
-        \                  'properties': ['additionalTextEdits']
-        \              }
-        \           },
-        \           'completionItemKind': {
-        \              'valueSet': s:get_completion_item_kinds()
-        \           }
-        \       },
-        \       'declaration': {
-        \           'dynamicRegistration': v:false,
-        \           'linkSupport' : v:true
-        \       },
-        \       'definition': {
-        \           'dynamicRegistration': v:false,
-        \           'linkSupport' : v:true
-        \       },
-        \       'documentHighlight': {
-        \           'dynamicRegistration': v:false,
-        \       },
-        \       'documentSymbol': {
-        \           'dynamicRegistration': v:false,
-        \           'symbolKind': {
-        \              'valueSet': s:get_symbol_kinds()
-        \           },
-        \           'hierarchicalDocumentSymbolSupport': v:false,
-        \           'labelSupport': v:false
-        \       },
-        \       'foldingRange': {
-        \           'dynamicRegistration': v:false,
-        \           'lineFoldingOnly': v:true,
-        \           'rangeLimit': 5000,
-        \       },
-        \       'formatting': {
-        \           'dynamicRegistration': v:false,
-        \       },
-        \       'hover': {
-        \           'dynamicRegistration': v:false,
-        \           'contentFormat': ['markdown', 'plaintext'],
-        \       },
-        \       'implementation': {
-        \           'dynamicRegistration': v:false,
-        \           'linkSupport' : v:true
-        \       },
-        \       'rangeFormatting': {
-        \           'dynamicRegistration': v:false,
-        \       },
-        \       'references': {
-        \           'dynamicRegistration': v:false,
-        \       },
-        \       'semanticHighlightingCapabilities': {
-        \           'semanticHighlighting': v:false
-        \       },
-        \       'synchronization': {
-        \           'didSave': v:true,
-        \           'dynamicRegistration': v:false,
-        \           'willSave': v:false,
-        \           'willSaveWaitUntil': v:false,
-        \       },
-        \       'typeHierarchy': v:false,
-        \       'typeDefinition': {
-        \           'dynamicRegistration': v:false,
-        \           'linkSupport' : v:true
-        \       },
-        \   },
-        \   'window': {
-        \       'workDoneProgress': v:false
-        \   },
-        \   'workspace': {
-        \       'applyEdit': v:true,
-        \       'configuration': v:true
-        \   },
-        \ }
+          \       'codeAction': {
+            \         'dynamicRegistration': v:false,
+            \         'codeActionLiteralSupport': {
+              \           'codeActionKind': {
+                \             'valueSet': ['', 'quickfix', 'refactor', 'refactor.extract', 'refactor.inline', 'refactor.rewrite', 'source', 'source.organizeImports'],
+                \           }
+                \         },
+                \         'disabledSupport': v:true,
+                \       },
+                \       'codeLens': {
+                  \           'dynamicRegistration': v:false,
+                  \       },
+                  \       'completion': {
+                    \           'dynamicRegistration': v:false,
+                    \           'completionItem': {
+                      \              'documentationFormat': ['markdown', 'plaintext'],
+                      \              'snippetSupport': v:false,
+                      \              'resolveSupport': {
+                        \                  'properties': ['additionalTextEdits']
+                        \              }
+                        \           },
+                        \           'completionItemKind': {
+                          \              'valueSet': s:get_completion_item_kinds()
+                          \           }
+                          \       },
+                          \       'declaration': {
+                            \           'dynamicRegistration': v:false,
+                            \           'linkSupport' : v:true
+                            \       },
+                            \       'definition': {
+                              \           'dynamicRegistration': v:false,
+                              \           'linkSupport' : v:true
+                              \       },
+                              \       'documentHighlight': {
+                                \           'dynamicRegistration': v:false,
+                                \       },
+                                \       'documentSymbol': {
+                                  \           'dynamicRegistration': v:false,
+                                  \           'symbolKind': {
+                                    \              'valueSet': s:get_symbol_kinds()
+                                    \           },
+                                    \           'hierarchicalDocumentSymbolSupport': v:false,
+                                    \           'labelSupport': v:false
+                                    \       },
+                                    \       'foldingRange': {
+                                      \           'dynamicRegistration': v:false,
+                                      \           'lineFoldingOnly': v:true,
+                                      \           'rangeLimit': 5000,
+                                      \       },
+                                      \       'formatting': {
+                                        \           'dynamicRegistration': v:false,
+                                        \       },
+                                        \       'hover': {
+                                          \           'dynamicRegistration': v:false,
+                                          \           'contentFormat': ['markdown', 'plaintext'],
+                                          \       },
+                                          \       'implementation': {
+                                            \           'dynamicRegistration': v:false,
+                                            \           'linkSupport' : v:true
+                                            \       },
+                                            \       'rangeFormatting': {
+                                              \           'dynamicRegistration': v:false,
+                                              \       },
+                                              \       'references': {
+                                                \           'dynamicRegistration': v:false,
+                                                \       },
+                                                \       'semanticHighlightingCapabilities': {
+                                                  \           'semanticHighlighting': v:false
+                                                  \       },
+                                                  \       'synchronization': {
+                                                    \           'didSave': v:true,
+                                                    \           'dynamicRegistration': v:false,
+                                                    \           'willSave': v:false,
+                                                    \           'willSaveWaitUntil': v:false,
+                                                    \       },
+                                                    \       'typeHierarchy': v:false,
+                                                    \       'typeDefinition': {
+                                                      \           'dynamicRegistration': v:false,
+                                                      \           'linkSupport' : v:true
+                                                      \       },
+                                                      \   },
+                                                      \   'window': {
+                                                        \       'workDoneProgress': v:false
+                                                        \   },
+                                                        \   'workspace': {
+                                                          \       'applyEdit': v:true,
+                                                          \       'configuration': v:true
+                                                          \   },
+                                                          \ }
 endfunction
 
 function! s:get_completion_item_kinds() abort

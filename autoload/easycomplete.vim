@@ -15,7 +15,6 @@ augroup easycomplete#autocmd
 augroup END
 
 function! s:InitLocalVars()
-  call s:console(1)
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
@@ -157,7 +156,6 @@ function! s:BindingTypingCommandOnce()
   augroup easycomplete#NormalBinding
     autocmd!
     autocmd BufWritePost * call easycomplete#lint()
-    " autocmd BufEnter * call easycomplete#DoLspDignostics()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
     " SecondComplete Entry
@@ -1833,23 +1831,9 @@ function! s:HandleLspLocation(ctx, server, type, data) abort
 endfunction
 
 function! easycomplete#lint()
-  call easycomplete#DoLspDignostics()
-endfunction
-
-function! easycomplete#DoLspDignostics()
-  let opt = easycomplete#GetCurrentLspContext()
-  if empty(easycomplete#installer#GetCommand(opt['name']))
-    call easycomplete#util#once('lsp is not ready')
-    return
-  endif
-
-  let l:info = easycomplete#util#FindLspServers()
-  let l:ctx = easycomplete#context()
-  if empty(l:info['server_names'])
-    call easycomplete#util#once('lsp initialize failed')
-    return
-  endif
+  if !easycomplete#util#LspServerReady() | return | endif
   call easycomplete#lsp#notify_diagnostics_update()
+  call easycomplete#lsp#ensure_flush_all()
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
