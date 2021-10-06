@@ -1,4 +1,5 @@
 """ 常用的工具函数
+" filetype() {{{
 function! easycomplete#util#filetype()
   " SourcePost 事件中 &filetype 为空，应当从 bufname 中根据后缀获取
   " TODO 这个函数需要重写
@@ -17,14 +18,16 @@ function! easycomplete#util#filetype()
   else
     return ext_part
   endif
-endfunction
+endfunction " }}}
 
+" get file extention {{{
 function! easycomplete#util#extention()
   let filename = fnameescape(fnamemodify(bufname('%'),':p'))
   let ext_part = substitute(filename,"^.\\+[\\.]","","g")
   return ext_part
-endfunction
+endfunction " }}}
 
+" get all plugins {{{
 function! easycomplete#util#GetAttachedPlugins()
   let all_plugins = easycomplete#GetAllPlugins()
   let ft = &filetype
@@ -38,8 +41,9 @@ function! easycomplete#util#GetAttachedPlugins()
     endif
   endfor
   return attached_plugins
-endfunction
+endfunction " }}}
 
+" AsyncRun {{{
 " 运行一个全局的 Timer，只在 complete 的时候用
 " 参数：method, args, timer
 " method 必须是一个全局方法,
@@ -50,14 +54,16 @@ function! easycomplete#util#AsyncRun(...)
   let delay = exists('a:3') ? a:3 : 0
   let g:easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(Method, args)})
   return g:easycomplete_popup_timer
-endfunction
+endfunction " }}}
 
+" StopAsyncRun {{{
 function! easycomplete#util#StopAsyncRun()
   if exists('g:easycomplete_popup_timer') && g:easycomplete_popup_timer > 0
     call timer_stop(g:easycomplete_popup_timer)
   endif
-endfunction
+endfunction " }}}
 
+" function calling {{{
 function! easycomplete#util#call(method, args) abort
   try
     if type(a:method) == 2 " 是函数
@@ -72,8 +78,9 @@ function! easycomplete#util#call(method, args) abort
   catch /.*/
     return 0
   endtry
-endfunction
+endfunction " }}}
 
+" complete menu uniq {{{
 " 性能很差，谨慎使用
 function! easycomplete#util#uniq(menu_list)
   let tmp_list = deepcopy(a:menu_list)
@@ -110,7 +117,9 @@ function! s:SameItem(item1,item2)
     return v:false
   endif
 endfunction
+" }}}
 
+" goto location {{{
 function! easycomplete#util#location(path, line, col, ...) abort
   normal! m'
   let l:mods = a:0 ? a:1 : ''
@@ -129,12 +138,14 @@ function! easycomplete#util#location(path, line, col, ...) abort
   endif
   let full_cmd = l:cmd . 'call cursor('.a:line.','.a:col.')'
   execute full_cmd
-endfunction
+endfunction " }}}
 
+" normalize buf name {{{
 function! easycomplete#util#normalize(buf_name)
   return substitute(a:buf_name, '\\', '/', 'g')
-endfunction
+endfunction " }}}
 
+" UpdateTagStack {{{
 function! easycomplete#util#UpdateTagStack() abort
   let l:bufnr = bufnr('%')
   let l:item = {'bufnr': l:bufnr, 'from': [l:bufnr, line('.'), col('.'), 0], 'tagname': expand('<cword>')}
@@ -161,8 +172,9 @@ function! easycomplete#util#UpdateTagStack() abort
   let l:stack['curidx'] += 1
 
   call settagstack(l:winid, l:stack, l:action)
-endfunction
+endfunction " }}}
 
+" trim {{{
 function! easycomplete#util#trim(str)
   if !empty(a:str)
     let a1 = substitute(a:str, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
@@ -170,8 +182,9 @@ function! easycomplete#util#trim(str)
     return a1
   endif
   return ""
-endfunction
+endfunction " }}}
 
+" GetInfoByCompleteItem {{{
 function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
   let t_name = s:TrimWavyLine(t_name)
@@ -198,11 +211,27 @@ function! s:TrimWavyLine(str)
   endif
   return a:str
 endfunction
+" }}}
 
+" TrimWavyLine {{{
 function! easycomplete#util#TrimWavyLine(...)
   return call("s:TrimWavyLine", a:000)
-endfunction
+endfunction " }}}
 
+" deletebufline {{{
+function! util#deletebufline(bn, fl, ll)
+  " version <= 801 deletebufline dos not exists
+  if exists("deletebufline")
+    call deletebufline(a:bn, a:fl, a:ll)
+  else
+    let current_winid = bufwinid(bufnr(""))
+    call easycomplete#util#GotoWindow(bufwinid(a:bn))
+    call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
+    call easycomplete#util#GotoWindow(current_winid)
+  endif
+endfunction " }}}
+
+" str2list {{{
 function! easycomplete#util#str2list(expr)
   if exists("*str2list")
     return str2list(a:expr)
@@ -217,8 +246,9 @@ function! easycomplete#util#str2list(expr)
     let l:index += 1
   endwhile
   return l:arr
-endfunction
+endfunction " }}}
 
+" isjson {{{
 function! easycomplete#util#IsJson(str)
   let flag = v:true
   if a:str == "\r" || a:str == "\n"
@@ -231,16 +261,19 @@ function! easycomplete#util#IsJson(str)
     endtry
   endif
   return flag
-endfunction
+endfunction " }}}
 
+" GetFullName {{{
 function! easycomplete#util#GetFullName(fname)
   return fnameescape(fnamemodify(a:fname,':p'))
-endfunction
+endfunction " }}}
 
+" GetCurrentFullName {{{
 function! easycomplete#util#GetCurrentFullName()
   return easycomplete#util#GetFullName(bufname("%"))
-endfunction
+endfunction " }}}
 
+" TagBarExists {{{
 function! easycomplete#util#TagBarExists()
   try
     call funcref("tagbar#StopAutoUpdate")
@@ -248,8 +281,9 @@ function! easycomplete#util#TagBarExists()
     return v:false
   endtry
   return v:true
-endfunction
+endfunction " }}}
 
+" RestoreCtx {{{
 " 存储ctx，异步返回时取出
 function! easycomplete#util#RestoreCtx(ctx, request_seq)
   " 删除多余的 ctx
@@ -272,17 +306,20 @@ function! easycomplete#util#RestoreCtx(ctx, request_seq)
   let s:ctx_list[string(a:request_seq)] = a:ctx
 endfunction
 
+function! s:nSort(a, b)
+    return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
+endfunction
+" }}}
+
+" GetCtxByRequestSeq {{{
 function! easycomplete#util#GetCtxByRequestSeq(seq)
   if !exists("s:ctx_list")
     let s:ctx_list = {}
   endif
   return get(s:ctx_list, string(a:seq))
-endfunction
+endfunction " }}}
 
-function! s:nSort(a, b)
-    return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
-endfunction
-
+" FuzzySearch {{{
 function! easycomplete#util#FuzzySearch(needle, haystack)
   " 性能测试：356 次调用实测情况
   "  - s:FuzzySearchRegx 速度最快
@@ -381,7 +418,9 @@ endfunction
 function! s:FuzzySearchPy(...)
   return call("easycomplete#python#FuzzySearchPy", a:000)
 endfunction
+" }}}
 
+" ModifyInfoByMaxwidth {{{
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
   let border = " "
   let maxwidth = a:maxwidth - 2
@@ -460,7 +499,9 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     return t_info
   endif
 endfunction
+" }}}
 
+" insert mod checking {{{
 function! easycomplete#util#InsertMode()
   return !easycomplete#util#NotInsertMode()
 endfunction
@@ -473,11 +514,14 @@ function! easycomplete#util#NotInsertMode()
     return mode() == 'i' ? v:false : v:true
   endif
 endfunction
+" }}}
 
+" sendkeys {{{
 function! easycomplete#util#Sendkeys(keys)
   call feedkeys( a:keys, 'in' )
-endfunction
+endfunction " }}}
 
+" GetTypingWord {{{
 function! easycomplete#util#GetTypingWord()
   let start = col('.') - 1
   let line = getline('.')
@@ -492,8 +536,9 @@ function! easycomplete#util#GetTypingWord()
   endwhile
   let word = strpart(line, start, width)
   return word
-endfunction
+endfunction " }}}
 
+" log {{{
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
@@ -551,7 +596,9 @@ function! s:MsgLog(res, style)
   echom printf('>>> %s', a:res)
   echohl NONE
 endfunction
+" }}}
 
+" GotoWindow {{{
 function! easycomplete#util#GotoWindow(winid) abort
   if a:winid == bufwinid(bufnr(""))
     return
@@ -562,16 +609,17 @@ function! easycomplete#util#GotoWindow(winid) abort
       break
     endif
   endfor
-endfunction " }}}
+endfunction
 
 function! s:GotoWinnr(winnr) abort
   let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
         \ : 'wincmd ' . a:winnr
   noautocmd execute cmd
   call execute('redraw','silent!')
-endfunction " }}}
+endfunction
+" }}}
 
-" for tsserver only
+" NormalizeEntryDetail for tsserver only {{{
 function! easycomplete#util#NormalizeEntryDetail(item)
   let l:title = ""
   let l:desp_list = []
@@ -617,7 +665,9 @@ function! easycomplete#util#NormalizeEntryDetail(item)
 
   return [l:title] + l:desp_list + l:doc_list
 endfunction
+" }}}
 
+" contains {{{
 " b 字符在 a 中出现的次数
 function! easycomplete#util#contains(a, b)
   let l:count = 0
@@ -627,8 +677,9 @@ function! easycomplete#util#contains(a, b)
     endif
   endfor
   return l:count
-endfunction
+endfunction " }}}
 
+" Profile {{{
 function! easycomplete#util#ProfileStart()
   exec "profile start profile.log"
   exec "profile func *"
@@ -638,7 +689,9 @@ endfunction
 function! easycomplete#util#ProfileStop()
   exec "profile pause"
 endfunction
+" }}}
 
+" distinct {{{
 "popup 菜单内关键词去重，只做buff、dict和lsp里的keyword去重
 "snippet 不去重
 function! easycomplete#util#distinct(menu_list)
@@ -680,7 +733,9 @@ function! easycomplete#util#HasKey(obj,keyname)
   endfor
   return v:false
 endfunction
+" }}}
 
+" AutoLoadDict {{{
 function! easycomplete#util#AutoLoadDict()
   if !exists("g:easycomplete_dict")
     let g:easycomplete_dict = []
@@ -698,8 +753,9 @@ function! easycomplete#util#AutoLoadDict()
       break
     endif
   endfor
-endfunction
+endfunction " }}}
 
+" CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
 " maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
@@ -805,11 +861,14 @@ function! easycomplete#util#SortTextComparatorByAlphabet(entry1, entry2)
   endif
   return v:false
 endfunction
+" }}}
 
+" GetItemWord {{{
 function! easycomplete#util#GetItemWord(...)
   return call("s:GetItemWord", a:000)
-endfunction
+endfunction " }}}
 
+" GetSnippetsCodeInfo {{{
 " Same as easycomplete#python#GetSnippetsCodeInfo
 " 实测 vim 性能比 python 快五倍
 " 27 次调用，py 用时 0.012392
@@ -841,8 +900,9 @@ function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   let end_line_index = cursor_line
 
   return snip_ctx[start_line_index:end_line_index]
-endfunction
+endfunction " }}}
 
+" expandable {{{
 function! easycomplete#util#expandable(item)
   if has_key(a:item, 'user_data') && !empty(get(a:item, 'user_data', ''))
     let user_data_str = get(a:item, 'user_data', '')
@@ -857,13 +917,15 @@ function! easycomplete#util#expandable(item)
   else
     return v:false
   endif
-endfunction
+endfunction " }}}
 
+" TrimFileName {{{
 " 去掉前缀 file://...
 function! easycomplete#util#TrimFileName(str)
   return substitute(a:str, "^file:\/\/", "", "i")
-endfunction
+endfunction " }}}
 
+" GetLspPlugin {{{
 " 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
 " tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
 " 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
@@ -879,7 +941,9 @@ function! easycomplete#util#GetLspPlugin()
   endfor
   return ret_plugin
 endfunction
+" }}}
 
+" LspType {{{
 function! easycomplete#util#LspType(c_type)
   let l:kinds = {
       \ 'Text':          1,  'Method':      2,
@@ -905,7 +969,9 @@ function! easycomplete#util#LspType(c_type)
   endfor
   return l:type
 endfunction
+" }}}
 
+" GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
   if type(l:result) == type([])
@@ -1011,7 +1077,9 @@ function! s:NormalizeLspInfo(info)
   endfor
   return l:str
 endfunction
+" }}}
 
+" FindLspServers {{{
 " s:find_complete_servers() 获取 LSP Complete Server 信息
 function! easycomplete#util#FindLspServers() abort
   let l:server_names = []
@@ -1040,16 +1108,38 @@ function! easycomplete#util#LspServerReady()
   endif
   return v:true
 endfunction
+" }}}
 
-" deletebufline {{{
-function! util#deletebufline(bn, fl, ll)
-  " version <= 801 deletebufline dos not exists
-  if exists("deletebufline")
-    call deletebufline(a:bn, a:fl, a:ll)
-  else
-    let current_winid = bufwinid(bufnr(""))
-    call easycomplete#ui#GotoWindow(bufwinid(a:bn))
-    call execute(string(a:fl) . 'd ' . string(a:ll - a:fl), 'silent!')
-    call easycomplete#ui#GotoWindow(current_winid)
-  endif
+" aop speed testing {{{
+" aop 测试函数调用性能用，四种调用方式
+" call emit(function('s:foo'))
+" call emit('easycomplete#foo')
+" call emit(function('s:foo'), [123])
+" call emit('easycomplete#foo', [123])
+function! easycomplete#util#emit(...)
+  let Method = a:1
+  let args = exists('a:2') ? a:2 : []
+  call s:StartRecord()
+  try
+    let res = easycomplete#util#call(Method, args)
+  catch /.*/
+    echom v:exception
+    return 0
+  endtry
+  call s:StopRecord(string(Method))
+  return res
+endfunction
+
+" 性能调试用，使用方式
+"   call s:StartRecord()
+"   call s:DoSth()
+"   call s:StopRecord()
+function! s:StartRecord()
+  let s:easy_start = reltime()
+endfunction
+
+function! s:StopRecord(...)
+  let msg = exists('a:1') ? a:1 : "functinal speed"
+  let sp = reltimestr(reltime(g:easycomplete_start))
+  call call(function('s:console'), [msg, reltimestr(reltime(s:easy_start))])
 endfunction " }}}

@@ -14,6 +14,35 @@ augroup easycomplete#autocmd
   autocmd User easycomplete_custom_plugin silent
 augroup END
 
+" EasyComplete 入口函数
+function! easycomplete#Enable()
+  " 插件要求在每个 BufferEnter 时调用
+  if exists("b:easycomplete_loaded_done")
+    return
+  endif
+  let b:easycomplete_loaded_done= 1
+
+  doautocmd <nomodeline> User easycomplete_default_plugin
+  doautocmd <nomodeline> User easycomplete_custom_plugin
+  call s:InitLocalVars()
+  " 要注意绑定顺序：
+  "  - 必须要确保typing command先绑定
+  "  - 然后绑定插件里的typing command
+  call s:BindingTypingCommandOnce()
+  call easycomplete#plugin#init()
+  call s:ConstructorCalling()
+  call s:SetupCompleteCache()
+  call easycomplete#ui#SetScheme()
+  " lsp 服务初始化必须要放在按键绑定之后
+  call easycomplete#lsp#enable()
+  call easycomplete#sign#init()
+  call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
+        \ {'callback':function('easycomplete#HandleLspDiagnostic')}
+        \ ], 150)
+  " 字典载入耗时较久，延迟载入本地字典
+  call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
+endfunction
+
 function! s:InitLocalVars()
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
@@ -65,8 +94,7 @@ function! s:InitLocalVars()
   " 用来判断是否是 c-v 粘贴
   let g:easycomplete_insert_char = ''
 
-  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单，结构
-  " 如下：
+  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
   " [
   "   {
   "     "ctx": {},
@@ -97,35 +125,6 @@ function! s:InitLocalVars()
   setlocal completeopt-=preview
   setlocal completeopt-=longest
   setlocal cpoptions+=B
-endfunction
-
-" EasyComplete 入口函数
-function! easycomplete#Enable()
-  " 插件要求在每个 BufferEnter 时调用
-  if exists("b:easycomplete_loaded_done")
-    return
-  endif
-  let b:easycomplete_loaded_done= 1
-
-  doautocmd <nomodeline> User easycomplete_default_plugin
-  doautocmd <nomodeline> User easycomplete_custom_plugin
-  call s:InitLocalVars()
-  " 要注意绑定顺序：
-  "  - 必须要确保typing command先绑定
-  "  - 然后绑定插件里的typing command
-  call s:BindingTypingCommandOnce()
-  call easycomplete#plugin#init()
-  call s:ConstructorCalling()
-  call s:SetupCompleteCache()
-  call easycomplete#ui#SetScheme()
-  " lsp 服务初始化必须要放在按键绑定之后
-  call easycomplete#lsp#enable()
-  call easycomplete#sign#init()
-  call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
-        \ {'callback':function('easycomplete#HandleLspDiagnostic')}
-        \ ], 150)
-  " 字典载入耗时较久，延迟载入本地字典
-  call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
 
 function! easycomplete#GetBindingKeys()
@@ -1271,42 +1270,8 @@ function! s:SetFirstCompeleHit()
   let g:easycomplete_first_complete_hit = 1
 endfunction
 
-function! s:speed(...)
-  let ss = exists('a:1') ? " " . a:1 : ""
-  call call(function('s:console'), ['->complete speed'. ss, reltimestr(reltime(g:start))])
-endfunction
-
-" aop 测试函数调用性能用，四种调用方式
-" call s:emit(function('s:foo'))
-" call s:emit('easycomplete#foo')
-" call s:emit(function('s:foo'), [123])
-" call s:emit('easycomplete#foo', [123])
 function! s:emit(...)
-  let Method = a:1
-  let args = exists('a:2') ? a:2 : []
-  call s:StartRecord()
-  try
-    let res = easycomplete#util#call(Method, args)
-  catch /.*/
-    echom v:exception
-    return 0
-  endtry
-  call s:StopRecord(string(Method))
-  return res
-endfunction
-
-" 性能调试用，使用方式
-"   call s:StartRecord()
-"   call s:DoSth()
-"   call s:StopRecord()
-function! s:StartRecord()
-  let s:easy_start = reltime()
-endfunction
-
-function! s:StopRecord(...)
-  let msg = exists('a:1') ? a:1 : "functinal speed"
-  let sp = reltimestr(reltime(g:easycomplete_start))
-  call call(function('s:console'), [msg, reltimestr(reltime(s:easy_start))])
+  return call("easycomplete#util#emit", a:000)
 endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
@@ -1545,7 +1510,7 @@ function! s:ResetBacking(...)
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-" setup a flag for doing nothing for 20ms
+" setup a flag for doing nothing for 30ms
 function! s:zizz()
   let delay = g:env_is_nvim ? 30 : (&filetype == 'vim' ? 50 : 50)
   let g:easycomplete_backing_or_cr = 1
