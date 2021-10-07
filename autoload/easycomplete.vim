@@ -917,7 +917,8 @@ function! s:GetTypingWordByGtx()
   endif
   let l:ctx = easycomplete#context()
   let l:gtx = g:easycomplete_firstcomplete_ctx
-  return l:ctx['typed'][strlen(l:gtx['typed'])-strlen(l:gtx['typing']):]
+  let offset = l:gtx['startcol'] - l:ctx['startcol']
+  return l:ctx['typed'][strlen(l:gtx['typed']) - strlen(l:gtx['typing']) - offset:]
 endfunction
 
 " 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不再重新请求 LSP
