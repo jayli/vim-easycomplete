@@ -93,7 +93,6 @@ function! easycomplete#sign#next()
   let cursor_index_arr = easycomplete#sign#CursorIndex()
   let cursor_index = cursor_index_arr[0]
   let equal_flag = cursor_index_arr[1]
-  call s:console("next() --> len(diagnostics) =", len(diagnostics), "cursor_index =", cursor_index_arr, "equal =", equal_flag)
   if len(diagnostics) == 1
     call easycomplete#sign#jump(0)
     return
@@ -157,7 +156,6 @@ function! easycomplete#sign#CursorIndex()
     endif
     let l:count += 1
   endwhile
-  call s:console('------get cursor index-----', [cursor_index, equal_flag])
   " cursor_index 是光标位置在 diagnostics 里的位置
   return [cursor_index, equal_flag]
 endfunction
@@ -166,9 +164,11 @@ function! easycomplete#sign#GetSortNumbers()
   let origin_diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
   let arr = []
-  for item in diagnostics
-    call add(arr, item["sortNumber"])
-  endfor
+  let l:count = 0
+  while l:count < len(diagnostics)
+    call add(arr, diagnostics[l:count]["sortNumber"])
+    let l:count += 1
+  endwhile
   return arr
 endfunction
 
@@ -177,7 +177,6 @@ function! easycomplete#sign#jump(diagnostics_index)
   let item = diagnostics[a:diagnostics_index]
   let l:line = get(item, 'range')['start']['line'] + 1
   let l:col = get(item, 'range')['start']['character'] + 1
-  call s:console('jump', l:line, l:col)
   call cursor(l:line, l:col)
   call easycomplete#sign#LintCurrentLine()
 endfunction
@@ -274,8 +273,7 @@ function! easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
                         \ decimal_str
                         \ ], 
                         \ ".")
-    let item.sortNumber = str2float(sort_number)
-    call s:console(decimal_num, decimal_str, sort_number ,item.sortNumber)
+    let item.sortNumber = float2nr(str2float(sort_number) * 1000)
     call add(ret, item)
   endfor
   return ret
@@ -308,11 +306,7 @@ function! easycomplete#sign#has(diagnostics, item)
 endfunction
 
 function! easycomplete#sign#sort(entry1, entry2)
-  if str2float(get(a:entry1, "sortNumber", 0)) >= str2float(get(a:entry2, "sortNumber", 0))
-    return v:true
-  else
-    return v:false
-  endif
+  return get(a:entry1, "sortNumber", 0) - get(a:entry2, "sortNumber", 0)
 endfunction
 
 " pass diagnostics response object form lsp
@@ -352,6 +346,11 @@ function! easycomplete#sign#render(...)
 endfunction
 
 function! easycomplete#sign#LintCurrentLine()
+  if !easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call easycomplete#sign#unhold()
+    call easycomplete#sign#flush()
+    return
+  endif
   let ctx = easycomplete#context()
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"],ctx["col"])
   if empty(diagnostics_info)
@@ -400,9 +399,13 @@ function! easycomplete#sign#GetCurrentDiagnostics()
   if len(cache.params.diagnostics) == 0
     return []
   endif
-  return deepcopy(cache.params.diagnostics)
+  return cache.params.diagnostics
 endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
