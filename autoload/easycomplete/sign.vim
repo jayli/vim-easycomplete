@@ -353,7 +353,7 @@ endfunction
 
 function! easycomplete#sign#LintCurrentLine()
   let ctx = easycomplete#context()
-  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"])
+  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"],ctx["col"])
   if empty(diagnostics_info)
     echo ""
     return
@@ -369,14 +369,18 @@ function! easycomplete#sign#LintCurrentLine()
         \ )
 endfunction
 
-function! easycomplete#sign#GetDiagnosticsInfo(line)
+function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)
   let lint_list = easycomplete#sign#GetCurrentDiagnostics()
   let l:count = 0
   let ret = {}
   while l:count < len(lint_list)
     let item = lint_list[l:count]
-    let info_line = item.range.start.line
-    if (info_line + 1) == a:line
+    let info_line = item.range.start.line + 1
+    let info_col_start = item.range.start.character + 1
+    let info_col_end= item.range.end.character + 1
+    " todo jayli 这里严格限定了区间，体验不太好，不应该严格限定区间，只要移动
+    " 到该行就给提示
+    if info_line == a:line && (a:colnr >= info_col_start && a:colnr <= info_col_end)
       let ret = item
       break
     endif
