@@ -16,6 +16,7 @@ augroup END
 
 " EasyComplete 入口函数
 function! easycomplete#Enable()
+  call s:console(1)
   " 插件要求在每个 BufferEnter 时调用
   if exists("b:easycomplete_loaded_done")
     return
@@ -1818,7 +1819,7 @@ function! easycomplete#lint()
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
-  " call s:console("<----",a:response['params'])
+  call s:console("<----",a:response['params']['diagnostics'])
   call easycomplete#sign#hold()
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(a:response)

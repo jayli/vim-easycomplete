@@ -1143,3 +1143,19 @@ function! s:StopRecord(...)
   let sp = reltimestr(reltime(g:easycomplete_start))
   call call(function('s:console'), [msg, reltimestr(reltime(s:easy_start))])
 endfunction " }}}
+
+" fullfill {{{
+" "2"   -> "002"
+" "13"  -> "013"
+" "234" -> "234"
+function! easycomplete#util#fullfill(str)
+  if strlen(a:str) == 1
+    return "00" . a:str
+  endif
+  if strlen(a:str) == 2
+    return "0" . a:str
+  endif
+  if strlen(a:str) >= 3
+    return a:str
+  endif
+endfunction

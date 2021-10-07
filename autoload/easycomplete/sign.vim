@@ -90,16 +90,19 @@ function! easycomplete#sign#next()
     return
   endif
   let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
-  let cursor_index = easycomplete#sign#CursorIndex()[0]
+  let cursor_index_arr = easycomplete#sign#CursorIndex()
+  let cursor_index = cursor_index_arr[0]
+  let equal_flag = cursor_index_arr[1]
+  call s:console("next() --> len(diagnostics) =", len(diagnostics), "cursor_index =", cursor_index_arr, "equal =", equal_flag)
   if len(diagnostics) == 1
     call easycomplete#sign#jump(0)
     return
   endif
-  if cursor_index == len(diagnostics)
+  if cursor_index + equal_flag >= len(diagnostics)
     call easycomplete#sign#jump(0)
     return
   endif
-  call easycomplete#sign#jump(cursor_index)
+  call easycomplete#sign#jump(cursor_index + equal_flag)
 endfunction
 
 function! easycomplete#sign#previous()
@@ -108,21 +111,22 @@ function! easycomplete#sign#previous()
     return
   endif
   let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
-  let cursor_index = easycomplete#sign#CursorIndex()[0]
-  let equal_flag = easycomplete#sign#CursorIndex()[1]
+  let cursor_index_arr = easycomplete#sign#CursorIndex()
+  let cursor_index = cursor_index_arr[0]
+  let equal_flag = cursor_index_arr[1]
   if len(diagnostics) == 1
     call easycomplete#sign#jump(0)
     return
   endif
-  if cursor_index >= len(diagnostics)
-    call easycomplete#sign#jump(cursor_index - 1 - equal_flag)
+  if cursor_index == len(diagnostics)
+    call easycomplete#sign#jump(len(diagnostics) - 1 - equal_flag)
     return
   endif
   if cursor_index == 0
     call easycomplete#sign#jump(len(diagnostics) - 1)
     return
   endif
-  call easycomplete#sign#jump(cursor_index - 1 - equal_flag)
+  call easycomplete#sign#jump(cursor_index - 1)
 endfunction
 
 function! easycomplete#sign#CursorIndex()
@@ -137,7 +141,7 @@ function! easycomplete#sign#CursorIndex()
   while l:count < len(diagnostics)
     let item = diagnostics[l:count]
     let l:line = get(item, 'range')['start']['line'] + 1
-    let l:col = get(item, 'range')['start']['character']
+    let l:col = get(item, 'range')['start']['character'] + 1
     if current_line < l:line
       let cursor_index = l:count
       break
@@ -146,21 +150,35 @@ function! easycomplete#sign#CursorIndex()
       let cursor_index = l:count
       break
     endif
-    if current_line == l:line && current_col - 1 == l:col
+    if current_line == l:line && current_col  == l:col
+      let cursor_index = l:count
       let equal_flag = 1
+      break
     endif
     let l:count += 1
   endwhile
+  call s:console('------get cursor index-----', [cursor_index, equal_flag])
   " cursor_index 是光标位置在 diagnostics 里的位置
   return [cursor_index, equal_flag]
+endfunction
+
+function! easycomplete#sign#GetSortNumbers()
+  let origin_diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  let diagnostics = easycomplete#sign#ValidDiagnostics(origin_diagnostics)
+  let arr = []
+  for item in diagnostics
+    call add(arr, item["sortNumber"])
+  endfor
+  return arr
 endfunction
 
 function! easycomplete#sign#jump(diagnostics_index)
   let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   let item = diagnostics[a:diagnostics_index]
   let l:line = get(item, 'range')['start']['line'] + 1
-  let l:col = get(item, 'range')['start']['character']
-  call cursor(l:line, l:col + 1)
+  let l:col = get(item, 'range')['start']['character'] + 1
+  call s:console('jump', l:line, l:col)
+  call cursor(l:line, l:col)
   call easycomplete#sign#LintCurrentLine()
 endfunction
 
@@ -233,6 +251,68 @@ endfunction
 function! easycomplete#sign#cache(response)
   let l:key = easycomplete#util#TrimFileName(a:response['params']['uri'])
   let g:easycomplete_diagnostics_cache[l:key] = a:response
+  let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
+  let diagnostics_result = easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
+  if !empty(diagnostics_result)
+    call sort(diagnostics_result, 'easycomplete#sign#sort')
+    let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] = diagnostics_result
+    let tmp_diagnostics = g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics']
+    let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] =
+          \ easycomplete#sign#distinct(tmp_diagnostics)
+  endif
+endfunction
+
+" param.range.start.line | param.range.start.character => sortNumber
+function! easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
+  let ret = []
+  for item in a:diagnostics
+    let decimal_num = str2nr(item['range']['start']['character']) + 1
+    let decimal_str = easycomplete#util#fullfill(string(decimal_num))
+    let sort_number = join(
+                        \ [
+                        \ string(item['range']['start']['line'] + 1),
+                        \ decimal_str
+                        \ ], 
+                        \ ".")
+    let item.sortNumber = str2float(sort_number)
+    call s:console(decimal_num, decimal_str, sort_number ,item.sortNumber)
+    call add(ret, item)
+  endfor
+  return ret
+endfunction
+
+function! easycomplete#sign#distinct(diagnostics)
+  if empty(a:diagnostics)
+    return []
+  endif
+  let ret = []
+  for item in a:diagnostics
+    if easycomplete#sign#has(ret, item)
+      continue
+    else
+      call add(ret, item)
+    endif
+  endfor
+  return ret
+endfunction
+
+function! easycomplete#sign#has(diagnostics, item)
+  let flag = v:false
+  for elem in a:diagnostics
+    if elem["sortNumber"] == a:item["sortNumber"]
+      let flag = v:true
+      break
+    endif
+  endfor
+  return flag
+endfunction
+
+function! easycomplete#sign#sort(entry1, entry2)
+  if str2float(get(a:entry1, "sortNumber", 0)) >= str2float(get(a:entry2, "sortNumber", 0))
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 " pass diagnostics response object form lsp
@@ -284,7 +364,7 @@ function! easycomplete#sign#LintCurrentLine()
   echo printf('[%s]%s,%s %s',
         \ get(diagnostics_info, 'source', 'lsp'),
         \ get(diagnostics_info, 'range')['start']['line'] + 1,
-        \ get(diagnostics_info, 'range')['start']['character'],
+        \ get(diagnostics_info, 'range')['start']['character'] + 1,
         \ msg
         \ )
 endfunction
