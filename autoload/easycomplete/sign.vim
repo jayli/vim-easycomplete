@@ -352,7 +352,7 @@ function! easycomplete#sign#LintCurrentLine()
     return
   endif
   let ctx = easycomplete#context()
-  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"],ctx["col"])
+  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
   if empty(diagnostics_info)
     echo ""
     return
