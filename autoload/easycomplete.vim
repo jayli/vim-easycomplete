@@ -1657,31 +1657,24 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  try
+  " Handling special cases
+  if &filetype == 'vim' && l:ctx['typed'] =~ "s:\\w\\{-}$"
     " hack for vim-language-server:
     "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
     "   g:b:l:a: 都是正确的，只有 s: 不正确
     "   需要修改 word 为 insertText.slice(2)
-    if &filetype == 'vim' && l:ctx['typed'] =~ "s:\\w\\{-}$"
-      let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
-    elseif &filetype == "xml" && l:ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理
-      let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
-    elseif &filetype == "xml" && l:ctx['typed'] =~ "</$" " </> 的处理
-      let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
-    endif
-  catch
-    echom v:exception
-  endtry
-
-  " hack for json-language-server
-  "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
-  try
-    if &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
-      let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
-    endif
-  catch
-    echom v:exception
-  endtry
+    let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
+  elseif &filetype == "vim" && s:VimDotTyping() " bugfix for #92
+    let l:matches = map(copy(l:matches), function("s:VimHack_S_DotMap"))
+  elseif &filetype == "xml" && l:ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理
+    let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
+  elseif &filetype == "xml" && l:ctx['typed'] =~ "</$" " </> 的处理
+    let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
+  elseif &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
+    " hack for json-language-server
+    "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
+    let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
+  endif
 
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
@@ -1710,6 +1703,15 @@ function! s:XmlHack_S_ColonMap(key, val)
   return a:val
 endfunction
 
+function! s:VimHack_S_DotMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let vim_typing_word = s:VimHack_GetVimTypingWord()
+    let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word, "", "g")
+  endif
+  return a:val
+endfunction
+
 function! s:VimHack_S_ColonMap(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
         \ && get(a:val, "abbr") ==# get(a:val, "word")
@@ -1718,6 +1720,20 @@ function! s:VimHack_S_ColonMap(key, val)
   endif
   return a:val
 endfunction
+
+function! s:VimHack_GetVimTypingWord()
+  let start = col('.') - 1
+  let line = getline('.')
+  let width = 0
+  let regx = '[a-zA-Z0-9_.:]'
+  while start > 0 && line[start - 1] =~ regx
+    let start = start - 1
+    let width = width + 1
+  endwhile
+  let word = strpart(line, start, width)
+  return word
+endfunction
+
 
 function! s:JsonHack_Q_QuotationMap(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
