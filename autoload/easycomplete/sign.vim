@@ -1,6 +1,7 @@
 " params 信息的缓存
 " key 是buf 绝对路径 /User/bachi/ttt...
 let g:easycomplete_diagnostics_cache = {}
+let s:easycomplete_diagnostics_hint = 1
 
 let g:easycomplete_diagnostics_config = {
       \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'red' : '#FF0000'},
@@ -371,20 +372,30 @@ function! easycomplete#sign#LintCurrentLine()
   endif
   let ctx = easycomplete#context()
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
-  if empty(diagnostics_info)
+  if empty(diagnostics_info) && s:easycomplete_diagnostics_hint == 1
     call easycomplete#nill()
     echo ""
+    let s:easycomplete_diagnostics_hint = 0
     return
+  elseif empty(diagnostics_info)
+    call easycomplete#nill()
+    return
+  else
+    " Use AsyncRun for #91 bugfix
+    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 10)
   endif
+endfunction
 
-  let msg = get(diagnostics_info, 'message', '')
+function! s:ShowDiagMsg(diagnostics_info)
+  let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]
   echo printf('[%s]%s,%s %s',
-        \ get(diagnostics_info, 'source', 'lsp'),
-        \ get(diagnostics_info, 'range')['start']['line'] + 1,
-        \ get(diagnostics_info, 'range')['start']['character'] + 1,
+        \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
+        \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
+        \ get(a:diagnostics_info, 'range')['start']['character'] + 1,
         \ msg
         \ )
+  let s:easycomplete_diagnostics_hint = 1
 endfunction
 
 function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)
@@ -427,4 +438,12 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
 endfunction
