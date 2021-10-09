@@ -1835,7 +1835,7 @@ function! easycomplete#lint()
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
-  " call s:console("<----",a:response['params']['diagnostics'])
+  " call s:log("<----",a:response)
   call easycomplete#sign#hold()
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(a:response)

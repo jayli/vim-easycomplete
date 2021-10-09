@@ -26,12 +26,10 @@ function! easycomplete#sign#flush()
     return
   endif
   let server_info = easycomplete#util#FindLspServers()
-  if empty(server_info['server_names'])
+  if get(g:, 'easycomplete_sources_ts', 0) != 1 && empty(server_info['server_names'])
     return
   endif
-
   let cache = g:easycomplete_diagnostics_cache[easycomplete#util#GetCurrentFullName()]
-
   " let lsp_server = server_info['server_names'][0]
   " file:///...
   let diagnostics_uri = cache['params']['uri']
@@ -247,6 +245,26 @@ function! easycomplete#sign#unhold()
   let g:easycomplete_place_holder = 0
 endfunction
 
+" {
+"   "method":"textDocument/publishDiagnostics",
+"   "jsonrpc":"2.0",
+"   "params":{
+"     "uri":"file:///Users/bachi/ttt/python.vim",
+"     "diagnostics":[
+"       {
+"         "source":"vimlsp",
+"         "message":"E492: Not an editor command: oooo",
+"         "severity":1,
+"         "range": {
+"           "end":{"character":1,"line":8},
+"           "start":{"character":0,"line":8}
+"         }
+"       },
+"       {...},
+"       ...
+"     ]
+"   }
+" }
 function! easycomplete#sign#cache(response)
   let l:key = easycomplete#util#TrimFileName(a:response['params']['uri'])
   let g:easycomplete_diagnostics_cache[l:key] = a:response
@@ -354,6 +372,7 @@ function! easycomplete#sign#LintCurrentLine()
   let ctx = easycomplete#context()
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
   if empty(diagnostics_info)
+    call easycomplete#nill()
     echo ""
     return
   endif

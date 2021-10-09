@@ -23,6 +23,14 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let s:opt = {}
   let s:menu_flag = "[TS]"
+  " syntaxDiag/semanticDiag/requestCompleted
+  let b:diagnostics_cache = {
+        \   "uri":"file://...",
+        \   "cache":{
+        \     "syntaxDiag":[],
+        \     "semanticDiag":[]
+        \   }
+        \ }
   let b:tsserver_reloading = 0
 
   " https://github.com/microsoft/TypeScript/issues/36265
@@ -42,8 +50,8 @@ augroup END
 augroup easycomplete#sources#ts#InitIgnoreConditions
   let s:ignore_response_events = ["configFileDiag",
         \ "telemetry","projectsUpdatedInBackground",
-        \ "setTypings","syntaxDiag","semanticDiag",
-        \ "suggestionDiag","typingsInstallerPid"]
+        \ "setTypings",
+        \ "typingsInstallerPid"]
 augroup END
 
 function! easycomplete#sources#ts#destory()
@@ -87,6 +95,10 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
     " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
     autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    " Diagnostics Event
+    autocmd InsertLeave *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    autocmd BufWritePost *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    autocmd BufEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
     " hack for #56
     autocmd CompleteChanged *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
@@ -136,7 +148,105 @@ function! easycomplete#sources#ts#TsReloadingCallback(item)
 endfunction
 
 function! easycomplete#sources#ts#DiagnosticsCallback(item)
-  " TODO
+  call s:HandleDiagnosticResponse(a:item)
+endfunction
+
+function! s:DiagnosticsRender()
+  try
+    let response = s:GetWrappedDiagnosticsCache()
+  catch
+    return
+  endtry
+  call easycomplete#sign#hold()
+  call easycomplete#sign#flush()
+  call easycomplete#sign#cache(response)
+  call easycomplete#sign#render()
+endfunction
+
+" {
+"   'seq': 0, 'type': 'event', 'event': 'syntaxDiag', 
+"   'body': {
+"     'file': '/Users/bachi/ttt/b.js', 
+"     'diagnostics': [
+"       {
+"         'category': 'error', 
+"         'end': {'offset': 8, 'line': 1}, 
+"         'code': 1005, 
+"         'text': ''';'' expected.', 
+"         'start': {'offset': 7, 'line': 1}
+"       },
+"       {...},
+"       ...
+"     ]
+"   }
+" }
+" =>
+" {
+"   "method":"textDocument/publishDiagnostics",
+"   "jsonrpc":"2.0",
+"   "params":{
+"     "uri":"file:///Users/bachi/ttt/python.vim",
+"     "diagnostics":[
+"       {
+"         "source":"vimlsp",
+"         "message":"E492: Not an editor command: oooo",
+"         "severity":1,
+"         "range": {
+"           "end":{"character":1,"line":8},
+"           "start":{"character":0,"line":8}
+"         }
+"       },
+"       {...},
+"       ...
+"     ]
+"   }
+" }
+function! s:HandleDiagnosticResponse(item)
+  if get(a:item, "event", "") == "requestCompleted" && s:request_seq - 1 == get(a:item, "body")["request_seq"]
+    call s:StopAsyncRun()
+    call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
+    return
+  endif
+  try
+    let ts_diagnostics = get(a:item, "body", {"diagnostics":[]})["diagnostics"]
+    let b:diagnostics_cache["uri"] = "file://" . a:item["body"]["file"]
+  catch
+    return
+  endtry
+  let lsp_diagnostics = []
+  for item in ts_diagnostics
+    call add(lsp_diagnostics, {
+          \   "source":"ts",
+          \   "message": item["category"] .", Code:" . item["code"] . " " . item["text"],
+          \   "severity": 1,
+          \   "range": {
+          \     "start":{
+          \       "character":item["start"]["offset"] - 1,
+          \       "line":item["start"]["line"] - 1
+          \     },
+          \     "end":{
+          \       "character":item["end"]["offset"] - 1,
+          \       "line":item["end"]["line"] - 1
+          \     }
+          \   }
+          \ })
+  endfor
+  let b:diagnostics_cache["cache"][a:item['event']] = lsp_diagnostics
+  call s:StopAsyncRun()
+  call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
+endfunction
+
+function! s:GetWrappedDiagnosticsCache()
+  let diag_list = b:diagnostics_cache["cache"]["syntaxDiag"] + b:diagnostics_cache["cache"]["semanticDiag"]
+  let res = {
+      \   "method":"textDocument/publishDiagnostics",
+      \   "jsonrpc": "2.0",
+      \   "params": {
+      \     "uri": b:diagnostics_cache["uri"],
+      \     "diagnostics": deepcopy(diag_list)
+      \   }
+      \ }
+  return res
 endfunction
 
 " EntryDetail Callback 数据结构
@@ -342,6 +452,21 @@ function! s:FireTsCompletions(file, line, offset, prefix)
   call s:SendCommandAsyncResponse('completions', l:args)
 endfunction
 
+function! easycomplete#sources#ts#lint()
+  " if !s:TsServerOpenedFileAlready()
+  "   call s:TsserverOpen()
+  "   return
+  " endif
+  let l:files = [easycomplete#util#GetCurrentFullName()]
+  call s:TsserverReload()
+  call s:AsyncRun(function("s:Geterr"), [l:files, 100], 100)
+endfunction
+
+function! s:Geterr(files, delay)
+  let l:args = {'files': a:files, 'delay': a:delay}
+  call s:SendCommandAsyncResponse('geterr', l:args)
+endfunction
+
 function! s:CommonAsyncCommand(cmd, ctx)
   let l:args = {'file': a:ctx['filepath'], 'line': a:ctx['lnum'], 'offset': a:ctx['col'], 'prefix': a:ctx['typing']}
   call s:WaitForReloadDone()
@@ -496,11 +621,11 @@ function! s:MessageHandler(msg)
     call easycomplete#flush()
     return
   endtry
-
-  " Ignore messages.
   if type(l:res_item) != type({})
     return
   endif
+
+  " Ignore messages.
   if has_key(l:res_item, 'event') && index(s:ignore_response_events, get(l:res_item, 'event')) >= 0
     return
   endif
@@ -515,7 +640,7 @@ function! s:MessageHandler(msg)
   endif
 
   " 执行 event 的回调
-  if l:eventName != 0
+  if !empty(l:eventName)
     if(has_key(s:event_callbacks, l:eventName))
       let EventCallback = function(s:event_callbacks[l:eventName], [l:item])
       call EventCallback()
@@ -682,4 +807,12 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
 endfunction
