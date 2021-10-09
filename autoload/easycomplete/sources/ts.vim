@@ -635,27 +635,27 @@ function! s:MessageHandler(msg)
   endif
 
   let l:item = l:res_item
-  let l:eventName = s:GetTsserverEventType(l:item)
-  let l:responseName = s:GetTsserverResponseType(l:item)
+  let l:event_name = s:GetTsserverEventType(l:item)
+  let l:response_name = s:GetTsserverResponseType(l:item)
 
   " normal 模式下只处理 definition 事件，其他事件均在插入模式下处理
-  if easycomplete#util#NotInsertMode() && l:responseName !=# 'definition'
+  if easycomplete#util#NotInsertMode() && l:response_name !=# 'definition'
     return
   endif
 
   " 执行 event 的回调
-  if !empty(l:eventName)
-    if(has_key(s:event_callbacks, l:eventName))
-      let EventCallback = function(s:event_callbacks[l:eventName], [l:item])
+  if !empty(l:event_name)
+    if(has_key(s:event_callbacks, l:event_name))
+      let EventCallback = function(s:event_callbacks[l:event_name], [l:item])
       call EventCallback()
     endif
     return
   endif
 
   " 执行 response 的回调
-  if !empty(l:responseName)
-    if(has_key(s:response_callbacks, l:responseName))
-      let ResponseCallback = function(s:response_callbacks[l:responseName], [l:item])
+  if !empty(l:response_name)
+    if(has_key(s:response_callbacks, l:response_name))
+      let ResponseCallback = function(s:response_callbacks[l:response_name], [l:item])
       call ResponseCallback()
     endif
   endif
@@ -767,12 +767,12 @@ function! s:normalize(buf_name)
   return easycomplete#util#normalize(a:buf_name)
 endfunction
 
-function! s:RegistEventCallback(callback, eventName)
-  let s:event_callbacks[a:eventName] = a:callback
+function! s:RegistEventCallback(callback, event_name)
+  let s:event_callbacks[a:event_name] = a:callback
 endfunction
 
-function! s:RegistResponseCallback(callback, responseName)
-  let s:response_callbacks[a:responseName] = a:callback
+function! s:RegistResponseCallback(callback, response_name)
+  let s:response_callbacks[a:response_name] = a:callback
 endfunction
 
 function! s:GetTsserverResponseType(item)
