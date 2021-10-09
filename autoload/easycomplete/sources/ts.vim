@@ -23,7 +23,9 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let s:opt = {}
   let s:menu_flag = "[TS]"
-  " syntaxDiag/semanticDiag/suggestionDiag/requestCompleted
+  " 三种提示默认支持，和coc默认配置保持一致:
+  " syntaxDiag/semanticDiag/suggestionDiag
+  " requestCompleted表示一轮events完成
   let b:diagnostics_cache = {
         \   "uri":"file://...",
         \   "cache":{
@@ -31,6 +33,12 @@ augroup easycomplete#sources#ts#InitLocalVars
         \     "semanticDiag":   [],
         \     "suggestionDiag": []
         \   }
+        \ }
+  " "error", "warning", or "suggestion"
+  let s:diagostics_category = {
+        \ "error" : 1,
+        \ "warning": 2,
+        \ "suggestion":3
         \ }
   let b:tsserver_reloading = 0
 
@@ -51,8 +59,7 @@ augroup END
 augroup easycomplete#sources#ts#InitIgnoreConditions
   let s:ignore_response_events = ["configFileDiag",
         \ "telemetry","projectsUpdatedInBackground",
-        \ "setTypings",
-        \ "typingsInstallerPid"]
+        \ "setTypings", "typingsInstallerPid"]
 augroup END
 
 function! easycomplete#sources#ts#destory()
@@ -164,16 +171,17 @@ function! s:DiagnosticsRender()
   call easycomplete#sign#render()
 endfunction
 
+" TSServer 格式:
 " {
-"   'seq': 0, 'type': 'event', 'event': 'syntaxDiag', 
+"   'seq': 0, 'type': 'event', 'event': 'syntaxDiag',
 "   'body': {
-"     'file': '/Users/bachi/ttt/b.js', 
+"     'file': '/Users/bachi/ttt/b.js',
 "     'diagnostics': [
 "       {
-"         'category': 'error', 
-"         'end': {'offset': 8, 'line': 1}, 
-"         'code': 1005, 
-"         'text': ''';'' expected.', 
+"         'category': 'error',
+"         'end': {'offset': 8, 'line': 1},
+"         'code': 1005,
+"         'text': ''';'' expected.',
 "         'start': {'offset': 7, 'line': 1}
 "       },
 "       {...},
@@ -181,7 +189,8 @@ endfunction
 "     ]
 "   }
 " }
-" =>
+"
+" LSP 标准格式
 " {
 "   "method":"textDocument/publishDiagnostics",
 "   "jsonrpc":"2.0",
@@ -203,7 +212,8 @@ endfunction
 "   }
 " }
 function! s:HandleDiagnosticResponse(item)
-  if get(a:item, "event", "") == "requestCompleted" && s:request_seq - 1 == get(a:item, "body")["request_seq"]
+  if get(a:item, "event", "") == "requestCompleted"
+        \ && s:request_seq - 1 == get(a:item, "body")["request_seq"]
     call s:StopAsyncRun()
     call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
     return
@@ -217,9 +227,9 @@ function! s:HandleDiagnosticResponse(item)
   let lsp_diagnostics = []
   for item in ts_diagnostics
     call add(lsp_diagnostics, {
-          \   "source":"ts",
-          \   "message": item["category"] .", Code:" . item["code"] . " " . item["text"],
-          \   "severity": 1,
+          \   "source":"tsc " . item["code"],
+          \   "message": item["text"],
+          \   "severity": s:GetSeverity(item["category"]),
           \   "range": {
           \     "start":{
           \       "character":item["start"]["offset"] - 1,
@@ -235,6 +245,10 @@ function! s:HandleDiagnosticResponse(item)
   let b:diagnostics_cache["cache"][a:item['event']] = lsp_diagnostics
   call s:StopAsyncRun()
   call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
+endfunction
+
+function! s:GetSeverity(category)
+  return get(s:diagostics_category, a:category, 4)
 endfunction
 
 function! s:GetWrappedDiagnosticsCache()

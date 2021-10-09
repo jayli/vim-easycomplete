@@ -346,6 +346,7 @@ function! easycomplete#sign#render(...)
   while l:count <= len(diagnostics)
     let item = diagnostics[l:count-1]
     let line = item['range']['start']['line'] + 1
+    let severity = get(item, "severity", 4)
     if line > buflinenr
       " lsp 有时返回 buf 行数 + 1 行报错，比如提示缺少 endfunction，这里选择直
       " 接丢弃，目前没发现有严重超行显示的报错干扰编程的情况
@@ -355,13 +356,30 @@ function! easycomplete#sign#render(...)
     endif
     " sign place 1 line=10 name=error_holder file=/Users/bachi/ttt/ttt.vim
     let fn = easycomplete#util#TrimFileName(uri)
-    let cmd = "sign place " . l:count . " line=" . line . " name=error_holder file=" . fn
+    let cmd = printf('sign place %s line=%s name=%s file=%s',
+          \ l:count,
+          \ line,
+          \ s:GetSignStyle(severity),
+          \ fn
+          \ )
     call execute(cmd)
     let l:count += 1
     if l:count > 500 | break | endif
   endwhile
 
   call easycomplete#sign#LintCurrentLine()
+endfunction
+
+function! s:GetSignStyle(severity)
+  let style = "hint_holder"
+  for k in keys(g:easycomplete_diagnostics_config)
+    let item = g:easycomplete_diagnostics_config[k]
+    if item["type"] == a:severity
+      let style = k . "_holder"
+      break
+    endif
+  endfor
+  return style
 endfunction
 
 function! easycomplete#sign#LintCurrentLine()
@@ -389,7 +407,7 @@ endfunction
 function! s:ShowDiagMsg(diagnostics_info)
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]
-  echo printf('[%s]%s,%s %s',
+  echo printf('[%s] (%s,%s) %s',
         \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
         \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
         \ get(a:diagnostics_info, 'range')['start']['character'] + 1,
