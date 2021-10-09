@@ -501,9 +501,18 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
 endfunction
 " }}}
 
-" insert mod checking {{{
+" normal mod checking {{{
 function! easycomplete#util#InsertMode()
   return !easycomplete#util#NotInsertMode()
+endfunction
+
+function! easycomplete#util#NormalMode()
+  if g:env_is_vim
+    return mode()[0] == 'n' ? v:true : v:false
+  endif
+  if g:env_is_nvim
+    return mode() == 'n' ? v:true : v:false
+  endif
 endfunction
 
 function! easycomplete#util#NotInsertMode()

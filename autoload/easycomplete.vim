@@ -1843,7 +1843,7 @@ function! easycomplete#HandleLspDiagnostic(server, response) abort
 endfunction
 
 function! easycomplete#CursorMoved()
-  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+  if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#util#NormalMode()
     call easycomplete#sign#LintCurrentLine()
   endif
 endfunction
