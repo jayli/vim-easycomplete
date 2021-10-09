@@ -23,12 +23,13 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let s:opt = {}
   let s:menu_flag = "[TS]"
-  " syntaxDiag/semanticDiag/requestCompleted
+  " syntaxDiag/semanticDiag/suggestionDiag/requestCompleted
   let b:diagnostics_cache = {
         \   "uri":"file://...",
         \   "cache":{
-        \     "syntaxDiag":[],
-        \     "semanticDiag":[]
+        \     "syntaxDiag":     [],
+        \     "semanticDiag":   [],
+        \     "suggestionDiag": []
         \   }
         \ }
   let b:tsserver_reloading = 0
@@ -237,7 +238,10 @@ function! s:HandleDiagnosticResponse(item)
 endfunction
 
 function! s:GetWrappedDiagnosticsCache()
-  let diag_list = b:diagnostics_cache["cache"]["syntaxDiag"] + b:diagnostics_cache["cache"]["semanticDiag"]
+  let syntaxdiag = b:diagnostics_cache["cache"]["syntaxDiag"]
+  let semanticdiag = b:diagnostics_cache["cache"]["semanticDiag"]
+  let suggestiondiag = b:diagnostics_cache["cache"]["suggestionDiag"]
+  let diag_list = syntaxdiag + semanticdiag + suggestiondiag
   let res = {
       \   "method":"textDocument/publishDiagnostics",
       \   "jsonrpc": "2.0",
@@ -787,6 +791,7 @@ function! s:GetTsserverEventType(item)
     \ && a:item.type ==# 'event'
     \ && (a:item.event ==# 'syntaxDiag'
       \ || a:item.event ==# 'semanticDiag'
+      \ || a:item.event ==# 'suggestionDiag'
       \ || a:item.event ==# 'requestCompleted')
     return 'diagnostics'
   endif
