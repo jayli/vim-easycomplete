@@ -6,7 +6,7 @@ let s:easycomplete_diagnostics_hint = 1
 let g:easycomplete_diagnostics_config = {
       \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'red' : '#FF0000'},
       \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'yellow' : '#FFFF00'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'blue' : '#00FFFF'},
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '31' : '#0087AF'},
       \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'green' : '#00FF00' }
       \ }
 
@@ -407,12 +407,17 @@ endfunction
 function! s:ShowDiagMsg(diagnostics_info)
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]
-  echo printf('[%s] (%s,%s) %s',
+  let showing = printf('[%s] (%s,%s) %s',
         \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
         \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
         \ get(a:diagnostics_info, 'range')['start']['character'] + 1,
         \ msg
         \ )
+  let offset = 13
+  if strlen(showing) > winwidth(winnr()) - offset
+    let showing = showing[0:winwidth(winnr()) - offset - 3] . '...'
+  endif
+  echo showing
   let s:easycomplete_diagnostics_hint = 1
 endfunction
 
