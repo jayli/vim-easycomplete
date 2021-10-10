@@ -42,7 +42,7 @@ endfunction "}}}
 function! easycomplete#ui#GetHiColor(hiName, sufix)
   let sufix = empty(a:sufix) ? "bg" : a:sufix
   let hlString = easycomplete#ui#HighlightArgs(a:hiName)
-  if has("gui_running")
+  if g:env_is_gui
     " Gui color name
     let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\w\\+")
     if my_color != ''
@@ -54,7 +54,7 @@ function! easycomplete#ui#GetHiColor(hiName, sufix)
       return my_color
     endif
   endif
-  return 'none'
+  return 'NONE'
 endfunction " }}}
 
 " Hilight {{{
@@ -64,7 +64,7 @@ endfunction "}}}
 
 " Set color {{{
 function! easycomplete#ui#hi(group, fg, bg, attr)
-  let prefix = has("gui_running") ? "gui" : "cterm"
+  let prefix = g:env_is_gui ? "gui" : "cterm"
   if !empty(a:fg) && a:fg != -1
     call execute(join(['hi', a:group, prefix . "fg=" . a:fg ], " "))
   endif
@@ -75,3 +75,11 @@ function! easycomplete#ui#hi(group, fg, bg, attr)
     call execute(join(['hi', a:group, prefix . "=" . a:attr ], " "))
   endif
 endfunction " }}}
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
+endfunction

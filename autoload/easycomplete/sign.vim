@@ -15,7 +15,7 @@ function! easycomplete#sign#test()
   let res = {'method': 'textDocument/publishDiagnostics',
         \ 'jsonrpc': '2.0',
         \ 'params': {
-        \    'uri': 'file://' . fn, 
+        \    'uri': 'file://' . fn,
         \    'diagnostics': [
         \      {'source': 'vimlsp', 'message': 'E492: 1', 'severity': 1, 'sortNumber': 2001,
         \       'range': {
