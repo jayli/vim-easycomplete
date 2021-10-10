@@ -111,7 +111,9 @@ function! easycomplete#sign#init()
           \ ]
     exec join(sign_cmd, " ")
     call easycomplete#ui#hi(opt[key].TextStyle, opt[key]['fg_color'], sign_column_bg, "")
-    call easycomplete#ui#hi(opt[key].LineStyle, -1, normal_bg, "")
+    if g:env_is_vim
+      call easycomplete#ui#hi(opt[key].LineStyle, -1, normal_bg, "")
+    endif
   endfor
   call execute('sign define place_holder text='. opt['error'].prompt_text . ' texthl=PlaceHolder')
   call easycomplete#ui#hi('PlaceHolder', sign_column_bg, sign_column_bg, "")

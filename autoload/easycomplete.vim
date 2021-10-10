@@ -148,6 +148,7 @@ function! s:BindingTypingCommandOnce()
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
+  inoremap <expr> <Esc> easycomplete#esc()
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
   inoremap <expr> <Up> easycomplete#Up()
   inoremap <expr> <Down> easycomplete#Down()
@@ -331,11 +332,16 @@ endfunction
 
 function! easycomplete#InsertLeave()
   call easycomplete#popup#InsertLeave()
+  call s:flush()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#lint()
     call easycomplete#sign#LintCurrentLine()
   endif
+endfunction
+
+function! easycomplete#esc()
   call s:flush()
+  return "\<Esc>"
 endfunction
 
 function! easycomplete#flush()
@@ -1230,6 +1236,10 @@ function! easycomplete#GetPlugNameByCommand(cmd)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
+  if easycomplete#util#NotInsertMode()
+    call s:flush()
+    return
+  endif
   try
     if s:OrigionalPosition()
       let filtered_menu = easycomplete#util#CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 500)
@@ -1456,7 +1466,10 @@ function! s:flush()
   let g:easycomplete_firstcomplete_ctx = {}
   let b:typing_ctx = easycomplete#context()
   let g:easycomplete_completechanged_event = {}
-
+  if s:first_render_timer > 0
+    call timer_stop(s:first_render_timer)
+    let s:first_render_timer = 0
+  endif
   for sub in keys(g:easycomplete_source)
     let g:easycomplete_source[sub].complete_result = []
   endfor

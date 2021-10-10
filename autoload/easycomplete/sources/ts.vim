@@ -471,10 +471,9 @@ function! s:FireTsCompletions(file, line, offset, prefix)
 endfunction
 
 function! easycomplete#sources#ts#lint()
-  " if !s:TsServerOpenedFileAlready()
-  "   call s:TsserverOpen()
-  "   return
-  " endif
+  if !easycomplete#ok('g:easycomplete_diagnostics_enable')
+    return
+  endif
   let l:files = [easycomplete#util#GetCurrentFullName()]
   call s:TsserverReload()
   call s:AsyncRun(function("s:Geterr"), [l:files, 100], 100)
