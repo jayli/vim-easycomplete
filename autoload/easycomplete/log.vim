@@ -37,8 +37,10 @@ function! s:InitCommand()
         \ "|                                    |",
         \ "|____________________________________|"]
 
-  autocmd!
-  autocmd QuitPre * call easycomplete#log#quit()
+  augroup easycomplete#logging
+    autocmd!
+    autocmd QuitPre * call easycomplete#log#quit()
+  augroup END
 
   command! -nargs=? -complete=command CleanLog call easycomplete#log#clean()
   command! -nargs=? -complete=command CloseLog call easycomplete#log#close()

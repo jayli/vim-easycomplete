@@ -1817,11 +1817,13 @@ endfunction
 
 " lsp 各项配置检查是否通过
 function! easycomplete#ok(str)
+  let varstr = substitute(a:str, "[abvgsl]:","","i")
   let flag = v:false
-  if exists(a:str) && get(g:, a:str, 0) == 0
+  if exists(a:str) && get(g:, varstr, 0) == 0
     let flag = v:false
+  else
+    let flag = v:true
   endif
-  let flag = v:true
   let g:easycomplete_config[a:str] = flag
   return flag
 endfunction
