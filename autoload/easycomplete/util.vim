@@ -1168,3 +1168,7 @@ function! easycomplete#util#fullfill(str)
     return a:str
   endif
 endfunction
+
+function! easycomplete#util#IsGui()
+  return (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
+endfunction

@@ -4,10 +4,10 @@ let g:easycomplete_diagnostics_cache = {}
 let s:easycomplete_diagnostics_hint = 1
 
 let g:easycomplete_diagnostics_config = {
-      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'red' :    '#FF0000'},
-      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'yellow' : '#FFFF00'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '31' :     '#0087AF'},
-      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '99' :     '#8787FF'}
+      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   },
+      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow'},
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '31'    },
+      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    }
       \ }
 
 function! easycomplete#sign#test()

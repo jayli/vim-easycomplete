@@ -42,7 +42,7 @@ endfunction "}}}
 function! easycomplete#ui#GetHiColor(hiName, sufix)
   let sufix = empty(a:sufix) ? "bg" : a:sufix
   let hlString = easycomplete#ui#HighlightArgs(a:hiName)
-  if g:env_is_gui
+  if easycomplete#util#IsGui()
     " Gui color name
     let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\w\\+")
     if my_color != ''
@@ -64,7 +64,7 @@ endfunction "}}}
 
 " Set color {{{
 function! easycomplete#ui#hi(group, fg, bg, attr)
-  let prefix = g:env_is_gui ? "gui" : "cterm"
+  let prefix = easycomplete#util#IsGui() ? "gui" : "cterm"
   if !empty(a:fg) && a:fg != -1
     call execute(join(['hi', a:group, prefix . "fg=" . a:fg ], " "))
   endif
