@@ -1,6 +1,6 @@
 " File:         easycomplete.vim
 " Author:       @jayli <https://github.com/jayli/>
-" Description:  A minimalism style complete plugin for vim
+" Description:  A minimalism style complete plugin for vim/nvim
 " More Info:    <https://github.com/jayli/vim-easycomplete>
 
 if get(g:, 'easycomplete_script_loaded')
@@ -585,7 +585,7 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], 5)
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], 7)
   endif
 endfunction
 
@@ -1732,7 +1732,6 @@ function! s:VimHack_GetVimTypingWord()
   let word = strpart(line, start, width)
   return word
 endfunction
-
 
 function! s:JsonHack_Q_QuotationMap(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
