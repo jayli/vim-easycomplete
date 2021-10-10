@@ -55,8 +55,8 @@ You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
 Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. For example:
 
 ```vim
-nmap <C-j> :EasyCompleteNextDiagnostic<CR>
-nmap <C-k> :EasyCompletePreviousDiagnostic<CR>
+nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
+nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
 ```
 
 Use `let g:easycomplete_diagnostics_enable = 0` to disable language diagnostics.

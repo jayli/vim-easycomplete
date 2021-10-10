@@ -30,6 +30,7 @@ function! easycomplete#Enable()
   "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
   call easycomplete#plugin#init()
+  call easycomplete#log#init()
   call s:ConstructorCalling()
   call s:SetupCompleteCache()
   call easycomplete#ui#SetScheme()
@@ -41,7 +42,6 @@ function! easycomplete#Enable()
           \ {'callback':function('easycomplete#HandleLspDiagnostic')}
           \ ], 150)
   endif
-  " 字典载入耗时较久，延迟载入本地字典
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
 endfunction
 
@@ -296,7 +296,6 @@ function! s:CompleteTypingMatch(...)
     call s:flush()
     return
   endif
-
   call s:SecondComplete(col('.') - strlen(word), filtered_menu, g:easycomplete_menuitems, word)
 endfunction
 

@@ -4,11 +4,51 @@ let g:easycomplete_diagnostics_cache = {}
 let s:easycomplete_diagnostics_hint = 1
 
 let g:easycomplete_diagnostics_config = {
-      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'red' : '#FF0000'},
+      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'red' :    '#FF0000'},
       \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'yellow' : '#FFFF00'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '31' : '#0087AF'},
-      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? 'green' : '#00FF00' }
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '31' :     '#0087AF'},
+      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': g:env_is_cterm ? '99' :     '#8787FF'}
       \ }
+
+function! easycomplete#sign#test()
+  let fn = easycomplete#util#TrimFileName(easycomplete#util#GetCurrentFullName())
+  let res = {'method': 'textDocument/publishDiagnostics',
+        \ 'jsonrpc': '2.0',
+        \ 'params': {
+        \    'uri': 'file://' . fn, 
+        \    'diagnostics': [
+        \      {'source': 'vimlsp', 'message': 'E492: 1', 'severity': 1, 'sortNumber': 2001,
+        \       'range': {
+        \         'end': {'character': 1, 'line': 1},
+        \          'start': {'character': 0, 'line': 1}
+        \        },
+        \      },
+        \      {'source': 'vimlsp', 'message': 'E492: 1', 'severity': 2, 'sortNumber': 3001,
+        \       'range': {
+        \         'end': {'character': 1, 'line': 2},
+        \          'start': {'character': 0, 'line': 2}
+        \        },
+        \      },
+        \      {'source': 'vimlsp', 'message': 'E492: 1', 'severity': 3, 'sortNumber': 4001,
+        \       'range': {
+        \         'end': {'character': 1, 'line': 3},
+        \          'start': {'character': 0, 'line': 3}
+        \        },
+        \      },
+        \      {'source': 'vimlsp', 'message': 'E492: 1', 'severity': 4, 'sortNumber': 5001,
+        \       'range': {
+        \         'end': {'character': 1, 'line': 4},
+        \          'start': {'character': 0, 'line': 4}
+        \        },
+        \      },
+        \    ]
+        \  }
+        \ }
+  call easycomplete#sign#hold()
+  call easycomplete#sign#flush()
+  call easycomplete#sign#cache(res)
+  call easycomplete#sign#render()
+endfunction
 
 function! easycomplete#sign#GetStyle(msg_type)
   return {
@@ -413,6 +453,7 @@ function! s:ShowDiagMsg(diagnostics_info)
         \ get(a:diagnostics_info, 'range')['start']['character'] + 1,
         \ msg
         \ )
+  " offset 的目的是确保不这行
   let offset = 13
   if strlen(showing) > winwidth(winnr()) - offset
     let showing = showing[0:winwidth(winnr()) - offset - 3] . '...'
@@ -430,8 +471,6 @@ function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)
     let info_line = item.range.start.line + 1
     let info_col_start = item.range.start.character + 1
     let info_col_end= item.range.end.character + 1
-    " todo jayli 这里严格限定了区间，体验不太好，不应该严格限定区间，只要移动
-    " 到该行就给提示
     if info_line == a:line && (a:colnr >= info_col_start && a:colnr <= info_col_end)
       let ret = item
       break

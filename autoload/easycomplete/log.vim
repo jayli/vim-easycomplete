@@ -10,6 +10,10 @@
 "     - g:vim_log_enabled = 1   enable log at side window
 "     - g:vim_log_enabled = 0   disable log printing
 
+function! easycomplete#log#init()
+  call s:InitCommand()
+endfunction
+
 function! s:InitCommand()
   if exists("g:debugger")
     return
@@ -39,7 +43,6 @@ function! s:InitCommand()
   command! -nargs=? -complete=command CleanLog call easycomplete#log#clean()
   command! -nargs=? -complete=command CloseLog call easycomplete#log#close()
   command! -nargs=1 -complete=command Log call easycomplete#log#log(<args>)
-
 endfunction
 
 " 多参数适配
@@ -51,9 +54,7 @@ function! easycomplete#log#log(...)
   if g:vim_log_enabled != 1
     return
   endif
-
   let l:res = call('easycomplete#util#NormalizeLogMsg', a:000)
-
   if executable('tail')
     call s:InitLogFile()
     call s:InitLogWindow()

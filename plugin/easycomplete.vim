@@ -68,9 +68,9 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
       \ 'command': 'vim-language-server',
       \ 'semantic_triggers':[
-      \                      "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
-      \                      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
-      \  ]
+      \      "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
+      \      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
+      \    ]
       \  })
       " \ 'trigger' : 'always'
 
