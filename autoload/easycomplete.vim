@@ -677,8 +677,9 @@ function! s:DoComplete(immediately)
   endif
 
   if complete_check()
-    call s:CloseCompletionMenu()
+    call s:flush()
     call s:StopAsyncRun()
+    call s:AsyncRun(function("complete"),[col("."),[]],200)
     return v:null
   endif
 
