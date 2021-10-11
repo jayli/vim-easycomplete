@@ -14,8 +14,18 @@ function! easycomplete#log#init()
   call s:InitCommand()
 endfunction
 
+function! s:InitVars()
+  let g:debugger.log_bufinfo = 0
+  let g:debugger.log_winid = 0
+  let g:debugger.log_winnr = 0
+  let g:debugger.log_term_winid = 0
+endfunction
+
 function! s:InitCommand()
   if exists("g:debugger")
+    return
+  endif
+  if easycomplete#util#IsTerminal()
     return
   endif
   let g:debugger = {}
@@ -24,10 +34,6 @@ function! s:InitCommand()
   let g:debugger.original_winnr = winnr()
   let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
   let g:debugger.original_winid = bufwinid(bufnr(""))
-  let g:debugger.log_bufinfo = 0
-  let g:debugger.log_winid = -20
-  let g:debugger.log_winnr = 0
-  let g:debugger.log_term_winid = 0
   let g:debugger.init_msg = [
         \ " ____________________________________",
         \ "|                                    |",
@@ -36,23 +42,27 @@ function! s:InitCommand()
         \ "| Authored by Jayli bachi@taobao.com |",
         \ "|                                    |",
         \ "|____________________________________|"]
-
+  call s:InitVars()
   augroup easycomplete#logging
     autocmd!
     autocmd QuitPre * call easycomplete#log#quit()
   augroup END
 
-  command! -nargs=? -complete=command CleanLog call easycomplete#log#clean()
-  command! -nargs=? -complete=command CloseLog call easycomplete#log#close()
-  command! -nargs=1 -complete=command Log call easycomplete#log#log(<args>)
+  command! -nargs=? CleanLog call easycomplete#log#clean()
+  command! -nargs=? CloseLog call easycomplete#log#close()
+  command! -nargs=1 Log call easycomplete#log#log(<args>)
 endfunction
 
 " 多参数适配
 function! easycomplete#log#log(...)
+  if easycomplete#util#IsTerminal()
+    return
+  endif
   if !exists('g:vim_log_enabled')
     let g:vim_log_enabled = 1
   endif
   call s:InitCommand()
+  call s:InitVars()
   if g:vim_log_enabled != 1
     return
   endif
@@ -64,23 +74,33 @@ function! easycomplete#log#log(...)
   else
     call call(s:log, a:000)
   endif
+  call s:GotoOriginalWindow()
+endfunction
+
+function! s:flush()
+  let g:debugger.log_term_winid = 0
+  let g:debugger.log_winnr = 0
+  let g:debugger.log_bufinfo = 0
+  let g:debugger.log_winid = 0
+  let g:debugger.status = 'stop'
 endfunction
 
 function! s:LogRunning()
-  return argc(g:debugger.log_winid) == -1 ? 0 : 1
+  return g:debugger.status == 'running' ? 1 : 0
 endfunction
 
 function! s:InitLogWindow()
-  let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
-  let g:debugger.original_winid = bufwinid(bufnr(""))
   if s:LogRunning()
     return
   endif
-  if pumvisible()
-    call popup_clear()
+  let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
+  let g:debugger.original_winid = bufwinid(bufnr(""))
+  if (getbufinfo(bufnr(''))[0]["name"] =~ "debuger=1")
+    return
   endif
-  call execute("vertical botright new filetype=help buftype=nofile")
-  call execute("setlocal nonu")
+  vertical botright new filetype=help buftype=nofile debuger=1
+  setlocal nonu
+  let g:debugger.status = "running"
   if g:env_is_vim
     call term_start("tail -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
@@ -108,6 +128,7 @@ endfunction
 function! s:EmptyLogWindow()
   call s:CloseLogWindow()
   call s:DelLogFile()
+  call s:flush()
   call easycomplete#log#log()
 endfunction
 
@@ -138,6 +159,7 @@ function! s:CloseLogWindow()
   if s:LogRunning()
     call s:GotoLogWindow()
     call execute(':q!', 'silent!')
+    call s:flush()
   endif
 endfunction
 
@@ -176,23 +198,8 @@ function! s:DelLogFile()
   endif
 endfunction
 
-function! s:GotoWindow(winid) abort
-  if a:winid == bufwinid(bufnr(""))
-    return
-  endif
-  for window in range(1, winnr('$'))
-    call s:GotoWinnr(window)
-    if a:winid == bufwinid(bufnr(""))
-      break
-    endif
-  endfor
-endfunction
-
-function! s:GotoWinnr(winnr) abort
-  let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
-        \ : 'wincmd ' . a:winnr
-  noautocmd execute cmd
-  call execute('redraw','silent!')
+function! s:GotoWindow(...)
+  return call('easycomplete#util#GotoWindow', a:000)
 endfunction
 
 function! s:GotoOriginalWindow()
@@ -204,12 +211,9 @@ function! s:GotoLogWindow()
 endfunction
 
 function! s:log(...)
-  let l:args = a:000
-  let l:res = ""
-  for item in l:args
-    l:res = l:res . " " . string(item)
-  endfor
-  echohl MoreMsg
-  echom '>>> '. l:res
-  echohl NONE
+  return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
 endfunction

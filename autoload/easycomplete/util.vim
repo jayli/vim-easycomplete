@@ -231,6 +231,26 @@ function! util#deletebufline(bn, fl, ll)
   endif
 endfunction " }}}
 
+" EnvCHecking {{{
+function! easycomplete#util#EnvReady()
+  let wininfo = getwininfo(bufwinid(bufnr("")))[0]
+  if empty(wininfo) | return v:false | endif
+  if wininfo['quickfix'] == 1 | return v:false | endif
+  if wininfo['terminal'] == 1 | return v:false | endif
+  if &buftype == "terminal" | return v:false | endif
+  if (getbufinfo(bufnr(''))[0]["name"] =~ "debuger=1")
+    return v:false
+  endif
+  return v:true
+endfunction " }}}
+
+" IsTerminal {{{
+function! easycomplete#util#IsTerminal()
+  let wininfo = getwininfo(bufwinid(bufnr("")))[0]
+  if wininfo['terminal'] == 1 | return v:true | endif
+  return v:false
+endfunction " }}}
+
 " str2list {{{
 function! easycomplete#util#str2list(expr)
   if exists("*str2list")

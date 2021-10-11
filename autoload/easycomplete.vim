@@ -14,8 +14,13 @@ augroup easycomplete#autocmd
   autocmd User easycomplete_custom_plugin silent
 augroup END
 
+function! easycomplete#LogStart()
+endfunction
+
 " EasyComplete 入口函数
 function! easycomplete#Enable()
+  if !easycomplete#util#EnvReady() | return | endif
+  call easycomplete#LogStart()
   " 插件要求在每个 BufferEnter 时调用
   if exists("b:easycomplete_loaded_done")
     return
