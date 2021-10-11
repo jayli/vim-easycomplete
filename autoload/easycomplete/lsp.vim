@@ -1024,10 +1024,13 @@ function! s:on_stderr(server_name, id, data, event) abort
   call s:log('<---(stderr)', a:id, a:server_name, a:data)
 endfunction
 
-function! s:on_exit(server_name, id, data, event) abort
-  call s:log('s:on_exit', a:id, a:server_name, 'exited', a:data)
-  if has_key(s:servers, a:server_name)
-    let l:server = s:servers[a:server_name]
+function! s:on_exit(...) abort
+  let server_name = string(a:1)
+  let id = exists('a:2') ? a:2 : v:null
+  let data = exists('a:3') ? a:3 : v:null
+  let event = exists('a:4') ? a:4 : v:null
+  if has_key(s:servers, server_name)
+    let l:server = s:servers[server_name]
     let l:server['lsp_id'] = 0
     let l:server['buffers'] = {}
     let l:server['exited'] = 1
@@ -1035,7 +1038,7 @@ function! s:on_exit(server_name, id, data, event) abort
       unlet l:server['init_result']
     endif
     call easycomplete#lsp#stream(1, { 'server': '$vimlsp',
-          \ 'response': { 'method': '$/vimlsp/lsp_server_exit', 'params': { 'server': a:server_name } } })
+          \ 'response': { 'method': '$/vimlsp/lsp_server_exit', 'params': { 'server': server_name } } })
     " doautocmd <nomodeline> User lsp_server_exit
   endif
 endfunction

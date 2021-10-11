@@ -118,7 +118,7 @@ function! s:InitLocalVars()
   let s:first_render_timer = 0
 
   " FirstCompleteRendering 中 LSP 的超时时间
-  let g:easycomplete_first_render_delay = 1000
+  let g:easycomplete_first_render_delay = 1500
 
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
@@ -148,7 +148,6 @@ function! s:BindingTypingCommandOnce()
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
-  inoremap <expr> <Esc> easycomplete#esc()
   inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
   inoremap <expr> <Up> easycomplete#Up()
   inoremap <expr> <Down> easycomplete#Down()
@@ -337,11 +336,6 @@ function! easycomplete#InsertLeave()
     call easycomplete#lint()
     call easycomplete#sign#LintCurrentLine()
   endif
-endfunction
-
-function! easycomplete#esc()
-  call s:flush()
-  return "\<Esc>"
 endfunction
 
 function! easycomplete#flush()
@@ -1153,6 +1147,7 @@ function! s:CompleteInit(...)
 endfunction
 
 function! s:CompleteMenuResetHandler(...)
+  if s:NotInsertMode() | return |endif
   if !exists("g:easycomplete_menuitems") || empty(g:easycomplete_menuitems)
     call s:CloseCompletionMenu()
   endif
@@ -1160,6 +1155,7 @@ endfunction
 
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
   if s:zizzing() | return | endif
+  if s:NotInsertMode() | return |endif
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
@@ -1844,7 +1840,7 @@ endfunction
 function! easycomplete#lint()
   if !easycomplete#util#LspServerReady() | return | endif
   call easycomplete#lsp#notify_diagnostics_update()
-  call easycomplete#lsp#ensure_flush_all()
+  call s:AsyncRun(function("easycomplete#lsp#ensure_flush_all"),[],10)
 endfunction
 
 function! easycomplete#HandleLspDiagnostic(server, response) abort
