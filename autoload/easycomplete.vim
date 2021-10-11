@@ -1679,11 +1679,14 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     "   需要修改 word 为 insertText.slice(2)
     let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
   elseif &filetype == "vim" && s:VimDotTyping() " bugfix for #92
-    let l:matches = map(copy(l:matches), function("s:VimHack_S_DotMap"))
+    call filter(l:matches, function("s:VimHack_S_DotFilter"))
   elseif &filetype == "xml" && l:ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理
     let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
   elseif &filetype == "xml" && l:ctx['typed'] =~ "</$" " </> 的处理
     let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
+  elseif &filetype == "vim"
+    " hack for #98 #92
+    let l:matches = map(copy(l:matches), function("s:VimHack_A_DotMap"))
   elseif &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
     " hack for json-language-server
     "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
@@ -1717,11 +1720,28 @@ function! s:XmlHack_S_ColonMap(key, val)
   return a:val
 endfunction
 
-function! s:VimHack_S_DotMap(key, val)
+function! s:VimHack_S_DotFilter(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
         \ && stridx(get(a:val, "word"), ".") > 0
     let vim_typing_word = s:VimHack_GetVimTypingWord()
-    let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word, "", "g")
+    return stridx(get(a:val, "word"), vim_typing_word) == 0
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:VimHack_A_DotMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let ctx = easycomplete#context()
+    let vim_typing_word = s:VimHack_GetVimTypingWord()
+    if ctx["char"] == "."
+      let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word, "", "g")
+    else
+      let word = easycomplete#util#GetTypingWord()
+      let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word[:-1 * ( 1 + strlen(word))], "", "g")
+    endif
+    let vim_typing_word = s:VimHack_GetVimTypingWord()
   endif
   return a:val
 endfunction
