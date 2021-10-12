@@ -53,6 +53,42 @@ function! easycomplete#popup#CompleteDone()
   call easycomplete#popup#close()
 endfunction
 
+function! easycomplete#popup#test(a,b)
+  let content = [
+        \ "~/.vim/bundle/vim-easycomplete/autoload/easycomplete/popup.vim [+] [utf-8]",
+        \ "asdkjfo ajodij aojf aojf a;fj alfj",
+        \ "testing testing"]
+  let opt = {
+        \ 'row':a:a,
+        \ 'col':a:b,
+        \ }
+  call easycomplete#popup#show(content, opt)
+endfunction
+
+function! easycomplete#popup#show(content, opt)
+  let content = a:content
+  let prevw_width = easycomplete#popup#DisplayWidth(content, 90)
+  let prevw_height = easycomplete#popup#DisplayHeight(content, prevw_width) - 1
+  call s:InitPopupBuf(content)
+  let opt = extend({
+        \   'relative':'editor',
+        \   'focusable': v:true,
+        \   'style':'minimal'
+        \ },
+        \ {
+        \   'width': prevw_width,
+        \   'height': prevw_height,
+        \   'col':a:opt.col,
+        \   'row':a:opt.row,
+        \ })
+  if s:is_nvim
+    call easycomplete#popup#close()
+    call s:NvimShowPopup(opt)
+  elseif s:is_vim
+    call s:VimShowPopup(opt)
+  endif
+endfunction
+
 function! easycomplete#popup#DoPopup(info)
   call s:StopVisualAsyncRun()
   call s:StartPopupAsyncRun("s:check", [a:info], 170)
@@ -77,30 +113,7 @@ function! s:check(info)
   let s:last_event = s:event
 
   let info = type(a:info) == type("") ? [a:info] : a:info
-
-  if !s:buf
-    if s:is_vim
-      noa let s:buf = bufadd('')
-      noa call bufload(s:buf)
-      call setbufvar(s:buf, '&filetype', &filetype)
-    elseif s:is_nvim
-      noa let s:buf = nvim_create_buf(v:false, v:true)
-      call nvim_buf_set_option(s:buf, 'syntax', 'on')
-      call nvim_buf_set_option(s:buf, 'filetype', &filetype)
-    endif
-    call setbufvar(s:buf, '&buflisted', 0)
-    call setbufvar(s:buf, '&buftype', 'nofile')
-    call setbufvar(s:buf, '&undolevels', -1)
-  endif
-
-  if s:is_nvim
-    call nvim_buf_set_lines(s:buf, 0, -1, v:false, info)
-  elseif s:is_vim
-    call deletebufline(s:buf, 1, '$')
-    call setbufline(s:buf, 1, info)
-    " call setbufline(s:buf, 1, [rand(srand())])
-  endif
-
+  call s:InitPopupBuf(info)
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
 
@@ -152,6 +165,31 @@ function! s:check(info)
     call s:NvimShowPopup(opt)
   elseif s:is_vim
     call s:VimShowPopup(opt)
+  endif
+endfunction
+
+function! s:InitPopupBuf(info)
+  if !s:buf
+    if s:is_vim
+      noa let s:buf = bufadd('')
+      noa call bufload(s:buf)
+      call setbufvar(s:buf, '&filetype', &filetype)
+    elseif s:is_nvim
+      noa let s:buf = nvim_create_buf(v:false, v:true)
+      call nvim_buf_set_option(s:buf, 'syntax', 'on')
+      call nvim_buf_set_option(s:buf, 'filetype', &filetype)
+    endif
+    call setbufvar(s:buf, '&buflisted', 0)
+    call setbufvar(s:buf, '&buftype', 'nofile')
+    call setbufvar(s:buf, '&undolevels', -1)
+  endif
+
+  if s:is_nvim
+    call nvim_buf_set_lines(s:buf, 0, -1, v:false, a:info)
+  elseif s:is_vim
+    call deletebufline(s:buf, 1, '$')
+    call setbufline(s:buf, 1, a:info)
+    " call setbufline(s:buf, 1, [rand(srand())])
   endif
 endfunction
 
