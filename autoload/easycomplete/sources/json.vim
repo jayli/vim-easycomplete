@@ -28,4 +28,24 @@ function! easycomplete#sources#json#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["json"])
 endfunction
 
+function! easycomplete#sources#json#filter(matches)
+  let ctx = easycomplete#context()
+  let matches = a:matches
+  if ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
+    " hack for json-language-server
+    "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
+    let matches = map(copy(matches), function("s:JsonHack_Q_QuotationMap"))
+  endif
+  return matches
+endfunction
+
+function! s:JsonHack_Q_QuotationMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && matchstr(get(a:val, "word"), '^"') == '"'
+    let a:val.word = get(a:val, "word")[1:]
+  endif
+  return a:val
+endfunction
+
+
 

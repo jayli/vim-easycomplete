@@ -1621,7 +1621,7 @@ endfunction
 " LSP 专用工具函数
 " 这里把 vim-lsp 整合进来了，做好了兼容，不用再安装外部依赖，这里的 LSP
 " 工具函数主要是给 easycomplete 的插件用的通用方法，已经做到了最小依赖
-" vim-lsp 源码非常脏乱差，而且冗余很大，这里只对源码做了初步精简
+" vim-lsp 源码冗余很大，这里只对源码做了初步精简
 " ----------------------------------------------------------------------
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
@@ -1657,6 +1657,14 @@ function! easycomplete#LspCompleteRequest(info, plugin_name) abort
         \ })
 endfunction
 
+function! s:MatchResultFilterPipe(plugin_name, matches)
+  let Fun_name = "easycomplete#sources#" . a:plugin_name . "#filter"
+  if !easycomplete#util#FuncExists(Fun_name)
+    return a:matches
+  endif
+  return call(funcref(Fun_name), [a:matches])
+endfunction
+
 function! s:HandleLspCompletion(server_name, plugin_name, data) abort
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
@@ -1666,33 +1674,11 @@ function! s:HandleLspCompletion(server_name, plugin_name, data) abort
     return
   endif
 
-  " TODO 自己实现的有问题
   let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  " Handling special cases
-  if &filetype == 'vim' && l:ctx['typed'] =~ "s:\\w\\{-}$"
-    " hack for vim-language-server:
-    "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
-    "   g:b:l:a: 都是正确的，只有 s: 不正确
-    "   需要修改 word 为 insertText.slice(2)
-    let l:matches = map(copy(l:matches), function("s:VimHack_S_ColonMap"))
-  elseif &filetype == "vim" && s:VimDotTyping() " bugfix for #92
-    call filter(l:matches, function("s:VimHack_S_DotFilter"))
-  elseif &filetype == "xml" && l:ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理
-    let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
-  elseif &filetype == "xml" && l:ctx['typed'] =~ "</$" " </> 的处理
-    let l:matches = map(copy(l:matches), function("s:XmlHack_S_ColonMap"))
-  elseif &filetype == "vim"
-    " hack for #98 #92
-    let l:matches = map(copy(l:matches), function("s:VimHack_A_DotMap"))
-  elseif &filetype == 'json' && l:ctx['typed'] =~ '\(^"\|[^"]"\)\w\{-}$'
-    " hack for json-language-server
-    "   "<tab> 和 '<tab> 时的起始位置应该从'和"开始
-    let l:matches = map(copy(l:matches), function("s:JsonHack_Q_QuotationMap"))
-  endif
-
+  let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches)
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
@@ -1703,77 +1689,6 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
   " 这里包含了 info document 和 matches
   let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name)
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
-endfunction
-
-function! s:XmlHack_S_ColonMap(key, val)
-  if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && get(a:val, "abbr") =~ "\\w\\:\\w\\{-}\\~$"
-    let abbr = a:val.abbr
-    let a:val.word = substitute(substitute(abbr, "^\\w\\{-}\\:", "", 'g'), "\\~$", "", 'g')
-    let a:val.user_data = ""
-  elseif has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && trim(get(a:val, "word")) =~ "/[:a-zA-Z0-9]\\{-}>$"
-    let word = trim(a:val.word)
-    let a:val.word = substitute(word, "^<\\{-}/", "", 'g')
-    let a:val.user_data = ""
-  endif
-  return a:val
-endfunction
-
-function! s:VimHack_S_DotFilter(key, val)
-  if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && stridx(get(a:val, "word"), ".") > 0
-    let vim_typing_word = s:VimHack_GetVimTypingWord()
-    return stridx(get(a:val, "word"), vim_typing_word) == 0
-  else
-    return v:false
-  endif
-endfunction
-
-function! s:VimHack_A_DotMap(key, val)
-  if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && stridx(get(a:val, "word"), ".") > 0
-    let ctx = easycomplete#context()
-    let vim_typing_word = s:VimHack_GetVimTypingWord()
-    if ctx["char"] == "."
-      let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word, "", "g")
-    else
-      let word = easycomplete#util#GetTypingWord()
-      let a:val.word = substitute(get(a:val, "word"), "^" . vim_typing_word[:-1 * ( 1 + strlen(word))], "", "g")
-    endif
-    let vim_typing_word = s:VimHack_GetVimTypingWord()
-  endif
-  return a:val
-endfunction
-
-function! s:VimHack_S_ColonMap(key, val)
-  if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && get(a:val, "abbr") ==# get(a:val, "word")
-        \ && matchstr(get(a:val, "word"), "^s:") ==  "s:"
-    let a:val.word = get(a:val, "word")[2:]
-  endif
-  return a:val
-endfunction
-
-function! s:VimHack_GetVimTypingWord()
-  let start = col('.') - 1
-  let line = getline('.')
-  let width = 0
-  let regx = '[a-zA-Z0-9_.:]'
-  while start > 0 && line[start - 1] =~ regx
-    let start = start - 1
-    let width = width + 1
-  endwhile
-  let word = strpart(line, start, width)
-  return word
-endfunction
-
-function! s:JsonHack_Q_QuotationMap(key, val)
-  if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && matchstr(get(a:val, "word"), '^"') == '"'
-    let a:val.word = get(a:val, "word")[1:]
-  endif
-  return a:val
 endfunction
 
 " LSP definition 跳转的通用封装

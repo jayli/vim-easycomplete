@@ -295,8 +295,13 @@ endfunction " }}}
 
 " TagBarExists {{{
 function! easycomplete#util#TagBarExists()
+  return easycomplete#util#FuncExists("tagbar#StopAutoUpdate")
+endfunction " }}}
+
+" FuncExists {{{
+function! easycomplete#util#FuncExists(func_name)
   try
-    call funcref("tagbar#StopAutoUpdate")
+    call funcref(a:func_name)
   catch /^Vim\%((\a\+)\)\=:E700/
     return v:false
   endtry

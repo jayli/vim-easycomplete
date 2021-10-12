@@ -285,6 +285,12 @@ function! easycomplete#sign#unhold()
   if get(g:, "easycomplete_place_holder", 0) == 1
     call execute("sign unplace 999 file=" . easycomplete#util#GetCurrentFullName())
   endif
+  let sign_list = sign_getplaced(easycomplete#util#GetCurrentFullName())[0]["signs"]
+  for item in sign_list
+    if item['id'] == 999 && item['name'] == 'place_holder'
+      call sign_unplace('', {'buffer': bufnr(), "id": 999})
+    endif
+  endfor
   let g:easycomplete_place_holder = 0
 endfunction
 
@@ -410,6 +416,7 @@ function! easycomplete#sign#render(...)
   endwhile
 
   call easycomplete#sign#LintCurrentLine()
+  call easycomplete#sign#unhold()
 endfunction
 
 function! s:GetSignStyle(severity)

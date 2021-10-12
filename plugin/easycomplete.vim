@@ -71,6 +71,7 @@ augroup easycomplete#register
       \ 'semantic_triggers':[
       \      "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
       \      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
+      \      "\\w.$",
       \    ]
       \  })
       " \ 'trigger' : 'always'
