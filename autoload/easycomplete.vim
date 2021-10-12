@@ -712,17 +712,6 @@ function! s:DoComplete(immediately)
   " 特殊字符'->',':','.','::'等 在个语言中的匹配，一般要配合 lsp 一起使用，即
   " lsp给出的结果中就包含了 "a.b.c" 的提示，这时直接执行 SecondComplete 动作
   if !empty(g:easycomplete_menuitems)
-    " Info: 这里特殊处理了 viml 中 "." 后的逻辑，vim language server 大部分情
-    " 况无法正确返回对象成员，所以在匹配对象成员时，为了避免 vim lsp 的 bug 看
-    " 上去太明显，这里让"."后的匹配和单词匹配保持一致，但副作用是"."运算符后匹
-    " 配出来的内容显然有很大冗余，vim 中的 "." 用法不多，所以暂时没去管它，如
-    " 果 vim language server 的精准度有所提升，这段逻辑是可以去掉的
-    if s:VimDotTyping()
-      let l:vim_word = matchstr(l:ctx['typed'], '\(\w\+\.\)\{-1,}$')
-      call s:CompleteTypingMatch(l:vim_word)
-      return v:null
-    endif
-
     " hack for vim ':' colon typing
     if s:VimColonTyping()
       let l:vim_word = matchstr(l:ctx['typed'], '\w:$')
