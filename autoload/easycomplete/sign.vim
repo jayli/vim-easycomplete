@@ -6,7 +6,7 @@ let s:easycomplete_diagnostics_hint = 1
 let g:easycomplete_diagnostics_config = {
       \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   },
       \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '31'    },
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    },
       \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    }
       \ }
 

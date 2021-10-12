@@ -33,6 +33,14 @@ let s:info = []
 let s:last_event = {}
 let s:last_winargs = []
 let s:buf = 0
+let s:hl = {
+      \   'diagnostics': {
+      \     'error':'ErrorMsg',
+      \     'warning':'WarningMsg',
+      \     'information':'Pmenu',
+      \     'hint':'Pmenu'
+      \   },
+      \ }
 
 function! easycomplete#popup#InsertLeave()
   call easycomplete#popup#close()
@@ -53,21 +61,24 @@ function! easycomplete#popup#CompleteDone()
   call easycomplete#popup#close()
 endfunction
 
-function! easycomplete#popup#test(a,b)
+function! easycomplete#popup#test()
   let content = [
         \ "~/.vim/bundle/vim-easycomplete/autoload/easycomplete/popup.vim [+] [utf-8]",
         \ "asdkjfo ajodij aojf aojf a;fj alfj",
         \ "testing testing"]
-  let opt = {
-        \ 'row':a:a,
-        \ 'col':a:b,
-        \ }
-  call easycomplete#popup#show(content, opt)
+  call easycomplete#popup#show(content, 'ErrorMsg', 0)
 endfunction
 
-function! easycomplete#popup#show(content, opt)
-  let content = a:content
-  let prevw_width = easycomplete#popup#DisplayWidth(content, 90)
+" content, hl, direction: 0, 向下，1，向上
+function! easycomplete#popup#show(content, hl, direction)
+  if type(a:content) == type('')
+    let content = [a:content]
+  elseif type(a:content) == type([])
+    let content = a:content
+  else
+    return
+  endif
+  let prevw_width = easycomplete#popup#DisplayWidth(content, 80)
   let prevw_height = easycomplete#popup#DisplayHeight(content, prevw_width) - 1
   call s:InitPopupBuf(content)
   let opt = extend({
@@ -78,9 +89,37 @@ function! easycomplete#popup#show(content, opt)
         \ {
         \   'width': prevw_width,
         \   'height': prevw_height,
-        \   'col':a:opt.col,
-        \   'row':a:opt.row,
         \ })
+  " handle height
+  if !a:direction
+    if winline() + prevw_height <= winheight(win_getid())
+      " 菜单向下展开
+      let opt.row = winline() + 1
+    else
+      " 菜单向上展开
+      let opt.row = winline() - prevw_height
+    endif
+  else
+    if winheight(win_getid()) - winline() + prevw_height > winheight(win_getid())
+      " 菜单向下展开
+      let opt.row = winline() + 1
+    else
+      " 菜单向上展开
+      let opt.row = winline() - prevw_height
+    endif
+  endif
+
+  " handle width
+  if wincol() + prevw_width - 1 > winwidth(win_getid())
+    let opt.col = winwidth(win_getid()) - prevw_width
+  else
+    let opt.col = wincol() - 1
+  endif
+
+  if !empty(a:hl)
+    let opt.highlight = a:hl
+  endif
+
   if s:is_nvim
     call easycomplete#popup#close()
     call s:NvimShowPopup(opt)
@@ -91,10 +130,12 @@ endfunction
 
 function! easycomplete#popup#DoPopup(info)
   call s:StopVisualAsyncRun()
-  call s:StartPopupAsyncRun("s:check", [a:info], 170)
+  call s:StartPopupAsyncRun("s:popup", [a:info], 170)
 endfunction
 
-function! s:check(info)
+" s:popup 代替 popup_info 方法
+" 外部调用时使用 easycomplete#popup#show() 方法
+function! s:popup(info)
   if !pumvisible()
     call easycomplete#popup#close()
     return
@@ -125,13 +166,11 @@ function! s:check(info)
         \ 'style':'minimal'
         \ }
 
-  " show relative popup
   if get(s:event, 'scrollbar')
     let right_avail_col  = s:event.col + s:event.width + 1
   else
     let right_avail_col  = s:event.col + s:event.width
   endif
-  " -1 for zero-based indexing, -1 for vim's popup menu padding
   let left_avail_col = s:event.col - 2
 
   let right_avail = &co - right_avail_col
@@ -142,7 +181,7 @@ function! s:check(info)
   elseif left_avail >= prevw_width
     let opt.col = left_avail_col - prevw_width + 1
   else
-    " no enough space to displace the preview window
+    " 无更多空间，直接关闭
     call easycomplete#popup#close()
     return
   endif
@@ -171,13 +210,13 @@ endfunction
 function! s:InitPopupBuf(info)
   if !s:buf
     if s:is_vim
-      noa let s:buf = bufadd('')
-      noa call bufload(s:buf)
+      let s:buf = bufadd('')
+      call bufload(s:buf)
       call setbufvar(s:buf, '&filetype', &filetype)
     elseif s:is_nvim
-      noa let s:buf = nvim_create_buf(v:false, v:true)
-      call nvim_buf_set_option(s:buf, 'syntax', 'on')
+      let s:buf = nvim_create_buf(v:false, v:true)
       call nvim_buf_set_option(s:buf, 'filetype', &filetype)
+      call nvim_buf_set_option(s:buf, 'syntax', 'on')
     endif
     call setbufvar(s:buf, '&buflisted', 0)
     call setbufvar(s:buf, '&buftype', 'nofile')
@@ -214,6 +253,9 @@ function! s:VimShowPopup(opt)
         \ 'firstline': 0,
         \ 'fixed': 1,
         \ }
+  if exists('a:opt.highlight')
+    let opt.highlight = a:opt.highlight
+  endif
 
   " TODO: 在 iTerm2 下，执行 popup_move/popup_setoptions/popup_create 会造成
   " complete menu 的闪烁，原因未知
@@ -237,13 +279,17 @@ endfunction
 
 function! s:NvimShowPopup(opt)
   if s:is_vim | return | endif
+  if exists('a:opt.highlight')
+    let hl = a:opt.highlight
+    unlet a:opt.highlight
+  else
+    let hl = 'Pmenu'
+  endif
+  let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf, 0, a:opt]
   let g:easycomplete_popup_win = call('nvim_open_win', winargs)
   call nvim_win_set_var(g:easycomplete_popup_win, 'syntax', 'on')
-  call nvim_win_set_option(g:easycomplete_popup_win, 'foldenable', v:false)
-  call nvim_win_set_option(g:easycomplete_popup_win, 'wrap', v:true)
-  call nvim_win_set_option(g:easycomplete_popup_win, 'statusline', '')
-  call nvim_win_set_option(g:easycomplete_popup_win, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  call nvim_win_set_option(g:easycomplete_popup_win, 'winhl', hl_str)
   call nvim_win_set_option(g:easycomplete_popup_win, 'number', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'relativenumber', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win, 'cursorline', v:false)
