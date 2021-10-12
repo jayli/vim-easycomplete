@@ -15,7 +15,10 @@ let g:env_is_nvim = has('nvim') ? v:true : v:false
 " Info 这里 g:env_is_gui 在 vim 下计算正确，在 nvim 下计算错误，原因未知
 " 用 easycomplete#util#IsGui() 代替
 let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
-let g:easycomplete_config = {}
+let g:easycomplete_config = {
+      \ 'g:easycomplete_diagnostics_hover' : 1,
+      \ 'g:easycomplete_diagnostics_enable': 1,
+      \ }
 
 " VIM 最低版本 8.2
 " Neo 最低版本 0.4.0

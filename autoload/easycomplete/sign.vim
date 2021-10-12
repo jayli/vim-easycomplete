@@ -1,13 +1,14 @@
 " params 信息的缓存
 " key 是buf 绝对路径 /User/bachi/ttt...
 let g:easycomplete_diagnostics_cache = {}
-let s:easycomplete_diagnostics_hint = 1
+let g:easycomplete_diagnostics_hint = 1
+let g:easycomplete_diagnostics_popup = 0
 
 let g:easycomplete_diagnostics_config = {
-      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   },
-      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    },
-      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    }
+      \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
+      \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow', "hl": 'WarningMsg'},
+      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
+      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
       \ }
 
 function! easycomplete#sign#test()
@@ -57,8 +58,16 @@ function! easycomplete#sign#GetStyle(msg_type)
         \ }
 endfunction
 
+function! easycomplete#sign#DiagHoverFlush()
+  if easycomplete#ok('g:easycomplete_diagnostics_hover')
+    call easycomplete#popup#close()
+    let g:easycomplete_diagnostics_popup = 0
+  endif
+endfunction
+
 " 只清空当前buf的diagnostics
 function! easycomplete#sign#flush()
+  call easycomplete#sign#DiagHoverFlush()
   if !exists("g:easycomplete_diagnostics_cache")
     let g:easycomplete_diagnostics_cache = {}
   endif
@@ -220,6 +229,8 @@ function! easycomplete#sign#jump(diagnostics_index)
   let l:col = get(item, 'range')['start']['character'] + 1
   call cursor(l:line, l:col)
   call easycomplete#sign#LintCurrentLine()
+  call easycomplete#sign#DiagHoverFlush()
+  call easycomplete#sign#LintPopup()
 endfunction
 
 " 返回当前文件所有合法的lint
@@ -319,6 +330,7 @@ function! easycomplete#sign#cache(response)
   let g:easycomplete_diagnostics_cache[l:key] = a:response
   let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   let diagnostics_result = easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
+  call easycomplete#sign#DiagHoverFlush()
   if !empty(diagnostics_result)
     call sort(diagnostics_result, 'easycomplete#sign#sort')
     let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] = diagnostics_result
@@ -386,6 +398,7 @@ function! easycomplete#sign#render(...)
   if easycomplete#sign#DiagnosticsIsEmpty(diagnostics)
     call easycomplete#sign#unhold()
     call easycomplete#sign#flush()
+    call easycomplete#sign#DiagHoverFlush()
     return
   endif
   let current_cache = g:easycomplete_diagnostics_cache[easycomplete#util#GetCurrentFullName()]
@@ -431,6 +444,66 @@ function! s:GetSignStyle(severity)
   return style
 endfunction
 
+function! easycomplete#sign#LintPopup()
+  if !easycomplete#ok('g:easycomplete_diagnostics_hover')
+    call easycomplete#sign#DiagHoverFlush()
+    return
+  endif
+  let ctx = easycomplete#context()
+  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
+  if empty(diagnostics_info)
+    call easycomplete#sign#DiagHoverFlush()
+    return
+  else
+    call s:StopAsyncRun()
+    call s:AsyncRun(function("s:PopupMsg"), [diagnostics_info], 100)
+  endif
+endfunction
+
+function! s:PopupMsg(diagnostics_info)
+  if g:easycomplete_diagnostics_hint == 1 && g:easycomplete_diagnostics_popup == 1
+    return
+  endif
+  let g:easycomplete_diagnostics_popup = 1
+  let msg = get(a:diagnostics_info, 'message', '')
+  let msg = split(msg, "\\n")
+  let showing = s:MsgNormalize(a:diagnostics_info, msg)
+  let style = s:GetPopupStyle(a:diagnostics_info["severity"])
+  call easycomplete#popup#show(showing, style, 0)
+endfunction
+
+function! s:GetPopupStyle(severity)
+  let style = g:easycomplete_diagnostics_config["hint"]["hl"]
+  for k in keys(g:easycomplete_diagnostics_config)
+    let item = g:easycomplete_diagnostics_config[k]
+    if item["type"] == a:severity
+      let style = item["hl"]
+      break
+    endif
+  endfor
+  return style
+endfunction
+
+function! s:MsgNormalize(diagnostics_info, msg)
+  let tmsg = printf('[%s] (%s,%s) ',
+        \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
+        \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
+        \ get(a:diagnostics_info, 'range')['start']['character'] + 1
+        \ )
+  if type(a:msg) == type([])
+    let tmsg = tmsg . a:msg[0]
+    if len(a:msg) >= 2
+      let showing = [tmsg] + a:msg[1:]
+    else
+      let showing = [tmsg]
+    endif
+    return showing
+  endif
+  if type(a:msg) == type('')
+    return tmsg . a:msg
+  endif
+endfunction
+
 function! easycomplete#sign#LintCurrentLine()
   if !easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#sign#unhold()
@@ -439,36 +512,35 @@ function! easycomplete#sign#LintCurrentLine()
   endif
   let ctx = easycomplete#context()
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
-  if empty(diagnostics_info) && s:easycomplete_diagnostics_hint == 1
+  if empty(diagnostics_info) && g:easycomplete_diagnostics_hint == 1
+    if g:easycomplete_diagnostics_popup == 1
+      call easycomplete#sign#DiagHoverFlush()
+    endif
     call easycomplete#nill()
     echo ""
-    let s:easycomplete_diagnostics_hint = 0
     return
   elseif empty(diagnostics_info)
+    call easycomplete#sign#DiagHoverFlush()
     call easycomplete#nill()
     return
   else
     " Use AsyncRun for #91 bugfix
-    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 10)
+    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 1)
   endif
 endfunction
 
 function! s:ShowDiagMsg(diagnostics_info)
+  let g:easycomplete_diagnostics_hint = 1
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]
-  let showing = printf('[%s] (%s,%s) %s',
-        \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
-        \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
-        \ get(a:diagnostics_info, 'range')['start']['character'] + 1,
-        \ msg
-        \ )
+  let showing = s:MsgNormalize(a:diagnostics_info, msg)
+
   " offset 的目的是确保不这行
   let offset = 13
   if strlen(showing) > winwidth(winnr()) - offset
     let showing = showing[0:winwidth(winnr()) - offset - 3] . '...'
   endif
   echo showing
-  let s:easycomplete_diagnostics_hint = 1
 endfunction
 
 function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)

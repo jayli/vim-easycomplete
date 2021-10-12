@@ -33,14 +33,6 @@ let s:info = []
 let s:last_event = {}
 let s:last_winargs = []
 let s:buf = 0
-let s:hl = {
-      \   'diagnostics': {
-      \     'error':'ErrorMsg',
-      \     'warning':'WarningMsg',
-      \     'information':'Pmenu',
-      \     'hint':'Pmenu'
-      \   },
-      \ }
 
 function! easycomplete#popup#InsertLeave()
   call easycomplete#popup#close()
@@ -210,9 +202,9 @@ endfunction
 function! s:InitPopupBuf(info)
   if !s:buf
     if s:is_vim
-      let s:buf = bufadd('')
-      call bufload(s:buf)
-      call setbufvar(s:buf, '&filetype', &filetype)
+      noa let s:buf = bufadd('')
+      noa call bufload(s:buf)
+      noa call setbufvar(s:buf, '&filetype', &filetype)
     elseif s:is_nvim
       let s:buf = nvim_create_buf(v:false, v:true)
       call nvim_buf_set_option(s:buf, 'filetype', &filetype)
@@ -226,9 +218,8 @@ function! s:InitPopupBuf(info)
   if s:is_nvim
     call nvim_buf_set_lines(s:buf, 0, -1, v:false, a:info)
   elseif s:is_vim
-    call deletebufline(s:buf, 1, '$')
-    call setbufline(s:buf, 1, a:info)
-    " call setbufline(s:buf, 1, [rand(srand())])
+    silent call deletebufline(s:buf, 1, '$')
+    silent call setbufline(s:buf, 1, a:info)
   endif
 endfunction
 
@@ -263,11 +254,11 @@ function! s:VimShowPopup(opt)
     call popup_setoptions(g:easycomplete_popup_win, opt)
     call popup_show(g:easycomplete_popup_win)
   else
-    let winid = popup_create(s:buf, opt)
-    let g:easycomplete_popup_win = winid
-    call setwinvar(winid, '&scrolloff', 1)
-    call setwinvar(winid, 'float', 1)
-    call setwinvar(winid, '&number', 0)
+    noa let winid = popup_create(s:buf, opt)
+    noa let g:easycomplete_popup_win = winid
+    ano call setwinvar(winid, '&scrolloff', 1)
+    ano call setwinvar(winid, 'float', 1)
+    ano call setwinvar(winid, '&number', 0)
     " call setwinvar(winid, '&list', 0)
     " call setwinvar(winid, '&cursorcolumn', 0)
     " call setwinvar(winid, '&colorcolumn', 0)

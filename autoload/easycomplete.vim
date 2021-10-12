@@ -165,6 +165,8 @@ function! s:BindingTypingCommandOnce()
     autocmd CursorMoved * call easycomplete#CursorMoved()
     " FirstComplete Entry
     autocmd TextChangedI * call easycomplete#typing()
+    autocmd TextChanged * call easycomplete#Textchanged()
+    autocmd InsertEnter * call easycomplete#InsertEnter()
     " SecondComplete Entry
     autocmd CompleteChanged * call easycomplete#CompleteChanged()
     autocmd TextChangedP * noa call easycomplete#TextChangedP()
@@ -172,6 +174,13 @@ function! s:BindingTypingCommandOnce()
     autocmd CompleteDone * call easycomplete#CompleteDone()
     autocmd InsertLeave * call easycomplete#InsertLeave()
   augroup END
+
+  if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
+      augroup MatchWord
+        autocmd!
+        autocmd! CursorHold * call easycomplete#CursorHold()
+      augroup END
+  endif
 
   " 安装 lsp 依赖
   command! -nargs=? EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
@@ -1758,10 +1767,13 @@ endfunction
 function! easycomplete#ok(str)
   let varstr = substitute(a:str, "[abvgsl]:","","i")
   let flag = v:false
+  let value = get(g:easycomplete_config, a:str, 0)
   if exists(a:str) && get(g:, varstr, 0) == 0
     let flag = v:false
-  else
-    let flag = v:true
+  elseif exists(a:str) && get(g:, varstr, 0) != 0
+    let flag = get(g:, varstr, 0)
+  elseif !exists(a:str)
+    let flag = value
   endif
   let g:easycomplete_config[a:str] = flag
   return flag
@@ -1785,4 +1797,19 @@ function! easycomplete#CursorMoved()
   if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#util#NormalMode()
     call easycomplete#sign#LintCurrentLine()
   endif
+endfunction
+
+function! easycomplete#CursorHold()
+  if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
+    call easycomplete#sign#LintPopup()
+  endif
+endfunction
+
+function! easycomplete#Textchanged()
+  call easycomplete#sign#DiagHoverFlush()
+  call easycomplete#lint()
+endfunction
+
+function! easycomplete#InsertEnter()
+  call easycomplete#sign#DiagHoverFlush()
 endfunction
