@@ -18,6 +18,7 @@ let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:fa
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover' : 1,
       \ 'g:easycomplete_diagnostics_enable': 1,
+      \ 'g:easycomplete_signature_enable': 0,
       \ }
 
 " VIM 最低版本 8.2

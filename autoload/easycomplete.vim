@@ -176,9 +176,16 @@ function! s:BindingTypingCommandOnce()
   augroup END
 
   if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
-      augroup easycompelte#CursorHold
+      augroup easycompelte#diagnostics
         autocmd!
         autocmd! CursorHold * call easycomplete#CursorHold()
+      augroup END
+  endif
+
+  if easycomplete#ok('g:easycomplete_signature_enable')
+      augroup easycompelte#signature
+        autocmd!
+        autocmd! CursorMovedI * call easycomplete#CursorMovedI()
       augroup END
   endif
 
@@ -1799,6 +1806,16 @@ function! easycomplete#CursorMoved()
   endif
 endfunction
 
+function! easycomplete#CursorMovedI()
+  if easycomplete#ok('g:easycomplete_signature_enable')
+    call easycomplete#signature#DoSignature()
+  endif
+endfunction
+
+function! easycomplete#HandleLspSignature(server, response)
+  call easycomplete#signature#callback(a:server, a:response)
+endfunction
+
 function! easycomplete#CursorHold()
   if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#LintPopup()
@@ -1813,3 +1830,4 @@ endfunction
 function! easycomplete#InsertEnter()
   call easycomplete#sign#DiagHoverFlush()
 endfunction
+

@@ -204,7 +204,7 @@ function! s:InitPopupBuf(info)
     if s:is_vim
       noa let s:buf = bufadd('')
       noa call bufload(s:buf)
-      noa call setbufvar(s:buf, '&filetype', &filetype)
+      noa call setbufvar(s:buf, '&filetype', "markdown")
     elseif s:is_nvim
       let s:buf = nvim_create_buf(v:false, v:true)
       call nvim_buf_set_option(s:buf, 'filetype', &filetype)
