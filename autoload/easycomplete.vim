@@ -176,7 +176,7 @@ function! s:BindingTypingCommandOnce()
   augroup END
 
   if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
-      augroup MatchWord
+      augroup easycompelte#CursorHold
         autocmd!
         autocmd! CursorHold * call easycomplete#CursorHold()
       augroup END
