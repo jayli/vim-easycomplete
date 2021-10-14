@@ -1596,16 +1596,8 @@ endfunction
 
 function! easycomplete#signature()
   if easycomplete#ok('g:easycomplete_signature_enable')
-    call easycomplete#signature#DoSignature()
+    call easycomplete#action#signature#do()
   endif
-endfunction
-
-function! easycomplete#HandleLspSignature(server, response)
-  try
-    call easycomplete#signature#callback(a:server, a:response)
-  catch
-    call s:console(v:exception)
-  endtry
 endfunction
 
 function! easycomplete#CursorHold()
