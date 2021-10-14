@@ -953,14 +953,17 @@ function! s:CloseCompleteInfo()
   if g:env_is_nvim
     call easycomplete#popup#MenuPopupChanged([])
   else
-    call easycomplete#popup#close()
+    call easycomplete#popup#close("popup")
   endif
 endfunction
 
 function! easycomplete#ShowCompleteInfoByItem(item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
-  let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
-  call s:ShowCompleteInfo(thin_info)
+  if type(info) == type("")
+    let info = [info]
+  endif
+  " let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+  call s:ShowCompleteInfo(info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
@@ -1204,7 +1207,9 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   catch /^Vim\%((\a\+)\)\=:E730/
     return v:null
   endtry
-  if g:env_is_vim | call popup_clear() | endif
+  if g:env_is_vim
+    call easycomplete#popup#close("popup")
+  endif
 endfunction
 
 function! s:CombineAllMenuitems()
@@ -1813,7 +1818,11 @@ function! easycomplete#CursorMovedI()
 endfunction
 
 function! easycomplete#HandleLspSignature(server, response)
-  call easycomplete#signature#callback(a:server, a:response)
+  try
+    call easycomplete#signature#callback(a:server, a:response)
+  catch
+    call s:console(v:exception)
+  endtry
 endfunction
 
 function! easycomplete#CursorHold()
