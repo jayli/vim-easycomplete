@@ -128,12 +128,6 @@ function! easycomplete#sign#init()
   endfor
   call execute('sign define place_holder text='. opt['error'].prompt_text . ' texthl=PlaceHolder')
   call easycomplete#ui#hi('PlaceHolder', sign_column_bg, sign_column_bg, "")
-  call easycomplete#sign#command()
-endfunction
-
-function! easycomplete#sign#command()
-  command! EasyCompleteNextDiagnostic : call easycomplete#sign#next()
-  command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
 endfunction
 
 function! easycomplete#sign#next()
