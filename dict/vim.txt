@@ -1036,7 +1036,6 @@ synstack
 syntax
 system
 systemlist
-t
 tNext
 tab
 tabNext
@@ -1143,7 +1142,9 @@ topleft
 toupper
 tprevious
 tr
+trim
 trewind
+typename
 trunc
 try
 tselect
@@ -1153,6 +1154,7 @@ ttybuiltin
 ttyfast
 ttymouse
 ttyscroll
+win_execute
 ttytype
 tunmenu
 type
