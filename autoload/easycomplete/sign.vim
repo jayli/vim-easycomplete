@@ -554,10 +554,6 @@ function! s:ShowDiagMsg(diagnostics_info)
   echo showing
 endfunction
 
-function! s:GetShowingMsg()
-
-endfunction
-
 function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)
   let lint_list = easycomplete#sign#GetCurrentDiagnostics()
   let l:count = 0

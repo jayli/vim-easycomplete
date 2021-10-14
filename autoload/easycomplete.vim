@@ -9,6 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
+  call s:console()
 endfunction
 
 " EasyComplete 入口函数
@@ -38,7 +39,7 @@ function! easycomplete#Enable()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#sign#init()
     call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
-          \ {'callback':function('easycomplete#HandleLspDiagnostic')}
+          \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
   call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
@@ -199,27 +200,7 @@ function! easycomplete#GetCurrentLspContext()
 endfunction
 
 function! easycomplete#defination()
-  call easycomplete#GotoDefinitionCalling()
-endfunction
-
-function! easycomplete#GotoDefinitionCalling()
-  let l:ctx = easycomplete#context()
-  let syntax_going = v:false
-  for item in keys(g:easycomplete_source)
-    if s:CompleteSourceReady(item)
-      if has_key(get(g:easycomplete_source, item), "gotodefinition")
-        let syntax_going = s:GotoDefinitionByName(item, l:ctx)
-        break
-      endif
-    endif
-  endfor
-  if syntax_going == v:false
-    try
-      exec "tag ". expand('<cword>')
-    catch
-      echom v:exception
-    endtry
-  endif
+  call easycomplete#action#defination#do()
 endfunction
 
 " Second Complete Entry
@@ -411,21 +392,6 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   endif
   call s:SetCompleteTaskQueue(a:name, l:ctx, 1, 1)
   call s:CompleteAdd(a:items, a:name)
-endfunction
-
-function! s:GotoDefinitionByName(name, ctx)
-  let l:opt = get(g:easycomplete_source, a:name)
-  let b:gotodefinition= get(l:opt, "gotodefinition")
-  if empty(b:gotodefinition)
-    return v:false
-  endif
-  if type(b:gotodefinition) == 2 " type is function
-    return b:gotodefinition(l:opt, a:ctx)
-  endif
-  if type(b:gotodefinition) == type("string") " type is string
-    return call(b:gotodefinition, [l:opt, a:ctx])
-  endif
-  return v:false
 endfunction
 
 function! s:CallConstructorByName(name, ctx)
@@ -751,7 +717,7 @@ function! easycomplete#RegisterLspServer(opt, config)
   call easycomplete#lsp#register_server(a:config)
 endfunction
 
-function! s:GetPluginNameByLspName(lsp_name)
+function! easycomplete#GetPluginNameByLspName(lsp_name)
   let plugin_name = ""
   for item in keys(g:easycomplete_source)
     let lsp = get(g:easycomplete_source[item], 'lsp', {})
@@ -833,6 +799,10 @@ function! s:ConstructorCalling(...)
       call s:CallConstructorByName(item, l:ctx)
     endif
   endfor
+endfunction
+
+function! easycomplete#CompleteSourceReady(name)
+  return s:CompleteSourceReady(a:name)
 endfunction
 
 function! s:CompleteSourceReady(name)
@@ -1657,73 +1627,11 @@ endfunction
 function! easycomplete#DoLspDefinition(file_exts)
   let ext = tolower(easycomplete#util#extention())
   if index(a:file_exts, ext) >= 0
-    return easycomplete#LspDefinition()
+    return easycomplete#action#defination#LspRequest()
   endif
   " exec "tag ". expand('<cword>')
   " 未成功跳转，则交给主进程处理
   return v:false
-endfunction
-
-" LSP 的 GoToDefinition
-function! easycomplete#LspDefinition() abort
-  " typeDefinition => type definition
-  let l:method = "definition"
-  let l:operation = substitute(l:method, '\u', ' \l\0', 'g')
-  let l:servers = easycomplete#util#FindLspServers()['server_names']
-  if empty(l:servers)
-    return v:false
-  endif
-  let l:server = easycomplete#util#FindLspServers()['server_names'][0]
-  let l:plugin_name = s:GetPluginNameByLspName(l:server)
-  if empty(easycomplete#installer#GetCommand(l:plugin_name))
-    return v:false
-  endif
-  let l:ctx = { 'counter': len(l:server), 'list':[], 'jump_if_one': 1, 'mods': '', 'in_preview': 0 }
-
-  let l:params = {
-        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-        \   'position': easycomplete#lsp#get_position(),
-        \ }
-  call easycomplete#lsp#send_request(l:server, {
-        \ 'method': 'textDocument/' . l:method,
-        \ 'params': l:params,
-        \ 'on_notification': function('s:HandleLspLocation', [l:ctx, l:server, l:operation]),
-        \ })
-
-  echo printf('Retrieving %s ...', l:operation)
-  return v:true
-endfunction
-
-" 这里 ctx 的格式保留下来
-" ctx = {counter, list, last_command_id, jump_if_one, mods, in_preview}
-function! s:HandleLspLocation(ctx, server, type, data) abort
-  if easycomplete#lsp#client#is_error(a:data['response']) || !has_key(a:data['response'], 'result')
-    call s:log('Failed to retrieve '. a:type . ' for ' . a:server .
-          \ ': ' . easycomplete#lsp#client#error_message(a:data['response']))
-  else
-    let a:ctx['list'] = a:ctx['list'] + easycomplete#lsp#utils#location#_lsp_to_vim_list(
-          \   a:data['response']['result']
-          \ )
-  endif
-
-  if empty(a:ctx['list'])
-    call easycomplete#lsp#utils#error('No ' . a:type .' found')
-  else
-    call easycomplete#util#UpdateTagStack()
-    let l:loc = a:ctx['list'][0]
-    if len(a:ctx['list']) == 1 && a:ctx['jump_if_one'] && !a:ctx['in_preview']
-      call easycomplete#lsp#utils#location#_open_vim_list_item(l:loc, a:ctx['mods'])
-      echo 'Retrieved ' . a:type
-      redraw
-    elseif !a:ctx['in_preview']
-      call setqflist([])
-      call setqflist(a:ctx['list'])
-      echo 'Retrieved ' . a:type
-      botright copen
-    else
-      " do nothing
-    endif
-  endif
 endfunction
 
 " lsp 各项配置检查是否通过
@@ -1743,21 +1651,11 @@ function! easycomplete#ok(str)
 endfunction
 
 function! easycomplete#lint()
-  if !easycomplete#util#LspServerReady() | return | endif
-  call easycomplete#lsp#notify_diagnostics_update()
-  call s:AsyncRun(function("easycomplete#lsp#ensure_flush_all"),[],10)
+  call easycomplete#action#diagnostics#do()
 endfunction
 
 function! easycomplete#BufWritePost()
   call easycomplete#lint()
-endfunction
-
-function! easycomplete#HandleLspDiagnostic(server, response) abort
-  " call s:log("<----",a:response)
-  call easycomplete#sign#hold()
-  call easycomplete#sign#flush()
-  call easycomplete#sign#cache(a:response)
-  call easycomplete#sign#render()
 endfunction
 
 function! easycomplete#CursorMoved()
