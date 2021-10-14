@@ -113,7 +113,6 @@ function! s:flush()
   call easycomplete#popup#close("float")
 endfunction
 
-
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
 endfunction

@@ -71,3 +71,6 @@ function! s:MatchResultFilterPipe(plugin_name, matches)
   return call(funcref(Fun_name), [a:matches])
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction

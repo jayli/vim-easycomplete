@@ -24,7 +24,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   " 查找目录
   let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
   if len(result) == 0
-    if strwidth(a:ctx['char'])) != 1
+    if strwidth(a:ctx['char']) != 1
       call feedkeys("\<Tab>", "in")
     endif
   endif

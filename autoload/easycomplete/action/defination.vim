@@ -87,8 +87,8 @@ function! s:DefinationCalling()
 endfunction
 
 function! s:GotoDefinitionByName(name, ctx)
-  let source = easycomplete#GetAllPlugins()
-  let l:opt = get(source, a:name)
+  let sources = easycomplete#GetAllPlugins()
+  let l:opt = get(sources, a:name)
   let b:gotodefinition = get(l:opt, "gotodefinition")
   if empty(b:gotodefinition)
     return v:false

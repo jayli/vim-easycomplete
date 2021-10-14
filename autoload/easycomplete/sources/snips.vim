@@ -68,3 +68,6 @@ function! s:once(...)
   return call('easycomplete#util#once', a:000)
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction

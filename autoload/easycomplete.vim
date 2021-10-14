@@ -183,7 +183,7 @@ function! easycomplete#checking()
 endfunction
 
 function! easycomplete#GetAllPlugins()
-  return g:easycomplete_source
+  return copy(g:easycomplete_source)
 endfunction
 
 function! easycomplete#GetCurrentLspContext()
@@ -751,7 +751,17 @@ function! s:CompletorCallingAtFirstComplete(...)
         \                             ])
         \ })
   try
-    for item in sort(keys(g:easycomplete_source), function('s:SortForDirectory'))
+    let source_names = ['directory']
+    for name in keys(g:easycomplete_source)
+      if name !=# 'directory'
+        call add(source_names, name)
+      endif
+    endfor
+
+    let l:count = 0
+    while l:count < len(source_names)
+      let item = source_names[l:count]
+      let l:count += 1
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
         if l:cprst == v:true " true: 继续
@@ -762,7 +772,11 @@ function! s:CompletorCallingAtFirstComplete(...)
           break " false: break, 只在 directory 文件目录匹配时使用
         endif
       endif
-    endfor
+    endwhile
+
+
+
+
   catch
     echom v:exception
     call s:flush()
@@ -852,10 +866,14 @@ endfunction
 
 " 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不再重新请求 LSP
 function! s:CompleteMatchAction()
-  call s:StopZizz()
-  let l:vim_word = s:GetTypingWordByGtx()
-  call s:CompleteTypingMatch(l:vim_word)
-  let b:typing_ctx = easycomplete#context()
+  try
+    call s:StopZizz()
+    let l:vim_word = s:GetTypingWordByGtx()
+    call s:CompleteTypingMatch(l:vim_word)
+    let b:typing_ctx = easycomplete#context()
+  catch
+    echom v:exception
+  endtry
 endfunction
 
 function! easycomplete#CompleteChanged()
@@ -1542,7 +1560,7 @@ endfunction
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
 function! easycomplete#DoLspComplete(opt, ctx)
-  call easycomplete#action#completion#do(a:opt, a:ctx)
+  return easycomplete#action#completion#do(a:opt, a:ctx)
 endfunction
 
 " LSP definition 跳转的通用封装

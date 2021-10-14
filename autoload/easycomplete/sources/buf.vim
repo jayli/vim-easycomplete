@@ -180,3 +180,7 @@ endfunction
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
