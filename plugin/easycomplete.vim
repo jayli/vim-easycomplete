@@ -265,6 +265,8 @@ command! EasyCompleteLint :call easycomplete#lint()
 command! EasyCompleteSignature :call easycomplete#signature()
 command! EasyCompleteProfileStart :call easycomplete#util#ProfileStart()
 command! EasyCompleteProfileStop :call easycomplete#util#ProfileStop()
+command! EasyCompleteNextDiagnostic : call easycomplete#sign#next()
+command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
 
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
