@@ -79,6 +79,7 @@ augroup easycomplete#PluginRegister
       \      "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
       \      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
       \      "\\w.$",
+      \      "[^->]->$",
       \    ]
       \  })
   autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -268,6 +269,8 @@ command! EasyCompleteProfileStop :call easycomplete#util#ProfileStop()
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
+inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=seasycomplete#CleverTab()<cr>
+inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=seasycomplete#CleverShiftTab()<cr>
 inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
 
