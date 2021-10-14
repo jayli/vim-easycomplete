@@ -773,10 +773,6 @@ function! s:CompletorCallingAtFirstComplete(...)
         endif
       endif
     endwhile
-
-
-
-
   catch
     echom v:exception
     call s:flush()
@@ -1616,6 +1612,7 @@ function! easycomplete#signature()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#do()
   endif
+  return ""
 endfunction
 
 function! easycomplete#CursorHold()
@@ -1626,6 +1623,11 @@ endfunction
 
 function! easycomplete#TextChangedI()
   call easycomplete#typing()
+  if easycomplete#ok('g:easycomplete_signature_enable')
+    " if easycomplete#action#signature#ready()
+    "   call easycomplete#action#signature#do()
+    " endif
+  endif
 endfunction
 
 function! easycomplete#Textchanged()

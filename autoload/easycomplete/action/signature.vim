@@ -3,7 +3,26 @@ function! easycomplete#action#signature#do()
   call easycomplete#action#signature#LspRequest()
 endfunction
 
+function! easycomplete#action#signature#ready()
+  return v:true
+  let ctx = easycomplete#context()
+  let linenr = 5
+  if line(".") == 1
+    let typed = trim(ctx["typed"])
+  else
+    let start_line_nr = line(".") - 10 <= 0 ? 0 : line(".") - 10
+    let lines = getline(start_line_nr, line(".") - 1)
+    let prelines = trim(join(lines, " "))
+    let typed = prelines + [trim(ctx["typed"])]
+  endif
+  if typed =~ "\\w($"
+    return v:true
+  endif
+  return v:false
+endfunction
+
 function! easycomplete#action#signature#LspRequest() abort
+  call s:console('--->','signature lsprequest')
   let l:servers = filter(easycomplete#lsp#get_allowed_servers(),
         \ 'easycomplete#lsp#has_signature_help_provider(v:val)')
   if len(l:servers) == 0
@@ -25,62 +44,68 @@ function! easycomplete#action#signature#LspRequest() abort
 endfunction
 
 function! s:HandleLspCallback(server, data) abort
-  if easycomplete#lsp#client#is_error(a:data['response'])
-    call easycomplete#lsp#utils#error('Failed ' . a:server)
-    call s:flush()
-    return
-  endif
-
-  if !has_key(a:data['response'], 'result')
-    call s:flush()
-    return
-  endif
-
-  if !empty(a:data['response']['result']) && !empty(a:data['response']['result']['signatures'])
-    " Get current signature.
-    let l:signatures = get(a:data['response']['result'], 'signatures', [])
-    let l:signature_index = get(a:data['response']['result'], 'activeSignature', 0)
-    let l:signature = get(l:signatures, l:signature_index, {})
-    if empty(l:signature)
+  call s:console('<---', a:data)
+  try
+    if easycomplete#lsp#client#is_error(a:data['response'])
+      call easycomplete#lsp#utils#error('Failed ' . a:server)
       call s:flush()
       return
     endif
 
-    " Signature label.
-    let l:label = l:signature['label']
+    if !has_key(a:data['response'], 'result')
+      call s:flush()
+      return
+    endif
 
-    " Mark current parameter.
-    if has_key(a:data['response']['result'], 'activeParameter')
-      let l:parameters = get(l:signature, 'parameters', [])
-      let l:parameter_index = a:data['response']['result']['activeParameter']
-      let l:parameter = get(l:parameters, l:parameter_index, {})
-      let l:parameter_label = s:get_parameter_label(l:signature, l:parameter)
-      if !empty(l:parameter_label)
-        let l:label = substitute(l:label, '\V\(' . escape(l:parameter_label, '\/?') . '\)', '`\1`', 'g')
+    if !empty(a:data['response']['result']) && !empty(a:data['response']['result']['signatures'])
+      " Get current signature.
+      let l:signatures = get(a:data['response']['result'], 'signatures', [])
+      let l:signature_index = get(a:data['response']['result'], 'activeSignature', 0)
+      let l:signature = get(l:signatures, l:signature_index, {})
+      if empty(l:signature)
+        call s:flush()
+        return
       endif
-    endif
 
-    let l:contents = [l:label]
+      " Signature label.
+      let l:label = l:signature['label']
 
-    if exists('l:parameter')
-      let l:parameter_doc = s:GetParameterLabel(l:parameter)
-      if !empty(l:parameter_doc)
-        call add(l:contents, '')
-        call add(l:contents, l:parameter_doc)
-        call add(l:contents, '')
+      " Mark current parameter.
+      if has_key(a:data['response']['result'], 'activeParameter')
+        let l:parameters = get(l:signature, 'parameters', [])
+        let l:parameter_index = a:data['response']['result']['activeParameter']
+        let l:parameter = get(l:parameters, l:parameter_index, {})
+        let l:parameter_label = s:GetParameterLabel(l:signature, l:parameter)
+        if !empty(l:parameter_label)
+          let l:label = substitute(l:label, '\V\(' . escape(l:parameter_label, '\/?') . '\)', '`\1`', 'g')
+        endif
       endif
-    endif
 
-    if has_key(l:signature, 'documentation')
-      call add(l:contents, l:signature['documentation'])
-    endif
+      let l:contents = [l:label]
 
-    call s:SignatureCallback(l:contents)
-    return
-  else
-    " signature help is used while inserting. So this must be graceful.
-    "call lsp#utils#error('No signature help information found')
-  endif
+      if exists('l:parameter')
+        let l:parameter_doc = s:GetParameterLabel(l:signature,l:parameter)
+        if !empty(l:parameter_doc)
+          call add(l:contents, '')
+          call add(l:contents, l:parameter_doc)
+          call add(l:contents, '')
+        endif
+      endif
+
+      if has_key(l:signature, 'documentation')
+        call add(l:contents, l:signature['documentation'])
+      endif
+
+      call s:SignatureCallback(l:contents)
+      return
+    else
+      " signature help is used while inserting. So this must be graceful.
+      "call lsp#utils#error('No signature help information found')
+    endif
+  catch
+    call s:console(v:exception)
+
+  endtry
 endfunction
 
 function! s:SignatureCallback(response)
