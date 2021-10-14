@@ -9,7 +9,6 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
 endfunction
 
 " EasyComplete 入口函数
