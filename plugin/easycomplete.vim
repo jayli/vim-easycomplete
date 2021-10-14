@@ -41,22 +41,26 @@ else
   call easycomplete#Enable()
 endif
 
-" Buildin Plugins
-augroup easycomplete#register
+augroup easycomplete#CustomAutocmd
+  autocmd!
+  autocmd User easycomplete_default_plugin silent
+  autocmd User easycomplete_custom_plugin silent
+augroup END
 
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+" Buildin Plugins
+augroup easycomplete#PluginRegister
+  autocmd!
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'directory',
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#buf#completor',
       \ })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'ts',
       \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
@@ -64,8 +68,7 @@ augroup easycomplete#register
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
       \ 'command': 'tsserver'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
       \ 'whitelist': ['vim'],
       \ 'completor': 'easycomplete#sources#vim#completor',
@@ -78,9 +81,7 @@ augroup easycomplete#register
       \      "\\w.$",
       \    ]
       \  })
-      " \ 'trigger' : 'always'
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
       \ 'whitelist': ["c", "cc", "cpp", "c++", "objc", "objcpp"],
       \ 'completor': 'easycomplete#sources#cpp#completor',
@@ -94,7 +95,7 @@ augroup easycomplete#register
   " snippets-supports
   " https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support
   " 用户自行安装
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'css',
       \ 'whitelist': ['css', 'less', 'sass', 'scss'],
       \ 'completor': 'easycomplete#sources#css#completor',
@@ -103,8 +104,7 @@ augroup easycomplete#register
       \ 'command': 'css-languageserver',
       \ 'semantic_triggers':['[^:]:$']
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
       \ 'whitelist': ['html'],
       \ 'completor': 'easycomplete#sources#html#completor',
@@ -113,8 +113,7 @@ augroup easycomplete#register
       \ 'command': 'html-languageserver',
       \ 'semantic_triggers':['[^<]<$']
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'yml',
       \ 'whitelist': ['yaml'],
       \ 'completor': 'easycomplete#sources#yaml#completor',
@@ -122,8 +121,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#yaml#gotodefinition',
       \ 'command': 'yaml-language-server',
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'sh',
       \ 'whitelist': ['sh'],
       \ 'completor': 'easycomplete#sources#bash#completor',
@@ -131,8 +129,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#bash#gotodefinition',
       \ 'command': 'bash-language-server',
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
       \ 'whitelist': ['json'],
       \ 'completor': 'easycomplete#sources#json#completor',
@@ -141,8 +138,7 @@ augroup easycomplete#register
       \ 'command': 'json-languageserver',
       \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
       \ 'whitelist': ['py','python'],
       \ 'completor': 'easycomplete#sources#py#completor',
@@ -150,8 +146,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
       \ 'command': 'pyls'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'java',
       \ 'whitelist': ['java'],
       \ 'completor': 'easycomplete#sources#java#completor',
@@ -159,8 +154,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#java#GotoDefinition',
       \ 'command': 'eclipse-jdt-ls'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'go',
       \ 'whitelist': ['go'],
       \ 'completor': 'easycomplete#sources#go#completor',
@@ -168,8 +162,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
       \ 'command': 'gopls'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'nim',
       \ 'whitelist': ['nim'],
       \ 'completor': 'easycomplete#sources#nim#completor',
@@ -177,8 +170,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#nim#GotoDefinition',
       \ 'command': 'nimlsp'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
       \ 'whitelist': ['groovy'],
       \ 'completor': 'easycomplete#sources#grvy#completor',
@@ -186,8 +178,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#grvy#GotoDefinition',
       \ 'command': 'groovy-language-server'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'lua',
       \ 'whitelist': ['lua'],
       \ 'completor': 'easycomplete#sources#lua#completor',
@@ -196,8 +187,7 @@ augroup easycomplete#register
       \ 'command': 'emmylua-ls',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rb',
       \ 'whitelist': ['ruby'],
       \ 'completor': 'easycomplete#sources#ruby#completor',
@@ -205,8 +195,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#ruby#GotoDefinition',
       \ 'command': 'solargraph'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'kt',
       \ 'whitelist': ['kotlin'],
       \ 'completor': 'easycomplete#sources#kotlin#completor',
@@ -214,8 +203,7 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#kotlin#GotoDefinition',
       \ 'command': 'kotlin-language-server'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rust',
       \ 'whitelist': ['rust'],
       \ 'completor': 'easycomplete#sources#rust#completor',
@@ -224,8 +212,7 @@ augroup easycomplete#register
       \ 'command': 'rust-analyzer',
       \ 'semantic_triggers':["::$"]
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'xml',
       \ 'whitelist': ['xml'],
       \ 'completor': 'easycomplete#sources#xml#completor',
@@ -236,7 +223,7 @@ augroup easycomplete#register
       \  })
 
   " TODO cmake-languageserver 本身有 bug，等其更新
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
       \ 'whitelist': ['cmake','make'],
       \ 'completor': 'easycomplete#sources#cmake#completor',
@@ -244,11 +231,43 @@ augroup easycomplete#register
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
       \ 'command': 'cmake-language-server'
       \  })
-
-  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+  autocmd User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
       \  })
-
 augroup END
+
+augroup easycomplete#NormalBinding
+  autocmd!
+  autocmd BufWritePost * call easycomplete#BufWritePost()
+  autocmd CursorMoved * call easycomplete#CursorMoved()
+  " FirstComplete Entry
+  autocmd TextChangedI * call easycomplete#TextChangedI()
+  autocmd TextChanged * call easycomplete#Textchanged()
+  autocmd InsertEnter * call easycomplete#InsertEnter()
+  " SecondComplete Entry
+  autocmd CompleteChanged * call easycomplete#CompleteChanged()
+  autocmd TextChangedP * noa call easycomplete#TextChangedP()
+  autocmd InsertCharPre * call easycomplete#InsertCharPre()
+  autocmd CompleteDone * call easycomplete#CompleteDone()
+  autocmd InsertLeave * call easycomplete#InsertLeave()
+  autocmd CursorHold * call easycomplete#CursorHold()
+  autocmd CursorMovedI * call easycomplete#CursorMovedI()
+augroup END
+
+command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
+command! -nargs=? InstallLspServer :call easycomplete#installer#install(<q-args>)
+command! EasyCompleteGotoDefinition :call easycomplete#defination()
+command! EasyCompleteCheck :call easycomplete#checking()
+command! EasyCompleteLint :call easycomplete#lint()
+command! EasyCompleteSignature :call easycomplete#signature()
+command! EasyCompleteProfileStart :call easycomplete#util#ProfileStart()
+command! EasyCompleteProfileStop :call easycomplete#util#ProfileStop()
+
+inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
+inoremap <expr> <Up> easycomplete#Up()
+inoremap <expr> <Down> easycomplete#Down()
+inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
+inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
+

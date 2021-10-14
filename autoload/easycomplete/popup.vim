@@ -83,6 +83,9 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
   endif
   let float_maxwidth = 80
   let content = easycomplete#util#ModifyInfoByMaxwidth(content, float_maxwidth)
+  if len(content) == 1 && strlen(content[0]) == 0
+    return
+  endif
   let prevw_width = easycomplete#popup#DisplayWidth(content, float_maxwidth)
   let prevw_height = easycomplete#popup#DisplayHeight(content, prevw_width) - 1
   call s:InitBuf(content, 'float', a:ft)
@@ -165,6 +168,15 @@ function! s:popup(info)
 
   let info = type(a:info) == type("") ? [a:info] : a:info
   let info = easycomplete#util#ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+  call s:console(len(info[0]))
+  if len(info) == 1 && len(info[0]) == 0
+    if s:is_vim
+      call popup_hide(g:easycomplete_popup_win["popup"])
+    else
+      call easycomplete#popup#close("popup")
+    endif
+    return
+  endif
   call s:InitBuf(info, 'popup', &filetype)
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1

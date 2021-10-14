@@ -8,12 +8,6 @@ if get(g:, 'easycomplete_script_loaded')
 endif
 let g:easycomplete_script_loaded = 1
 
-augroup easycomplete#autocmd
-  autocmd!
-  autocmd User easycomplete_default_plugin silent
-  autocmd User easycomplete_custom_plugin silent
-augroup END
-
 function! easycomplete#LogStart()
 endfunction
 
@@ -153,53 +147,6 @@ function! s:BindingTypingCommandOnce()
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
-  inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
-  inoremap <expr> <Up> easycomplete#Up()
-  inoremap <expr> <Down> easycomplete#Down()
-  inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
-  inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
-
-  augroup easycomplete#NormalBinding
-    autocmd!
-    autocmd BufWritePost * call easycomplete#lint()
-    autocmd CursorMoved * call easycomplete#CursorMoved()
-    " FirstComplete Entry
-    autocmd TextChangedI * call easycomplete#typing()
-    autocmd TextChanged * call easycomplete#Textchanged()
-    autocmd InsertEnter * call easycomplete#InsertEnter()
-    " SecondComplete Entry
-    autocmd CompleteChanged * call easycomplete#CompleteChanged()
-    autocmd TextChangedP * noa call easycomplete#TextChangedP()
-    autocmd InsertCharPre * call easycomplete#InsertCharPre()
-    autocmd CompleteDone * call easycomplete#CompleteDone()
-    autocmd InsertLeave * call easycomplete#InsertLeave()
-  augroup END
-
-  if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
-      augroup easycompelte#diagnostics
-        autocmd!
-        autocmd! CursorHold * call easycomplete#CursorHold()
-      augroup END
-  endif
-
-  if easycomplete#ok('g:easycomplete_signature_enable')
-      augroup easycompelte#signature
-        autocmd!
-        autocmd! CursorMovedI * call easycomplete#CursorMovedI()
-      augroup END
-  endif
-
-  " 安装 lsp 依赖
-  command! -nargs=? EasyCompleteInstallServer call easycomplete#installer#install(<q-args>)
-  command! -nargs=? InstallLspServer call easycomplete#installer#install(<q-args>)
-  " Goto definition 命令
-  command! EasyCompleteGotoDefinition : call easycomplete#GotoDefinitionCalling()
-  " 检查插件依赖的命令工具是否已经安装
-  command! EasyCompleteCheck : call easycomplete#checking()
-  " 性能调试开启
-  command! EasyCompleteProfileStart : call easycomplete#util#ProfileStart()
-  " 性能调试结束
-  command! EasyCompleteProfileStop : call easycomplete#util#ProfileStop()
   " 重定向 Tag 的跳转按键绑定
   nnoremap <c-]> :EasyCompleteGotoDefinition<CR>
 endfunction
@@ -249,6 +196,10 @@ function! easycomplete#GetCurrentLspContext()
     endif
   endfor
   return get(g:easycomplete_source, item, {})
+endfunction
+
+function! easycomplete#defination()
+  call easycomplete#GotoDefinitionCalling()
 endfunction
 
 function! easycomplete#GotoDefinitionCalling()
@@ -1797,6 +1748,10 @@ function! easycomplete#lint()
   call s:AsyncRun(function("easycomplete#lsp#ensure_flush_all"),[],10)
 endfunction
 
+function! easycomplete#BufWritePost()
+  call easycomplete#lint()
+endfunction
+
 function! easycomplete#HandleLspDiagnostic(server, response) abort
   " call s:log("<----",a:response)
   call easycomplete#sign#hold()
@@ -1812,6 +1767,9 @@ function! easycomplete#CursorMoved()
 endfunction
 
 function! easycomplete#CursorMovedI()
+endfunction
+
+function! easycomplete#signature()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#signature#DoSignature()
   endif
@@ -1829,6 +1787,10 @@ function! easycomplete#CursorHold()
   if easycomplete#ok('g:easycomplete_diagnostics_enable') && easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#LintPopup()
   endif
+endfunction
+
+function! easycomplete#TextChangedI()
+  call easycomplete#typing()
 endfunction
 
 function! easycomplete#Textchanged()
