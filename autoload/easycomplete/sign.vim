@@ -522,7 +522,9 @@ function! easycomplete#sign#LintCurrentLine()
       call easycomplete#sign#DiagHoverFlush()
     endif
     call easycomplete#nill()
-    echo ""
+    if strlen(g:easycomplete_diagnostics_last_msg) != 0
+      echo ""
+    endif
     return
   elseif empty(diagnostics_info)
     call easycomplete#sign#DiagHoverFlush()

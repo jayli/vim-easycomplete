@@ -893,8 +893,7 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
     "   endif
     " endfor
 
-    " call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
-    " let result = original_matching_menu " + otherwise_fuzzymatching
+    call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
     let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
   catch
     call s:log(v:exception)
@@ -912,8 +911,14 @@ endfunction
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
   let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
         \ a:entry1.abbr : get(a:entry1, "word","")
-  let k2 = has_key(a:entry2, "abbr") && !empty(a:entry2.abbr) ?
-        \ a:entry2.abbr : get(a:entry2, "word","")
+  let k1 = get(a:entry1,"abbr", "")
+  if empty(k1)
+    let k1 = get(a:entry1,"word", "")
+  endif
+  let k2 = get(a:entry2,"abbr", "")
+  if empty(k2)
+    let k2 = get(a:entry2,"word", "")
+  endif
   if strlen(k1) > strlen(k2)
     return v:true
   else
