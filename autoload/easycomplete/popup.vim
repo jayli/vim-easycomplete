@@ -125,8 +125,6 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
       " 压缩float向上展开
       let opt.height = winline()
       let opt.row = winline() - opt.height
-      call s:console('压缩float 向上展开', prevw_height)
-      call s:console(opt)
     else
       " 菜单向下展开
       let opt.row = winline() + 1
@@ -155,6 +153,30 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
   endif
 endfunction
 
+" 这里只判断complete menu和float 之间是否有overlay
+" 如果有overlay，则关闭float
+" 在completedone之后调用
+" 这里简化一下，只判断Y轴上是否有重叠
+function! easycomplete#popup#overlay()
+  let float_winid = g:easycomplete_popup_win['float']
+  if empty(float_winid) | return | endif
+  if empty(pum_getpos()) | return | endif
+  let float_config = getwininfo(float_winid)[0]
+  let pum_config = pum_getpos()
+  let overlay = v:false
+  if pum_config.row <= float_config.winrow
+        \ && pum_config.row + pum_config.height - 1 >= float_config.winrow
+    let overlay = v:true
+  endif
+  if pum_config.row <= float_config.winrow + float_config.height - 1
+        \ && pum_config.row + pum_config.height - 1 >= float_config.winrow + float_config.height - 1
+    let overlay = v:true
+  endif
+  if overlay
+    call easycomplete#popup#close("float")
+  endif
+endfunction
+
 function! easycomplete#popup#DoPopup(info)
   call s:StopVisualAsyncRun()
   call s:StartPopupAsyncRun("s:popup", [a:info], 170)
@@ -163,7 +185,6 @@ endfunction
 " s:popup 代替 popup_info 方法，只给 completion 使用
 " 外部调用时统一使用 easycomplete#popup#float() 方法
 function! s:popup(info)
-  call s:console('popup')
   if !pumvisible()
     call easycomplete#popup#close("popup")
     return
@@ -183,7 +204,6 @@ function! s:popup(info)
 
   let info = type(a:info) == type("") ? [a:info] : a:info
   let info = easycomplete#util#ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
-  call s:console(len(info[0]))
   if len(info) == 1 && len(info[0]) == 0
     if s:is_vim
       call popup_hide(g:easycomplete_popup_win["popup"])

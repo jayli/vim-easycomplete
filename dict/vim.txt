@@ -466,6 +466,7 @@ gettabinfo
 gettabvar
 gettabwinvar
 getwininfo
+getwinpos
 getwinposx
 getwinposy
 getwinvar

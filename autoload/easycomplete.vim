@@ -1179,7 +1179,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   endif
   try
     if s:OrigionalPosition()
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 500)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 900)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
@@ -1207,6 +1207,7 @@ endfunction
 function! easycomplete#refresh()
   silent! noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
         \ get(g:easycomplete_complete_ctx, 'candidates', []))
+  call easycomplete#popup#overlay()
   return ''
 endfunction
 

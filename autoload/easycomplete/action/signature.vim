@@ -34,7 +34,6 @@ function! s:GetTyped()
 endfunction
 
 function! easycomplete#action#signature#LspRequest() abort
-  call s:console('--->','signature lsprequest')
   let l:servers = filter(easycomplete#lsp#get_allowed_servers(),
         \ 'easycomplete#lsp#has_signature_help_provider(v:val)')
   if len(l:servers) == 0
@@ -56,7 +55,6 @@ function! easycomplete#action#signature#LspRequest() abort
 endfunction
 
 function! s:HandleLspCallback(server, data) abort
-  call s:console('<---', a:data)
   try
     if easycomplete#lsp#client#is_error(a:data['response'])
       call easycomplete#lsp#utils#error('Failed ' . a:server)
