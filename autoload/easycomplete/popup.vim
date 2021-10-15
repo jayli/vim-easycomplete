@@ -100,36 +100,48 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
         \   'height': prevw_height,
         \ })
   " handle height
+  let screen_enc = (win_screenpos(win_getid())[0] - 1)
   if !a:direction " 正常向下
     if winline() + prevw_height <= winheight(win_getid())
-      " 菜单向下展开
-      let opt.row = winline() + 1
+      " 菜单向下展开ok
+      let opt.row = winline() + 1 + screen_enc
     elseif winline() + prevw_height >= winheight(win_getid())
           \ && prevw_height >= 3
           \ && winheight(win_getid()) - winline() >= 3
       " 压缩float框向下展开
       let opt.height = winheight(win_getid()) - winline()
-      let opt.row = winline() + 1
+      let opt.row = winline() + 1 + screen_enc
     else
       " 菜单向上展开
-      let opt.row = winline() - prevw_height
+      let opt.row = winline() - prevw_height + screen_enc
     endif
   else " 正常向上
 
-    if winheight(win_getid()) - winline() + prevw_height <= winheight(win_getid())
-      " 菜单向上展开
-      let opt.row = winline() - prevw_height
-    elseif winheight(win_getid()) - winline() + prevw_height + 1 >= winheight(win_getid())
+    if winheight(win_getid()) - winline() + 1 + prevw_height <= winheight(win_getid())
+      " 菜单向上展开 ok
+      let opt.row = winline() - prevw_height + screen_enc
+    elseif winheight(win_getid()) - winline() + prevw_height + 1 > winheight(win_getid())
           \ && prevw_height >= 3
-          \ && winline() >= 3
-      " 压缩float向上展开
-      let opt.height = winline()
-      let opt.row = winline() - opt.height
+          \ && winline() >= 4
+
+      " 向上压缩展开
+
+      let t_pos = screen_enc + ((winline() - prevw_height) -1)
+      if t_pos >= 0
+        let opt.height = winline() + screen_enc - prevw_height
+        let opt.row = t_pos
+      else
+        let opt.height = prevw_height + t_pos
+        let opt.row = 1
+      endif
+      
     else
       " 菜单向下展开
-      let opt.row = winline() + 1
+      let opt.row = winline() + 1 + screen_enc
     endif
   endif
+
+  let opt.row -= 1
 
   " handle width
   if wincol() + prevw_width - 1 > winwidth(win_getid())
@@ -138,12 +150,13 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
     let opt.col = wincol() - 1
   endif
 
+  let opt.col += a:offset[1]
+  let opt.row += a:offset[0]
+
+
   if !empty(a:hl)
     let opt.highlight = a:hl
   endif
-
-  let opt.col += a:offset[1]
-  let opt.row += a:offset[0]
 
   if s:is_nvim
     call easycomplete#popup#close("float")
@@ -377,8 +390,12 @@ endfunction
 
 function! easycomplete#popup#close(...)
   if empty(a:000)
-    call easycomplete#popup#close("popup")
-    call easycomplete#popup#close("float")
+    if g:easycomplete_popup_win["popup"]
+      call easycomplete#popup#close("popup")
+    endif
+    if g:easycomplete_popup_win["float"]
+      call easycomplete#popup#close("float")
+    endif
     return
   endif
   let windowtype = a:1
@@ -425,12 +442,11 @@ function! easycomplete#popup#DisplayHeight(lines, width)
   return height > max_height ? max_height : height
 endfunction
 
-function! s:log(msg)
-  echohl MoreMsg
-  echom '>>> '. string(a:msg)
-  echohl NONE
-endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction

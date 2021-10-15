@@ -9,7 +9,6 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -64,6 +63,7 @@ let g:easycomplete_complete_taskqueue = []
 let g:easycomplete_popup_width = 50
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
+let g:easycomplete_backing = 0
 
 " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
 " zizz 标志位
@@ -308,22 +308,30 @@ function! easycomplete#GetCompletedItem()
 endfunction
 
 function! easycomplete#IsBacking()
+  return g:easycomplete_backing
+endfunction
+
+function! s:BackChecking()
   let curr_ctx = easycomplete#context()
   if !exists('b:typing_ctx')
     let b:typing_ctx = easycomplete#context()
   endif
-  let old_ctx = copy(b:typing_ctx)
+  let old_ctx = deepcopy(b:typing_ctx)
   let b:typing_ctx = curr_ctx
   if curr_ctx['lnum'] == old_ctx['lnum']
         \ && strlen(old_ctx['typed']) >= 2
     if curr_ctx['typed'] ==# old_ctx['typed'][:-2]
-      " 单行后退
+      " 单行后退非到达首字母的后退
       return v:true
     endif
     if curr_ctx['typed'] ==# old_ctx['typed']
       " 单行在 Normal 模式下按下 s 键
       return v:true
     endif
+  elseif curr_ctx['lnum'] == old_ctx['lnum']
+        \ && strlen(old_ctx['typed']) == 1 && strlen(curr_ctx['typed']) == 0
+    " 单行后退到达首字母的后退
+    return v:true
   elseif old_ctx['lnum'] == curr_ctx['lnum'] + 1 && old_ctx['col'] == 1
     " 隔行后退
     return v:true
@@ -336,6 +344,7 @@ function! easycomplete#Up()
   if pumvisible()
     call s:zizz()
   endif
+  call easycomplete#popup#close("float")
   return "\<Up>"
 endfunction
 
@@ -343,6 +352,7 @@ function! easycomplete#Down()
   if pumvisible()
     call s:zizz()
   endif
+  call easycomplete#popup#close("float")
   return "\<Down>"
 endfunction
 
@@ -536,7 +546,8 @@ endfunction
 " for firstcompele typing and back typing
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
-  if easycomplete#IsBacking()
+  if s:BackChecking()
+    let g:easycomplete_backing = 1
     let g:easycomplete_stunt_menuitems = []
     call s:zizz()
     let ctx = easycomplete#context()
@@ -554,6 +565,8 @@ function! easycomplete#typing()
             \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
     endif
     return ""
+  else
+    let g:easycomplete_backing = 0
   endif
 
   " 判断是否是 C-V 粘贴
@@ -1620,14 +1633,11 @@ function! easycomplete#CursorHold()
 endfunction
 
 function! easycomplete#TextChangedI()
-  call easycomplete#typing()
+  call easycomplete#typing() " for completion
   if easycomplete#ok('g:easycomplete_signature_enable')
-    if easycomplete#action#signature#ShouldFire()
-      call easycomplete#action#signature#do()
-    elseif easycomplete#action#signature#ShouldClose()
-      call easycomplete#popup#close("float")
-    endif
+    call easycomplete#action#signature#handle()
   endif
+  return ""
 endfunction
 
 function! easycomplete#Textchanged()

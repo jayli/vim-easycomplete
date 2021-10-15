@@ -3,7 +3,33 @@ function! easycomplete#action#signature#do()
   call easycomplete#action#signature#LspRequest()
 endfunction
 
-function! easycomplete#action#signature#ShouldFire()
+function! s:do()
+  call easycomplete#action#signature#LspRequest()
+endfunction
+
+function! s:close()
+  call easycomplete#popup#close("float")
+endfunction
+
+function! easycomplete#action#signature#handle()
+  let typed = s:GetTyped()
+  if easycomplete#IsBacking()
+    if typed =~ "\\w($" || typed =~ "\\w(.*,$"
+      call s:do()
+    else
+      call s:close()
+    endif
+  else
+    if typed =~ ")$"
+      call s:close()
+    elseif typed =~ "\\w($" || typed =~ "\\w(.*,$"
+      call s:do()
+    endif
+    " call s:close()
+  endif
+endfunction
+
+function! s:ShouldFire()
   let typed = s:GetTyped()
   if typed =~ "\\w($" || typed =~ "\\w(.*,$"
     return v:true
@@ -11,12 +37,8 @@ function! easycomplete#action#signature#ShouldFire()
   return v:false
 endfunction
 
-function! easycomplete#action#signature#ShouldClose()
+function! s:ShouldClose()
   let typed = s:GetTyped()
-  if typed =~ ")$"
-    return v:true
-  endif
-  return v:false
 endfunction
 
 function! s:GetTyped()
@@ -154,4 +176,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
