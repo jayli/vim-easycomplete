@@ -533,7 +533,7 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], 7)
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], 11)
   endif
 endfunction
 
