@@ -62,8 +62,10 @@ endfunction
 
 function! easycomplete#sign#DiagHoverFlush()
   if easycomplete#ok('g:easycomplete_diagnostics_hover')
-    call easycomplete#popup#close("float")
-    let g:easycomplete_diagnostics_popup = 0
+    if g:easycomplete_diagnostics_popup == 1
+      call easycomplete#popup#close("float")
+      let g:easycomplete_diagnostics_popup = 0
+    endif
   endif
 endfunction
 

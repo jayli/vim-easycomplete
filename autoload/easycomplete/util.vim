@@ -800,54 +800,105 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
 endfunction
 
 function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
-  let word = a:word
-  if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
-    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
-  endif
-
-  " 完整匹配
-  let original_matching_menu = []
-  " 非完整匹配
-  let otherwise_matching_menu = []
-  " 模糊匹配结果
-  let otherwise_fuzzymatching = []
-
-  " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
-  " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
-  " 精度越好，但下面这两种情况往往会大面积存在
-  "
-  " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
-  " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
-  "   最好，这时 dam 越小越好
-  "
-  " 折中设置 dam 为 100
-  let dam = 100
-  let regx_com_times = 0
-  let count_index = 0
-
-  " 这里用单循环来遍历主要是处于性能最优考虑，非精度最优
-  for item in deepcopy(a:all_menu)
-    let item_word = s:GetItemWord(item)
-    if a:word[0] != "_" && item_word[0] == "_"
-      let item_word = substitute(item_word, "_\\+", "", "")
+  try 
+    let word = a:word
+    if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
+      let word = substitute(word, "\\.", "\\\\\\\\.", "g")
     endif
-    if strlen(item_word) < strlen(a:word) | continue | endif
-    if count_index > a:maxlength | break | endif
-    let regx_com_times += 1
-    if stridx(item_word, word) == 0 && count_index < dam
-      call add(original_matching_menu, item)
-      let count_index += 1
-    elseif easycomplete#util#FuzzySearch(word, item_word)
-      call add(otherwise_fuzzymatching, item)
-      let count_index += 1
-    else
-      call add(otherwise_matching_menu, item)
-    endif
-  endfor
 
-  call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
-  let result = original_matching_menu + otherwise_fuzzymatching
-  let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
+    " 完整匹配
+    let original_matching_menu = []
+    " 非完整匹配
+    let otherwise_matching_menu = []
+    " 模糊匹配结果
+    let otherwise_fuzzymatching = []
+
+    " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
+    " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
+    " 精度越好，但下面这两种情况往往会大面积存在
+    "
+    " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
+    " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
+    "   最好，这时 dam 越小越好
+    "
+    " 折中设置 dam 为 100
+    let dam = 100
+    let regx_com_times = 0
+    let count_index = 0
+    let all_items = deepcopy(a:all_menu)
+
+    " 先找到全部匹配的列表
+    let l:count = 0
+    while count_index < dam && l:count < len(all_items)
+      let item = all_items[l:count]
+      let item_word = s:GetItemWord(item)
+      if a:word[0] != "_" && item_word[0] == "_"
+        let item_word = substitute(item_word, "_\\+", "", "")
+      endif
+      let l:count += 1
+      if strlen(item_word) < strlen(a:word) | continue | endif
+      let regx_com_times += 1
+      if stridx(item_word, word) == 0
+        call add(original_matching_menu, item)
+        let count_index += 1
+      elseif easycomplete#util#FuzzySearch(word, item_word)
+        call add(otherwise_fuzzymatching, item)
+      else
+        call add(otherwise_matching_menu, item)
+      endif
+    endwhile
+
+    " 再把模糊匹配的结果找出来
+    while l:count < len(all_items)
+      let item = all_items[l:count]
+      let item_word = s:GetItemWord(item)
+      if a:word[0] != "_" && item_word[0] == "_"
+        let item_word = substitute(item_word, "_\\+", "", "")
+      endif
+      let l:count += 1
+      if strlen(item_word) < strlen(a:word) | continue | endif
+      if count_index > a:maxlength | break | endif
+      if easycomplete#util#FuzzySearch(word, item_word)
+        call add(otherwise_fuzzymatching, item)
+        let count_index += 1
+      else
+        call add(otherwise_matching_menu, item)
+      endif
+    endwhile
+
+    call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
+    let result = original_matching_menu + otherwise_fuzzymatching
+
+    " " 这里用单循环来遍历主要是处于性能最优考虑，非精度最优
+    " for item in deepcopy(a:all_menu)
+    "   let item_word = s:GetItemWord(item)
+    "   if a:word[0] != "_" && item_word[0] == "_"
+    "     let item_word = substitute(item_word, "_\\+", "", "")
+    "   endif
+    "   if strlen(item_word) < strlen(a:word) | continue | endif
+    "   if count_index > a:maxlength | break | endif
+    "   let regx_com_times += 1
+    "   call s:log(item_word,word, stridx(item_word, word))
+    "   if stridx(item_word, word) == 0 && count_index < dam
+    "     call add(original_matching_menu, item)
+    "     call add(aaaa, item_word)
+    "     call s:log("    ", aaaa)
+    "     call s:log("    ", len(aaaa), len(original_matching_menu))
+    "     let count_index += 1
+    "   elseif easycomplete#util#FuzzySearch(word, item_word)
+    "     call add(otherwise_fuzzymatching, item)
+    "     let count_index += 1
+    "   else
+    "     call add(otherwise_matching_menu, item)
+    "   endif
+    " endfor
+
+    " call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
+    " let result = original_matching_menu " + otherwise_fuzzymatching
+    let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
+  catch
+    call s:log(v:exception)
+  endtry
   return filtered_menu
 endfunction
 
@@ -1130,7 +1181,7 @@ endfunction
 
 function! easycomplete#util#LspServerReady()
   let opt = easycomplete#GetCurrentLspContext()
-  if empty(easycomplete#installer#GetCommand(opt['name']))
+  if empty(opt) || empty(easycomplete#installer#GetCommand(opt['name']))
     " 当前并未曾注册过 LSP
     return v:false
   endif
@@ -1196,4 +1247,8 @@ endfunction
 
 function! easycomplete#util#IsGui()
   return (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction

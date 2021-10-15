@@ -3,22 +3,34 @@ function! easycomplete#action#signature#do()
   call easycomplete#action#signature#LspRequest()
 endfunction
 
-function! easycomplete#action#signature#ready()
-  return v:true
-  let ctx = easycomplete#context()
-  let linenr = 5
-  if line(".") == 1
-    let typed = trim(ctx["typed"])
-  else
-    let start_line_nr = line(".") - 10 <= 0 ? 0 : line(".") - 10
-    let lines = getline(start_line_nr, line(".") - 1)
-    let prelines = trim(join(lines, " "))
-    let typed = prelines + [trim(ctx["typed"])]
-  endif
-  if typed =~ "\\w($"
+function! easycomplete#action#signature#ShouldFire()
+  let typed = s:GetTyped()
+  if typed =~ "\\w($" || typed =~ "\\w(.*,$"
     return v:true
   endif
   return v:false
+endfunction
+
+function! easycomplete#action#signature#ShouldClose()
+  let typed = s:GetTyped()
+  if typed =~ ")$"
+    return v:true
+  endif
+  return v:false
+endfunction
+
+function! s:GetTyped()
+  let ctx = easycomplete#context()
+  let linenr = 10
+  if line(".") == 1
+    let typed = trim(ctx["typed"])
+  else
+    let start_line_nr = line(".") - linenr <= 0 ? 0 : line(".") - linenr
+    let lines = getline(start_line_nr, line(".") - 1)
+    let prelines = trim(join(lines, " "))
+    let typed = prelines . " " . trim(ctx["typed"])
+  endif
+  return typed
 endfunction
 
 function! easycomplete#action#signature#LspRequest() abort

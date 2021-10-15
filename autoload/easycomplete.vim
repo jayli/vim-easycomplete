@@ -9,7 +9,71 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
+  call s:console()
 endfunction
+
+" 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
+"   g:easycomplete_source['vim'].lsp 指向 lsp config
+let g:easycomplete_source  = {}
+" 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
+let g:easycomplete_menucache = {}
+
+" 匹配过程中的全量匹配数据，CompleteDone 后置空
+let g:easycomplete_menuitems = []
+
+" 显示 complete menu 所需的临时 items，根据 maxlength 截断
+let g:easycomplete_complete_ctx = {}
+
+" 隐式匹配菜单所需的临时 items，缓存全量匹配菜单数据，用以给
+" SecondComplete 提速用
+let g:easycomplete_stunt_menuitems= []
+
+" 保存 v:event.complete_item, 判断是否 pum 处于选中状态
+let g:easycomplete_completed_item = {}
+
+" 全局时间的标记，性能统计时用
+let g:easycomplete_start = reltime()
+
+" HACK: 当从 pum 最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
+" 需要选择匹配项过程中的过程变量 ctx 暂存下来
+let g:easycomplete_firstcomplete_ctx = {}
+
+" 和 YCM 一样，用做 FirstComplete 标志位
+let g:easycomplete_first_complete_hit = 0
+
+" 菜单显示最大 item 数量，默认和 coc 保持一致
+" viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
+let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
+
+" Global CompleteChanged Event：异步回调显示 popup 时借用
+let g:easycomplete_completechanged_event = {}
+
+" 用来判断是否是 c-v 粘贴
+let g:easycomplete_insert_char = ''
+
+" First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
+" [
+"   {
+"     "ctx": {},
+"     "name": "ts",
+"     "condition": 0
+"     "done" : 0
+"   }
+" ]
+let g:easycomplete_complete_taskqueue = []
+let g:easycomplete_popup_width = 50
+" 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
+let b:typing_ctx = {}
+
+" <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
+" zizz 标志位
+let g:easycomplete_backing_or_cr = 0
+
+" 用作 FirstComplete TaskQueue 回调的定时器
+let s:first_render_timer = 0
+
+" FirstCompleteRendering 中 LSP 的超时时间
+let g:easycomplete_first_render_delay = 1500
 
 " EasyComplete 入口函数
 function! easycomplete#Enable()
@@ -47,77 +111,10 @@ function! s:InitLocalVars()
   if !exists("g:easycomplete_tab_trigger")
     let g:easycomplete_tab_trigger = "<Tab>"
   endif
-
   if !exists("g:easycomplete_shift_tab_trigger")
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
-
-  " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
-  "   g:easycomplete_source['vim'].lsp 指向 lsp config
-  if !exists("g:easycomplete_source")
-    let g:easycomplete_source  = {}
-  endif
-
-  " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
-  let g:easycomplete_menucache = {}
-
-  " 匹配过程中的全量匹配数据，CompleteDone 后置空
-  let g:easycomplete_menuitems = []
-
-  " 显示 complete menu 所需的临时 items，根据 maxlength 截断
-  let g:easycomplete_complete_ctx = {}
-
-  " 隐式匹配菜单所需的临时 items，缓存全量匹配菜单数据，用以给
-  " SecondComplete 提速用
-  let g:easycomplete_stunt_menuitems= []
-
-  " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
-  let g:easycomplete_completed_item = {}
-
-  " 全局时间的标记，性能统计时用
-  let g:easycomplete_start = reltime()
-
-  " HACK: 当从 pum 最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
-  " 需要选择匹配项过程中的过程变量 ctx 暂存下来
-  let g:easycomplete_firstcomplete_ctx = {}
-
-  " 和 YCM 一样，用做 FirstComplete 标志位
-  let g:easycomplete_first_complete_hit = 0
-
-  " 菜单显示最大 item 数量，默认和 coc 保持一致
-  " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
-  let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
-
-  " Global CompleteChanged Event：异步回调显示 popup 时借用
-  let g:easycomplete_completechanged_event = {}
-
-  " 用来判断是否是 c-v 粘贴
-  let g:easycomplete_insert_char = ''
-
-  " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
-  " [
-  "   {
-  "     "ctx": {},
-  "     "name": "ts",
-  "     "condition": 0
-  "     "done" : 0
-  "   }
-  " ]
-  let g:easycomplete_complete_taskqueue = []
-  let g:easycomplete_popup_width = 50
-  " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
   let b:typing_ctx = easycomplete#context()
-
-  " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
-  " zizz 标志位
-  let g:easycomplete_backing_or_cr = 0
-
-  " 用作 FirstComplete TaskQueue 回调的定时器
-  let s:first_render_timer = 0
-
-  " FirstCompleteRendering 中 LSP 的超时时间
-  let g:easycomplete_first_render_delay = 1500
-
   setlocal completeopt-=menu
   setlocal completeopt+=menuone
   setlocal completeopt+=noselect
@@ -188,6 +185,9 @@ endfunction
 function! easycomplete#GetCurrentLspContext()
   let l:ctx = easycomplete#context()
   let l:ctx_name = ''
+  if empty(g:easycomplete_source)
+    return {}
+  endif
   for item in keys(g:easycomplete_source)
     if s:CompleteSourceReady(item)
       if has_key(get(g:easycomplete_source, item), "gotodefinition")
@@ -750,6 +750,20 @@ function! s:CompletorCallingAtFirstComplete(...)
         \                             ])
         \ })
   try
+
+  " TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
+  " 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
+  " directory. 但在 runtime 中不能很好的执行，因为每个 complete_plugin 的
+  " completor 的调用顺序不确定，如果让所有 completor 全都异步，是可以实现排他性
+  " complete的，但即便每个调用都是异步，对于 lsp request 已经发出的情况，由于不
+  " 能abort掉 lsp 进程，因此还是会有返回值冲刷进 g:easycomplete_menuitems，进而
+  " 污染匹配结果。
+  "
+  " 这里用了一个 Hack 来缓解这个问题，即当前只有 directory 一个插件的情况下，把
+  " 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
+  "
+  " 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
+  " 情况，还不清楚，先这样hack掉
     let source_names = ['directory']
     for name in keys(g:easycomplete_source)
       if name !=# 'directory'
@@ -776,27 +790,6 @@ function! s:CompletorCallingAtFirstComplete(...)
     echom v:exception
     call s:flush()
   endtry
-endfunction
-
-" TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
-" 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
-" directory. 但在 runtime 中不能很好的执行，因为每个 complete_plugin 的
-" completor 的调用顺序不确定，如果让所有 completor 全都异步，是可以实现排他性
-" complete的，但即便每个调用都是异步，对于 lsp request 已经发出的情况，由于不
-" 能abort掉 lsp 进程，因此还是会有返回值冲刷进 g:easycomplete_menuitems，进而
-" 污染匹配结果。
-"
-" 这里用了一个 Hack 来缓解这个问题，即当前只有 directory 一个插件的情况下，把
-" 唯一一个 return false 的 directory 放在最前面做循环，勉强解决掉这个问题
-"
-" 这里设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
-" 情况，还不清楚，先这样hack掉
-function! s:SortForDirectory(k1, k2)
-  if a:k1 == "directory"
-    return v:false
-  else
-    return v:true
-  endif
 endfunction
 
 function! s:ConstructorCalling(...)
@@ -1553,6 +1546,10 @@ function! s:console(...)
   return call('easycomplete#log#log', a:000)
 endfunction
 
+function! Console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
 function! easycomplete#DoLspComplete(opt, ctx)
   return easycomplete#action#completion#do(a:opt, a:ctx)
@@ -1623,9 +1620,11 @@ endfunction
 function! easycomplete#TextChangedI()
   call easycomplete#typing()
   if easycomplete#ok('g:easycomplete_signature_enable')
-    " if easycomplete#action#signature#ready()
-    "   call easycomplete#action#signature#do()
-    " endif
+    if easycomplete#action#signature#ShouldFire()
+      call easycomplete#action#signature#do()
+    elseif easycomplete#action#signature#ShouldClose()
+      call easycomplete#popup#close("float")
+    endif
   endif
 endfunction
 
