@@ -49,6 +49,9 @@ let g:easycomplete_completechanged_event = {}
 
 " 用来判断是否是 c-v 粘贴
 let g:easycomplete_insert_char = ''
+" CompleteDone 会触发 InsertLeave 事件，此标记为用来避免因为CompleteDone 造成
+" 的不必要的 InsertLeave
+let g:easycomplete_completedone_insert_mode = 0
 
 " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
 " [
@@ -267,6 +270,8 @@ endfunction
 
 function! easycomplete#CompleteDone()
   call easycomplete#popup#CompleteDone()
+  " 此设置只用来判断 InsertLeave 是否来自 CompleteDone 事件
+  let g:easycomplete_completedone_insert_mode = mode()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
@@ -279,6 +284,10 @@ function! easycomplete#CompleteDone()
 endfunction
 
 function! easycomplete#InsertLeave()
+  if mode() ==# "n" && g:easycomplete_completedone_insert_mode ==# "i"
+    let g:easycomplete_completedone_insert_mode = mode()
+    return
+  endif
   call easycomplete#popup#InsertLeave()
   call s:flush()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
