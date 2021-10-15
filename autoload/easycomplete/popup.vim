@@ -100,21 +100,36 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
         \   'height': prevw_height,
         \ })
   " handle height
-  if !a:direction
+  if !a:direction " 正常向下
     if winline() + prevw_height <= winheight(win_getid())
       " 菜单向下展开
+      let opt.row = winline() + 1
+    elseif winline() + prevw_height >= winheight(win_getid())
+          \ && prevw_height >= 3
+          \ && winheight(win_getid()) - winline() >= 3
+      " 压缩float框向下展开
+      let opt.height = winheight(win_getid()) - winline()
       let opt.row = winline() + 1
     else
       " 菜单向上展开
       let opt.row = winline() - prevw_height
     endif
-  else
-    if winheight(win_getid()) - winline() + prevw_height > winheight(win_getid())
-      " 菜单向下展开
-      let opt.row = winline() + 1
-    else
+  else " 正常向上
+
+    if winheight(win_getid()) - winline() + prevw_height <= winheight(win_getid())
       " 菜单向上展开
       let opt.row = winline() - prevw_height
+    elseif winheight(win_getid()) - winline() + prevw_height + 1 >= winheight(win_getid())
+          \ && prevw_height >= 3
+          \ && winline() >= 3
+      " 压缩float向上展开
+      let opt.height = winline()
+      let opt.row = winline() - opt.height
+      call s:console('压缩float 向上展开', prevw_height)
+      call s:console(opt)
+    else
+      " 菜单向下展开
+      let opt.row = winline() + 1
     endif
   endif
 

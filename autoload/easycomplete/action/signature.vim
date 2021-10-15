@@ -93,43 +93,47 @@ function! s:HandleLspCallback(server, data) abort
         endif
       endif
 
-      let l:contents = [l:label]
-
+      let l:param = ""
       if exists('l:parameter')
         let l:parameter_doc = s:GetParameterLabel(l:signature,l:parameter)
         if !empty(l:parameter_doc)
-          call add(l:contents, '')
-          call add(l:contents, l:parameter_doc)
-          call add(l:contents, '')
+          let l:param = l:parameter_doc
         endif
       endif
 
+      let l:full_doc = {}
       if has_key(l:signature, 'documentation')
-        call add(l:contents, l:signature['documentation'])
+        let l:full_doc = l:signature['documentation']
       endif
 
-      call s:SignatureCallback(l:contents)
+      call s:SignatureCallback(l:label, l:param, l:full_doc)
       return
     else
       " signature help is used while inserting. So this must be graceful.
       "call lsp#utils#error('No signature help information found')
     endif
   catch
-    call s:console(v:exception)
-
+    call s:log(v:exception)
   endtry
 endfunction
 
-function! s:SignatureCallback(response)
-  let title = a:response[0]
-  let kind = a:response[1]["kind"]
-  let content = a:response[1]["value"]
-  call s:console(title,kind,content)
-  let content = substitute(content, "```", "", "g")
-  let content = split(content, "\\n")
-
-  call s:console('<---', 'signature callback', content)
-  call easycomplete#popup#float([title,'----'] + content, 'Pmenu', 1, "", [0,0])
+function! s:SignatureCallback(title, param, doc)
+  try
+    let title = a:title
+    let param = a:param
+    let content = empty(a:doc) ? "" : a:doc["value"]
+    let content = substitute(content, "```\\w\\+", "", "g")
+    let content = substitute(content, "```", "", "g")
+    let content = split(content, "\\n")
+    let offset = stridx(title, "`")
+    if offset == -1
+      let offset = stridx(title, "(")
+    endif
+    call easycomplete#popup#float([title . param, '----'] + content,
+                               \ 'Pmenu', 1, "", [0, 0 - offset])
+  catch
+    call s:console(v:exception)
+  endtry
 endfunction
 
 function! s:GetParameterLabel(signature, parameter) abort
