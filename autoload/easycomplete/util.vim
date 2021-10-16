@@ -795,7 +795,7 @@ endfunction " }}}
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
-  " TODO
+  " TODO 性能优化
   return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
 endfunction
 
@@ -866,34 +866,11 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
       endif
     endwhile
 
-    call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
+    if len(easycomplete#GetStuntMenuItems()) == 0
+      call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
+    endif
+
     let result = original_matching_menu + otherwise_fuzzymatching
-
-    " " 这里用单循环来遍历主要是处于性能最优考虑，非精度最优
-    " for item in deepcopy(a:all_menu)
-    "   let item_word = s:GetItemWord(item)
-    "   if a:word[0] != "_" && item_word[0] == "_"
-    "     let item_word = substitute(item_word, "_\\+", "", "")
-    "   endif
-    "   if strlen(item_word) < strlen(a:word) | continue | endif
-    "   if count_index > a:maxlength | break | endif
-    "   let regx_com_times += 1
-    "   call s:log(item_word,word, stridx(item_word, word))
-    "   if stridx(item_word, word) == 0 && count_index < dam
-    "     call add(original_matching_menu, item)
-    "     call add(aaaa, item_word)
-    "     call s:log("    ", aaaa)
-    "     call s:log("    ", len(aaaa), len(original_matching_menu))
-    "     let count_index += 1
-    "   elseif easycomplete#util#FuzzySearch(word, item_word)
-    "     call add(otherwise_fuzzymatching, item)
-    "     let count_index += 1
-    "   else
-    "     call add(otherwise_matching_menu, item)
-    "   endif
-    " endfor
-
-    call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
     let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
   catch
     call s:log(v:exception)
@@ -909,8 +886,6 @@ endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
-  let k1 = has_key(a:entry1, "abbr") && !empty(a:entry1.abbr) ?
-        \ a:entry1.abbr : get(a:entry1, "word","")
   let k1 = get(a:entry1,"abbr", "")
   if empty(k1)
     let k1 = get(a:entry1,"word", "")

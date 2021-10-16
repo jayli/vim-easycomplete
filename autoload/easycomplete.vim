@@ -533,7 +533,7 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], 11)
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], 9)
   endif
 endfunction
 
@@ -1018,6 +1018,9 @@ function! easycomplete#TypeEnterWithPUM()
     if easycomplete#util#expandable(l:item)
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
+      if easycomplete#ok('g:easycomplete_signature_enable')
+        call s:AsyncRun("easycomplete#action#signature#handle",[], 20)
+      endif
     endif
     return "\<C-Y>"
   endif
@@ -1406,6 +1409,10 @@ endfunction
 
 function! easycomplete#nill() abort
   return v:null " DO NOTHING
+endfunction
+
+function! easycomplete#GetStuntMenuItems()
+  return g:easycomplete_stunt_menuitems
 endfunction
 
 " 清空全局配置
