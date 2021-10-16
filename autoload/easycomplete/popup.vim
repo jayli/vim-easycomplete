@@ -118,26 +118,37 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
   else " 正常向上
 
     if winheight(win_getid()) - winline() + 1 + prevw_height <= winheight(win_getid())
-      " 菜单向上展开 ok
+      " 单窗口内空间足够，菜单向上展开 ok
       let opt.row = winline() - prevw_height + screen_enc
     elseif winheight(win_getid()) - winline() + prevw_height + 1 > winheight(win_getid())
           \ && prevw_height >= 3
           \ && winline() >= 4
-
-      " 向上压缩展开
+      " 单窗口内向上展开所需空间不够，要判断窗口上方还有没有多余空间
 
       let t_pos = screen_enc + ((winline() - prevw_height) -1)
       if t_pos >= 0
-        let opt.height = winline() + screen_enc - prevw_height
-        let opt.row = t_pos
+        " 占用顶部空间全部展开
+        let opt.height = prevw_height
+        let opt.row = t_pos + 1
       else
+        " 占用顶部空间也不够展示，则向上压缩展开
         let opt.height = prevw_height + t_pos
         let opt.row = 1
       endif
       
     else
-      " 菜单向下展开
-      let opt.row = winline() + 1 + screen_enc
+      " 单窗口内向下展开
+      
+      " 先判断顶部是否有多余的空间给与展示
+      let t_pos = screen_enc + ((winline() - prevw_height) -1)
+      if t_pos >= 0
+        " 顶部还有空，用顶部空间全部展开
+        let opt.height = prevw_height
+        let opt.row = t_pos + 1
+      else
+        " 顶部空间仍然不够，则菜单向下展开
+        let opt.row = winline() + 1 + screen_enc
+      endif
     endif
   endif
 

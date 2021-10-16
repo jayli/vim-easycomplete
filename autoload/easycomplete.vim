@@ -556,7 +556,7 @@ function! easycomplete#typing()
     let ctx = easycomplete#context()
     if empty(ctx["typing"]) || empty(ctx['char'])
           \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
-      call s:CloseCompletionMenu()
+      noa call s:CloseCompletionMenu()
       call s:flush()
       return ""
     endif
@@ -564,7 +564,7 @@ function! easycomplete#typing()
     if !empty(g:easycomplete_menuitems)
       call s:StopAsyncRun()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
-      call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
+      silent noa call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
             \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
     endif
     return ""
@@ -1225,7 +1225,7 @@ endfunction
 function! easycomplete#refresh()
   silent! noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
         \ get(g:easycomplete_complete_ctx, 'candidates', []))
-  call easycomplete#popup#overlay()
+  silent call easycomplete#popup#overlay()
   return ''
 endfunction
 
@@ -1236,7 +1236,7 @@ function! easycomplete#_complete(start, items)
         \ 'candidates': a:items,
         \}
   if mode() =~# 'i'
-    noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
+    silent noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
   endif
 endfunction
 
