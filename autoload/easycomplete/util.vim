@@ -1117,7 +1117,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
 
-  if index(['nim','kotlin'], &filetype) >= 0
+  if index(['nim','kotlin','java'], &filetype) >= 0
     let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
   endif
 
