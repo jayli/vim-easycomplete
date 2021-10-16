@@ -368,7 +368,9 @@ function! s:NVimShow(opt, windowtype)
   endif
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
-  let g:easycomplete_popup_win[a:windowtype] = call('nvim_open_win', winargs)
+  unlet winargs[2].filetype
+  noa let winid = nvim_open_win(s:buf["popup"], 0, winargs[2])
+  let g:easycomplete_popup_win[a:windowtype] = winid
   call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'on')
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'number', v:false)

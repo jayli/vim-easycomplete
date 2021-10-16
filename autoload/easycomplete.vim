@@ -1202,7 +1202,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
-      " let result = easycomplete#util#distinct(result)
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
       endif
