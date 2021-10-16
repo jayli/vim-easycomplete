@@ -1,10 +1,16 @@
 
 function! easycomplete#action#signature#do()
-  call easycomplete#action#signature#LspRequest()
+  call s:do()
 endfunction
 
 function! s:do()
   call easycomplete#action#signature#LspRequest()
+  let all_plugins = easycomplete#GetAllPlugins()
+  let ts = all_plugins["ts"]
+  let ts_filetypes = ts["whitelist"]
+  if index(ts_filetypes, &filetype) >= 0
+    call easycomplete#sources#ts#signature()
+  endif
 endfunction
 
 function! s:close()
@@ -27,14 +33,6 @@ function! easycomplete#action#signature#handle()
     endif
     " call s:close()
   endif
-endfunction
-
-function! s:ShouldFire()
-  let typed = s:GetTyped()
-  if typed =~ "\\w($" || typed =~ "\\w(.*,$"
-    return v:true
-  endif
-  return v:false
 endfunction
 
 function! s:ShouldClose()
@@ -135,6 +133,10 @@ function! s:HandleLspCallback(server, data) abort
   catch
     call s:log(v:exception)
   endtry
+endfunction
+
+function! easycomplete#action#signature#FireFloat(title,param,doc)
+  call s:SignatureCallback(a:title, a:param, a:doc)
 endfunction
 
 function! s:SignatureCallback(title, param, doc)

@@ -9,6 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -1630,6 +1631,7 @@ function! easycomplete#defination()
   call easycomplete#action#defination#do()
 endfunction
 
+" for 外部调用
 function! easycomplete#signature()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#do()

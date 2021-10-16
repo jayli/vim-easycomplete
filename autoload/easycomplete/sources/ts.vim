@@ -116,6 +116,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
 
   call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
   call s:RegistResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
+  call s:RegistResponseCallback('easycomplete#sources#ts#SignatureCallback', 'signatureHelp')
   call s:RegistResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
   call s:RegistResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
@@ -333,6 +334,22 @@ function! easycomplete#sources#ts#CompleteChanged()
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
+
+function! easycomplete#sources#ts#signature()
+  call s:console('--->','ts signature')
+  let ctx = easycomplete#context()
+  let offset = ctx['col']
+  let file = ctx['filepath']
+  let l:args = {'file': file, 'line': line("."), 'offset': offset}
+  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['signatureHelp',  l:args], 18)
+  " call s:SendCommandAsyncResponse('signatureHelp', l:args)
+endfunction
+
+function! easycomplete#sources#ts#SignatureCallback(response)
+  call s:console('<---',a:response)
+  " call easycomplete#action#signature#FireFloat(title,param,doc)
+endfunction
+
 " job complete 回调
 function! easycomplete#sources#ts#CompleteCallback(item)
   if empty(a:item)
@@ -458,12 +475,6 @@ endfunction
 " PARAM: {string} line The line number of location to complete.
 " PARAM: {string} offset The col number of location to complete.
 " PARAM: {string} prefix Prefix to filter result set.
-" RETURNS: {list} A List of completion info Dictionary.
-"   e.g. :
-"     [
-"       {'name': 'close', 'kindModifiers': 'declare', 'kind': 'function'},
-"       {'name': 'clipboardData', 'kindModifiers': 'declare', 'kind': 'var'}
-"     ]
 function! s:FireTsCompletions(file, line, offset, prefix)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset, 'prefix': a:prefix}
   call s:WaitForReloadDone() " shoule wait for reload done
@@ -513,9 +524,6 @@ endfunction
 " PARAM: {string} file File name.
 " PARAM: {int} line The line number of location to complete.
 " PARAM: {int} offset The col number of location to complete.
-" RETURNS: {list<dict>} A list of dictionaries of definition location.
-"   e.g. :
-"     [{'file': 'hogehoge.ts', 'start': {'line': 3, 'offset': 2}, 'end': {'line': 3, 'offset': 10}}]
 function! s:GotoDefinition(file, line, offset)
   let l:args = {'file': a:file, 'line': a:line, 'offset': a:offset}
   call s:SendCommandAsyncResponse('definition', l:args)
