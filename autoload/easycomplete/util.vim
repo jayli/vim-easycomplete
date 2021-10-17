@@ -664,18 +664,18 @@ function! easycomplete#util#NormalizeSignatureDetail(item)
   for item in a:item["parameters"]
     call add(params, s:NormalizeDetail(item, "displayParts")[0])
   endfor
-  call s:console('-----')
-  call s:console(prefix)
-  call s:console(suffix)
-  call s:console(docume)
-  call s:console(sepato)
+  call s:console('-----easycomplete#util#NormalizeSignatureDetail-----')
+  call s:console('prefix',prefix)
+  call s:console('suffix',suffix)
+  call s:console('document',docume)
+  call s:console('separator',sepato)
+  call s:console('----------')
   let param_arr= prefix + [join(params, get(sepato, 0 ," "))] + suffix
   let param_line = join(param_arr, "")
   let res = [param_line]
   if !empty(docume)
     let res = res + ['--------'] + split(docume[0],"\n")
   endif
-  call s:console("result ---->",res)
   return res
 endfunction
 
