@@ -26,6 +26,27 @@ function! easycomplete#ui#SetScheme()
     execute join(hiPmenuSbar, ' ')
     execute join(hiPmenuThumb, ' ')
   endif
+
+
+endfunction
+
+function! easycomplete#ui#ApplyMarkdownSyntax(winid)
+  " jayli TODO here
+  try
+    let clear_cmd = "silent! syntax clear markdownCode"
+    let clear_cmd = "set &filetype=python"
+    let set_cmd = "syntax region XXX  matchgroup=Error start=/\%(``\)\@!`/ end=/\%(``\)\@!`/ containedin=TOP keepend concealends"
+
+    let bbb = "syntax include @HELP syntax/help.vim"
+    let ccc = 'unlet! b:current_syntax'
+    let aaa = "syn keyword XXXXXX  matchgroup=Error        Return"
+    let ddd = "hi! link helpExample Error"
+    let eee = "echom &filetype"
+    call easycomplete#util#execute(a:winid, [bbb,ccc,aaa,ddd,eee]) 
+    call easycomplete#util#execute(a:winid, "highlight! Function guifg=#00FFFF") 
+  catch
+    call s:log(v:exception)
+  endtry
 endfunction
 
 " Get back ground color form a GroupName {{{
@@ -75,6 +96,13 @@ function! easycomplete#ui#hi(group, fg, bg, attr)
     call execute(join(['hi', a:group, prefix . "=" . a:attr ], " "))
   endif
 endfunction " }}}
+
+function! easycomplete#ui#ClearSyntax(group)
+  try
+    execute printf('silent! syntax clear %s', a:group)
+  catch /.*/
+  endtry
+endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)

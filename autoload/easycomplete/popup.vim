@@ -67,7 +67,7 @@ function! easycomplete#popup#test()
         \ "~/.vim/bundle/vim-easycomplete/autoload/easycomplete/popup.vim [+] [utf-8]",
         \ "asdkjfo ajodij aojf aojf a;fj alfj",
         \ "testing testing"]
-  call easycomplete#popup#float(content, 'ErrorMsg', 0, "help", [0,0])
+  call easycomplete#popup#float(content, 'ErrorMsg', 0, "python", [0,0])
 endfunction
 
 " content, hl, direction: 0, 向下，1，向上
@@ -367,6 +367,7 @@ function! s:VimShow(opt, windowtype)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
+  call easycomplete#ui#ApplyMarkdownSyntax(winid)
 endfunction
 
 function! s:NVimShow(opt, windowtype)
@@ -392,7 +393,7 @@ function! s:NVimShow(opt, windowtype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
-
+  call easycomplete#ui#ApplyMarkdownSyntax(winid)
   silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
 
@@ -455,11 +456,14 @@ function! easycomplete#popup#DisplayHeight(lines, width)
   return height > max_height ? max_height : height
 endfunction
 
-
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
 endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
 endfunction

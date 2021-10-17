@@ -724,6 +724,33 @@ function! s:NormalizeDetail(item, parts)
   endif
 endfunction
 
+" Exec cmd in window {{{
+function! easycomplete#util#execute(winid, command, ...) abort
+  if exists('*win_execute')
+    if type(a:command) == v:t_string
+      keepalt call win_execute(a:winid, a:command, get(a:, 1, ''))
+    elseif type(a:command) == v:t_list
+      keepalt call win_execute(a:winid, join(a:command, "\n"), get(a:, 1, ''))
+    endif
+  elseif has('nvim')
+    if !nvim_win_is_valid(a:winid)
+      return
+    endif
+    let curr = nvim_get_current_win()
+    noa keepalt call nvim_set_current_win(a:winid)
+    if type(a:command) == v:t_string
+      exe get(a:, 1, '').' '.a:command
+    elseif type(a:command) == v:t_list
+      for cmd in a:command
+        exe get(a:, 1, '').' '.cmd
+      endfor
+    endif
+    noa keepalt call nvim_set_current_win(curr)
+  else
+    call s:log("Your VIM version is old. Please update your vim")
+  endif
+endfunction " }}}
+
 " NormalizeEntryDetail for tsserver only {{{
 function! easycomplete#util#NormalizeEntryDetail(item)
   let l:title = ""

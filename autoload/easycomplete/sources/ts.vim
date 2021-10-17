@@ -346,7 +346,6 @@ endfunction
 
 function! easycomplete#sources#ts#SignatureCallback(response)
   if !get(a:response, "success", 0)
-    call s:console('<---', '返回结果为空')
     call easycomplete#popup#close("float")
     return
   endif

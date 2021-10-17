@@ -154,7 +154,7 @@ function! s:SignatureCallback(title, param, doc)
     call easycomplete#popup#float([title . param, '----'] + content,
                                \ 'Pmenu', 1, "", [0, 0 - offset])
   catch
-    call s:console(v:exception)
+    call s:log(v:exception)
   endtry
 endfunction
 
