@@ -336,14 +336,12 @@ endfunction
 
 
 function! easycomplete#sources#ts#signature()
-  call s:console('============================> {{','ts signature')
   call s:TsserverReload()
   let ctx = easycomplete#context()
   let offset = ctx['col']
   let file = ctx['filepath']
   let l:args = {'file': file, 'line': line("."), 'offset': offset}
   call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['signatureHelp',  l:args], 18)
-  " call s:SendCommandAsyncResponse('signatureHelp', l:args)
 endfunction
 
 function! easycomplete#sources#ts#SignatureCallback(response)
@@ -354,30 +352,29 @@ function! easycomplete#sources#ts#SignatureCallback(response)
   endif
   let body = get(a:response, "body", {})
   let items = get(body, "items", [])
-  " let info = []
-  " for item in items
-  "   let tmp = s:NormalizeEntryDetail(item)
-  "   call extend(info, tmp)
-  " endfor
-  call s:log(a:response)
-  call s:console('<---------- 返回原始字段内容')
-  call s:console("keys", keys(items[0]))
-  call s:console("tags",items[0]["tags"])
-  call s:console("separatorDisplayParts",items[0]["separatorDisplayParts"])
-  call s:console("parameters",items[0]["parameters"])
-  call s:console("suffixDisplayParts",items[0]["suffixDisplayParts"])
-  call s:console("prefixDisplayParts",items[0]["prefixDisplayParts"])
-  call s:console("isVariadic",items[0]["isVariadic"])
-  call s:console("documentation",items[0]["documentation"])
-  call s:console('<----------')
-  try
-    let info = easycomplete#util#NormalizeSignatureDetail(items[0])
-    call s:console('最终要pop出来的info:',info)
-    call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0])
-  catch
-    call s:console(v:exception)
-  endtry
-  call s:console('<=========================== }} ','signature end')
+  if empty(items) | return | endif
+  let item = items[0]
+  let selected_item_index = get(body, 'selectedItemIndex', 0)
+  let argument_count = get(body, 'argumentCount', 0)
+  let argument_index = get(body, 'argumentIndex', 0)
+  let param_length = len(item["parameters"])
+  " 计算高亮参数所在的位置
+  let hl_index = (argument_index + 1) >= param_length ? param_length - 1 : argument_index
+  let prefix = easycomplete#util#NormalizeDetail(item, "prefixDisplayParts")
+  let sepato = easycomplete#util#NormalizeDetail(item, "separatorDisplayParts")
+  let params = []
+  for elem in item["parameters"]
+    call add(params, easycomplete#util#NormalizeDetail(elem, "displayParts")[0])
+  endfor
+  let offset_arr = prefix "  + [join(params, get(sepato, 0 ," "))]
+  if hl_index > 0
+    let offset_arr += [join(params[0:hl_index], get(sepato, 0 ," "))]
+  endif
+  let offset_str = join(offset_arr, "")
+  let offset_col = strlen(offset_str)
+
+  let info = easycomplete#util#NormalizeSignatureDetail(item, hl_index)
+  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col])
 endfunction
 
 " job complete 回调

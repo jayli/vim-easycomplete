@@ -653,23 +653,30 @@ function! s:GotoWinnr(winnr) abort
 endfunction
 " }}}
 
-function! easycomplete#util#NormalizeSignatureDetail(item)
-  let suffix = s:NormalizeDetail(a:item, "suffixDisplayParts")
-  let prefix = s:NormalizeDetail(a:item, "prefixDisplayParts")
-  let sepato = s:NormalizeDetail(a:item, "separatorDisplayParts")
-  " let parame = s:NormalizeDetail(a:item, "parameters")
-  let docume = s:NormalizeDetail(a:item, "documentation")
+function! easycomplete#util#NormalizeDetail(item, parts)
+  return s:NormalizeDetail(a:item, a:parts)
+endfunction
 
+function! easycomplete#util#NormalizeSignatureDetail(item, hl_index)
+  " 后缀
+  let suffix = s:NormalizeDetail(a:item, "suffixDisplayParts")
+  " 前缀
+  let prefix = s:NormalizeDetail(a:item, "prefixDisplayParts")
+  " 分隔符
+  let sepato = s:NormalizeDetail(a:item, "separatorDisplayParts")
+  " 文档正文
+  let docume = s:NormalizeDetail(a:item, "documentation")
+  " 参数列表
   let params = []
+  let l:count = 0
   for item in a:item["parameters"]
-    call add(params, s:NormalizeDetail(item, "displayParts")[0])
+    let wrapping = ""
+    if l:count == a:hl_index
+      let wrapping = "`"
+    endif
+    call add(params, wrapping . s:NormalizeDetail(item, "displayParts")[0] . wrapping)
+    let l:count += 1
   endfor
-  call s:console('-----easycomplete#util#NormalizeSignatureDetail-----')
-  call s:console('prefix',prefix)
-  call s:console('suffix',suffix)
-  call s:console('document',docume)
-  call s:console('separator',sepato)
-  call s:console('----------')
   let param_arr= prefix + [join(params, get(sepato, 0 ," "))] + suffix
   let param_line = join(param_arr, "")
   let res = [param_line]
