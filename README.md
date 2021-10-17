@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order to provide the best performance and experience. I remove all non-essential requirements and environment dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and environment dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
 
 ![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
 
@@ -15,8 +15,9 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - Buffer keywords and dictionary support
 - Directory and file completion support
 - Goto definition support for all languages
-- Language lint
-- Full LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
+- Language lint with diagnostic
+- Signature helper
+- LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
 - LSP Server installation with one command
 - Snippet support with ultisnips. (python3 required)
 
@@ -77,10 +78,10 @@ All commands:
 | `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
 | `:EasyCompleteGotoDefinition`     | Goto definition position                 |
 | `:EasyCompleteCheck`              | Checking LSP server                      |
-| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
 | `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
 | `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
 
 ### Language Support
 
