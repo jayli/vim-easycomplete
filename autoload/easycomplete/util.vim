@@ -653,6 +653,53 @@ function! s:GotoWinnr(winnr) abort
 endfunction
 " }}}
 
+function! easycomplete#util#NormalizeSignatureDetail(item)
+  let suffix = s:NormalizeDetail(a:item, "suffixDisplayParts")
+  let prefix = s:NormalizeDetail(a:item, "prefixDisplayParts")
+  let sepato = s:NormalizeDetail(a:item, "separatorDisplayParts")
+  " let parame = s:NormalizeDetail(a:item, "parameters")
+  let docume = s:NormalizeDetail(a:item, "documentation")
+
+  let params = []
+  for item in a:item["parameters"]
+    call add(params, s:NormalizeDetail(item, "displayParts")[0])
+  endfor
+  call s:console('-----')
+  call s:console(prefix)
+  call s:console(suffix)
+  call s:console(docume)
+  call s:console(sepato)
+  let param_arr= prefix + [join(params, get(sepato, 0 ," "))] + suffix
+  let param_line = join(param_arr, "")
+  let res = [param_line]
+  if !empty(docume)
+    let res = res + ['--------'] + split(docume[0],"\n")
+  endif
+  call s:console("result ---->",res)
+  return res
+endfunction
+
+function! s:NormalizeDetail(item, parts)
+  if !empty(get(a:item, a:parts)) && len(get(a:item, a:parts)) > 0
+    let l:desp_list = []
+    let l:t_line = ""
+    for dis_item in get(a:item, a:parts)
+      if dis_item.text =~ "^\\(\\r\\|\\n\\)$"
+        call add(l:desp_list, l:t_line)
+        let l:t_line = ""
+      else 
+        let l:t_line  = l:t_line  . dis_item.text
+      endif
+    endfor
+    if !empty(l:t_line)
+      call add(l:desp_list, l:t_line)
+    endif
+    return l:desp_list
+  else
+    return []
+  endif
+endfunction
+
 " NormalizeEntryDetail for tsserver only {{{
 function! easycomplete#util#NormalizeEntryDetail(item)
   let l:title = ""
@@ -665,37 +712,46 @@ function! easycomplete#util#NormalizeEntryDetail(item)
         \ get(a:item, 'kind'),
         \ get(a:item, 'name')], " ")
 
-  if !empty(get(a:item, "displayParts")) && len(get(a:item, "displayParts")) > 0
-    let l:desp_list = []
-    let l:t_line = ""
-    for dis_item in get(a:item, "displayParts")
-      if dis_item.text =~ "\\(\\r\\|\\n\\)"
-        call add(l:desp_list, l:t_line)
-        let l:t_line = ""
-      else 
-        let l:t_line  = l:t_line  . dis_item.text
-      endif
-    endfor
-    if !empty(l:t_line)
-      call add(l:desp_list, l:t_line)
-    endif
-  endif
+  let l:desp_list = s:NormalizeDetail(a:item, "displayParts")
+  " if !empty(get(a:item, "displayParts")) && len(get(a:item, "displayParts")) > 0
+  "   let l:desp_list = []
+  "   let l:t_line = ""
+  "   for dis_item in get(a:item, "displayParts")
+  "     if dis_item.text =~ "\\(\\r\\|\\n\\)"
+  "       call add(l:desp_list, l:t_line)
+  "       let l:t_line = ""
+  "     else 
+  "       let l:t_line  = l:t_line  . dis_item.text
+  "     endif
+  "   endfor
+  "   if !empty(l:t_line)
+  "     call add(l:desp_list, l:t_line)
+  "   endif
+  " endif
+
 
   if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
     let l:doc_list = ["------------"] " 任意长度即可, 显示的时候回重新计算分割线宽度
-    let l:t_line = ""
-    for document_item in get(a:item, "documentation")
-      if document_item.text =~ "\\(\\r\\|\\n\\)"
-        call add(l:doc_list, l:t_line)
-        let l:t_line = ""
-      else
-        let l:t_line = l:t_line . document_item.text
-      endif
-    endfor
-    if !empty(l:t_line)
-      call add(l:doc_list, l:t_line)
-    endif
+    call extend(doc_list, s:NormalizeDetail(a:item, "documentation"))
+  else
+    let l:doc_list = []
   endif
+
+  " if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
+  "   let l:doc_list = ["------------"] " 任意长度即可, 显示的时候回重新计算分割线宽度
+  "   let l:t_line = ""
+  "   for document_item in get(a:item, "documentation")
+  "     if document_item.text =~ "\\(\\r\\|\\n\\)"
+  "       call add(l:doc_list, l:t_line)
+  "       let l:t_line = ""
+  "     else
+  "       let l:t_line = l:t_line . document_item.text
+  "     endif
+  "   endfor
+  "   if !empty(l:t_line)
+  "     call add(l:doc_list, l:t_line)
+  "   endif
+  " endif
 
   return [l:title] + l:desp_list + l:doc_list
 endfunction

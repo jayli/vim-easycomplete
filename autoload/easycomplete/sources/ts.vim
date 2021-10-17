@@ -346,8 +346,35 @@ function! easycomplete#sources#ts#signature()
 endfunction
 
 function! easycomplete#sources#ts#SignatureCallback(response)
-  call s:console('<---',a:response)
-  " call easycomplete#action#signature#FireFloat(title,param,doc)
+  if !get(a:response, "success", 0)
+    call s:console('<---', '返回结果为空')
+    call easycomplete#popup#close("float")
+    return
+  endif
+  let body = get(a:response, "body", {})
+  let items = get(body, "items", [])
+  " let info = []
+  " for item in items
+  "   let tmp = s:NormalizeEntryDetail(item)
+  "   call extend(info, tmp)
+  " endfor
+  call s:console('<---')
+  call s:console(keys(items[0]))
+  call s:console("tags",items[0]["tags"])
+  call s:console("separatorDisplayParts",items[0]["separatorDisplayParts"])
+  call s:console("parameters",items[0]["parameters"])
+  call s:console("suffixDisplayParts",items[0]["suffixDisplayParts"])
+  call s:console("prefixDisplayParts",items[0]["prefixDisplayParts"])
+  call s:console("isVariadic",items[0]["isVariadic"])
+  call s:console("documentation",items[0]["documentation"])
+  try
+    let info = easycomplete#util#NormalizeSignatureDetail(items[0])
+    call s:console('<---',info)
+    call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0])
+  catch
+    call s:console(v:exception)
+
+  endtry
 endfunction
 
 " job complete 回调
