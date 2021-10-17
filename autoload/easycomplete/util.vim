@@ -1,4 +1,5 @@
 """ 常用的工具函数
+scriptencoding utf-8
 " filetype() {{{
 function! easycomplete#util#filetype()
   " SourcePost 事件中 &filetype 为空，应当从 bufname 中根据后缀获取
@@ -689,18 +690,34 @@ endfunction
 function! s:NormalizeDetail(item, parts)
   if !empty(get(a:item, a:parts)) && len(get(a:item, a:parts)) > 0
     let l:desp_list = []
-    let l:t_line = ""
     for dis_item in get(a:item, a:parts)
       if dis_item.text =~ "^\\(\\r\\|\\n\\)$"
-        call add(l:desp_list, l:t_line)
-        let l:t_line = ""
+        call add(l:desp_list, "")
       else 
-        let l:t_line  = l:t_line  . dis_item.text
+        let line_arr = split(dis_item.text, "\\n")
+        if len(line_arr) == 1
+          if len(l:desp_list) == 0
+            let t_line = ""
+          else
+            let t_line = l:desp_list[-1]
+          endif
+          let t_line = t_line . line_arr[0]
+          if len(l:desp_list) == 0
+            call add(l:desp_list, t_line)
+          else
+            let l:desp_list[-1] = t_line
+          endif
+        else
+          call extend(l:desp_list, line_arr)
+        endif
+        " let l:t_line  = l:t_line  . dis_item.text
+
+        " call s:console(dis_item.text)
       endif
     endfor
-    if !empty(l:t_line)
-      call add(l:desp_list, l:t_line)
-    endif
+    " if !empty(l:t_line)
+    "   call add(l:desp_list, l:t_line)
+    " endif
     return l:desp_list
   else
     return []
