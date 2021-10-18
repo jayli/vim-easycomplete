@@ -391,14 +391,17 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   endif
 
   let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list),
-        \                       "s:sortTextComparator"), 'v:val.kind != "warning"'),
+        \                       "s:SortTextComparator"), 'v:val.kind != "warning"'),
         \ function("s:CompleteMenuMap"))
   let s:request_queue_ctx = l:ctx
-  " 如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作
-  if !easycomplete#CheckContextSequence(l:ctx)
+  if !easycomplete#SameBeginning(l:ctx, easycomplete#context())
     return
   endif
-  call s:DoComplete(l:ctx, l:easycomplete_menu_list)
+  " <del>如果返回时携带的 ctx 和当前的 ctx 不同，应当取消这次匹配动作</del>
+  " if !easycomplete#CheckContextSequence(l:ctx)
+  "   return
+  " endif
+  call s:DoComplete(easycomplete#context(), l:easycomplete_menu_list)
 endfunction
 
 function! s:DoComplete(ctx, menu_list)
@@ -423,7 +426,7 @@ function! s:EntriesMap(key, val)
 endfunction
 
 function! s:CompleteMenuMap(key, val)
-  let is_func = (a:val.kind ==# "method")
+  let is_func = (a:val.kind ==# "method" || a:val.kind ==# "function")
   let val_name = a:val.name
   let ret = {
         \ "abbr": val_name,
@@ -708,7 +711,7 @@ function! s:MessageHandler(msg)
   endif
 endfunction
 
-function! s:sortTextComparator(entry1, entry2)
+function! s:SortTextComparator(entry1, entry2)
   if a:entry1.sortText < a:entry2.sortText
     return -1
   elseif a:entry1.sortText > a:entry2.sortText

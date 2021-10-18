@@ -533,7 +533,8 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], 9)
+    let delay = len(g:easycomplete_stunt_menuitems) > 180 ? 20 : 7
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
   endif
 endfunction
 
@@ -1198,20 +1199,24 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   endif
   try
     if s:OrigionalPosition()
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(a:menuitems, s:GetTypingWord(), 900)
-      let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
-      let g:easycomplete_stunt_menuitems = filtered_menu
-      let result = filtered_menu[0 : g:easycomplete_maxlength]
-      if len(result) <= 10
-        let result = easycomplete#util#uniq(result)
-      endif
-      call s:zizz()
-      call easycomplete#_complete(a:start_pos, result)
-      call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
+      " 如果 LSP 结果返回时没有前进 typing，就返回结果过滤呈现即可
+      let source_result = a:menuitems
     else
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
-      " easycomplete#typing() → s:CompleteTypingMatch()
+      " easycomplete#typing() → s:CompleteTypingMatch()，叠加之前请求 LSP 的返
+      " 回值后进行重新过滤呈现
+      let source_result = a:menuitems + g:easycomplete_stunt_menuitems
     endif
+    let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, s:GetTypingWord(), 900)
+    let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
+    let g:easycomplete_stunt_menuitems = filtered_menu
+    let result = filtered_menu[0 : g:easycomplete_maxlength]
+    if len(result) <= 10
+      let result = easycomplete#util#uniq(result)
+    endif
+    call s:zizz()
+    call easycomplete#_complete(a:start_pos, result)
+    call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     if s:first_render_timer > 0
       call timer_stop(s:first_render_timer)
       let s:first_render_timer = 0
@@ -1526,6 +1531,10 @@ function! s:SameCtx(ctx1, ctx2)
   else
     return v:false
   endif
+endfunction
+
+function! easycomplete#SameBeginning(ctx1, ctx2)
+  return s:SameBeginning(a:ctx1, a:ctx2)
 endfunction
 
 " ctx1 在前，ctx2 在后

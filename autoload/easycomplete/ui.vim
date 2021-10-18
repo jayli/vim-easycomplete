@@ -1,10 +1,10 @@
-" 菜单样式设置
+" Cterm 下默认四种菜单样式
 " 支持四种 dark, light, rider, sharp
+" Set Scheme {{{
 function! easycomplete#ui#SetScheme()
   if !exists("g:easycomplete_scheme")
     return
   endif
-
   " hi Pmenu      ctermfg=111 ctermbg=235
   " hi PmenuSel   ctermfg=255 ctermbg=238
   " hi PmenuSbar              ctermbg=235
@@ -26,10 +26,9 @@ function! easycomplete#ui#SetScheme()
     execute join(hiPmenuSbar, ' ')
     execute join(hiPmenuThumb, ' ')
   endif
+endfunction " }}}
 
-
-endfunction
-
+" markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
   let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ", 
@@ -42,7 +41,7 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
         \ "let &filetype='txt'",
         \ "let &filetype='help'",
         \ ])
-endfunction
+endfunction " }}}
 
 " Get back ground color form a GroupName {{{
 function! easycomplete#ui#GetBgColor(name)
@@ -92,17 +91,21 @@ function! easycomplete#ui#hi(group, fg, bg, attr)
   endif
 endfunction " }}}
 
+" ClearSyntax {{{
 function! easycomplete#ui#ClearSyntax(group)
   try
     execute printf('silent! syntax clear %s', a:group)
   catch /.*/
   endtry
-endfunction
+endfunction " }}}
 
+" console {{{
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
-endfunction
+endfunction " }}}
 
+
+" log {{{
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
-endfunction
+endfunction " }}}
