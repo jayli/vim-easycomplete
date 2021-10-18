@@ -31,22 +31,16 @@ function! easycomplete#ui#SetScheme()
 endfunction
 
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
-  " jayli TODO here
-  try
-    let clear_cmd = "silent! syntax clear markdownCode"
-    let clear_cmd = "set &filetype=python"
-    let set_cmd = "syntax region XXX  matchgroup=Error start=/\%(``\)\@!`/ end=/\%(``\)\@!`/ containedin=TOP keepend concealends"
-
-    let bbb = "syntax include @HELP syntax/help.vim"
-    let ccc = 'unlet! b:current_syntax'
-    let aaa = "syn keyword XXXXXX  matchgroup=Error        Return"
-    let ddd = "hi! link helpExample Error"
-    let eee = "echom &filetype"
-    call easycomplete#util#execute(a:winid, [bbb,ccc,aaa,ddd,eee]) 
-    call easycomplete#util#execute(a:winid, "highlight! Function guifg=#00FFFF") 
-  catch
-    call s:log(v:exception)
-  endtry
+  let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ", 
+                \ "matchgroup=Conceal end=/\%(``\)\@!`/ containedin=TOP concealends"],"")
+  call easycomplete#util#execute(a:winid, [
+        \ "silent! syntax clear NewCodeBlock",
+        \ regin_cmd,
+        \ "hi! link NewCodeBlock Identifier",
+        \ "let l:ft = &filetype",
+        \ "let &filetype='txt'",
+        \ "let &filetype=l:ft",
+        \ ]) 
 endfunction
 
 " Get back ground color form a GroupName {{{
