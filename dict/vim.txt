@@ -71,6 +71,7 @@ TabLeave
 TermChanged
 TermResponse
 User
+underline
 VimEnter
 VimLeave
 VimLeavePre
@@ -1364,4 +1365,3 @@ versionlong
 vim_did_enter
 warningmsg
 windowid
-

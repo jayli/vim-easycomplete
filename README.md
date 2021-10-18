@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and environment dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and env dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
 
 ![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
 
@@ -47,13 +47,13 @@ It use Tab to trigger completion suggestions. You can change this setting by
 let g:easycomplete_tab_trigger="<c-space>"
 ```
 
-There are four build-in popup menu themes for default styles confliction: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
+There are four build-in popup menu themes to avoid cterm default ugliy styles: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
 
 ### Useage
 
-You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can use `:EasyCompleteGotoDefinition` command.
+By default you can use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can use `:EasyCompleteGotoDefinition` command.
 
-Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. For example:
+Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>`:
 
 ```vim
 nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>

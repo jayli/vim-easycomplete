@@ -31,12 +31,14 @@ function! easycomplete#ui#SetScheme()
 endfunction
 
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
+  " 默认 Popup 的 Markdown 文档都基于 help syntax
   let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ", 
                 \ "matchgroup=Conceal end=/\%(``\)\@!`/ containedin=TOP concealends"],"")
   call easycomplete#util#execute(a:winid, [
+        \ "hi helpCommand cterm=underline ctermfg=White guifg=White",
         \ "silent! syntax clear NewCodeBlock",
         \ regin_cmd,
-        \ "hi! link NewCodeBlock Identifier",
+        \ "hi! link NewCodeBlock helpCommand",
         \ "let l:ft = &filetype",
         \ "let &filetype='txt'",
         \ "let &filetype=l:ft",
