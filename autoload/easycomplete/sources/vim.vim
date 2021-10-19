@@ -12,10 +12,10 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
       \   'vimruntime': expand($VIMRUNTIME),
       \   'runtimepath': &rtp,
       \   'iskeyword': '@,48-57,_,192-255,-#',
-      \   'indexes':{'runtime':"true", 'gap':100, 'count':3, 'runtimepath': "true"},
+      \   'indexes':{'runtime':v:true, 'gap':100, 'count':1, 'runtimepath': v:true},
       \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
       \   'diagnostic': {"enable": v:true},
-      \   'suggest': { 'fromVimruntime': v:true , 'fromRuntimepath': v:true}
+      \   'suggest': { 'fromVimruntime': v:true, 'fromRuntimepath': v:false}
       \ }
       \ })
 endfunction
@@ -43,6 +43,7 @@ function! easycomplete#sources#vim#filter(matches)
     call filter(matches, function("s:VimHack_S_DotFilter"))
   endif
   let matches = map(copy(matches), function("s:VimHack_A_DotMap"))
+  let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches
 endfunction
 

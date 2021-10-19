@@ -851,8 +851,9 @@ function! easycomplete#util#distinct(menu_list)
       continue
     endif
 
-    let word = has_key(item, "abbr") && !empty(item.abbr) ?
-          \ item.abbr : get(item, "word", "")
+    " let word = has_key(item, "abbr") && !empty(item.abbr) ?
+    "       \ item.abbr : get(item, "word", "")
+    let word = s:GetItemWord(item)
 
     if index(buf_list, word) >= 0
       call filter(result_items,
