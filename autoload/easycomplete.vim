@@ -1194,26 +1194,35 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     call s:flush()
     return
   endif
+  let typing_word = s:GetTypingWord()
+  let should_stop_render = 0
   try
     if s:OrigionalPosition()
       " 如果 LSP 结果返回时没有前进 typing，就返回结果过滤呈现即可
       let source_result = a:menuitems
-    else
+    elseif !empty(typing_word) && easycomplete#context()["typed"] =~ "[a-zA-Z0-9#]$"
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()，叠加之前请求 LSP 的返
       " 回值后进行重新过滤呈现
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
+    else
+      if !pumvisible()
+        let should_stop_render = 1
+      endif
     endif
-    let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, s:GetTypingWord(), 900)
-    let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
-    let g:easycomplete_stunt_menuitems = filtered_menu
-    let result = filtered_menu[0 : g:easycomplete_maxlength]
-    if len(result) <= 10
-      let result = easycomplete#util#uniq(result)
+
+    if !should_stop_render
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 900)
+      let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
+      let g:easycomplete_stunt_menuitems = filtered_menu
+      let result = filtered_menu[0 : g:easycomplete_maxlength]
+      if len(result) <= 10
+        let result = easycomplete#util#uniq(result)
+      endif
+      call s:zizz()
+      call easycomplete#_complete(a:start_pos, result)
+      call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
-    call s:zizz()
-    call easycomplete#_complete(a:start_pos, result)
-    call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     if s:first_render_timer > 0
       call timer_stop(s:first_render_timer)
       let s:first_render_timer = 0

@@ -654,10 +654,12 @@ function! s:GotoWinnr(winnr) abort
 endfunction
 " }}}
 
+" NormalizeDetail {{{
 function! easycomplete#util#NormalizeDetail(item, parts)
   return s:NormalizeDetail(a:item, a:parts)
-endfunction
+endfunction " }}}
 
+" NormalizeSignatureDetail {{{
 function! easycomplete#util#NormalizeSignatureDetail(item, hl_index)
   " 后缀
   let suffix = s:NormalizeDetail(a:item, "suffixDisplayParts")
@@ -685,8 +687,9 @@ function! easycomplete#util#NormalizeSignatureDetail(item, hl_index)
     let res = res + ['--------'] + split(docume[0],"\n")
   endif
   return res
-endfunction
+endfunction " }}}
 
+" NormalizeDetail {{{
 function! s:NormalizeDetail(item, parts)
   if !empty(get(a:item, a:parts)) && len(get(a:item, a:parts)) > 0
     let l:desp_list = []
@@ -716,7 +719,7 @@ function! s:NormalizeDetail(item, parts)
   else
     return []
   endif
-endfunction
+endfunction " }}}
 
 " Exec cmd in window {{{
 function! easycomplete#util#execute(winid, command, ...) abort
@@ -1134,6 +1137,39 @@ function! easycomplete#util#LspType(c_type)
   return l:type
 endfunction
 " }}}
+"
+function! easycomplete#util#FunctionSurffixMap(key, val)
+  let is_func = (get(a:val,'kind_number') == 3 || get(a:val,'kind_number') == 2)
+  let kind = exists('a:val.kind') ? a:val.kind : ""
+  let word = exists('a:val.word') ? a:val.word : ""
+  let menu = exists('a:val.menu') ? a:val.menu : ""
+  let abbr = exists('a:val.abbr') ? a:val.abbr : ""
+  let info = exists('a:val.info') ? a:val.info : ""
+  let user_data = exists('a:val.user_data') ? a:val.user_data : ""
+  let ret = {
+        \ "abbr":      abbr,
+        \ "dup":       1,
+        \ "icase":     1,
+        \ "kind":      kind,
+        \ "menu":      menu,
+        \ "word":      word,
+        \ "info":      info,
+        \ "equal":     1,
+        \ "user_data": user_data
+        \ }
+  if is_func
+    if stridx(word,"(") <= 0
+      let ret["word"] = word . "()"
+      let ret['abbr'] = word . "~"
+      let ret['user_data'] = json_encode({
+            \ 'expandable': 1,
+            \ 'placeholder_position': strlen(word) + 1,
+            \ 'cursor_backing_steps': 1
+            \ })
+    endif
+  endif
+  return ret
+endfunction
 
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
@@ -1155,6 +1191,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     let l:vim_complete_item = {
           \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
           \ 'dup': 1,
+          \ 'kind_number': get(l:completion_item, 'kind', 0),
           \ 'menu' : "[". toupper(a:plugin_name) ."]",
           \ 'empty': 1,
           \ 'icase': 1,
