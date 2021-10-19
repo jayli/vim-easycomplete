@@ -904,7 +904,6 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   if type(info) == type("")
     let info = [info]
   endif
-  " let thin_info = s:ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
   call s:ShowCompleteInfo(info)
 endfunction
 
@@ -1078,14 +1077,12 @@ function! s:CompleteHandler()
   if strwidth(l:ctx['typing']) == 0 && index(l:checking, l:ctx['char']) < 0
     return
   endif
-
   " 以上所有步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处
   " 理，原则上后续处理不应当做过多干扰，是什么结果就是什么结果了，除非严重错误，
   " 否则不应该在后续链路做 Hack 了
   call s:flush()
   call s:CompleteInit()
   call s:CompletorCallingAtFirstComplete()
-
   " 记录 g:easycomplete_firstcomplete_ctx 的时机，最早就是这里
   let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
@@ -1391,10 +1388,6 @@ function! s:LetCompleteTaskQueueAllDone()
   endfor
 endfunction
 
-" ----------------------------------------------------------------------
-"  Util Method 常用的工具函数
-" ----------------------------------------------------------------------
-
 function! easycomplete#AutoLoadDict()
   call easycomplete#util#AutoLoadDict()
 endfunction
@@ -1495,7 +1488,7 @@ function! s:ResetBacking(...)
   let g:easycomplete_backing_or_cr = 0
 endfunction
 
-" setup a flag for doing nothing for 30ms
+" 空闲 30ms，简单粗暴避免事件意外触发
 function! s:zizz()
   let delay = g:env_is_nvim ? 30 : (&filetype == 'vim' ? 50 : 50)
   let g:easycomplete_backing_or_cr = 1

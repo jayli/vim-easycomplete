@@ -350,7 +350,7 @@ function! easycomplete#util#FuzzySearch(needle, haystack)
   " 性能测试：356 次调用实测情况
   "  - s:FuzzySearchRegx 速度最快
   "  - s:FuzzySearchCustom 速度次之
-  "  - s:FuzzySearchSpeedUp 速度次之
+  "  - s:FuzzySearchSpeedUp 速度再次之
   "  - s:FuzzySearchPy 速度最差
   return s:FuzzySearchRegx(a:needle, a:haystack) " 0.027728
   return s:FuzzySearchCustom(a:needle, a:haystack) " 0.041983
@@ -710,14 +710,8 @@ function! s:NormalizeDetail(item, parts)
         else
           call extend(l:desp_list, line_arr)
         endif
-        " let l:t_line  = l:t_line  . dis_item.text
-
-        " call s:console(dis_item.text)
       endif
     endfor
-    " if !empty(l:t_line)
-    "   call add(l:desp_list, l:t_line)
-    " endif
     return l:desp_list
   else
     return []
@@ -923,12 +917,10 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
     " dam: 性能均衡参数，用来控制完整匹配和模糊匹配的次数均衡
     " 通常情况下 dam 越大，完整匹配次数越多，模糊匹配次数就越少，速度越快
     " 精度越好，但下面这两种情况往往会大面积存在
-    "
     " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
     " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
     "   最好，这时 dam 越小越好
-    "
-    " 折中设置 dam 为 100
+    " 折中设置 dam 为 100, 顶层遍历的时间复杂度控制在O(n)
     let dam = 100
     let regx_com_times = 0
     let count_index = 0

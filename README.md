@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and env dependencies. So it has minimum redundancy. It requires viml only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and env dependencies. It requires viml only, and you don't even have to add one line of configuration if you want.
 
 ![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
 

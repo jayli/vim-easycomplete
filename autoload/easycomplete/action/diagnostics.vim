@@ -7,7 +7,6 @@ function! easycomplete#action#diagnostics#do()
 endfunction
 
 function! easycomplete#action#diagnostics#HandleCallback(server, response)
-  " call s:log("<----",a:response)
   call easycomplete#sign#hold()
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(a:response)

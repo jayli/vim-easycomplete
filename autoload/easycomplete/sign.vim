@@ -471,8 +471,6 @@ function! s:PopupMsg(diagnostics_info)
   let msg = split(msg, "\\n")
   let showing = s:MsgNormalize(a:diagnostics_info, msg)
   let style = s:GetPopupStyle(a:diagnostics_info["severity"])
-  " call easycomplete#popup#show(showing, style, 0)
-  " let showing = easycomplete#util#ModifyInfoByMaxwidth(showing, 80)
   call easycomplete#popup#float(showing, style, 0, "txt", [0,0])
 endfunction
 

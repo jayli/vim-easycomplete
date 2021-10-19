@@ -127,8 +127,7 @@ function! s:HandleLspCallback(server, data) abort
       call s:SignatureCallback(l:label, l:param, l:full_doc)
       return
     else
-      " signature help is used while inserting. So this must be graceful.
-      "call lsp#utils#error('No signature help information found')
+      " 无 signature 返回
     endif
   catch
     call s:log(v:exception)
@@ -140,22 +139,18 @@ function! easycomplete#action#signature#FireFloat(title,param,doc)
 endfunction
 
 function! s:SignatureCallback(title, param, doc)
-  try
-    let title = a:title
-    let param = a:param
-    let content = empty(a:doc) ? "" : a:doc["value"]
-    let content = substitute(content, "```\\w\\+", "", "g")
-    let content = substitute(content, "```", "", "g")
-    let content = split(content, "\\n")
-    let offset = stridx(title, "`")
-    if offset == -1
-      let offset = stridx(title, "(")
-    endif
-    call easycomplete#popup#float([title . param, '----'] + content,
-                               \ 'Pmenu', 1, "", [0, 0 - offset])
-  catch
-    call s:log(v:exception)
-  endtry
+  let title = a:title
+  let param = a:param
+  let content = empty(a:doc) ? "" : a:doc["value"]
+  let content = substitute(content, "```\\w\\+", "", "g")
+  let content = substitute(content, "```", "", "g")
+  let content = split(content, "\\n")
+  let offset = stridx(title, "`")
+  if offset == -1
+    let offset = stridx(title, "(")
+  endif
+  call easycomplete#popup#float([title . param, '----'] + content,
+                             \ 'Pmenu', 1, "", [0, 0 - offset])
 endfunction
 
 function! s:GetParameterLabel(signature, parameter) abort
