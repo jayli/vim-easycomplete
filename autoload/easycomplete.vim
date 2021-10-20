@@ -1019,7 +1019,7 @@ function! easycomplete#TypeEnterWithPUM()
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
       if easycomplete#ok('g:easycomplete_signature_enable')
-        call s:AsyncRun("easycomplete#action#signature#handle",[], 20)
+        call s:AsyncRun("easycomplete#action#signature#handle",[], 60)
       endif
     endif
     return "\<C-Y>"

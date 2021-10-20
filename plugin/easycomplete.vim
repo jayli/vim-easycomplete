@@ -108,6 +108,7 @@ augroup easycomplete#PluginRegister
       \ 'command': 'css-languageserver',
       \ 'semantic_triggers':['[^:]:$']
       \  })
+
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
       \ 'whitelist': ['html'],
