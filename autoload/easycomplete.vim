@@ -1019,7 +1019,7 @@ function! easycomplete#TypeEnterWithPUM()
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
       call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
       if easycomplete#ok('g:easycomplete_signature_enable')
-        call s:AsyncRun("easycomplete#action#signature#handle",[], 60)
+        call s:AsyncRun("easycomplete#action#signature#do",[], 60)
       endif
     endif
     return "\<C-Y>"
@@ -1110,7 +1110,9 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
-  if s:zizzing() | return | endif
+  if !s:CheckCompleteTastQueueAllDone()
+    if s:zizzing() | return | endif
+  endif
   if s:NotInsertMode() | return |endif
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
@@ -1152,6 +1154,16 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   if g:env_is_vim
     call easycomplete#popup#close("popup")
   endif
+endfunction
+
+function! s:EchoLspMenuItems()
+  let ret = []
+  for item in g:easycomplete_menuitems
+    if item.menu == "[TS]"
+      call add(ret, item.word)
+    endif
+  endfor
+  return ret
 endfunction
 
 function! s:CombineAllMenuitems()
