@@ -283,6 +283,7 @@ command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
+" inoremap <expr> <BS> easycomplete#BackSpace()
 inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=seasycomplete#CleverTab()<cr>
 inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=seasycomplete#CleverShiftTab()<cr>
 inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>

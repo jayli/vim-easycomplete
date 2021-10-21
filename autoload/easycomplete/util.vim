@@ -1138,7 +1138,7 @@ function! easycomplete#util#LspType(c_type)
   return l:type
 endfunction
 " }}}
-"
+" FunctionSurffixMap {{{
 function! easycomplete#util#FunctionSurffixMap(key, val)
   let is_func = (get(a:val,'kind_number') == 3 || get(a:val,'kind_number') == 2)
   let kind = exists('a:val.kind') ? a:val.kind : ""
@@ -1170,7 +1170,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
     endif
   endif
   return ret
-endfunction
+endfunction " }}}
 
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)

@@ -533,8 +533,14 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    let delay = len(g:easycomplete_stunt_menuitems) > 180 ? 20 : 7
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
+    " let delay = len(g:easycomplete_stunt_menuitems) > 180 ? 20 : 7
+    if len(g:easycomplete_stunt_menuitems) > 180
+      call s:AsyncRun(function('s:CompleteMatchAction'), [], 20)
+    elseif !empty($ITERM_PROFILE) " is iterm2
+      call s:CompleteMatchAction()
+    else
+      call s:AsyncRun(function('s:CompleteMatchAction'), [], 8)
+    endif
   endif
 endfunction
 
@@ -546,35 +552,45 @@ function! s:ResetInsertChar()
   let g:easycomplete_insert_char = ""
 endfunction
 
+function! s:BackingCompleteHandler()
+  let g:easycomplete_backing = 1
+  let g:easycomplete_stunt_menuitems = []
+  call s:zizz()
+  let ctx = easycomplete#context()
+  if empty(ctx["typing"]) || empty(ctx['char'])
+        \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
+    silent! noa call s:CloseCompletionMenu()
+    call s:flush()
+  else
+    let g:easycomplete_stunt_menuitems = []
+    if !empty(g:easycomplete_menuitems)
+      call s:StopAsyncRun()
+      let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
+      silent! noa call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
+            \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
+    endif
+  endif
+endfunction
+
+function! easycomplete#BackSpace()
+  return "\<BS>"
+endfunction
+
+
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
   if s:BackChecking()
     let g:easycomplete_backing = 1
-    let g:easycomplete_stunt_menuitems = []
-    call s:zizz()
-    let ctx = easycomplete#context()
-    if empty(ctx["typing"]) || empty(ctx['char'])
-          \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
-      noa call s:CloseCompletionMenu()
-      call s:flush()
-      return ""
-    endif
-    let g:easycomplete_stunt_menuitems = []
-    if !empty(g:easycomplete_menuitems)
-      call s:StopAsyncRun()
-      let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
-      silent noa call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
-            \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
-    endif
+    silent call s:BackingCompleteHandler()
     return ""
   else
     let g:easycomplete_backing = 0
   endif
 
   " 判断是否是 C-V 粘贴
-  call s:AsyncRun(function('s:ResetInsertChar'), [], 10)
+  call s:AsyncRun(function('s:ResetInsertChar'), [], 30)
   if empty(g:easycomplete_insert_char)
     return ""
   endif
@@ -1246,9 +1262,9 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 endfunction
 
 function! easycomplete#refresh()
-  silent! noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
+  silent noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
         \ get(g:easycomplete_complete_ctx, 'candidates', []))
-  silent call easycomplete#popup#overlay()
+  noa call easycomplete#popup#overlay()
   return ''
 endfunction
 
@@ -1258,7 +1274,7 @@ function! easycomplete#_complete(start, items)
         \ 'start': a:start,
         \ 'candidates': a:items,
         \}
-  if mode() =~# 'i'
+  if mode() =~# 'i' && &paste != 1
     silent noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
   endif
 endfunction
