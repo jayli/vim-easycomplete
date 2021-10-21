@@ -9,8 +9,8 @@ let g:easycomplete_diagnostics_last_popup = ""
 let g:easycomplete_diagnostics_config = {
       \ 'error':       {'type': 1, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
       \ 'warning':     {'type': 2, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow', "hl": 'WarningMsg'},
-      \ 'information': {'type': 3, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
-      \ 'hint':        {'type': 4, 'prompt_text': '>>', 'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
+      \ 'information': {'type': 3, 'prompt_text': 'M',  'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
+      \ 'hint':        {'type': 4, 'prompt_text': 'H',  'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
       \ }
 
 function! easycomplete#sign#test()
