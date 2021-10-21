@@ -533,14 +533,9 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     let g:easycomplete_start = reltime()
-    " let delay = len(g:easycomplete_stunt_menuitems) > 180 ? 20 : 7
-    if len(g:easycomplete_stunt_menuitems) > 180
-      call s:AsyncRun(function('s:CompleteMatchAction'), [], 20)
-    elseif !empty($ITERM_PROFILE) " is iterm2
-      call s:CompleteMatchAction()
-    else
-      call s:AsyncRun(function('s:CompleteMatchAction'), [], 8)
-    endif
+    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 7)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
   endif
 endfunction
 
@@ -576,14 +571,15 @@ function! easycomplete#BackSpace()
   return "\<BS>"
 endfunction
 
-
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
   let g:easycomplete_start = reltime()
   if s:BackChecking()
     let g:easycomplete_backing = 1
-    silent call s:BackingCompleteHandler()
+    " TODO 如果是后退，这里 pumvisible() 为0，再执行 BackingCompleteHandler 会
+    " 有一次闪烁
+    " call s:BackingCompleteHandler()
     return ""
   else
     let g:easycomplete_backing = 0
@@ -1262,6 +1258,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 endfunction
 
 function! easycomplete#refresh()
+  call s:StopAsyncRun()
   silent noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
         \ get(g:easycomplete_complete_ctx, 'candidates', []))
   noa call easycomplete#popup#overlay()

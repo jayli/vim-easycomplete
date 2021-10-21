@@ -12,10 +12,10 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
       \   'vimruntime': expand($VIMRUNTIME),
       \   'runtimepath': &rtp,
       \   'iskeyword': '@,48-57,_,192-255,-#',
-      \   'indexes':{'runtime':v:true, 'gap':100, 'count':3, 'runtimepath': v:true},
+      \   'indexes':{'runtime':v:true, 'gap':1, 'count':10, 'runtimepath': v:false},
       \   "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"],
       \   'diagnostic': {"enable": v:true},
-      \   'suggest': { 'fromVimruntime': v:true, 'fromRuntimepath': v:false}
+      \   'suggest': { 'fromVimruntime': v:false, 'fromRuntimepath': v:false}
       \ }
       \ })
 endfunction
