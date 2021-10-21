@@ -228,7 +228,7 @@ function! s:CompleteTypingMatch(...)
   else
     let local_menuitems = deepcopy(g:easycomplete_menuitems)
   endif
-  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 400)
+  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 200)
   if len(filtered_menu) == 0
     call s:CloseCompletionMenu()
     let g:easycomplete_stunt_menuitems = []
@@ -1236,7 +1236,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 900)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 800)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
@@ -1258,7 +1258,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 endfunction
 
 function! easycomplete#refresh()
-  call s:StopAsyncRun()
   silent noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
         \ get(g:easycomplete_complete_ctx, 'candidates', []))
   noa call easycomplete#popup#overlay()
