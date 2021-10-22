@@ -90,8 +90,9 @@ function! easycomplete#Enable()
     call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
+    call timer_start(1600, { -> easycomplete#lint() })
   endif
-  call s:AsyncRun(function('easycomplete#AutoLoadDict'), [], 100)
+  call timer_start(100, { -> easycomplete#AutoLoadDict() })
 endfunction
 
 function! s:InitLocalVars()
