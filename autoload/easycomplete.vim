@@ -90,7 +90,6 @@ function! easycomplete#Enable()
     call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
-    call timer_start(1600, { -> easycomplete#lint() })
   endif
   call timer_start(100, { -> easycomplete#AutoLoadDict() })
 endfunction
@@ -1680,5 +1679,11 @@ endfunction
 
 function! easycomplete#InsertEnter()
   call easycomplete#sign#DiagHoverFlush()
+endfunction
+
+function! easycomplete#BufEnter()
+  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call timer_start(1600, { -> easycomplete#lint() })
+  endif
 endfunction
 

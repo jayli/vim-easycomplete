@@ -255,6 +255,7 @@ augroup easycomplete#NormalBinding
   autocmd!
   autocmd BufWritePost * call easycomplete#BufWritePost()
   autocmd CursorMoved * call easycomplete#CursorMoved()
+  autocmd BufEnter * call easycomplete#BufEnter()
   " FirstComplete Entry
   autocmd TextChangedI * call easycomplete#TextChangedI()
   autocmd TextChanged * call easycomplete#Textchanged()
