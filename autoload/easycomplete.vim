@@ -9,7 +9,6 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -17,40 +16,30 @@ endfunction
 let g:easycomplete_source  = {}
 " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
 let g:easycomplete_menucache = {}
-
 " 匹配过程中的全量匹配数据，CompleteDone 后置空
 let g:easycomplete_menuitems = []
-
 " 显示 complete menu 所需的临时 items，根据 maxlength 截断
 let g:easycomplete_complete_ctx = {}
-
 " 隐式匹配菜单所需的临时 items，缓存全量匹配菜单数据，用以给
 " SecondComplete 提速用
 let g:easycomplete_stunt_menuitems= []
-
 " 保存 v:event.complete_item, 判断是否 pum 处于选中状态
 let g:easycomplete_completed_item = {}
-
 " 全局时间的标记，性能统计时用
 let g:easycomplete_start = reltime()
-
 " HACK: 当从 pum 最后一项继续 tab 到第一项时，此时也应当避免发生 completedone
 " 需要选择匹配项过程中的过程变量 ctx 暂存下来
 let g:easycomplete_firstcomplete_ctx = {}
-
 " 和 YCM 一样，用做 FirstComplete 标志位
 let g:easycomplete_first_complete_hit = 0
-
 " 菜单显示最大 item 数量，默认和 coc 保持一致
 " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
 let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
-
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
-
+let g:easycomplete_diagnostics_render_delay = 200
 " 用来判断是否是 c-v 粘贴
 let g:easycomplete_insert_char = ''
-
 " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单
 " [
 "   {
@@ -65,14 +54,11 @@ let g:easycomplete_popup_width = 50
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
 let g:easycomplete_backing = 0
-
 " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
 " zizz 标志位
 let g:easycomplete_backing_or_cr = 0
-
 " 用作 FirstComplete TaskQueue 回调的定时器
 let s:first_render_timer = 0
-
 " FirstCompleteRendering 中 LSP 的超时时间
 let g:easycomplete_first_render_delay = 1500
 
@@ -273,15 +259,15 @@ function! easycomplete#CompleteDone()
 endfunction
 
 function! easycomplete#InsertLeave()
+  if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    call easycomplete#lint()
+    call easycomplete#sign#LintCurrentLine()
+  endif
   if s:zizzing()
     return
   endif
   call easycomplete#popup#InsertLeave()
   call s:flush()
-  if easycomplete#ok('g:easycomplete_diagnostics_enable')
-    call easycomplete#lint()
-    call easycomplete#sign#LintCurrentLine()
-  endif
 endfunction
 
 function! easycomplete#flush()
@@ -531,10 +517,9 @@ function! easycomplete#TextChangedP()
       return
     endif
     let g:easycomplete_start = reltime()
-    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 5)
-    " call s:StopAsyncRun()
-    " call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
-    call s:CompleteMatchAction()
+    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 4)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
   endif
 endfunction
 
@@ -1071,7 +1056,8 @@ endfunction
 " close pum
 function! s:CloseCompletionMenu()
   if pumvisible()
-    call s:SendKeys("\<ESC>a")
+    silent! noa call s:SendKeys("\<C-Y>")
+    call s:zizz()
   endif
   call s:ResetCompletedItem()
 endfunction
@@ -1640,6 +1626,7 @@ function! easycomplete#ok(str)
   return flag
 endfunction
 
+" v:true 立即渲染，v:false 延时渲染
 function! easycomplete#lint()
   call easycomplete#action#diagnostics#do()
 endfunction
@@ -1686,8 +1673,8 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! easycomplete#Textchanged()
-  call easycomplete#sign#DiagHoverFlush()
-  call easycomplete#lint()
+  "call easycomplete#sign#DiagHoverFlush()
+  "call easycomplete#lint()
 endfunction
 
 function! easycomplete#InsertEnter()
