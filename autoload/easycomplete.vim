@@ -243,15 +243,15 @@ function! s:CompleteTypingMatch(...)
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
-  let tmp_menuitems = deepcopy(a:easycomplete_menuitems)
-  let g:easycomplete_stunt_menuitems = deepcopy(a:menuitems)
+  let tmp_menuitems = copy(a:easycomplete_menuitems)
+  let g:easycomplete_stunt_menuitems = copy(a:menuitems)
   let result = a:menuitems[0 : g:easycomplete_maxlength]
-  let result = easycomplete#util#distinct(result)
+  " let result = easycomplete#util#distinct(result)
   if len(result) <= 10
     let result = easycomplete#util#uniq(result)
   endif
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
-  call s:zizz()
+  " call s:zizz()
   call easycomplete#_complete(a:start_pos, result)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
@@ -1234,7 +1234,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 800)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
@@ -1491,6 +1491,7 @@ function! s:ResetCompleteCache()
 endfunction
 
 function! s:AddCompleteCache(word, menulist)
+  return
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
@@ -1542,6 +1543,9 @@ function s:zizzing()
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
+  if !has_key(a:ctx1, 'lnum') || !has_key(a:ctx2, 'lnum')
+    return v:false
+  endif
   if a:ctx1["lnum"] == a:ctx2["lnum"]
         \ && a:ctx1["col"] == a:ctx2["col"]
         \ && a:ctx1["typing"] ==# a:ctx2["typing"]

@@ -983,7 +983,13 @@ endfunction
 
 function! easycomplete#util#trace()
   let stack = expand('<stack>')
-  let fn = "<SNR>95_FirstCompleteRendering[31]"
+  let stack_list = split(stack, "\\.\\.")
+  if len(stack_list) <= 2
+    call s:console('easycomplete#util#trace', expand('<stack>'))
+    return
+  endif
+  let ret = stack_list[-2]
+  call s:console(ret, "|", expand('<stack>'))
 endfunction
 
 function! s:GetItemWord(item)
@@ -1143,6 +1149,7 @@ function! easycomplete#util#LspType(c_type)
   return l:type
 endfunction
 " }}}
+
 " FunctionSurffixMap {{{
 function! easycomplete#util#FunctionSurffixMap(key, val)
   let is_func = (get(a:val,'kind_number') == 3 || get(a:val,'kind_number') == 2)
