@@ -981,6 +981,11 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   return filtered_menu
 endfunction
 
+function! easycomplete#util#trace()
+  let stack = expand('<stack>')
+  let fn = "<SNR>95_FirstCompleteRendering[31]"
+endfunction
+
 function! s:GetItemWord(item)
   let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
   let t_str = easycomplete#util#TrimWavyLine(t_str)

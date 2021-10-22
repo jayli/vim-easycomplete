@@ -215,12 +215,6 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
-  if s:OrigionalPosition()
-    call s:CloseCompletionMenu()
-    call s:flush()
-    return
-  endif
-
   let word = exists('a:1') ? a:1 : s:GetTypingWord()
   let local_menuitems = []
   if !empty(g:easycomplete_stunt_menuitems)
@@ -532,6 +526,10 @@ endfunction
 
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
+    " 躲过 FirstComplete
+    if s:OrigionalPosition()
+      return
+    endif
     let g:easycomplete_start = reltime()
     let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 7)
     call s:StopAsyncRun()
@@ -1243,7 +1241,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
       endif
-      call s:zizz()
+      " call s:zizz()
       call easycomplete#_complete(a:start_pos, result)
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
@@ -1544,12 +1542,6 @@ function s:zizzing()
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
-  if type(a:ctx1) != type({}) || type(a:ctx2) != type({})
-    return v:false
-  endif
-  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
-    return v:false
-  endif
   if a:ctx1["lnum"] == a:ctx2["lnum"]
         \ && a:ctx1["col"] == a:ctx2["col"]
         \ && a:ctx1["typing"] ==# a:ctx2["typing"]
