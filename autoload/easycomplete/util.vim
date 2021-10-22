@@ -951,6 +951,11 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
       endif
     endwhile
 
+    if l:count + len(otherwise_fuzzymatching) > a:maxlength
+      let maxlength = l:count + len(otherwise_fuzzymatching)
+    else
+      let maxlength = a:maxlength
+    endif
     " 再把模糊匹配的结果找出来
     while l:count < len(all_items)
       let item = all_items[l:count]
@@ -960,7 +965,7 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
       endif
       let l:count += 1
       if strlen(item_word) < strlen(a:word) | continue | endif
-      if count_index > a:maxlength | break | endif
+      if count_index > maxlength | break | endif
       if easycomplete#util#FuzzySearch(word, item_word)
         call add(otherwise_fuzzymatching, item)
         let count_index += 1
@@ -968,11 +973,9 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
         call add(otherwise_matching_menu, item)
       endif
     endwhile
-
     if len(easycomplete#GetStuntMenuItems()) == 0
       call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
     endif
-
     let result = original_matching_menu + otherwise_fuzzymatching
     let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
   catch

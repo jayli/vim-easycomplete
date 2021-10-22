@@ -9,6 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -220,7 +221,7 @@ function! s:CompleteTypingMatch(...)
   if !empty(g:easycomplete_stunt_menuitems)
     let local_menuitems = g:easycomplete_stunt_menuitems
   else
-    let local_menuitems = deepcopy(g:easycomplete_menuitems)
+    let local_menuitems = g:easycomplete_menuitems
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 200)
   if len(filtered_menu) == 0
@@ -246,8 +247,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   let tmp_menuitems = copy(a:easycomplete_menuitems)
   let g:easycomplete_stunt_menuitems = copy(a:menuitems)
   let result = a:menuitems[0 : g:easycomplete_maxlength]
-  " let result = easycomplete#util#distinct(result)
-  if len(result) <= 10
+  if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
@@ -531,9 +531,10 @@ function! easycomplete#TextChangedP()
       return
     endif
     let g:easycomplete_start = reltime()
-    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 7)
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
+    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 5)
+    " call s:StopAsyncRun()
+    " call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
+    call s:CompleteMatchAction()
   endif
 endfunction
 
@@ -1234,7 +1235,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 400)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
