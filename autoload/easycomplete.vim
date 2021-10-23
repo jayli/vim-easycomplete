@@ -649,7 +649,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 30
+    let word_first_type_delay = 90
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
