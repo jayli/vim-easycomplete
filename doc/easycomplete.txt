@@ -13,7 +13,7 @@ Vim-Easycomplete is a fast code completion plugin for vim/nvim. In order to
 provide the best performance and experience. I remove all non-essential
 requirements and environment dependencies so that it has minimum redundancy.
 
-It requires vim script only, and you don't even have to add one line of 
+It requires vim script only, and you don't even have to add one line of
 configuration if you want. It's definitely a minimalism style plugin.
 
 Vim-Easycomplete is easy to install and use. It contains these features:
@@ -55,7 +55,7 @@ for jumping back (Same as tags jumping).
 Or you can use `:EasyCompleteGotoDefinition` command.
 
 Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for
-diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>`>
+diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>` >
 
   nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
   nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
@@ -73,16 +73,16 @@ Typing `:h easycomplete` for help.
 All commands:
 
 | Command                           | Description                              |
-|-----------------------------------|------------------------------------------|
-| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
-| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
-| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
-| `:EasyCompleteCheck`              | Checking LSP server                      |
-| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
-| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
-| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
-| `:EasyCompleteLint`               | Do diagnostic                            |
+| --------------------------------- | ---------------------------------------- |
+| :EasyCompleteInstallServer        | Install LSP server for current fileytpe  |
+| :InstallLspServer                 | Same as EasyCompleteInstallServer        |
+| :EasyCompleteGotoDefinition       | Goto definition position                 |
+| :EasyCompleteCheck                | Checking LSP server                      |
+| :EasyCompletePreviousDiagnostic   | Goto Previous diagnostic                 |
+| :EasyCompleteNextDiagnostic       | Goto Next diagnostic                     |
+| :EasyCompleteProfileStart         | Start record diagnostics message         |
+| :EasyCompleteProfileStop          | Stop record diagnostics  message         |
+| :EasyCompleteLint                 | Do diagnostic                            |
 
 ===============================================================================
 
