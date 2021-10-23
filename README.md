@@ -72,6 +72,10 @@ Typing `./` or `../` to trigger directory completion suggestion.
 
 Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if you need.
 
+Vim-Easycomplete also support signature popup:
+
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01dzWiPR2AEpMYNF1b1_!!6000000008172-2-tps-1350-402.png" width=680 />
+
 Typing `:h easycomplete` for help.
 
 All commands:
