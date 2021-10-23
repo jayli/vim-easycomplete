@@ -132,7 +132,7 @@ function! s:BindingTypingCommandOnce()
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   " TODO 不生效
   " inoremap <Tab> <Plug>EasycompleteTabTrigger
-  " 重定向 Tag 的跳转按键绑定
+  " 重定向 Tag 的跳转按键绑定，和默认<c-]>功能一致
   nnoremap <silent> <c-]> :EasyCompleteGotoDefinition<CR>
 endfunction
 
@@ -209,7 +209,7 @@ function! s:CompleteTypingMatch(...)
   else
     let local_menuitems = g:easycomplete_menuitems
   endif
-  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 200)
+  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 300)
   if len(filtered_menu) == 0
     call s:CloseCompletionMenu()
     let g:easycomplete_stunt_menuitems = []
@@ -1221,7 +1221,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 400)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 600)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
