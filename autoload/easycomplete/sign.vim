@@ -47,7 +47,6 @@ function! easycomplete#sign#test()
         \    ]
         \  }
         \ }
-  call easycomplete#sign#hold()
   call easycomplete#sign#flush()
   call easycomplete#sign#cache(res)
   call easycomplete#sign#render()
@@ -83,18 +82,13 @@ function! easycomplete#sign#flush()
   if get(g:, 'easycomplete_sources_ts', 0) != 1 && empty(server_info['server_names'])
     return
   endif
-  let cache = g:easycomplete_diagnostics_cache[easycomplete#util#GetCurrentFullName()]
+  let g:easycomplete_diagnostics_cache[easycomplete#util#GetCurrentFullName()] = {}
+endfunction
+
+function! easycomplete#sign#ClearSign()
   " let lsp_server = server_info['server_names'][0]
   " file:///...
-  let diagnostics_uri = cache['params']['uri']
-  let diagnostics_list = cache['params']['diagnostics']
-  let fn = easycomplete#util#TrimFileName(easycomplete#util#GetFullName(diagnostics_uri))
-  let l:count = 1
-  while l:count <= len(diagnostics_list)
-    call execute("sign unplace " . l:count . " file=" . fn)
-    let l:count += 1
-  endwhile
-  let g:easycomplete_diagnostics_cache[easycomplete#util#GetCurrentFullName()] = {}
+  call execute("sign unplace * group=g999 file=" . expand("%:p"))
 endfunction
 
 function! easycomplete#sign#normalize(opt_config)
@@ -277,6 +271,7 @@ function! easycomplete#sign#hold()
   let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   if easycomplete#sign#DiagnosticsIsEmpty(diagnostics)
     call easycomplete#sign#flush()
+    call easycomplete#sign#ClearSign()
   else
     let cache = get(g:easycomplete_diagnostics_cache, easycomplete#util#GetCurrentFullName(), {})
     let uri = cache['params']['uri']
@@ -392,6 +387,8 @@ function! easycomplete#sign#render(...)
   if exists("a:1")
     call easycomplete#sign#cache(a:1)
   endif
+  call easycomplete#sign#hold()
+  call easycomplete#sign#ClearSign()
   let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   if easycomplete#sign#DiagnosticsIsEmpty(diagnostics)
     call easycomplete#sign#unhold()
@@ -415,7 +412,7 @@ function! easycomplete#sign#render(...)
     endif
     " sign place 1 line=10 name=error_holder file=/Users/bachi/ttt/ttt.vim
     let fn = easycomplete#util#TrimFileName(uri)
-    let cmd = printf('sign place %s line=%s name=%s file=%s',
+    let cmd = printf('sign place %s group=g999 line=%s name=%s file=%s',
           \ l:count,
           \ line,
           \ s:GetSignStyle(severity),

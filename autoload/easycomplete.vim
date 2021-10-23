@@ -91,7 +91,7 @@ function! easycomplete#Enable()
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
-  call timer_start(100, { -> easycomplete#AutoLoadDict() })
+  call timer_start(300, { -> easycomplete#AutoLoadDict() })
 endfunction
 
 function! s:InitLocalVars()
