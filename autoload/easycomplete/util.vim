@@ -977,7 +977,8 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
       call sort(original_matching_menu, "easycomplete#util#SortTextComparatorByLength")
     endif
     let result = original_matching_menu + otherwise_fuzzymatching
-    let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
+    let filtered_menu = result
+    " let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
   catch
     call s:log(v:exception)
   endtry

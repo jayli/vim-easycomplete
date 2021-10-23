@@ -649,7 +649,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 80
+    let word_first_type_delay = 30
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -885,6 +885,7 @@ function! easycomplete#CompleteChanged()
     call s:CloseCompleteInfo()
     return
   endif
+  let b:typing_ctx = easycomplete#context()
   call easycomplete#ShowCompleteInfoByItem(item)
 endfunction
 
@@ -1223,6 +1224,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     if !should_stop_render
       let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 600)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
+      let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
       if len(result) <= 10
