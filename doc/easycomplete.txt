@@ -1,6 +1,6 @@
 *easycomplete.txt*		Vim-EasyComplete Plugin
 
-			Copyright (c) 2020-2021 @Jayli
+			Copyright (c) 2020-2022 @Jayli
 	More Info: <https://github.com/jayli/vim-easycomplete>
 
 EasyComplete                                                     *easycomplete*
@@ -9,21 +9,23 @@ EasyComplete                                                     *easycomplete*
 
 Introduction
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim. In order
-to provide the best performance and experience. I remove all non-essential
+Vim-Easycomplete is a fast code completion plugin for vim/nvim. In order to
+provide the best performance and experience. I remove all non-essential
 requirements and environment dependencies so that it has minimum redundancy.
 
 It requires vim script only, and you don't even have to add one line of 
-configuration if you want.
+configuration if you want. It's definitely a minimalism style plugin.
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
 - Buffer keywords and dictionary support
 - Directory and file completion support
 - Goto definition support for all languages
-- Full LSP support
+- Language lint with diagnostic
+- Signature helper
+- LSP support
 - LSP Server installation with one command
-- Snippet support with ultisnips.
+- Snippet support with ultisnips. (python3 required)
 
 ===============================================================================
 
@@ -39,8 +41,8 @@ It use Tab to trigger completion suggestions. You can change this setting by
   let g:easycomplete_tab_trigger="<c-space>"
 
 There are four build-in popup menu themes for default styles confliction: `dark`,
-`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be 
-ignored in most cases.
+`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). This config 
+can be ignored in most cases.
 
 ===============================================================================
 
@@ -51,6 +53,12 @@ Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t`
 for jumping back (Same as tags jumping). 
 
 Or you can use `:EasyCompleteGotoDefinition` command.
+
+Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for
+diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>`>
+
+  nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
+  nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
 
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP
 Server is not ready, Use `:EasyCompleteInstallServer` to install.
@@ -64,13 +72,17 @@ Typing `:h easycomplete` for help.
 
 All commands:
 
-| Command                       | Description                              | 
-| ----------------------------- | ---------------------------------------- |
-| `:EasyCompleteInstallServer`    | Install LSP server for current fileytpe  |
-| `:EasyCompleteGotoDefinition`   | Goto definition position                 |
-| `:EasyCompleteCheck`            | Checking LSP server                      |
-| `:EasyCompleteProfileStart`     | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`      | Stop record diagnostics  message         |
+| Command                           | Description                              |
+|-----------------------------------|------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
+| `:EasyCompleteCheck`              | Checking LSP server                      |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
+| `:EasyCompleteLint`               | Do diagnostic                            |
 
 ===============================================================================
 
@@ -94,27 +106,31 @@ All supported languages:
 
 | Plugin Name | Languages             | Language Server        | Installer |
 | ----------- | --------------------- | ---------------------- | --------- |
-| directory   | directory suggestion  | No Need                | No        |
-| buf         | keywords & dictionary | No Need                | No        |
+| directory   | directory suggestion  | No Need                | No Need   |
+| buf         | keywords & dictionary | No Need                | No Need   |
+| snips       | Snippets Support      | ultisnips/vim-snippets | No        |
 | ts          | JavaScript/TypeScript | tsserver               | Yes       |
 | vim         | Vim                   | vim-language-server    | Yes       |
 | cpp         | C/C++                 | ccls                   | Yes       |
 | css         | CSS                   | css-languageserver     | Yes       |
-| html        | html                  | html-languageserver    | Yes       |
+| html        | HTML                  | html-languageserver    | Yes       |
+| yml         | YAML                  | yaml-language-server   | Yes       |
+| xml         | Xml                   | lemminx                | Yes       |
 | sh          | Bash                  | bash-language-server   | Yes       |
 | json        | JSON                  | json-languageserver    | Yes       |
-| yml         | Yaml                  | yaml-language-server   | Yes       |
 | py          | Python                | pyls                   | Yes       |
 | java        | Java                  | eclipse-jdt-ls         | Yes       |
 | go          | Go                    | gopls                  | Yes       |
 | rb          | Ruby                  | solargraph             | Yes       |
 | lua         | Lua                   | emmylua-ls             | Yes       |
 | nim         | Nim                   | nimlsp                 | Yes       |
-| grvy        | groovy                | groovy-language-server | Yes       |
-| snips       | Snippets Support      | ultisnips/vim-snippets | No        |
+| rust        | Rust                  | rust-analyzer          | Yes       |
+| kt          | Kotlin                | kotlin-language-server | Yes       |
+| grvy        | Groovy                | groovy-language-server | Yes       |
+| cmake       | cmake                 | cmake-language-server  | Yes       |
 
-EasyComplete needs ultisnips and vim-snippets for snippets support. This
-two plugin is compatible with EasyComplete out of the box. Install with
+EasyComplete needs ultisnips and vim-snippets for snippets support if you want.
+This two plugin is compatible with EasyComplete out of the box. Install with
 vim-plug: >
 
   Plug 'SirVer/ultisnips'

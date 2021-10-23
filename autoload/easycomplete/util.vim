@@ -899,12 +899,6 @@ endfunction " }}}
 " maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
 " 匹配精度保障性能，防止 all_menu 过大时过滤耗时太久，一般设在 500
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
-  return s:CompleteMenuFilterVim(a:all_menu, a:word, a:maxlength)
-  " TODO 性能优化
-  return easycomplete#python#CompleteMenuFilterPy(a:all_menu, a:word, a:maxlength)
-endfunction
-
-function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   try 
     let word = a:word
     if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -928,23 +922,25 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
     let dam = 100
     let regx_com_times = 0
     let count_index = 0
-    let all_items = deepcopy(a:all_menu)
+    let all_items = a:all_menu
+    let all_items_length = len(all_items)
+    let word_length = strlen(a:word)
 
     " 先找到全部匹配的列表
     let l:count = 0
-    while count_index < dam && l:count < len(all_items)
+    while count_index < dam && l:count < all_items_length
       let item = all_items[l:count]
       let item_word = s:GetItemWord(item)
       if a:word[0] != "_" && item_word[0] == "_"
         let item_word = substitute(item_word, "_\\+", "", "")
       endif
       let l:count += 1
-      if strlen(item_word) < strlen(a:word) | continue | endif
+      if strlen(item_word) < word_length | continue | endif
       let regx_com_times += 1
       if stridx(item_word, word) == 0
         call add(original_matching_menu, item)
         let count_index += 1
-      elseif easycomplete#util#FuzzySearch(word, item_word)
+      elseif s:FuzzySearchRegx(word, item_word)
         call add(otherwise_fuzzymatching, item)
       else
         call add(otherwise_matching_menu, item)
@@ -957,16 +953,16 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
       let maxlength = a:maxlength
     endif
     " 再把模糊匹配的结果找出来
-    while l:count < len(all_items)
+    while l:count < all_items_length
       let item = all_items[l:count]
       let item_word = s:GetItemWord(item)
       if a:word[0] != "_" && item_word[0] == "_"
         let item_word = substitute(item_word, "_\\+", "", "")
       endif
       let l:count += 1
-      if strlen(item_word) < strlen(a:word) | continue | endif
+      if strlen(item_word) < word_length | continue | endif
       if count_index > maxlength | break | endif
-      if easycomplete#util#FuzzySearch(word, item_word)
+      if s:FuzzySearchRegx(word, item_word)
         call add(otherwise_fuzzymatching, item)
         let count_index += 1
       else
@@ -998,8 +994,12 @@ function! easycomplete#util#trace(...)
 endfunction
 
 function! s:GetItemWord(item)
+  if has_key(a:item, "matching_word")
+    return a:item["matching_word"]
+  endif
   let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
   let t_str = easycomplete#util#TrimWavyLine(t_str)
+  let a:item['matching_word'] = t_str
   return t_str
 endfunction
 

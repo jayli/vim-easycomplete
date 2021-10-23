@@ -6,7 +6,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a minimalism style completion plugin for vim/nvim, providing the best performance and experience. I remove all non-essential requirements and env dependencies. It requires viml only, and you don't even have to add one line of configuration if you want.
+Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin. 
 
 ![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
 
@@ -60,7 +60,11 @@ nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
 nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
 ```
 
-Use `let g:easycomplete_diagnostics_enable = 0` to disable language diagnostics.
+Press `<C-j>` or `<C-k>` for diagnostics jumping like this:
+
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
+
+Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
 
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
 
@@ -82,6 +86,7 @@ All commands:
 | `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
 | `:EasyCompleteProfileStart`       | Start record diagnostics message         |
 | `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
+| `:EasyCompleteLint`               | Do diagnostic                            |
 
 ### Language Support
 

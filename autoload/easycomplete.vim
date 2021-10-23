@@ -374,9 +374,6 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   endif
   let l:ctx = easycomplete#context()
   if !s:SameCtx(a:ctx, l:ctx)
-    if s:CompleteSourceReady(a:name)
-      call easycomplete#nill()
-    endif
     return
   endif
   call s:SetCompleteTaskQueue(a:name, l:ctx, 1, 1)
@@ -445,11 +442,9 @@ function! s:NormalTrigger()
   if s:zizzing() && index([":",".","_","/",">"], l:char) < 0
     return v:false
   endif
-
   " if s:PythonColonTyping()
   "   return v:false
   " endif
-
   let binding_keys = easycomplete#GetBindingKeys()
   if index(easycomplete#util#str2list(binding_keys), char2nr(l:char)) >= 0
     return v:true
@@ -1246,8 +1241,12 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 endfunction
 
 function! easycomplete#refresh()
-  silent noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
-        \ get(g:easycomplete_complete_ctx, 'candidates', []))
+  try
+    noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
+          \ get(g:easycomplete_complete_ctx, 'candidates', []))
+  catch
+    echom v:exception
+  endtry
   noa call easycomplete#popup#overlay()
   return ''
 endfunction
