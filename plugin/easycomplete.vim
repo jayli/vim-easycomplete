@@ -288,5 +288,6 @@ inoremap <expr> <Down> easycomplete#Down()
 inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=seasycomplete#CleverTab()<cr>
 inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=seasycomplete#CleverShiftTab()<cr>
 inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
+inoremap <silent> <Plug>EasycompleteNill <C-r>=easycomplete#nill()<CR>
 inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
 

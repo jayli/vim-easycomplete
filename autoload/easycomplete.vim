@@ -102,12 +102,19 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
   let b:typing_ctx = easycomplete#context()
-  setlocal completeopt-=menu
-  setlocal completeopt+=menuone
-  setlocal completeopt+=noselect
-  setlocal completeopt-=popup
-  setlocal completeopt-=preview
-  setlocal completeopt-=longest
+  " setlocal completeopt+=menu
+  " setlocal completeopt-=preview
+  " setlocal completeopt-=menuone
+  " setlocal completeopt+=noselect
+  " setlocal completeopt-=popup
+  " setlocal completeopt-=longest
+  setlocal completeopt=menuone,noinsert,noselect
+  " setlocal completeopt-=menu
+  " setlocal completeopt+=menuone
+  " setlocal completeopt+=noselect
+  " setlocal completeopt-=popup
+  " setlocal completeopt-=preview
+  " setlocal completeopt-=longest
   setlocal cpoptions+=B
 endfunction
 
@@ -1242,8 +1249,9 @@ endfunction
 
 function! easycomplete#refresh()
   try
-    noa call complete(get(g:easycomplete_complete_ctx, 'start', col('.')),
-          \ get(g:easycomplete_complete_ctx, 'candidates', []))
+    let start = get(g:easycomplete_complete_ctx, 'start', col('.'))
+    let candidates = get(g:easycomplete_complete_ctx, 'candidates', [])
+    silent! noa call complete(start, candidates)
   catch
     echom v:exception
   endtry
@@ -1425,7 +1433,7 @@ function! s:SnipSupports()
 endfunction
 
 function! easycomplete#nill() abort
-  return v:null " DO NOTHING
+  return ''
 endfunction
 
 function! easycomplete#GetStuntMenuItems()
