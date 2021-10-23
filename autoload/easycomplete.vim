@@ -209,7 +209,7 @@ function! s:CompleteTypingMatch(...)
   else
     let local_menuitems = g:easycomplete_menuitems
   endif
-  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 300)
+  let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
     call s:CloseCompletionMenu()
     let g:easycomplete_stunt_menuitems = []
