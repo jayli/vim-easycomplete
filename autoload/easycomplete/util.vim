@@ -984,7 +984,8 @@ function! s:CompleteMenuFilterVim(all_menu, word, maxlength)
   return filtered_menu
 endfunction
 
-function! easycomplete#util#trace()
+function! easycomplete#util#trace(...)
+  let name = exists('a:1') ? a:1 : ""
   let stack = expand('<stack>')
   let stack_list = split(stack, "\\.\\.")
   if len(stack_list) <= 2
@@ -992,7 +993,7 @@ function! easycomplete#util#trace()
     return
   endif
   let ret = stack_list[-2]
-  call s:console(ret, "|", expand('<stack>'))
+  call s:console(name, ret, "|", expand('<stack>'))
 endfunction
 
 function! s:GetItemWord(item)

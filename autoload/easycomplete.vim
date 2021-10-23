@@ -513,7 +513,8 @@ endfunction
 function! easycomplete#TextChangedP()
   if pumvisible() && !s:zizzing()
     " 躲过 FirstComplete
-    if s:OrigionalPosition()
+    " 同时判断是否已经发生过了 firstCompleteHit
+    if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
       return
     endif
     let g:easycomplete_start = reltime()
@@ -648,7 +649,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 50
+    let word_first_type_delay = 80
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -1172,7 +1173,6 @@ function! s:CombineAllMenuitems()
 endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
-  call s:AsyncRun(function('s:SetFirstCompeleHit'), [], 5)
   if s:zizzing() | return | endif
   if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
@@ -1230,6 +1230,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       endif
       " call s:zizz()
       call easycomplete#_complete(a:start_pos, result)
+      call s:SetFirstCompeleHit()
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
     if s:first_render_timer > 0
@@ -1587,6 +1588,10 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
 endfunction
 
 function! Console(...)
