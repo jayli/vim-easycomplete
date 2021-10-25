@@ -53,6 +53,7 @@ let g:easycomplete_complete_taskqueue = []
 let g:easycomplete_popup_width = 50
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
+let b:old_changedtick = 0
 let g:easycomplete_backing = 0
 " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
 " zizz 标志位
@@ -102,19 +103,13 @@ function! s:InitLocalVars()
     let g:easycomplete_shift_tab_trigger = "<S-Tab>"
   endif
   let b:typing_ctx = easycomplete#context()
-  " setlocal completeopt+=menu
-  " setlocal completeopt-=preview
-  " setlocal completeopt-=menuone
-  " setlocal completeopt+=noselect
-  " setlocal completeopt-=popup
-  " setlocal completeopt-=longest
-  setlocal completeopt=menuone,noinsert,noselect
-  " setlocal completeopt-=menu
-  " setlocal completeopt+=menuone
-  " setlocal completeopt+=noselect
-  " setlocal completeopt-=popup
-  " setlocal completeopt-=preview
-  " setlocal completeopt-=longest
+  setlocal completeopt-=menu
+  setlocal completeopt+=noinsert
+  setlocal completeopt+=menuone
+  setlocal completeopt+=noselect
+  setlocal completeopt-=popup
+  setlocal completeopt-=preview
+  setlocal completeopt-=longest
   setlocal cpoptions+=B
 endfunction
 
@@ -512,20 +507,6 @@ function! s:VimDotTyping()
   endif
 endfunction
 
-function! easycomplete#TextChangedP()
-  if pumvisible() && !s:zizzing()
-    " 躲过 FirstComplete
-    " 同时判断是否已经发生过了 firstCompleteHit
-    if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
-      return
-    endif
-    let g:easycomplete_start = reltime()
-    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 4)
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
-  endif
-endfunction
-
 function! easycomplete#InsertCharPre()
   let g:easycomplete_insert_char = v:char
 endfunction
@@ -651,7 +632,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 90
+    let word_first_type_delay = 30 
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -1223,7 +1204,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       endif
     endif
 
-    if !should_stop_render
+    if !should_stop_render && len(source_result) > 0
       let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 600)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
@@ -1232,8 +1213,17 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
       endif
-      " call s:zizz()
-      call easycomplete#_complete(a:start_pos, result)
+      " Info: 调用 complete 有两种方法
+      "    第一种是直接执行 complete, complete(a:start_pos, result)
+      "    第二种是通过<Plug>Complete,easycomplete#_complete(a:start_pos, result)
+      " 第一种优势是不会造成 mode() 的切换，避免 CmdlineEnter 和 CmdlineLeave
+      " 事件发生，杜绝 statusline 的闪烁，缺点是不通过cmd队列来显示的话，容易
+      " 在连续快速敲击键盘时渲染菜单动作的进程挤占，带来不必要的菜单render视觉破损
+      " 第二种优势是通过事件队列来管理，菜单高速连续切换显示时比较流畅，但在首
+      " 次FirstComplete当匹配菜单内容过大、计算量过重时，带来的延时会造成明显
+      " 的 CmdlineEnter 和 CmdlineLeave，带来 statusline 闪烁。
+      " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
+      call complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
@@ -1247,14 +1237,10 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   endtry
 endfunction
 
-function! easycomplete#refresh()
-  try
-    let start = get(g:easycomplete_complete_ctx, 'start', col('.'))
-    let candidates = get(g:easycomplete_complete_ctx, 'candidates', [])
-    silent! noa call complete(start, candidates)
-  catch
-    echom v:exception
-  endtry
+function! easycomplete#refresh(...)
+  let start = get(g:easycomplete_complete_ctx, 'start', col('.'))
+  let candidates = get(g:easycomplete_complete_ctx, 'candidates', [])
+  noa call complete(start, candidates)
   noa call easycomplete#popup#overlay()
   return ''
 endfunction
@@ -1266,7 +1252,7 @@ function! easycomplete#_complete(start, items)
         \ 'candidates': a:items,
         \}
   if mode() =~# 'i' && &paste != 1
-    silent noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
+    silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
   endif
 endfunction
 
@@ -1683,12 +1669,38 @@ function! easycomplete#TextChangedI()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#handle()
   endif
+  let b:old_changedtick = b:changedtick
   return ""
 endfunction
 
+function! easycomplete#TextChangedP()
+  if b:old_changedtick == b:changedtick
+    " 在 FristComplete 时，TextChangedI 触发后会执行 complete()，还会触发一次
+    " TextChangedP，如果两个事件的 changedtick 相同，则丢弃 TextChangedP 事件
+  elseif pumvisible() && !s:zizzing()
+    " 再次确保这里的逻辑要躲过 FirstComplete
+    " 同时判断是否已经发生过了 firstCompleteHit
+    " 目的仍然是避免FirstComplete的重复渲染
+    if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
+      return
+    endif
+    let g:easycomplete_start = reltime()
+    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 4)
+    call s:StopAsyncRun()
+    " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
+    " 不能杜绝，但能大大缓解
+    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
+    let b:old_changedtick = b:changedtick
+  endif
+endfunction
+
+function! easycomplete#CmdlineEnter()
+endfunction
+
+function! easycomplete#CmdlineLeave()
+endfunction
+
 function! easycomplete#Textchanged()
-  "call easycomplete#sign#DiagHoverFlush()
-  "call easycomplete#lint()
 endfunction
 
 function! easycomplete#InsertEnter()

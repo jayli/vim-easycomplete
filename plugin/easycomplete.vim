@@ -257,17 +257,19 @@ augroup easycomplete#NormalBinding
   autocmd CursorMoved * call easycomplete#CursorMoved()
   autocmd BufEnter * call easycomplete#BufEnter()
   " FirstComplete Entry
-  autocmd TextChangedI * call easycomplete#TextChangedI()
+  autocmd TextChangedI * : call easycomplete#TextChangedI()
   autocmd TextChanged * call easycomplete#Textchanged()
   autocmd InsertEnter * call easycomplete#InsertEnter()
   " SecondComplete Entry
-  autocmd CompleteChanged * call easycomplete#CompleteChanged()
-  autocmd TextChangedP * noa call easycomplete#TextChangedP()
+  autocmd CompleteChanged * noa call easycomplete#CompleteChanged()
+  autocmd TextChangedP * : noa call easycomplete#TextChangedP()
   autocmd InsertCharPre * call easycomplete#InsertCharPre()
   autocmd CompleteDone * call easycomplete#CompleteDone()
   autocmd InsertLeave * call easycomplete#InsertLeave()
   autocmd CursorHold * call easycomplete#CursorHold()
   autocmd CursorMovedI * call easycomplete#CursorMovedI()
+  autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
+  autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
