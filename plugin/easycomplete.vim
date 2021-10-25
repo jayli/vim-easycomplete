@@ -12,6 +12,7 @@ let g:easycomplete_default_plugin_init = 1
 
 let g:env_is_vim = has('nvim') ? v:false : v:true
 let g:env_is_nvim = has('nvim') ? v:true : v:false
+let g:env_is_iterm = !empty($ITERM_PROFILE) ? v:true : v:false
 " Info 这里 g:env_is_gui 在 vim 下计算正确，在 nvim 下计算错误，原因未知
 " 用 easycomplete#util#IsGui() 代替
 let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:false

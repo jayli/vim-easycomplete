@@ -249,7 +249,11 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   endif
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
   " call s:zizz()
-  call easycomplete#_complete(a:start_pos, result)
+  if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40 
+    noa call complete(a:start_pos, result)
+  else
+    noa call easycomplete#_complete(a:start_pos, result)
+  endif
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
   " 所以这里要确保 g:easycomplete_menuitems 不会被修改
@@ -1694,7 +1698,8 @@ function! easycomplete#TextChangedP()
       return
     endif
     let g:easycomplete_start = reltime()
-    let delay = len(g:easycomplete_stunt_menuitems) > 170 ? 20 : (has("nvim") ? 2 : 4)
+    let delay = len(g:easycomplete_stunt_menuitems) > 180 ?
+          \ (g:env_is_iterm ? 35 : 20) : (has("nvim") ? 2 : 4)
     call s:StopAsyncRun()
     " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
     " 不能杜绝，但能大大缓解
