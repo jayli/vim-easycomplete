@@ -8,7 +8,7 @@
 
 Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin. 
 
-![](https://gw.alicdn.com/imgextra/i4/O1CN01vWEXKt1zWj3tE2j12_!!6000000006722-1-tps-1129-698.gif)
+![](https://gw.alicdn.com/imgextra/i4/O1CN01L2IJJD27ngf0JVb4l_!!6000000007842-1-tps-934-507.gif)
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
@@ -72,7 +72,7 @@ Typing `./` or `../` to trigger directory completion suggestion.
 
 Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if you need.
 
-Vim-Easycomplete also support signature popup:
+Vim-Easycomplete also support signature popup (Use `let g:easycomplete_signature_enable = 0` to disable):
 
 <img src="https://gw.alicdn.com/imgextra/i4/O1CN01dzWiPR2AEpMYNF1b1_!!6000000008172-2-tps-1350-402.png" width=680 />
 
@@ -238,7 +238,7 @@ So you should redefine at least three functions `completor`/`constructor`/`gotod
 
 ### Issues
 
-[WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>.
+[WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>,<https://zhuanlan.zhihu.com/p/425555993>
 
 ### License
 

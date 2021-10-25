@@ -8,7 +8,7 @@
 
 [余杭区](https://baike.baidu.com/item/%E4%BD%99%E6%9D%AD%E5%8C%BA/161196)最好用的 VIM/NVIM 自动补全插件
 
-<img src="https://gw.alicdn.com/imgextra/i4/O1CN01b9yaSh1hINXsztxUy_!!6000000004254-1-tps-699-394.gif" width=580>
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01L2IJJD27ngf0JVb4l_!!6000000007842-1-tps-934-507.gif" width=580>
 
 ### 一）安装
 
@@ -60,26 +60,30 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 
 依赖 [LSP Server](https://microsoft.github.io/language-server-protocol/implementors/servers/) 的编程语言补全，通常需要对应 LSP 引擎支持，一般可以在 Vim 中执行 `:EasyCompleteInstallServer ${Plugin_Name}` 安装依赖。Plugin Name 为对应补全插件名称：
 
-| 插件名称         | 补全类型/支持语言     | LSP Server 命令        | 快捷安装 LSP 依赖  | 环境依赖       |
-|------------------|-----------------------|:----------------------:|:------------------:|:--------------:|
-| directory        | 文件路径补全          | 不需要                 | 不需要             | 不需要         |
-| buf              | 关键词/字典补全       | 不需要                 | 不需要             | 不需要         |
-| ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm       |
-| vim              | Vim                   | vim-language-server    | Yes                | node/npm       |
-| cpp              | C/C++                 | ccls                   | Yes                | ruby/brew      |
-| css              | CSS                   | css-languageserver     | Yes                | node/npm       |
-| html             | html                  | html-languageserver    | Yes                | node/npm       |
-| sh               | Bash                  | bash-language-server   | Yes                | node/npm       |
-| json             | JSON                  | json-languageserver    | Yes                | node/npm       |
-| yml              | Yaml                  | yaml-language-server   | Yes                | node/npm       |
-| py               | Python                | pyls                   | Yes                | python/pip     |
-| java             | Java                  | eclipse-jdt-ls         | Yes                | java/jdk       |
-| go               | Go                    | gopls                  | Yes                | go             |
-| rb               | Ruby                  | solargraph             | Yes                | ruby/bundle    |
-| lua              | Lua                   | emmylua-ls             | Yes                | java/jdk       |
-| nim              | Nim                   | nimlsp                 | Yes                | nim/nimble     |
-| grvy             | groovy                | groovy-language-server | Yes                | java/jdk       |
-| snips            | 代码片段补全          | ultisnips/vim-snippets | 不需要             | 不需要         |
+| Plugin Name      | Languages             | Language Server        | Installer          | Env requirements|
+|------------------|-----------------------|:----------------------:|:------------------:|:---------------:|
+| directory        | directory suggestion  | No Need                | No Need            | None            |
+| buf              | keywords & dictionary | No Need                | No Need            | None            |
+| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
+| ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm        |
+| vim              | Vim                   | vim-language-server    | Yes                | node/npm        |
+| cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |
+| css              | CSS                   | css-languageserver     | Yes                | node/npm        |
+| html             | HTML                  | html-languageserver    | Yes                | node/npm        |
+| yml              | YAML                  | yaml-language-server   | Yes                | node/npm        |
+| xml              | Xml                   | lemminx                | Yes                | java/jdk        |
+| sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
+| json             | JSON                  | json-languageserver    | Yes                | node/npm        |
+| py               | Python                | pyls                   | Yes                | python3/pip3    |
+| java             | Java                  | eclipse-jdt-ls         | Yes                | java11/jdk      |
+| go               | Go                    | gopls                  | Yes                | go              |
+| rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
+| lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
+| nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
+| rust             | Rust                  | rust-analyzer          | Yes                | None            |
+| kt               | Kotlin                | kotlin-language-server | Yes                | java/jdk        |
+| grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
+| cmake            | cmake                 | cmake-language-server  | Yes                | python3/pip3    |
 
 比如安装 tsserver，在 vim 中执行
 
@@ -88,6 +92,19 @@ EasyComplete 支持常用编程语言的自动补全，且默认支持这三类�
 ```
 
 或者直接在打开的 ts 文件中执行`:EasyCompleteInstallServer`
+
+代码语法检查：自动开启，使用`let g:easycomplete_diagnostics_enable = 0`来关闭，默认使用`<c-j>`和`<c-j>`来跳转到下一个和上一个错误地点。如果没有map冲突，则不用任何配置，如果有冲突，可以自己绑定map。
+
+```vim
+nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
+nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
+```
+
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
+
+代码函数提示：自动开启，使用`let g:easycomplete_signature_enable = 0`来关闭
+
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01dzWiPR2AEpMYNF1b1_!!6000000008172-2-tps-1350-402.png" width=680 />
 
 ### 五）各语言 LSP 依赖安装说明
 
@@ -155,9 +172,12 @@ au User easycomplete_plugin call easycomplete#RegisterSource({
 - trigger: {string}，是否永远跟随光标执行全量补全（FirstComplete），默认为空，如果需要的话，设为"always"，注意'always'会很大程度影响性能，如非必要请不要使用"always"
 - `semantic_triggers`: {list}，触发补全动作的字符，比如`['.','->',':']`等，可以匹配正则表达式
 
+更复杂的例子[参照这里](https://github.com/jayli/vim-easycomplete#add-custom-completion-plugin)
+
 ### 七）介绍
 
 - [如何打造一款极简的 Vim 补全插件](https://zhuanlan.zhihu.com/p/366496399)
+- [Vim-EasyComplete 体验优化踩坑记录](https://zhuanlan.zhihu.com/p/425555993)
 
 ### 八）反馈
 
