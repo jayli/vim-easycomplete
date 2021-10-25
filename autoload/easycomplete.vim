@@ -132,6 +132,15 @@ function! s:BindingTypingCommandOnce()
   endif
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
+  try
+    nnoremap <silent><unique> <C-j> :EasyCompleteNextDiagnostic<CR>
+    nnoremap <silent><unique> <C-k> :EasyCompletePreviousDiagnostic<CR>
+  catch /^Vim\%((\a\+)\)\=:E227/ 
+    call easycomplete#util#log(
+          \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
+          \ )
+  endtry
+
   " TODO 不生效
   " inoremap <Tab> <Plug>EasycompleteTabTrigger
   " 重定向 Tag 的跳转按键绑定，和默认<c-]>功能一致

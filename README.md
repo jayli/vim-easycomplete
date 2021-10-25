@@ -60,7 +60,7 @@ nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
 nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
 ```
 
-Press `<C-j>` or `<C-k>` for diagnostics jumping like this:
+In most cases, the plugin already map these tow HOTKEYs for you successfully. You only have to set custom diagnostic HOTKEYs manually in case of there was a conflict. By default press `<C-j>` or `<C-k>` for diagnostics jumping like this:
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
 

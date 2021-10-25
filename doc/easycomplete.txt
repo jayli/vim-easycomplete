@@ -60,6 +60,9 @@ diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>` 
   nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
   nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
 
+In most cases, the plugin already map these tow HOTKEYs for you successfully. You
+only have to set custom diagnostic HOTKEYs manually in case of there was a conflict.
+
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP
 Server is not ready, Use `:EasyCompleteInstallServer` to install.
 
