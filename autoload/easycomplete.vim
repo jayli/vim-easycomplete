@@ -1699,7 +1699,7 @@ function! easycomplete#TextChangedP()
     endif
     let g:easycomplete_start = reltime()
     let delay = len(g:easycomplete_stunt_menuitems) > 180 ?
-          \ (g:env_is_iterm ? 35 : 20) : (has("nvim") ? 2 : 4)
+          \ (g:env_is_iterm && g:env_is_vim ? 35 : (g:env_is_nvim ? 10 : 20)) : (has("nvim") ? 2 : 4)
     call s:StopAsyncRun()
     " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
     " 不能杜绝，但能大大缓解
