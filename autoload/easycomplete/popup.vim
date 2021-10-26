@@ -116,7 +116,6 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
       let opt.row = winline() - prevw_height + screen_enc
     endif
   else " 正常向上
-
     if winheight(win_getid()) - winline() + 1 + prevw_height <= winheight(win_getid())
       " 单窗口内空间足够，菜单向上展开 ok
       let opt.row = winline() - prevw_height + screen_enc
@@ -124,7 +123,6 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
           \ && prevw_height >= 3
           \ && winline() >= 4
       " 单窗口内向上展开所需空间不够，要判断窗口上方还有没有多余空间
-
       let t_pos = screen_enc + ((winline() - prevw_height) -1)
       if t_pos >= 0
         " 占用顶部空间全部展开
@@ -135,10 +133,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
         let opt.height = prevw_height + t_pos
         let opt.row = 1
       endif
-      
-    else
-      " 单窗口内向下展开
-      
+    else  " 单窗口内向下展开
       " 先判断顶部是否有多余的空间给与展示
       let t_pos = screen_enc + ((winline() - prevw_height) -1)
       if t_pos >= 0
@@ -151,19 +146,19 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
       endif
     endif
   endif
-
   let opt.row -= 1
 
-  " handle width
-  if wincol() + prevw_width - 1 > winwidth(win_getid())
-    let opt.col = winwidth(win_getid()) - prevw_width
-  else
-    let opt.col = wincol() - 1
-  endif
-
+  let screen_col_enc = win_screenpos(win_getid())[1] - 1
+  let opt.col = screen_col_enc + wincol() - 1
   let opt.col += a:offset[1]
-  let opt.row += a:offset[0]
-
+  " TODO col 方向的offset的处理ok，line方向的offset未做处理
+  " handle width
+  if opt.col + prevw_width > winwidth(win_getid())
+    let opt.col = screen_col_enc + winwidth(win_getid()) - prevw_width
+  elseif opt.col < 0
+    " 如果叠加 offset 之后，左侧超出边界，则直接赋值为 0
+    let opt.col = 0
+  endif
 
   if !empty(a:hl)
     let opt.highlight = a:hl
