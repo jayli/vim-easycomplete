@@ -64,7 +64,14 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
 endfunction
 
 function! s:MatchResultFilterPipe(plugin_name, matches)
-  let Fun_name = "easycomplete#sources#" . a:plugin_name . "#filter"
+  let lsp_ctx = easycomplete#GetCurrentLspContext()
+  if type(get(lsp_ctx, "constructor")) != type('')
+    let fn_name = a:plugin_name
+    let Fun_name = "easycomplete#sources#" . fn_name . "#filter"
+  else
+    let constructor_str = lsp_ctx["constructor"]
+    let Fun_name = substitute(constructor_str, "#constructor$", "#filter", "g")
+  endif
   if !easycomplete#util#FuncExists(Fun_name)
     return a:matches
   endif

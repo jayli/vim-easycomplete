@@ -20,6 +20,12 @@ function! easycomplete#sources#cpp#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp","m","hpp"])
 endfunction
 
+function! easycomplete#sources#cpp#filter(matches)
+  let ctx = easycomplete#context()
+  let matches = map(copy(a:matches), function("easycomplete#util#FunctionSurffixMap"))
+  return matches
+endfunction
+
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction

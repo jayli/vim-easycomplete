@@ -19,6 +19,12 @@ function! easycomplete#sources#lua#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["lua"])
 endfunction
 
+function! easycomplete#sources#lua#filter(matches)
+  " LUA lsp 功能不强，部分支持了 function expand
+  " 而且匹配项的类型判断有一些错误，先保持原样不做修饰了
+  return a:matches
+endfunction
+
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
