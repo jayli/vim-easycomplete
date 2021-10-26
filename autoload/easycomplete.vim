@@ -1011,7 +1011,7 @@ function! easycomplete#TypeEnterWithPUM()
     " 新增 expandable 支持 for #48
     if easycomplete#util#expandable(l:item)
       let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-      call s:AsyncRun(function('cursor'), [getcurpos()[1], getcurpos()[2] - l:back], 1)
+      call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
       if easycomplete#ok('g:easycomplete_signature_enable')
         call s:AsyncRun("easycomplete#action#signature#do",[], 60)
       endif
@@ -1019,6 +1019,10 @@ function! easycomplete#TypeEnterWithPUM()
     return "\<C-Y>"
   endif
   return "\<CR>"
+endfunction
+
+function! s:CursorExpandableSnipPosition(back)
+  call cursor(getcurpos()[1], getcurpos()[2] - a:back)
 endfunction
 
 function! s:ExpandSnipManually(word)
