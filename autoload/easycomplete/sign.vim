@@ -289,7 +289,10 @@ function! easycomplete#sign#unhold()
   if get(g:, "easycomplete_place_holder", 0) == 1
     call execute("sign unplace 999 file=" . easycomplete#util#GetCurrentFullName())
   endif
-  let sign_list = sign_getplaced(easycomplete#util#GetCurrentFullName())[0]["signs"]
+  let sign_list = get(sign_getplaced(easycomplete#util#GetCurrentFullName())[0],"signs")
+  if empty(sign_list)
+    return
+  endif
   for item in sign_list
     if item['id'] == 999 && item['name'] == 'place_holder'
       call sign_unplace('', {'buffer': bufnr(), "id": 999})
