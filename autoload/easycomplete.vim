@@ -250,7 +250,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
   " call s:zizz()
   if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40 
-    noa call complete(a:start_pos, result)
+    noa call s:complete(a:start_pos, result)
   else
     noa call easycomplete#_complete(a:start_pos, result)
   endif
@@ -1240,7 +1240,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 次FirstComplete当匹配菜单内容过大、计算量过重时，带来的延时会造成明显
       " 的 CmdlineEnter 和 CmdlineLeave，带来 statusline 闪烁。
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
-      call complete(a:start_pos, result)
+      call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
@@ -1257,9 +1257,13 @@ endfunction
 function! easycomplete#refresh(...)
   let start = get(g:easycomplete_complete_ctx, 'start', col('.'))
   let candidates = get(g:easycomplete_complete_ctx, 'candidates', [])
-  noa call complete(start, candidates)
-  noa call easycomplete#popup#overlay()
+  noa call s:complete(start, candidates)
   return ''
+endfunction
+
+function! s:complete(...) abort
+  noa call call('complete', a:000)
+  noa call easycomplete#popup#overlay()
 endfunction
 
 " Alias of complete()
