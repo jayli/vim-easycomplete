@@ -20,18 +20,6 @@ function! easycomplete#sources#java#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["java"])
 endfunction
 
-function! easycomplete#sources#java#filter(matches)
-  return a:matches
-  let matches = map(copy(a:matches), function('s:JavaResultFilter'))
-  return matches
-endfunction
-
-function! s:JavaResultFilter(key, val)
-  " call s:log(easycomplete#util#expandable(a:val), split(a:val.word,"\\n"))
-  " TODO here for #110
-  return a:val
-endfunction
-
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction

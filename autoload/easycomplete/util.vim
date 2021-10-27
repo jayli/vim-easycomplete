@@ -1087,6 +1087,11 @@ function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   return snip_ctx[start_line_index:end_line_index]
 endfunction " }}}
 
+function! easycomplete#util#HasNL(insertText)
+  let arr = easycomplete#util#str2list(a:insertText)
+  return index(arr, 10) >= 0
+endfunction
+
 " expandable {{{
 function! easycomplete#util#expandable(item)
   if has_key(a:item, 'user_data') && !empty(get(a:item, 'user_data', ''))
