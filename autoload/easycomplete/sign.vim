@@ -88,7 +88,10 @@ endfunction
 function! easycomplete#sign#ClearSign()
   " let lsp_server = server_info['server_names'][0]
   " file:///...
-  call execute("sign unplace * group=g999 file=" . expand("%:p"))
+  try
+    exec "sign unplace * group=g999 file=" . expand("%:p")
+  catch
+  endtry
 endfunction
 
 function! easycomplete#sign#normalize(opt_config)
@@ -286,10 +289,18 @@ function! easycomplete#sign#hold()
 endfunction
 
 function! easycomplete#sign#unhold()
+  let current_fn = easycomplete#util#GetCurrentFullName()
   if get(g:, "easycomplete_place_holder", 0) == 1
-    call execute("sign unplace 999 file=" . easycomplete#util#GetCurrentFullName())
+    try
+      call execute("sign unplace 999 file=" . current_fn)
+    catch
+    endtry
   endif
-  let sign_list = get(sign_getplaced(easycomplete#util#GetCurrentFullName())[0],"signs")
+  let sign_placed_list = sign_getplaced(current_fn)
+  if empty(sign_placed_list)
+    return
+  endif
+  let sign_list = get(sign_placed_list[0],"signs", [])
   if empty(sign_list)
     return
   endif
