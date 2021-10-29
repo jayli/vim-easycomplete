@@ -316,8 +316,9 @@ function! s:BackChecking()
   endif
   let old_ctx = deepcopy(b:typing_ctx)
   let b:typing_ctx = curr_ctx
-  if curr_ctx['lnum'] == old_ctx['lnum']
-        \ && strlen(old_ctx['typed']) >= 2
+  if empty(curr_ctx) || empty(old_ctx) | return v:false | endif
+  if get(curr_ctx, 'lnum') == get(old_ctx,'lnum')
+        \ && strlen(get(old_ctx,'typed',"")) >= 2
     if curr_ctx['typed'] ==# old_ctx['typed'][:-2]
       " 单行后退非到达首字母的后退
       return v:true
@@ -326,7 +327,7 @@ function! s:BackChecking()
       " 单行在 Normal 模式下按下 s 键
       return v:true
     endif
-  elseif curr_ctx['lnum'] == old_ctx['lnum']
+  elseif get(curr_ctx,'lnum') == get(old_ctx,'lnum')
         \ && strlen(old_ctx['typed']) == 1 && strlen(curr_ctx['typed']) == 0
     " 单行后退到达首字母的后退
     return v:true
@@ -561,6 +562,7 @@ function! easycomplete#typing()
     " TODO 如果是后退，这里 pumvisible() 为0，再执行 BackingCompleteHandler 会
     " 有一次闪烁
     " call s:BackingCompleteHandler()
+    call s:flush()
     return ""
   else
     let g:easycomplete_backing = 0
