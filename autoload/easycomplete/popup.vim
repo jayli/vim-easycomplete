@@ -183,13 +183,22 @@ function! easycomplete#popup#overlay()
   let float_config = getwininfo(float_winid)[0]
   let pum_config = pum_getpos()
   let overlay = v:false
-  if pum_config.row <= float_config.winrow
-        \ && pum_config.row + pum_config.height - 1 >= float_config.winrow
-    let overlay = v:true
-  endif
-  if pum_config.row <= float_config.winrow + float_config.height - 1
-        \ && pum_config.row + pum_config.height - 1 >= float_config.winrow + float_config.height - 1
-    let overlay = v:true
+  if float_config.height != 1
+    if pum_config.row <= float_config.winrow
+          \ && pum_config.row + pum_config.height - 1 >= float_config.winrow
+      let overlay = v:true
+    endif
+    if pum_config.row <= float_config.winrow + float_config.height - 1
+          \ && pum_config.row + pum_config.height - 1 >= float_config.winrow + float_config.height - 1
+      let overlay = v:true
+    endif
+  else
+    let screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
+    if (pum_config.row > screen_line && float_config.winrow > screen_line)
+          \ || (pum_config.row < screen_line && float_config.winrow < screen_line)
+          \ || (pum_config.row == screen_line && float_config.winrow > screen_line)
+      let overlay = v:true
+    endif
   endif
   if overlay
     call easycomplete#popup#close("float")
