@@ -1486,7 +1486,7 @@ function! s:SetupCompleteCache()
 endfunction
 
 function! s:ResetCompleteCache()
-  if !exists('g:easycomplete_menucache')
+  if !exists('g:easycomplete_menucache') || empty(get(g:easycomplete_menucache, "_#_1"))
     call s:SetupCompleteCache()
   endif
 
