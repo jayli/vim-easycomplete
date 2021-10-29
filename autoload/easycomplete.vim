@@ -623,8 +623,6 @@ function! s:DoComplete(immediately)
 
   if complete_check()
     call s:flush()
-    call s:StopAsyncRun()
-    call s:AsyncRun(function("complete"),[col("."),[]],200)
     return v:null
   endif
 
@@ -1466,6 +1464,11 @@ function! s:flush()
     let g:easycomplete_source[sub].complete_result = []
   endfor
   let g:easycomplete_completedone_insert_mode = mode()
+  noa call complete(col("."),[])
+  if complete_check()
+    call s:StopAsyncRun()
+    call s:AsyncRun(function("complete"),[col("."),[]],50)
+  endif
 endfunction
 
 function! s:ResetCompletedItem()
