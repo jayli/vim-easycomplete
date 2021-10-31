@@ -204,8 +204,13 @@ function! s:CompleteTypingMatch(...)
   endif
   let l:char = easycomplete#context()["char"]
   " 非 ASCII 码时终止
-  if char2nr(l:char) < 33 || char2nr(l:char) > 126
+  if char2nr(l:char) < 33
     call s:CloseCompletionMenu()
+    call s:flush()
+    return
+  endif
+  if char2nr(l:char) > 126
+    call timer_start(4, { -> s:CloseCompletionMenu() })
     call s:flush()
     return
   endif
