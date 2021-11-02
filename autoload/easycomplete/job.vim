@@ -221,18 +221,22 @@ function! s:job_send(jobid, data, opts) abort
     " empty
     "
     " Ref: https://groups.google.com/d/topic/vim_dev/UNNulkqb60k/discussion
-    if has('patch-8.1.818') && (!has('patch-8.1.889') || !l:close_stdin)
-      call ch_sendraw(l:jobinfo.channel, a:data)
-    else
-      let l:jobinfo.buffer .= a:data
-      call s:flush_vim_sendraw(a:jobid, v:null)
-    endif
-    if l:close_stdin
-      while len(l:jobinfo.buffer) != 0
-        sleep 1m
-      endwhile
-      call ch_close_in(l:jobinfo.channel)
-    endif
+    try
+      if has('patch-8.1.818') && (!has('patch-8.1.889') || !l:close_stdin)
+        call ch_sendraw(l:jobinfo.channel, a:data)
+      else
+        let l:jobinfo.buffer .= a:data
+        call s:flush_vim_sendraw(a:jobid, v:null)
+      endif
+      if l:close_stdin
+        while len(l:jobinfo.buffer) != 0
+          sleep 1m
+        endwhile
+        call ch_close_in(l:jobinfo.channel)
+      endif
+    catch /^Vim\%((\a\+)\)\=:E631/
+      " Channel msg sending error, terminated and do nothing
+    endtry
   endif
 endfunction
 
