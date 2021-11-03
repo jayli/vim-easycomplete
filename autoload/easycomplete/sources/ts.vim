@@ -70,6 +70,9 @@ endfunction
 " 判断当前是否正在读取 entry details 中
 " 避免 entry detail 太耗时导致 tsserver 响应延迟，进而导致时序错乱
 function! s:EntryDetailsIsFetching()
+  if !exists('b:entry_details_requesting')
+    let b:entry_details_requesting = 0
+  endif
   return b:entry_details_requesting
 endfunction
 
