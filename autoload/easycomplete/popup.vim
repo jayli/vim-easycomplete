@@ -213,7 +213,7 @@ endfunction
 " s:popup 代替 popup_info 方法，只给 completion 使用
 " 外部调用时统一使用 easycomplete#popup#float() 方法
 function! s:popup(info)
-  if !pumvisible()
+  if !pumvisible() || !easycomplete#CompleteCursored()
     call easycomplete#popup#close("popup")
     return
   endif

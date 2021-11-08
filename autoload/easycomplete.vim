@@ -1704,9 +1704,20 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! easycomplete#TextChangedP()
+  let l:ctx = easycomplete#context()
+  let line_length = strlen(l:ctx['typed'])
+  let selected_item = easycomplete#GetCompletedItem()
+  if empty(selected_item)
+    let word_str_len = 0
+  else
+    let word_str_len = strlen(selected_item["word"])
+  endif
   if b:old_changedtick == b:changedtick
     " 在 FristComplete 时，TextChangedI 触发后会执行 complete()，还会触发一次
     " TextChangedP，如果两个事件的 changedtick 相同，则丢弃 TextChangedP 事件
+  elseif easycomplete#CompleteCursored() &&
+        \ easycomplete#GetCompletedItem()["word"] == l:ctx['typed'][line_length - word_str_len:line_length - 1]
+    " 直接按下 C-P 或者 C-N 不做任何处理
   elseif pumvisible() && !s:zizzing()
     " 再次确保这里的逻辑要躲过 FirstComplete
     " 同时判断是否已经发生过了 firstCompleteHit
