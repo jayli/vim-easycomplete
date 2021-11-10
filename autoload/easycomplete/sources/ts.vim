@@ -566,7 +566,7 @@ function! easycomplete#sources#ts#GotoDefinition(...)
     return v:false
   endif
   let ext = tolower(easycomplete#util#extention())
-  if index(["js","jsx","ts","tsx"], ext) >= 0
+  if index(["js","jsx","ts","tsx","mjs"], ext) >= 0
     let l:ctx = easycomplete#context()
     call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
     " return v:true 成功跳转，告知主进程
