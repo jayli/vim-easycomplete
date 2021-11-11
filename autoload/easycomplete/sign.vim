@@ -117,8 +117,9 @@ function! easycomplete#sign#init()
           \ key . '_holder',
           \ 'text=' . opt[key].prompt_text,
           \ 'texthl=' . opt[key].TextStyle,
-          \ 'linehl=' . opt[key].LineStyle
           \ ]
+          " fix for #117
+          " \ 'linehl=' . opt[key].LineStyle
     exec join(sign_cmd, " ")
     call easycomplete#ui#hi(opt[key].TextStyle, opt[key]['fg_color'], sign_column_bg, "")
     if g:env_is_vim
