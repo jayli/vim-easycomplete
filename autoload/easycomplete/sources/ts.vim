@@ -370,7 +370,8 @@ function! easycomplete#sources#ts#SignatureCallback(response)
   endfor
   let offset_arr = prefix "  + [join(params, get(sepato, 0 ," "))]
   if hl_index > 0
-    let offset_arr += [join(params[0:hl_index], get(sepato, 0 ," "))]
+    let offset_arr += [join(params[0:hl_index - 1], get(sepato, 0 ," "))]
+    let offset_arr += [get(sepato, 0 ," ")]
   endif
   let offset_str = join(offset_arr, "")
   let offset_col = strlen(offset_str)
