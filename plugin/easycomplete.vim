@@ -96,6 +96,16 @@ augroup easycomplete#PluginRegister
       \ 'semantic_triggers':["[^->]->$", "[^:]::$"]
       \  })
 
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'php',
+      \ 'whitelist': ["php"],
+      \ 'completor': 'easycomplete#sources#php#completor',
+      \ 'constructor' :'easycomplete#sources#php#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#php#GotoDefinition',
+      \ 'command': 'intelephense',
+      \ 'semantic_triggers':["\\$"]
+      \  })
+
   " css-languageserver 默认不带 completionProvider，必须要安装
   " snippets-supports
   " https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support
@@ -245,6 +255,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
       \ 'command': 'cmake-language-server'
       \  })
+
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],

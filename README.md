@@ -127,6 +127,7 @@ All supported languages:
 | xml              | Xml                   | lemminx                | Yes                | java/jdk        |
 | sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
 | json             | JSON                  | json-languageserver    | Yes                | node/npm        |
+| php              | php                   | intelephense           | Yes                | node/npm        |
 | py               | Python                | pyls                   | Yes                | python3/pip3    |
 | java             | Java                  | eclipse-jdt-ls         | Yes                | java11/jdk      |
 | go               | Go                    | gopls                  | Yes                | go              |
@@ -147,6 +148,7 @@ More info about semantic completion for each supported language:
 - C++/C：Install ccls with `brew install ccls`. If you want to install latest version. Please install it manually [following this guide](https://github.com/MaskRay/ccls).
 - CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
+- PHP: [intelephense](https://www.npmjs.com/package/intelephense)
 - HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) manually.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.

@@ -565,7 +565,11 @@ function! easycomplete#util#GetTypingWord()
   " 正常情况这里取普通单词逻辑不应当变化
   " 如果不同语言对单词组成字符界定不一，在主流程中处理
   " 比如 vim 把 'g:abc' 对待为一个完整单词
-  let regx = '[a-zA-Z0-9_#]'
+  if index(["php"], &filetype) >= 0
+    let regx = '[$a-zA-Z0-9_#]'
+  else
+    let regx = '[a-zA-Z0-9_#]'
+  endif
   while start > 0 && line[start - 1] =~ regx
     let start = start - 1
     let width = width + 1
@@ -1087,10 +1091,11 @@ function! easycomplete#util#GetSnippetsCodeInfo(snip_object)
   return snip_ctx[start_line_index:end_line_index]
 endfunction " }}}
 
+" HasNL {{{
 function! easycomplete#util#HasNL(insertText)
   let arr = easycomplete#util#str2list(a:insertText)
   return index(arr, 10) >= 0
-endfunction
+endfunction " }}}
 
 " expandable {{{
 function! easycomplete#util#expandable(item)
