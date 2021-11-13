@@ -113,31 +113,32 @@ Or you can install a lsp server with specified plugin name (not recommended). Ta
 All supported languages:
 
 
-| Plugin Name      | Languages             | Language Server        | Installer          | Env requirements|
-|------------------|-----------------------|:----------------------:|:------------------:|:---------------:|
-| directory        | directory suggestion  | No Need                | No Need            | None            |
-| buf              | keywords & dictionary | No Need                | No Need            | None            |
-| snips            | Snippets Support      | ultisnips/vim-snippets | No                 | python3         |
-| ts               | JavaScript/TypeScript | tsserver               | Yes                | node/npm        |
-| vim              | Vim                   | vim-language-server    | Yes                | node/npm        |
-| cpp              | C/C++                 | ccls                   | Yes                | ruby/brew       |
-| css              | CSS                   | css-languageserver     | Yes                | node/npm        |
-| html             | HTML                  | html-languageserver    | Yes                | node/npm        |
-| yml              | YAML                  | yaml-language-server   | Yes                | node/npm        |
-| xml              | Xml                   | lemminx                | Yes                | java/jdk        |
-| sh               | Bash                  | bash-language-server   | Yes                | node/npm        |
-| json             | JSON                  | json-languageserver    | Yes                | node/npm        |
-| php              | php                   | intelephense           | Yes                | node/npm        |
-| py               | Python                | pyls                   | Yes                | python3/pip3    |
-| java             | Java                  | eclipse-jdt-ls         | Yes                | java11/jdk      |
-| go               | Go                    | gopls                  | Yes                | go              |
-| rb               | Ruby                  | solargraph             | Yes                | ruby/bundle     |
-| lua              | Lua                   | emmylua-ls             | Yes                | java/jdk        |
-| nim              | Nim                   | nimlsp                 | Yes                | nim/nimble      |
-| rust             | Rust                  | rust-analyzer          | Yes                | None            |
-| kt               | Kotlin                | kotlin-language-server | Yes                | java/jdk        |
-| grvy             | Groovy                | groovy-language-server | Yes                | java/jdk        |
-| cmake            | cmake                 | cmake-language-server  | Yes                | python3/pip3    |
+| Plugin Name      | Languages             | Language Server               | Installer          | Env requirements|
+|------------------|-----------------------|:-----------------------------:|:------------------:|:---------------:|
+| directory        | directory suggestion  | No Need                       | No Need            | None            |
+| buf              | keywords & dictionary | No Need                       | No Need            | None            |
+| snips            | Snippets Support      | ultisnips/vim-snippets        | No                 | python3         |
+| ts               | JavaScript/TypeScript | tsserver                      | Yes                | node/npm        |
+| vim              | Vim                   | vim-language-server           | Yes                | node/npm        |
+| cpp              | C/C++                 | ccls                          | Yes                | ruby/brew       |
+| css              | CSS                   | css-languageserver            | Yes                | node/npm        |
+| html             | HTML                  | html-languageserver           | Yes                | node/npm        |
+| yml              | YAML                  | yaml-language-server          | Yes                | node/npm        |
+| xml              | Xml                   | lemminx                       | Yes                | java/jdk        |
+| sh               | Bash                  | bash-language-server          | Yes                | node/npm        |
+| json             | JSON                  | json-languageserver           | Yes                | node/npm        |
+| php              | php                   | intelephense                  | Yes                | node/npm        |
+| dart             | dart                  | analysis-server-dart-snapshot | Yes                | None            |
+| py               | Python                | pyls                          | Yes                | python3/pip3    |
+| java             | Java                  | eclipse-jdt-ls                | Yes                | java11/jdk      |
+| go               | Go                    | gopls                         | Yes                | go              |
+| rb               | Ruby                  | solargraph                    | Yes                | ruby/bundle     |
+| lua              | Lua                   | emmylua-ls                    | Yes                | java/jdk        |
+| nim              | Nim                   | nimlsp                        | Yes                | nim/nimble      |
+| rust             | Rust                  | rust-analyzer                 | Yes                | None            |
+| kt               | Kotlin                | kotlin-language-server        | Yes                | java/jdk        |
+| grvy             | Groovy                | groovy-language-server        | Yes                | java/jdk        |
+| cmake            | cmake                 | cmake-language-server         | Yes                | python3/pip3    |
 
 More info about semantic completion for each supported language:
 
@@ -149,6 +150,7 @@ More info about semantic completion for each supported language:
 - CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - PHP: [intelephense](https://www.npmjs.com/package/intelephense)
+- Dart: [analysis-server-dart-snapshot](https://storage.googleapis.com/dart-archive/)
 - HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) manually.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.

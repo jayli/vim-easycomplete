@@ -73,6 +73,15 @@ augroup easycomplete#PluginRegister
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': "dart",
+      \ 'whitelist': ['dart'],
+      \ 'completor': function('easycomplete#sources#dart#completor'),
+      \ 'constructor' :function('easycomplete#sources#dart#constructor'),
+      \ 'gotodefinition': function('easycomplete#sources#dart#GotoDefinition'),
+      \ 'command': 'analysis-server-dart-snapshot'
+      \  })
+
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
       \ 'whitelist': ['vim'],
       \ 'completor': 'easycomplete#sources#vim#completor',
