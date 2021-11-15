@@ -101,19 +101,19 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
 
   augroup easycomplete#sources#ts#augroup
     autocmd!
-    autocmd BufUnload *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
+    autocmd BufUnload *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()
     " TODO 因为 e 出来的buffer，在bnext和bprevious 切换时，job 就被杀掉了(原因未
     " 知)，所以需要切换后执行init，但vim无bnext和bprevious事件，这里用
     " InsertEnter,SafeState 来实现，这里的 init 会执行的比较频繁，可能会有性能问题
-    autocmd InsertEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+    autocmd InsertEnter *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     " Diagnostics Event
-    autocmd InsertLeave *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
-    autocmd BufWritePost *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
-    autocmd BufEnter *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    autocmd InsertLeave *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    autocmd BufWritePost *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    autocmd BufEnter *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
     " hack for #56
-    autocmd CompleteChanged *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
+    autocmd CompleteChanged *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
-      autocmd SafeState *.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
+      autocmd SafeState *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     endif
   augroup END
 
@@ -567,7 +567,7 @@ function! easycomplete#sources#ts#GotoDefinition(...)
     return v:false
   endif
   let ext = tolower(easycomplete#util#extention())
-  if index(["js","jsx","ts","tsx","mjs"], ext) >= 0
+  if index(["js","jsx","ts","tsx","mjs","ejs"], ext) >= 0
     let l:ctx = easycomplete#context()
     call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
     " return v:true 成功跳转，告知主进程
