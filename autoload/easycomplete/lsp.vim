@@ -388,7 +388,7 @@ function! s:request_cancel(ctx) abort
   if easycomplete#lsp#get_server_status(a:ctx['server_name']) !=# 'running' | return | endif " if server is not running we cant send the request
   " send the actual cancel request
   let a:ctx['dispose'] = easycomplete#lsp#callbag#pipe(
-        \ easycomplete#lsp#notification(a:ctx['server_name'], {
+          \ easycomplete#lsp#notification(a:ctx['server_name'], {
           \   'method': '$/cancelRequest',
           \   'params': { 'id': a:ctx['request_id'] },
           \ }),
@@ -682,6 +682,10 @@ function! s:update_file_content(buf, server_name, new) abort
   endif
   call s:log('s:update_file_content()', a:buf)
   let s:file_content[a:buf][a:server_name] = a:new
+endfunction
+
+function! easycomplete#lsp#HasProvider(...)
+  return call('s:has_provider', a:000)
 endfunction
 
 function! s:has_provider(server_name, ...) abort

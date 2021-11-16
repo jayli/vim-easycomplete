@@ -384,5 +384,5 @@ function! s:shareSourceCallback(data, sink, t, d) abort
   endif
 endfunction
 " }}}
-
+"
 " vim:ts=2:sw=2:ai:foldmethod=marker:foldlevel=0:

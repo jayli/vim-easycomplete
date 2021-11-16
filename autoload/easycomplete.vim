@@ -903,6 +903,14 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   if type(info) == type("")
     let info = [info]
   endif
+
+
+
+
+  call easycomplete#action#documentation#LspRequest(a:item)
+
+
+
   call s:ShowCompleteInfo(info)
 endfunction
 
