@@ -1,38 +1,48 @@
 
 
 function! easycomplete#action#documentation#LspRequest(item) abort
+  call s:console('------->', a:item)
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
-    echom 222222
+    let params = s:GetDocumentParams(copy(a:item), l:server_name)
+    call s:console(params)
     try
       call easycomplete#lsp#send_request(l:server_name, {
             \ 'method': 'completionItem/resolve',
-            \ 'params': extend({
-            \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-            \   'position': easycomplete#lsp#get_position(),
-            \   'context': { 'triggerKind': 1 }
-            \ }, a:item),
+            \ 'params': params.completion_item,
             \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
             \ })
+      " call easycomplete#lsp#send_request(l:server_name, {
+      "       \ 'method': 'completionItem/resolve',
+      "       \ 'params': extend({
+      "       \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
+      "       \   'position': easycomplete#lsp#get_position(),
+      "       \   'context': { 'triggerKind': 1 }
+      "       \ }, a:item),
+      "       \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
+      "       \ })
     catch 
       echom v:exception
     endtry
-    " let s:Dispose = easycomplete#lsp#callbag#pipe(
-    "     \ easycomplete#lsp#request(l:server_name, {
-    "     \   'method': 'completionitem/resolve',
-    "     \   'params': a:item,
-    "     \ }),
-    "     \ easycomplete#lsp#callbag#map({x->{
-    "     \   'server_name': l:server_name,
-    "     \   'completion_item': x['response']['result'],
-    "     \   'complete_position': easycomplete#lsp#get_position(),
-    "     \ }})
-    "     \ )
   endif
 endfunction
 
+function! s:GetDocumentParams(item, server_name)
+  " {'label': 'aa', 'data': {'name': 'aa', 'type': 1}, 'kind': 12}
+  let ret = {}
+  let ret.server_name = a:server_name
+  let ret.completion_item = {
+        \ 'label' : a:item.word,
+        \ 'data' : {'name' : a:item.word, 'type' : 1},
+        \ 'kind' : 12
+        \ }
+  let ret.complete_position = easycomplete#lsp#get_position()
+  return ret
+endfunction
+
 function! s:HandleLspCallback(server_name, data) abort
-  echom 'callback' . string(a:data)
+  call s:console('<------', a:data)
+  call s:log(a:data.response.result.documentation)
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
         \ !has_key(a:data['response'], 'result')
@@ -41,4 +51,12 @@ function! s:HandleLspCallback(server_name, data) abort
     return
   endif
   echom a:data
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
