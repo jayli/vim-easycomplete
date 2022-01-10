@@ -41,7 +41,7 @@ function! s:GetDocumentParams(item, server_name)
 endfunction
 
 function! s:HandleLspCallback(server_name, data) abort
-  call s:console('<------', a:data)
+  call s:console('<------ HandleLspCallback', a:data)
   call s:log(a:data.response.result.documentation)
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
@@ -50,6 +50,18 @@ function! s:HandleLspCallback(server_name, data) abort
     echom "lsp error response"
     return
   endif
+
+
+  try
+    let info = a:data.response.result.documentation.value
+    " TODO here jayli 这一句不起作用
+    call easycomplete#popup#MenuPopupChanged([info])
+  catch
+    echom '-----------------------------'
+    echom v:exception
+    echom '-----------------------------'
+  endtry
+
   echom a:data
 endfunction
 
