@@ -889,6 +889,9 @@ function! easycomplete#CompleteChanged()
   endif
   let b:typing_ctx = easycomplete#context()
   call easycomplete#ShowCompleteInfoByItem(item)
+
+  " Hack 所有异步获取 document 时，需要暂存 event
+  let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
 function! s:CloseCompleteInfo()
@@ -900,22 +903,29 @@ function! s:CloseCompleteInfo()
 endfunction
 
 function! easycomplete#ShowCompleteInfoByItem(item)
+  call s:console(a:item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
-  if type(info) == type("")
-    let info = [info]
+  let async = empty(info) ? v:true : v:false
+  if easycomplete#util#ItemIsFromLS(a:item) && async
+    call easycomplete#action#documentation#LspRequest(a:item)
+  else
+    if type(info) == type("")
+      let info = [info]
+    endif
+    call s:ShowCompleteInfo(info)
   endif
+endfunction
 
-
-
-
-  call easycomplete#action#documentation#LspRequest(a:item)
-
-
-
-  call s:ShowCompleteInfo(info)
+function easycomplete#ShowCompleteInfo(info)
+  call s:ShowCompleteInfo(a:info)
 endfunction
 
 function! s:ShowCompleteInfo(info)
+  call easycomplete#HandleTagbarUpdateAction()
+  call easycomplete#popup#MenuPopupChanged(a:info)
+endfunction
+
+function easycomplete#HandleTagbarUpdateAction()
   if easycomplete#util#TagBarExists()
     try
       call tagbar#StopAutoUpdate()
@@ -923,8 +933,6 @@ function! s:ShowCompleteInfo(info)
       " Do Nothing
     endtry
   endif
-  call easycomplete#popup#MenuPopupChanged(a:info)
-  return
 endfunction
 
 function s:ModifyInfoByMaxwidth(...)

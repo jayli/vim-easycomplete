@@ -8,6 +8,7 @@ let s:notification_callbacks = [] " { name, callback }
 let s:undefined_token = '__callbag_undefined__'
 let s:str_type = type('')
 let s:diagnostics_state = {}
+let b:easycomplete_lsp_plugin = {}
 
 let s:default_symbol_kinds = {
       \ '1': 'file',
@@ -96,6 +97,7 @@ augroup END
 
 function! easycomplete#lsp#enable()
   call s:register_events()
+  let b:easycomplete_lsp_plugin = easycomplete#util#GetLspPlugin()
 endfunction
 
 function! s:register_events() abort
