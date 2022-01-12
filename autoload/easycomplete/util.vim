@@ -766,45 +766,12 @@ function! easycomplete#util#NormalizeEntryDetail(item)
         \ get(a:item, 'name')], " ")
 
   let l:desp_list = s:NormalizeDetail(a:item, "displayParts")
-  " if !empty(get(a:item, "displayParts")) && len(get(a:item, "displayParts")) > 0
-  "   let l:desp_list = []
-  "   let l:t_line = ""
-  "   for dis_item in get(a:item, "displayParts")
-  "     if dis_item.text =~ "\\(\\r\\|\\n\\)"
-  "       call add(l:desp_list, l:t_line)
-  "       let l:t_line = ""
-  "     else 
-  "       let l:t_line  = l:t_line  . dis_item.text
-  "     endif
-  "   endfor
-  "   if !empty(l:t_line)
-  "     call add(l:desp_list, l:t_line)
-  "   endif
-  " endif
-
-
   if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
     let l:doc_list = ["------------"] " 任意长度即可, 显示的时候回重新计算分割线宽度
     call extend(doc_list, s:NormalizeDetail(a:item, "documentation"))
   else
     let l:doc_list = []
   endif
-
-  " if !empty(get(a:item, "documentation")) && len(get(a:item, "documentation")) > 0
-  "   let l:doc_list = ["------------"] " 任意长度即可, 显示的时候回重新计算分割线宽度
-  "   let l:t_line = ""
-  "   for document_item in get(a:item, "documentation")
-  "     if document_item.text =~ "\\(\\r\\|\\n\\)"
-  "       call add(l:doc_list, l:t_line)
-  "       let l:t_line = ""
-  "     else
-  "       let l:t_line = l:t_line . document_item.text
-  "     endif
-  "   endfor
-  "   if !empty(l:t_line)
-  "     call add(l:doc_list, l:t_line)
-  "   endif
-  " endif
 
   return [l:title] + l:desp_list + l:doc_list
 endfunction
@@ -1318,6 +1285,10 @@ function! s:NormalizeLspInfo(info)
     endif
   endfor
   return l:str
+endfunction
+
+function! easycomplete#util#NormalizeLspInfo(info)
+  return s:NormalizeLspInfo(a:info)
 endfunction
 " }}}
 

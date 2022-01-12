@@ -15,9 +15,11 @@ function! easycomplete#action#documentation#LspRequest(item) abort
         call timer_stop(b:easycomplete_documentation_popup)
       endif
       let b:easycomplete_documentation_popup = timer_start(500, function("s:ClosePopup"))
-    catch 
+    catch
       echom v:exception
     endtry
+  else
+    call s:ClosePopup()
   endif
 endfunction
 
@@ -58,14 +60,19 @@ function! s:HandleLspCallback(server_name, data) abort
     if empty(info)
       call easycomplete#popup#close("popup")
     elseif oringal_name == get(g:easycomplete_completed_item, "word", "")
-      call easycomplete#ShowCompleteInfo([info])
+      let info = substitute(info, '```', '', 'g')
+      let info = easycomplete#util#NormalizeLspInfo(info)
+      if type(info) == type("")
+        let info = [info]
+      endif
+      call easycomplete#ShowCompleteInfo(info)
       let menu_flag = "[" . toupper(b:easycomplete_lsp_plugin["name"]) . "]"
       let menu_word = get(g:easycomplete_completed_item, "word", "")
       call easycomplete#SetMenuInfo(menu_word, info, menu_flag)
     endif
   catch
     call easycomplete#popup#close("popup")
-    echom v:exception
+    " echom v:exception
   endtry
 endfunction
 

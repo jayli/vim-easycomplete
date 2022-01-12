@@ -15,7 +15,7 @@
 "     - float 用作signature和diagnostics
 
 " popup window 最大高度
-let s:max_height = 40
+let s:max_height = 60
 let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 
