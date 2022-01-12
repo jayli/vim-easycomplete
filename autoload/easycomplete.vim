@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -881,7 +881,7 @@ function! s:CompleteMatchAction()
 endfunction
 
 function! easycomplete#CompleteChanged()
-  let item = v:event.completed_item
+  let item = deepcopy(v:event.completed_item)
   call easycomplete#SetCompletedItem(item)
   if empty(item)
     call s:CloseCompleteInfo()
@@ -1354,7 +1354,9 @@ function! s:NormalizeMenulist(arr)
             \ 'word': item,    'menu': '',
             \ 'user_data': '', 'info': '',
             \ 'kind': '',      'equal' : 1,
-            \ 'dup': 1,        'abbr': '' }
+            \ 'dup': 1,        'abbr': '',
+            \ 'kind_number' : get(item, 'kind_number', 0),
+            \ }
       call add(l:menu_list, l:menu_item)
     endif
     if type(item) == type({})
@@ -1362,7 +1364,8 @@ function! s:NormalizeMenulist(arr)
             \   'word': '',      'menu': '',
             \   'user_data': '', 'equal': 1,
             \   'dup': 1,        'info': '',
-            \   'kind': '',      'abbr': ''
+            \   'kind': '',      'abbr': '',
+            \   'kind_number' : get(item, 'kind_number', 0),
             \ },  item ))
     endif
   endfor

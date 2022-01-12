@@ -1179,6 +1179,22 @@ function easycomplete#util#ItemIsFromLS(item)
   endif
 endfunction " }}}
 
+" easycomplete#util#GetKindNumber(item) {{{
+function! easycomplete#util#GetKindNumber(item)
+  let kind_number = 0
+  if !exists("g:easycomplete_menuitems") | return 0 | endif
+  for item in g:easycomplete_stunt_menuitems
+    if get(item, "word") ==# get(a:item, "word")
+          \ && get(item, "menu") ==# get(a:item, "menu")
+          \ && get(item, "kind") ==# get(a:item, "kind")
+          \ && get(item, "abbr") ==# get(a:item, "abbr")
+      let kind_number = get(item, 'kind_number', 0)
+      break
+    endif
+  endfor
+  return kind_number
+endfunction " }}}
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
