@@ -1,11 +1,9 @@
 
 
 function! easycomplete#action#documentation#LspRequest(item) abort
-  call s:console('------->', a:item)
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
     let params = s:GetDocumentParams(copy(a:item), l:server_name)
-    " call s:console(params)
     try
       call easycomplete#lsp#send_request(l:server_name, {
             \ 'method': 'completionItem/resolve',
@@ -13,15 +11,6 @@ function! easycomplete#action#documentation#LspRequest(item) abort
             \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
             \ })
       call s:AsyncRun(function('easycomplete#popup#close'), ['popup'], 200)
-      " call easycomplete#lsp#send_request(l:server_name, {
-      "       \ 'method': 'completionItem/resolve',
-      "       \ 'params': extend({
-      "       \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-      "       \   'position': easycomplete#lsp#get_position(),
-      "       \   'context': { 'triggerKind': 1 }
-      "       \ }, a:item),
-      "       \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
-      "       \ })
     catch 
       echom v:exception
     endtry
@@ -52,27 +41,20 @@ function! s:HandleLspCallback(server_name, data) abort
     return
   endif
 
-
   try
     let info = a:data.response.result.documentation.value
-    " TODO here 
-    " call easycomplete#popup#MenuPopupChanged([info])
     if empty(info)
       call easycomplete#popup#close("popup")
     else
       call easycomplete#ShowCompleteInfo([info])
-      let menu_flag = "[" . b:easycomplete_lsp_plugin["name"] . "]"
-      " TODO Here 加缓存
-      " call s:log(g:easycomplete_completed_item)
-      " call easycomplete#SetMenuInfo(get(g:easycomplete_completed_item, "word", ""), info, menu_flag)
+      let menu_flag = "[" . toupper(b:easycomplete_lsp_plugin["name"]) . "]"
+      let menu_word = get(g:easycomplete_completed_item, "word", "")
+      call easycomplete#SetMenuInfo(menu_word, info, menu_flag)
     endif
   catch
-    echom '-----------------------------'
+    call easycomplete#popup#close("popup")
     echom v:exception
-    echom '-----------------------------'
   endtry
-
-  echom a:data
 endfunction
 
 function! s:console(...)

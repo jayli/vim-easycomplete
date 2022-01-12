@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -903,11 +903,11 @@ function! s:CloseCompleteInfo()
 endfunction
 
 function! easycomplete#ShowCompleteInfoByItem(item)
-  call s:console(a:item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(a:item) && async
-    call easycomplete#action#documentation#LspRequest(a:item)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [a:item], 50)
   else
     if type(info) == type("")
       let info = [info]

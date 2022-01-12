@@ -1203,9 +1203,9 @@ endfunction " }}}
 " easycomplete#util#ItemIsFromLSP()  {{{
 " 判断 item 是否由 languageServer 给出
 function easycomplete#util#ItemIsFromLS(item)
-  let menu = get(a:item, "menu", "")
+  let menu_str = get(a:item, "menu", "")
   let plugin_name = get(b:easycomplete_lsp_plugin, "name", "")
-  if "[". toupper(plugin_name) ."]" ==# menu
+  if "[". toupper(plugin_name) ."]" ==# menu_str
     return v:true
   else
     return v:false

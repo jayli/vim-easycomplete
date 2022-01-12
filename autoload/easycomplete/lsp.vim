@@ -975,7 +975,7 @@ endfunction
 
 function! s:on_notification(server_name, id, data, event) abort
   " echom '>>>> on_notification ' . string(a:data)
-  call s:log('<---', a:id, a:server_name, a:data)
+  " call s:log('<---', a:id, a:server_name, a:data)
   let l:response = a:data['response']
   let l:server = s:servers[a:server_name]
   let l:server_info = l:server['server_info']
