@@ -45,9 +45,14 @@ function! easycomplete#installer#install(...) abort
     call easycomplete#util#info('Error,', 'Unknown filetype.')
     return
   endif
-  let l:name = exists('a:1') ?
-            \ ( a:1 == "" ? easycomplete#util#GetLspPlugin()['name'] : a:1)
-            \ : easycomplete#util#GetLspPlugin()['name']
+  try
+    let l:name = exists('a:1') ?
+              \ ( a:1 == "" ? easycomplete#util#GetLspPlugin()['name'] : a:1)
+              \ : easycomplete#util#GetLspPlugin()['name']
+  catch
+    call s:log("Please install LSP Server with correct command or under supported filetype.")
+    return
+  endtry
   let l:install_script = easycomplete#installer#InstallerDir() . '/' . l:name . '.sh'
   let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . l:name
 
