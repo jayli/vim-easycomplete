@@ -907,7 +907,7 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(a:item) && async
     call s:StopAsyncRun()
-    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [a:item], 50)
+    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [a:item], 80)
   else
     if type(info) == type("")
       let info = [info]

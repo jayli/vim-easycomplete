@@ -1,4 +1,5 @@
 
+let b:easycomplete_documentation_popup = 0
 
 function! easycomplete#action#documentation#LspRequest(item) abort
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
@@ -10,11 +11,18 @@ function! easycomplete#action#documentation#LspRequest(item) abort
             \ 'params': params.completion_item,
             \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
             \ })
-      call s:AsyncRun(function('easycomplete#popup#close'), ['popup'], 200)
+      if b:easycomplete_documentation_popup > 0
+        call timer_stop(b:easycomplete_documentation_popup)
+      endif
+      let b:easycomplete_documentation_popup = timer_start(500, function("s:ClosePopup"))
     catch 
       echom v:exception
     endtry
   endif
+endfunction
+
+function! s:ClosePopup()
+  call easycomplete#popup#close("popup")
 endfunction
 
 function! s:GetDocumentParams(item, server_name)
@@ -31,7 +39,10 @@ function! s:GetDocumentParams(item, server_name)
 endfunction
 
 function! s:HandleLspCallback(server_name, data) abort
-  call s:StopAsyncRun()
+  if b:easycomplete_documentation_popup > 0
+    call timer_stop(b:easycomplete_documentation_popup)
+    let b:easycomplete_documentation_popup = 0
+  endif
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
         \ !has_key(a:data['response'], 'result')
@@ -43,9 +54,10 @@ function! s:HandleLspCallback(server_name, data) abort
 
   try
     let info = a:data.response.result.documentation.value
+    let oringal_name = a:data.response.result.label
     if empty(info)
       call easycomplete#popup#close("popup")
-    else
+    elseif oringal_name == get(g:easycomplete_completed_item, "word", "")
       call easycomplete#ShowCompleteInfo([info])
       let menu_flag = "[" . toupper(b:easycomplete_lsp_plugin["name"]) . "]"
       let menu_word = get(g:easycomplete_completed_item, "word", "")
