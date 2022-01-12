@@ -9,6 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -910,6 +911,10 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   else
     if type(info) == type("")
       let info = [info]
+    endif
+    " hack from documentation.vim
+    if exists('b:easycomplete_documentation_popup') && b:easycomplete_documentation_popup > 0
+      call timer_stop(b:easycomplete_documentation_popup)
     endif
     call s:ShowCompleteInfo(info)
   endif

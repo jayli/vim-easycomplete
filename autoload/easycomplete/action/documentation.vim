@@ -14,7 +14,7 @@ function! easycomplete#action#documentation#LspRequest(item) abort
       if b:easycomplete_documentation_popup > 0
         call timer_stop(b:easycomplete_documentation_popup)
       endif
-      let b:easycomplete_documentation_popup = timer_start(500, function("s:ClosePopup"))
+      let b:easycomplete_documentation_popup = timer_start(300, { -> s:ClosePopup() })
     catch
       echom v:exception
     endtry
@@ -32,9 +32,14 @@ function! s:GetDocumentParams(item, server_name)
   let ret = {}
   let ret.server_name = a:server_name
   let ret.completion_item = {
-        \ 'label' : a:item.word,
-        \ 'data' : {'name' : a:item.word, 'type' : 1},
-        \ 'kind' : 12
+        \  'label' : a:item.word,
+        \  'data' : {
+        \     'name' : a:item.word,
+        \     'type' : 1,
+        \     'file' : easycomplete#util#GetCurrentFullName(),
+        \     'offset' : easycomplete#context()['col']
+        \    },
+        \  'kind' : 12
         \ }
   let ret.complete_position = easycomplete#lsp#get_position()
   return ret
