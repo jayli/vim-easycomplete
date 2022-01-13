@@ -20,12 +20,21 @@ def getkey_by_alphabet(el):
 def getkey_by_length(el):
     return len(_get_key(el))
 
+def json_parse_bool2str(obj):
+    if isinstance(obj, bool):
+        return str(obj).lower()
+    if isinstance(obj, (list, tuple)):
+        return [json_parse_bool2str(item) for item in obj]
+    if isinstance(obj, dict):
+        return {json_parse_bool2str(key):json_parse_bool2str(value) for key, value in obj.items()}
+    return obj
+
 def normalize_sort(items):
     # 先按照长度排序
     items.sort(key=getkey_by_length)
     # 再按照字母表排序
     items.sort(key=getkey_by_alphabet)
-    return json.dumps(items)
+    return json.dumps(json_parse_bool2str(items))
 
 # Fuzzy search
 def fuzzy_search(needle, haystack):
