@@ -1182,7 +1182,7 @@ endfunction " }}}
 " easycomplete#util#GetKindNumber(item) {{{
 function! easycomplete#util#GetKindNumber(item)
   let kind_number = 0
-  if !exists("g:easycomplete_menuitems") | return 0 | endif
+  if !exists("g:easycomplete_stunt_menuitems") | return 0 | endif
   for item in g:easycomplete_stunt_menuitems
     if get(item, "word") ==# get(a:item, "word")
           \ && get(item, "menu") ==# get(a:item, "menu")
@@ -1193,6 +1193,23 @@ function! easycomplete#util#GetKindNumber(item)
     endif
   endfor
   return kind_number
+endfunction " }}}
+
+" easycomplete#util#GetLspItem(vim_item) {{{
+" 从 vim 格式的 complete item 反查出 lsp 返回的 item 格式
+function! easycomplete#util#GetLspItem(vim_item)
+  let lsp_item = {}
+  if !exists("g:easycomplete_stunt_menuitems") | return {} | endif
+  for item in g:easycomplete_stunt_menuitems
+    if get(item, "word") ==# get(a:vim_item, "word")
+          \ && get(item, "menu") ==# get(a:vim_item, "menu")
+          \ && get(item, "kind") ==# get(a:vim_item, "kind")
+          \ && get(item, "abbr") ==# get(a:vim_item, "abbr")
+      let lsp_item = copy(get(item,'lsp_item', {}))
+      break
+    endif
+  endfor
+  return lsp_item
 endfunction " }}}
 
 " GetVimCompletionItems {{{
@@ -1219,6 +1236,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
           \ 'menu' : "[". toupper(a:plugin_name) ."]",
           \ 'empty': 1,
           \ 'icase': 1,
+          \ 'lsp_item' : l:completion_item
           \ }
 
     " 如果 label 中包含括号 且过长

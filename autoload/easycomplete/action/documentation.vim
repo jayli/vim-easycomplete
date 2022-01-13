@@ -10,6 +10,7 @@ function! easycomplete#action#documentation#LspRequest(item) abort
     endif
     let b:easycomplete_documentation_popup = timer_start(300, { -> s:ClosePopup() })
     let params = s:GetDocumentParams(copy(a:item), l:server_name)
+    call s:console(params)
     try
       call easycomplete#lsp#send_request(l:server_name, {
             \ 'method': 'completionItem/resolve',
@@ -72,33 +73,67 @@ function! s:GetDocumentParams(item, server_name)
   let ret = {}
   let ret.server_name = a:server_name
   let kind_number = str2nr(easycomplete#util#GetKindNumber(a:item))
-  call s:console(kind_number)
+  let lsp_item = easycomplete#util#GetLspItem(a:item)
   " TODO
-  "  dart 依赖 offset 和 file 字段，未调通
   "  rust 依赖 position / textDocument 字段
   let ret.completion_item = extend({
         \  'label' : a:item.word,
-        \  'data' : {
+        \  'data' : extend({
         \     'name' : a:item.word,
-        \     'type' : 1,
-        \     'file' : easycomplete#util#GetCurrentFullName(),
-        \     'offset' : easycomplete#context()['col'],
-        \     'position' : {
-        \        'position' : easycomplete#lsp#get_position(),
-        \        'textDocument' : easycomplete#lsp#get_text_document_identifier()
-        \     },
-        \     'full_import_path': a:item.word,
-        \     'imported_name' : a:item.word,
-        \     'import_for_trait_assoc_item' : v:false,
-        \   },
-        \  'documentation': {
-        \     'kind' : kind_number,
-        \  },
-        \  'additionalTextEdits' : [],
+        \   }, s:GetExtendedParamData(get(lsp_item, 'data', {}))),
         \  'kind' : kind_number
         \ },  {})
+  " let ret.completion_item = extend({
+  "       \  'label' : a:item.word,
+  "       \  'data' : extend({
+  "       \     'name' : a:item.word,
+  "       \     'type' : 1,
+  "       \     'position' : {
+  "       \        'position' : easycomplete#lsp#get_position(),
+  "       \        'textDocument' : easycomplete#lsp#get_text_document_identifier()
+  "       \     },
+  "       \     'full_import_path': a:item.word,
+  "       \     'imported_name' : a:item.word,
+  "       \     'import_for_trait_assoc_item' : v:false,
+  "       \   }, get(lsp_item, 'data', {})),
+  "       \  'documentation': {
+  "       \     'kind' : string(kind_number),
+  "       \  },
+  "       \  'additionalTextEdits' : [],
+  "       \  'kind' : kind_number
+  "       \ },  {})
   let ret.complete_position = easycomplete#lsp#get_position()
   return ret
+endfunction
+
+function! s:GetExtendedParamData(data)
+  let plugin = easycomplete#util#GetLspPlugin()
+  let plugin_name = get(plugin, 'name', "")
+  call s:console(plugin_name)
+  if plugin_name == "dart"
+    return s:DartParamParser(a:data)
+  endif
+  if plugin_name == "sh"
+    return s:ShParamParser(a:data)
+  endif
+endfunction
+
+function! s:DartParamParser(data)
+  let ret_data = {}
+  if has_key(a:data, 'file')       | let ret_data["file"] = a:data["file"]               | endif
+  if has_key(a:data, 'iLength')    | let ret_data["iLength"] = str2nr(a:data["iLength"]) | endif
+  if has_key(a:data, "libId")      | let ret_data["libId"] = str2nr(a:data["libId"])     | endif
+  if has_key(a:data, "displayUri") | let ret_data["displayUri"] = a:data["displayUri"]   | endif
+  if has_key(a:data, "offset")     | let ret_data["offset"] = str2nr(a:data["offset"])   | endif
+  if has_key(a:data, "rOffset")    | let ret_data["rOffset"] = str2nr(a:data["rOffset"]) | endif
+  if has_key(a:data, "rLength")    | let ret_data["rLength"] = str2nr(a:data["rLength"]) | endif
+  return ret_data
+endfunction
+
+function! s:ShParamParser(data)
+  let ret_data = {}
+  let ret_data["type"] = 1
+  return ret_data
 endfunction
 
 function! s:console(...)
