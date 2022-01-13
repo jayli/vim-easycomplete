@@ -81,7 +81,28 @@ function! s:GetDocumentParams(item, server_name)
         \  'data' : extend({
         \     'name' : a:item.word,
         \   }, s:GetExtendedParamData(get(lsp_item, 'data', {}))),
-        \  'kind' : kind_number
+        \
+        \
+        \
+        \
+        \
+        \  'documentation': {
+        \     'kind' : 'plaintext',
+        \     'value' : '123'
+        \  },
+        \ 'detail': '123',
+        \ 'deprecated' : v:false,
+        \ 'preselect' : v:false,
+        \ 'insertText' : a:item.word,
+        \ 'insertTextFormat' : 1,
+        \ 'insertTextMode' : 1,
+        \ 
+        \
+        \
+        \
+        \
+        \
+        \  'kind' : kind_number,
         \ },  {})
   " let ret.completion_item = extend({
   "       \  'label' : a:item.word,
@@ -116,8 +137,30 @@ function! s:GetExtendedParamData(data)
   if plugin_name == "sh"
     return s:ShParamParser(a:data)
   endif
+  if plugin_name == "rust"
+    return s:RustParamParser(a:data)
+  endif
+
+  return a:data
 endfunction
 
+" Rust Hacking
+function! s:RustParamParser(data)
+  let ret_data = {}
+  call s:console("data", a:data)
+  let ret_data["position"] = {
+        \ 'position' : easycomplete#lsp#get_position(),
+        \ 'textDocument' : easycomplete#lsp#get_text_document_identifier(),
+        \ }
+  let item = get(g:easycomplete_completechanged_event, 'completed_item', {})
+  let word = get(item, 'word', "")
+  let ret_data["imports"] = '_'
+  let ret_data["import_for_trait_assoc_item"] = v:false
+
+  return ret_data
+endfunction
+
+" Dart hacking
 function! s:DartParamParser(data)
   let ret_data = {}
   if has_key(a:data, 'file')       | let ret_data["file"] = a:data["file"]               | endif
@@ -130,6 +173,7 @@ function! s:DartParamParser(data)
   return ret_data
 endfunction
 
+" Bash Shell Script Hacking
 function! s:ShParamParser(data)
   let ret_data = {}
   let ret_data["type"] = 1
