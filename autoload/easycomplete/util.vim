@@ -701,7 +701,7 @@ function! s:NormalizeDetail(item, parts)
     for dis_item in get(a:item, a:parts)
       if dis_item.text =~ "^\\(\\r\\|\\n\\)$"
         call add(l:desp_list, "")
-      else 
+      else
         let line_arr = split(dis_item.text, "\\n")
         if len(line_arr) == 1
           if len(l:desp_list) == 0

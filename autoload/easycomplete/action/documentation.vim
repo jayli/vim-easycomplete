@@ -18,7 +18,7 @@ function! easycomplete#action#documentation#LspRequest(item) abort
             \ 'on_notification': function('s:HandleLspCallback', [l:server_name])
             \ })
     catch
-      echom v:exception
+      " echom v:exception
     endtry
   else
     call s:ClosePopup()
@@ -60,7 +60,7 @@ function! s:HandleLspCallback(server_name, data) abort
     endif
   catch
     call s:ClosePopup()
-    echom v:exception
+    " echom v:exception
   endtry
 endfunction
 

@@ -232,6 +232,7 @@ function! s:popup(info)
 
   let info = type(a:info) == type("") ? [a:info] : a:info
   let info = easycomplete#util#ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
+
   if len(info) == 1 && len(info[0]) == 0
     if s:is_vim
       call popup_hide(g:easycomplete_popup_win["popup"])
@@ -452,10 +453,10 @@ endfunction
 function! easycomplete#popup#DisplayHeight(lines, width)
   " 1 for padding
   let height = 1
-
-  for line in a:lines
-    let height += (strdisplaywidth(line) + a:width - 1) / a:width
-  endfor
+  " for line in a:lines
+  "   let height += (strdisplaywidth(line) + a:width - 1) / a:width
+  " endfor
+  let height = len(a:lines) + 1
   let max_height = s:max_height
   return height > max_height ? max_height : height
 endfunction
