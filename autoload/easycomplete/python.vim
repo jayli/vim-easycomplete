@@ -22,7 +22,12 @@ endfunction
 
 function! easycomplete#python#NormalizeSortPY(items)
   if !s:PreparePythonEnvironment() | return a:items | endif
-  py3 vim.command("let ret = %s"% EasyCompleteUtil.normalize_sort(vim.eval("a:items")))
+  try
+    py3 vim.command("let ret = %s"% EasyCompleteUtil.normalize_sort(vim.eval("a:items")))
+  catch
+    echom "python -> vim data format parsing error"
+    echom v:exception
+  endtry
   return ret
 endfunction
 

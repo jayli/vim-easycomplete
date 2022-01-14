@@ -21,6 +21,8 @@ def getkey_by_length(el):
     return len(_get_key(el))
 
 def json_parse_bool2str(obj):
+    if obj is None:
+        return ""
     if isinstance(obj, bool):
         return str(obj).lower()
     if isinstance(obj, (list, tuple)):
