@@ -9,7 +9,6 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
@@ -136,7 +135,7 @@ function! s:BindingTypingCommandOnce()
   try
     nnoremap <silent><unique> <C-j> :EasyCompleteNextDiagnostic<CR>
     nnoremap <silent><unique> <C-k> :EasyCompletePreviousDiagnostic<CR>
-  catch /^Vim\%((\a\+)\)\=:E227/ 
+  catch /^Vim\%((\a\+)\)\=:E227/
     call easycomplete#util#log(
           \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
           \ )
