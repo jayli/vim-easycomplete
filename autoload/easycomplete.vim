@@ -905,7 +905,7 @@ endfunction
 function! easycomplete#ShowCompleteInfoByItem(item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
-  if easycomplete#util#ItemIsFromLS(a:item) && async
+  if easycomplete#util#ItemIsFromLS(a:item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
     call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [a:item], 80)
   else

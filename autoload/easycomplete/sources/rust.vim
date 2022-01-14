@@ -15,7 +15,9 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
       \       'autoimport': { 'enable': v:true },
       \     },
       \ },
-      \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\|\k\+\)$'},
+      \ 'config': {},
+      \ 'workspace_config' : {},
+      \ 'semantic_highlight' : {}
       \ })
 endfunction
 

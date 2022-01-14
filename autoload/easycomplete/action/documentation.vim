@@ -4,13 +4,13 @@ let b:easycomplete_documentation_popup = 0
 function! easycomplete#action#documentation#LspRequest(item) abort
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
-    call s:console('-->')
+    " call s:console('-->')
     if b:easycomplete_documentation_popup > 0
       call timer_stop(b:easycomplete_documentation_popup)
     endif
     let b:easycomplete_documentation_popup = timer_start(300, { -> s:ClosePopup() })
     let params = s:GetDocumentParams(copy(a:item), l:server_name)
-    call s:console(params)
+    " call s:console(params.completion_item)
     try
       call easycomplete#lsp#send_request(l:server_name, {
             \ 'method': 'completionItem/resolve',
@@ -26,7 +26,7 @@ function! easycomplete#action#documentation#LspRequest(item) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, data) abort
-  call s:console('<---', a:data.response)
+  " call s:console('<---', a:data.response)
   if b:easycomplete_documentation_popup > 0
     call timer_stop(b:easycomplete_documentation_popup)
     let b:easycomplete_documentation_popup = 0
@@ -38,7 +38,7 @@ function! s:HandleLspCallback(server_name, data) abort
         \ || !has_key(a:data, 'response')
         \ || !has_key(a:data['response'], 'result')
     call s:ClosePopup()
-    echom "lsp error response"
+    " echom "lsp error response"
     return
   endif
 
@@ -74,6 +74,7 @@ function! s:GetDocumentParams(item, server_name)
   let ret.server_name = a:server_name
   let kind_number = str2nr(easycomplete#util#GetKindNumber(a:item))
   let lsp_item = easycomplete#util#GetLspItem(a:item)
+  let text_edit = s:TextEditParser(get(lsp_item, 'textEdit', {}))
   " TODO
   "  rust 依赖 position / textDocument 字段
   let ret.completion_item = extend({
@@ -82,7 +83,12 @@ function! s:GetDocumentParams(item, server_name)
         \     'name' : a:item.word,
         \   }, s:GetExtendedParamData(get(lsp_item, 'data', {}))),
         \  'kind' : kind_number,
+        \  'sortText' : get(lsp_item, 'sortText', ""),
+        \  'detail' : get(lsp_item, 'detail', ""),
         \ },  {})
+  if !empty(text_edit)
+    let ret.completion_item["textEdit"] = text_edit
+  endif
   " let ret.completion_item = extend({
   "       \  'label' : a:item.word,
   "       \  'data' : extend({
@@ -107,8 +113,7 @@ function! s:GetDocumentParams(item, server_name)
 endfunction
 
 function! s:GetExtendedParamData(data)
-  let plugin = easycomplete#util#GetLspPlugin()
-  let plugin_name = get(plugin, 'name', "")
+  let plugin_name = easycomplete#util#GetLspPluginName()
   if plugin_name == "dart"
     return s:DartParamParser(a:data)
   endif
@@ -118,13 +123,16 @@ function! s:GetExtendedParamData(data)
   if plugin_name == "rust"
     return s:RustParamParser(a:data)
   endif
+  if plugin_name == "rb"
+    return s:RbParamParser(a:data)
+  endif
   return a:data
 endfunction
 
 " Rust Hacking
+" TODO Rust completionItem/resolve not ready
 function! s:RustParamParser(data)
   let ret_data = {}
-  call s:console("rust param data", a:data)
   let ret_data["position"] = {
         \ 'position' : easycomplete#lsp#get_position(),
         \ 'textDocument' : easycomplete#lsp#get_text_document_identifier(),
@@ -133,7 +141,6 @@ function! s:RustParamParser(data)
   let word = get(item, 'word', "")
   let ret_data["imports"] = '_'
   let ret_data["import_for_trait_assoc_item"] = v:false
-
   return ret_data
 endfunction
 
@@ -150,11 +157,42 @@ function! s:DartParamParser(data)
   return ret_data
 endfunction
 
+" ruby Hacking
+function! s:RbParamParser(data)
+  let ret_data = deepcopy(a:data)
+  let ret_data["deprecated"] = v:false
+  if get(a:data, "location", "") == ""
+    let ret_data["location"] = v:null
+  endif
+  return ret_data
+endfunction
+
 " Bash Shell Script Hacking
 function! s:ShParamParser(data)
   let ret_data = {}
   let ret_data["type"] = 1
   return ret_data
+endfunction
+
+function! s:TextEditParser(text_edit)
+  try
+    let l:te = {
+          \ 'range' : {
+          \    'end': {
+          \       'character' : str2nr(a:text_edit["range"]["end"]["character"]),
+          \       'line' : str2nr(a:text_edit["range"]["end"]["line"]),
+          \     },
+          \    'start': {
+          \       'character' : str2nr(a:text_edit["range"]["start"]["character"]),
+          \       'line' : str2nr(a:text_edit["range"]["start"]["line"]),
+          \    },
+          \ },
+          \ 'newText' : get(a:text_edit, "newText", ""),
+          \ }
+    return l:te
+  catch
+    return {}
+  endtry
 endfunction
 
 function! s:console(...)

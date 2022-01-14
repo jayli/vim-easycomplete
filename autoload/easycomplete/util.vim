@@ -1179,6 +1179,13 @@ function easycomplete#util#ItemIsFromLS(item)
   endif
 endfunction " }}}
 
+" easycomplete#util#GetLspPluginName {{{
+function! easycomplete#util#GetLspPluginName()
+  let plugin = easycomplete#util#GetLspPlugin()
+  let plugin_name = get(plugin, 'name', "")
+  return plugin_name
+endfunction " }}}
+
 " easycomplete#util#GetKindNumber(item) {{{
 function! easycomplete#util#GetKindNumber(item)
   let kind_number = 0
