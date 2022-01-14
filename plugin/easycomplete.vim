@@ -69,6 +69,9 @@ augroup easycomplete#PluginRegister
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
+      \ "root_uri_patterns": [
+      \    "package.json", "tsconfig.json"
+      \ ],
       \ 'command': 'tsserver'
       \  })
 
@@ -112,6 +115,9 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#php#constructor',
       \ 'gotodefinition': 'easycomplete#sources#php#GotoDefinition',
       \ 'command': 'intelephense',
+      \ "root_uri_patterns": [
+      \    "psalm.xml", "psalm.xml.dist"
+      \ ],
       \ 'semantic_triggers':["\\$"]
       \  })
 
@@ -182,6 +188,9 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#java#completor',
       \ 'constructor' :'easycomplete#sources#java#constructor',
       \ 'gotodefinition': 'easycomplete#sources#java#GotoDefinition',
+      \ "root_uri_patterns": [
+      \    "pom.xml", "build.gradle"
+      \ ],
       \ 'command': 'eclipse-jdt-ls'
       \  })
 
@@ -191,6 +200,9 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#go#completor',
       \ 'constructor' :'easycomplete#sources#go#constructor',
       \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
+      \ "root_uri_patterns": [
+      \    "go.mod",
+      \ ],
       \ 'command': 'gopls'
       \  })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -208,6 +220,9 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#grvy#completor',
       \ 'constructor' :'easycomplete#sources#grvy#constructor',
       \ 'gotodefinition': 'easycomplete#sources#grvy#GotoDefinition',
+      \ "root_uri_patterns": [
+      \    "build.gradle",
+      \ ],
       \ 'command': 'groovy-language-server'
       \  })
 
@@ -243,6 +258,9 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#rust#constructor',
       \ 'gotodefinition': 'easycomplete#sources#rust#GotoDefinition',
       \ 'command': 'rust-analyzer',
+      \ "root_uri_patterns": [
+      \    "Cargo.toml",
+      \ ],
       \ 'semantic_triggers':["::$"]
       \  })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({

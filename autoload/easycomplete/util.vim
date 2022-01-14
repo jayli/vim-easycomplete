@@ -1357,6 +1357,40 @@ function! easycomplete#util#LspServerReady()
 endfunction
 " }}}
 
+" Find a nearest to a `path` parent filename `filename` by traversing the filesystem upwards {{{
+function! easycomplete#util#FindNearestParentFile(path, filename) abort
+  let l:relative_path = findfile(a:filename, a:path . ';')
+
+  if !empty(l:relative_path)
+    return fnamemodify(l:relative_path, ':p')
+  else
+    return ''
+  endif
+endfunction
+
+function! easycomplete#util#GetDefaultRootUri()
+  let current_lsp_ctx = easycomplete#GetCurrentLspContext()
+  let current_file_path = fnamemodify(expand('%'), ':p:h')
+  if !has_key(current_lsp_ctx, "root_uri_patterns")
+    return "file://" . current_file_path
+  endif
+  let root_uri = ''
+  for pattern in get(current_lsp_ctx, 'root_uri_patterns', [])
+    let find_file = easycomplete#util#FindNearestParentFile(current_file_path, pattern)
+    if find_file == ""
+      continue
+    else
+      break
+    endif
+  endfor
+  if find_file == ""
+    let root_uri = "file://" . current_file_path
+  else
+    let root_uri = "file://" . fnamemodify(find_file, ':p:h')
+  endif
+  return root_uri
+endfunction " }}}
+
 " aop speed testing {{{
 " aop 测试函数调用性能用，四种调用方式
 " call emit(function('s:foo'))

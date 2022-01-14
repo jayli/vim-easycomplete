@@ -7,7 +7,7 @@ function! easycomplete#sources#php#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'intelephense',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
-      \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'config': {'refresh_pattern': '\(\$[a-zA-Z0-9_:]*\|\k\+\)$'},
       \ 'allowlist': ['php'],
       \ })

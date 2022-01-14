@@ -8,6 +8,7 @@ function! easycomplete#sources#java#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'vim-lsp-java.eclipse-jdtls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'allowlist': ['java'],
       \ })
 endfunction

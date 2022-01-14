@@ -7,7 +7,7 @@ function! easycomplete#sources#grvy#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'groovy-language-server',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
-      \ 'root_uri':{server_info-> "file://". fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'allowlist': ['groovy'],
       \ })
 endfunction

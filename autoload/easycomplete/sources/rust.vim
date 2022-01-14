@@ -8,7 +8,7 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'rust-analyzer',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
-      \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'allowlist': ['rust'],
       \ 'initialization_options': {
       \     'completion': {
