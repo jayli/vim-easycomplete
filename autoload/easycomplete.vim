@@ -255,7 +255,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   endif
   " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
   " call s:zizz()
-  if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40 
+  if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40
     noa call s:complete(a:start_pos, result)
   else
     noa call easycomplete#_complete(a:start_pos, result)
@@ -1288,7 +1288,8 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(...) abort
-  noa call call('complete', a:000)
+  " noa call call('complete', a:000)
+  noa silent! call complete(a:1, a:2)
   noa call easycomplete#popup#overlay()
 endfunction
 
