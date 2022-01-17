@@ -4,13 +4,13 @@ let b:easycomplete_documentation_popup = 0
 function! easycomplete#action#documentation#LspRequest(item) abort
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
-    call s:console('-->')
+    " call s:console('-->')
     if b:easycomplete_documentation_popup > 0
       call timer_stop(b:easycomplete_documentation_popup)
     endif
     let b:easycomplete_documentation_popup = timer_start(300, { -> s:ClosePopup() })
     let params = s:GetDocumentParams(copy(a:item), l:server_name)
-    call s:console(params.completion_item)
+    " call s:console(params.completion_item)
     try
       call easycomplete#lsp#send_request(l:server_name, {
             \ 'method': 'completionItem/resolve',
@@ -26,7 +26,7 @@ function! easycomplete#action#documentation#LspRequest(item) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, data) abort
-  call s:console('<---', a:data.response)
+  " call s:console('<---', a:data.response)
   if b:easycomplete_documentation_popup > 0
     call timer_stop(b:easycomplete_documentation_popup)
     let b:easycomplete_documentation_popup = 0
@@ -113,7 +113,7 @@ function! s:GetDocumentParams(item, server_name)
   return ret
 endfunction
 
-function! s:GetExtendedParamData(data)"{{{
+function! s:GetExtendedParamData(data) "{{{
   let plugin_name = easycomplete#util#GetLspPluginName()
   if plugin_name == "dart"
     return s:DartParamParser(a:data)
@@ -128,7 +128,7 @@ function! s:GetExtendedParamData(data)"{{{
     return s:RbParamParser(a:data)
   endif
   return a:data
-endfunction"}}}
+endfunction "}}}
 
 " Rust Hacking
 " TODO Rust completionItem/resolve not ready
