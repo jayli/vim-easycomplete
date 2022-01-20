@@ -16,10 +16,23 @@ let g:env_is_iterm = !empty($ITERM_PROFILE) ? v:true : v:false
 " Info 这里 g:env_is_gui 在 vim 下计算正确，在 nvim 下计算错误，原因未知
 " 用 easycomplete#util#IsGui() 代替
 let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
+
+if !exists("g:easycomplete_menuflag_buf")
+  let g:easycomplete_menuflag_buf = "[B]"
+endif
+if !exists("g:easycomplete_menuflag_dict")
+  let g:easycomplete_menuflag_dict = "[D]"
+endif
+if !exists("g:easycomplete_menuflag_snip")
+  let g:easycomplete_menuflag_snip = "[S]"
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover' : 1,
       \ 'g:easycomplete_diagnostics_enable': 1,
       \ 'g:easycomplete_signature_enable': 1,
+      \ 'g:easycomplete_menuflag_buf' : g:easycomplete_menuflag_buf,
+      \ 'g:easycomplete_menuflag_dict': g:easycomplete_menuflag_dict,
+      \ 'g:easycomplete_menuflag_snip': g:easycomplete_menuflag_snip,
       \ }
 
 " VIM 最低版本 8.2

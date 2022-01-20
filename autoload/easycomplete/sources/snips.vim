@@ -38,7 +38,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
           \ 'kind' : 's',
-          \ 'menu' : '[S]',
+          \ 'menu' : g:easycomplete_menuflag_snip,
           \ 'info' : [description, "-----"] + code_info
           \ })
   endfor

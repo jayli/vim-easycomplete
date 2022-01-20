@@ -813,13 +813,15 @@ function! easycomplete#util#distinct(menu_list)
 
   let buf_list = []
   for item in a:menu_list
-    if item.menu == "[B]" || item.menu == "[D]"
+    if item.menu == g:easycomplete_menuflag_buf || item.menu == g:easycomplete_menuflag_dict
       call add(buf_list, item.word)
     endif
   endfor
 
   for item in a:menu_list
-    if item.menu == "[S]" || (item.menu == "[B]" || item.menu == '[D]')
+    if item.menu == g:easycomplete_menuflag_snip ||
+          \ (item.menu == g:easycomplete_menuflag_buf ||
+          \ item.menu == g:easycomplete_menuflag_dict)
       continue
     endif
 
@@ -829,7 +831,8 @@ function! easycomplete#util#distinct(menu_list)
 
     if index(buf_list, word) >= 0
       call filter(result_items,
-            \ '!((v:val.menu == "[B]" || v:val.menu == "[D]") && v:val.word ==# "' . word . '")')
+            \ '!((v:val.menu == "' . g:easycomplete_menuflag_buf .
+            \ '" || v:val.menu == "' . g:easycomplete_menuflag_dict . '") && v:val.word ==# "' . word . '")')
     endif
   endfor
   return result_items
