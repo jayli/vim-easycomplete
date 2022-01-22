@@ -916,7 +916,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let l:count = 0
     while count_index < dam && l:count < all_items_length
       let item = all_items[l:count]
-      let item_word = s:GetItemWord(item)
+      let item_word = get(item, 'matching_word', s:GetItemWord(item))
       if a:word[0] != "_" && item_word[0] == "_"
         let item_word = substitute(item_word, "_\\+", "", "")
       endif
@@ -941,7 +941,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     " 再把模糊匹配的结果找出来
     while l:count < all_items_length
       let item = all_items[l:count]
-      let item_word = s:GetItemWord(item)
+      let item_word = get(item, 'matching_word', s:GetItemWord(item))
       if a:word[0] != "_" && item_word[0] == "_"
         let item_word = substitute(item_word, "_\\+", "", "")
       endif
