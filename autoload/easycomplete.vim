@@ -253,13 +253,25 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " 避免递归 completedone() ×➜ CompleteTypingMatch() ...
-  " call s:zizz()
-  if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40
-    noa call s:complete(a:start_pos, result)
+  " if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40
+  "   noa call s:complete(a:start_pos, result)
+  " else
+  "   noa call easycomplete#_complete(a:start_pos, result)
+  " endif
+  " ===================================
+  if g:env_is_iterm 
+    call s:StopAsyncRun()
+    if len(g:easycomplete_stunt_menuitems) < 40
+      call s:AsyncRun(function('s:complete'), [a:start_pos, result], 0)
+    else
+      call s:StopAsyncRun()
+      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, result], 0)
+    endif
   else
-    noa call easycomplete#_complete(a:start_pos, result)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:complete'), [a:start_pos, result], 0)
   endif
+  " ===================================
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
   " 所以这里要确保 g:easycomplete_menuitems 不会被修改

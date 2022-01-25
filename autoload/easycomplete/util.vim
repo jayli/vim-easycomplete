@@ -367,6 +367,7 @@ function! s:FuzzySearchRegx(needle, haystack)
   if qlen == tlen
     return a:needle ==? a:haystack ? v:true : v:false
   endif
+  let constraint = &filetype == 'vim' ? "\\{,9}" : "*"
 
   " if strlen(a:needle) <= 2
   "   return v:false
@@ -374,14 +375,14 @@ function! s:FuzzySearchRegx(needle, haystack)
   " let needle_ls = a:needle[0]
   " let cursor = 1
   " while cursor < strlen(a:needle)
-  "   let needle_ls = needle_ls . "[a-zA-Z0-9_#:\.]*" . a:needle[cursor]
+  "   let needle_ls = needle_ls . "[a-zA-Z0-9_#:\.]" . constraint . a:needle[cursor]
   "   let cursor += 1
   " endwhile
   " let needle_ls_regx = needle_ls
 
   let needle_list = easycomplete#util#str2list(a:needle)
   let needle_ls = map(needle_list, { _, val -> nr2char(val)})
-  let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]*")
+  let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]" . constraint)
 
   return (match(a:haystack, needle_ls_regx) >= 0) ? v:true : v:false
 endfunction
