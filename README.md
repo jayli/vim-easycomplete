@@ -64,7 +64,11 @@ In most cases, the plugin already map these tow HOTKEYs for you successfully. Yo
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
 
-Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics. Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag. Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag. Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
+Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
+Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
+Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
+Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
+Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
 
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
 

@@ -728,10 +728,12 @@ function! easycomplete#RegisterLspServer(opt, config)
   endif
   if !easycomplete#installer#executable(cmd)
     let l:lsp_installing_msg = "'". cmd ."' is not avilable. Do ':InstallLspServer'"
-    if g:env_is_nvim
-      call s:AsyncRun(function("easycomplete#util#info"), [l:lsp_installing_msg], 1)
-    else
-      call easycomplete#util#info(l:lsp_installing_msg)
+    if g:easycomplete_lsp_checking
+      if g:env_is_nvim
+          call s:AsyncRun(function("easycomplete#util#info"), [l:lsp_installing_msg], 1)
+      else
+        call easycomplete#util#info(l:lsp_installing_msg)
+      endif
     endif
     return
   endif
