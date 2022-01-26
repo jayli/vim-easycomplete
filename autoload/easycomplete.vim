@@ -574,10 +574,7 @@ function! easycomplete#typing()
   let g:easycomplete_start = reltime()
   if s:BackChecking()
     let g:easycomplete_backing = 1
-    " TODO 如果是后退，这里 pumvisible() 为0，再执行 BackingCompleteHandler 会
-    " 有一次闪烁
     call s:BackingCompleteHandler()
-    " call s:flush()
     return ""
   else
     let g:easycomplete_backing = 0
@@ -660,7 +657,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 30
+    let word_first_type_delay = 5
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -771,10 +768,10 @@ function! s:CompletorCallingAtFirstComplete(...)
   endif
   let s:first_render_timer = timer_start(g:easycomplete_first_render_delay,
         \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
-        \                             [
-        \                               s:GetCompleteCache(l:ctx['typing'])['start_pos'],
-        \                               s:GetCompleteCache(l:ctx['typing'])['menu_items']
-        \                             ])
+        \          [
+        \            s:GetCompleteCache(l:ctx['typing'])['start_pos'],
+        \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
+        \          ])
         \ })
   try
 
@@ -1609,9 +1606,14 @@ endfunction
 " ctx1 在前，ctx2 在后
 " 判断 FirstComplete 和 SecondComplete 是否是一个 ctx 下的行为
 function! s:SameBeginning(ctx1, ctx2)
-  if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+  try
+    if !has_key(a:ctx1, "lnum") || !has_key(a:ctx2, "lnum")
+      return v:false
+    endif
+  catch
+    " for E715
     return v:false
-  endif
+  endtry
   if a:ctx1["startcol"] == a:ctx2["startcol"]
         \ && a:ctx1["lnum"] == a:ctx2["lnum"]
         \ && match(a:ctx2["typing"], a:ctx1["typing"]) == 0
