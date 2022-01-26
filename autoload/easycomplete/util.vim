@@ -391,8 +391,6 @@ function! s:FuzzySearchRegx(needle, haystack)
   else
     return v:true
   endif
-
-  " return (matching >= 0 && matching < 3) ? v:true : v:false
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)
