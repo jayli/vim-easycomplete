@@ -384,7 +384,15 @@ function! s:FuzzySearchRegx(needle, haystack)
   let needle_ls = map(needle_list, { _, val -> nr2char(val)})
   let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]" . constraint)
 
-  return (match(a:haystack, needle_ls_regx) >= 0) ? v:true : v:false
+  let matching = match(a:haystack, needle_ls_regx)
+  if matching < 0 | return v:false | endif
+  if &filetype == "vim" && matching > 2
+    return v:false
+  else
+    return v:true
+  endif
+
+  " return (matching >= 0 && matching < 3) ? v:true : v:false
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)

@@ -259,7 +259,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   "   noa call easycomplete#_complete(a:start_pos, result)
   " endif
   " ===================================
-  if g:env_is_iterm 
+  if g:env_is_iterm
     call s:StopAsyncRun()
     if len(g:easycomplete_stunt_menuitems) < 40
       call s:AsyncRun(function('s:complete'), [a:start_pos, result], 0)
