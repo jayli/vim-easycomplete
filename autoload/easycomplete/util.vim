@@ -367,7 +367,7 @@ function! s:FuzzySearchRegx(needle, haystack)
   if qlen == tlen
     return a:needle ==? a:haystack ? v:true : v:false
   endif
-  let constraint = &filetype == 'vim' ? "\\{,9}" : "*"
+  let constraint = &filetype == 'vim' ? "\\{,15}" : "*"
 
   " if strlen(a:needle) <= 2
   "   return v:false
@@ -386,7 +386,7 @@ function! s:FuzzySearchRegx(needle, haystack)
 
   let matching = match(a:haystack, needle_ls_regx)
   if matching < 0 | return v:false | endif
-  if &filetype == "vim" && matching > 2
+  if &filetype == "vim" && matching > 3 
     return v:false
   else
     return v:true

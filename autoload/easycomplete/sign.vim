@@ -465,7 +465,12 @@ function! easycomplete#sign#LintPopup()
     call easycomplete#sign#DiagHoverFlush()
     return
   else
-    if g:easycomplete_diagnostics_last_msg != g:easycomplete_diagnostics_last_popup
+    if type(g:easycomplete_diagnostics_last_popup) == type([]) && !empty(g:easycomplete_diagnostics_last_popup)
+      let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup[0]
+    else
+      let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup
+    endif
+    if g:easycomplete_diagnostics_last_msg != g_easycomplete_diagnostics_last_popup
       call easycomplete#sign#DiagHoverFlush()
     endif
     call s:StopAsyncRun()
@@ -479,9 +484,9 @@ function! s:PopupMsg(diagnostics_info)
   endif
   let g:easycomplete_diagnostics_popup = 1
   let msg = get(a:diagnostics_info, 'message', '')
-  let g:easycomplete_diagnostics_last_popup = msg
   let msg = split(msg, "\\n")
   let showing = s:MsgNormalize(a:diagnostics_info, msg)
+  let g:easycomplete_diagnostics_last_popup = showing
   let style = s:GetPopupStyle(a:diagnostics_info["severity"])
   call easycomplete#popup#float(showing, style, 0, "txt", [0,0])
 endfunction
@@ -550,9 +555,9 @@ endfunction
 function! s:ShowDiagMsg(diagnostics_info)
   let g:easycomplete_diagnostics_hint = 1
   let msg = get(a:diagnostics_info, 'message', '')
-  let g:easycomplete_diagnostics_last_msg = msg 
   let msg = split(msg, "\\n")[0]
   let showing = s:MsgNormalize(a:diagnostics_info, msg)
+  let g:easycomplete_diagnostics_last_msg = showing
 
   " offset 的目的是确保不折行
   let offset = 13
