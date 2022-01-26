@@ -253,11 +253,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " if g:env_is_iterm && len(g:easycomplete_stunt_menuitems) < 40
-  "   noa call s:complete(a:start_pos, result)
-  " else
-  "   noa call easycomplete#_complete(a:start_pos, result)
-  " endif
   " ===================================
   if g:env_is_iterm
     call s:StopAsyncRun()
@@ -561,8 +556,10 @@ function! s:BackingCompleteHandler()
     if !empty(g:easycomplete_menuitems)
       call s:StopAsyncRun()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
-      silent! noa call easycomplete#_complete(col('.') - strlen(s:GetTypingWordByGtx()),
-            \ g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength])
+      let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
+      let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
+      call s:AsyncRun(function('s:complete'), [start_pos, result], 0)
+      " call s:AsyncRun(function('easycomplete#_complet'), [start_pos, result], 0)
     endif
   endif
 endfunction
@@ -579,8 +576,8 @@ function! easycomplete#typing()
     let g:easycomplete_backing = 1
     " TODO 如果是后退，这里 pumvisible() 为0，再执行 BackingCompleteHandler 会
     " 有一次闪烁
-    " call s:BackingCompleteHandler()
-    call s:flush()
+    call s:BackingCompleteHandler()
+    " call s:flush()
     return ""
   else
     let g:easycomplete_backing = 0
@@ -663,7 +660,7 @@ function! s:DoComplete(immediately)
   if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
     let word_first_type_delay = 0
   else
-    let word_first_type_delay = 30 
+    let word_first_type_delay = 30
   endif
 
   " typing 中的 SecondComplete 特殊字符处理
@@ -1299,9 +1296,8 @@ function! easycomplete#refresh(...)
   return ''
 endfunction
 
-function! s:complete(...) abort
-  " noa call call('complete', a:000)
-  noa silent! call complete(a:1, a:2)
+function! s:complete(start, context) abort
+  noa silent! call complete(a:start, a:context)
   noa call easycomplete#popup#overlay()
 endfunction
 
@@ -1541,7 +1537,6 @@ function! s:ResetCompleteCache()
 endfunction
 
 function! s:AddCompleteCache(word, menulist)
-  return
   if !exists('g:easycomplete_menucache')
     call s:SetupCompleteCache()
   endif
