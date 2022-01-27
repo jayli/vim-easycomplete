@@ -554,12 +554,10 @@ function! s:BackingCompleteHandler()
   else
     let g:easycomplete_stunt_menuitems = []
     if !empty(g:easycomplete_menuitems)
-      call s:StopAsyncRun()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
-      call s:AsyncRun(function('s:complete'), [start_pos, result], 0)
-      " call s:AsyncRun(function('easycomplete#_complet'), [start_pos, result], 0)
+      call s:complete(start_pos, result)
     endif
   endif
 endfunction
