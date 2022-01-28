@@ -826,27 +826,20 @@ function! easycomplete#util#distinct(menu_list)
   if empty(a:menu_list) || len(a:menu_list) == 0
     return []
   endif
-
   let result_items = deepcopy(a:menu_list)
-
   let buf_list = []
   for item in a:menu_list
     if item.menu == g:easycomplete_menuflag_buf || item.menu == g:easycomplete_menuflag_dict
       call add(buf_list, item.word)
     endif
   endfor
-
   for item in a:menu_list
     if item.menu == g:easycomplete_menuflag_snip ||
           \ (item.menu == g:easycomplete_menuflag_buf ||
           \ item.menu == g:easycomplete_menuflag_dict)
       continue
     endif
-
-    " let word = has_key(item, "abbr") && !empty(item.abbr) ?
-    "       \ item.abbr : get(item, "word", "")
     let word = s:GetItemWord(item)
-
     if index(buf_list, word) >= 0
       call filter(result_items,
             \ '!((v:val.menu == "' . g:easycomplete_menuflag_buf .
@@ -931,7 +924,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       " - 大量同样前缀的单词拥挤在一起的情况，dam 越大越好
       " - 相同前缀词较少的情况，完整匹配成功概率较小，尽早结束完整匹配性能
       "   最好，这时 dam 越小越好
-      " 折中设置 dam 为 100, 顶层遍历的时间复杂度控制在O(n)
+      " 折中设置 dam 为 100, 时间复杂度控制在O(n)
       let dam = 100
       let regx_com_times = 0
       let count_index = 0
@@ -987,7 +980,6 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       endif
       let result = original_matching_menu + otherwise_fuzzymatching
       let filtered_menu = result
-      " let filtered_menu = map(result, function("easycomplete#util#PrepareInfoPlaceHolder"))
     catch
       call s:log(v:exception)
     endtry
