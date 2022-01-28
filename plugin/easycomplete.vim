@@ -20,11 +20,20 @@ let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:fa
 if !exists("g:easycomplete_menuflag_buf")
   let g:easycomplete_menuflag_buf = "[B]"
 endif
+if !exists("g:easycomplete_kindflag_buf")
+  let g:easycomplete_kindflag_buf = ""
+endif
 if !exists("g:easycomplete_menuflag_dict")
   let g:easycomplete_menuflag_dict = "[D]"
 endif
 if !exists("g:easycomplete_menuflag_snip")
   let g:easycomplete_menuflag_snip = "[S]"
+endif
+if !exists("g:easycomplete_kindflag_snip")
+  let g:easycomplete_kindflag_snip = "s"
+endif
+if !exists("g:easycomplete_kindflag_dict")
+  let g:easycomplete_kindflag_dict = ""
 endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
@@ -35,8 +44,11 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_signature_enable': 1,
       \ 'g:easycomplete_lsp_checking' : g:easycomplete_lsp_checking,
       \ 'g:easycomplete_menuflag_buf' : g:easycomplete_menuflag_buf,
+      \ 'g:easycomplete_kindflag_buf' : g:easycomplete_kindflag_buf,
       \ 'g:easycomplete_menuflag_dict': g:easycomplete_menuflag_dict,
+      \ 'g:easycomplete_kindflag_dict': g:easycomplete_kindflag_dict,
       \ 'g:easycomplete_menuflag_snip': g:easycomplete_menuflag_snip,
+      \ 'g:easycomplete_kindflag_snip': g:easycomplete_kindflag_snip,
       \ }
 
 " VIM 最低版本 8.2

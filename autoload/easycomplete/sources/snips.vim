@@ -37,7 +37,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     call add(suggestions, {
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
-          \ 'kind' : 's',
+          \ 'kind' : g:easycomplete_kindflag_snip,
           \ 'menu' : g:easycomplete_menuflag_snip,
           \ 'info' : [description, "-----"] + code_info
           \ })
