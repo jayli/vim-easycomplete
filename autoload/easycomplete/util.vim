@@ -1163,7 +1163,7 @@ function! easycomplete#util#LspType(c_type)
       break
     endif
   endfor
-  return l:type
+  return get(g:easycomplete_lsp_type_font, l:type, l:type)
 endfunction
 " }}}
 

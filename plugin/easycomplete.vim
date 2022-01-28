@@ -38,6 +38,9 @@ endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
 endif
+if !exists("g:easycomplete_lsp_type_font")
+  let g:easycomplete_lsp_type_font = {}
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover' : 1,
       \ 'g:easycomplete_diagnostics_enable': 1,
@@ -49,6 +52,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_kindflag_dict': g:easycomplete_kindflag_dict,
       \ 'g:easycomplete_menuflag_snip': g:easycomplete_menuflag_snip,
       \ 'g:easycomplete_kindflag_snip': g:easycomplete_kindflag_snip,
+      \ 'g:easycomplete_lsp_type_font': g:easycomplete_lsp_type_font,
       \ }
 
 " VIM 最低版本 8.2
