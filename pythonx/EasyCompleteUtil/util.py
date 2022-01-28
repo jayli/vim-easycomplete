@@ -36,7 +36,7 @@ def normalize_sort(items):
     items.sort(key=getkey_by_length)
     # 再按照字母表排序
     items.sort(key=getkey_by_alphabet)
-    return json.dumps(json_parse_bool2str(items))
+    return json.dumps(json_parse_bool2str(items), ensure_ascii=False)
 
 # Fuzzy search
 def fuzzy_search(needle, haystack):
@@ -103,11 +103,11 @@ def snippets_code_info(filename, line_number):
     code_original_info = snip_ctx[start_line_index:end_line_index + 1]
     ret_array = list(map(lambda line: re.sub(r"\n$", "", line), code_original_info))
     # vim.command("echom %s"% json.dumps(ret_array))
-    return json.dumps(ret_array)
+    return json.dumps(ret_array, ensure_ascii=False)
 
 def complete_menu_filter(all_menu, word, maxlength):
     """
     """
-    return json.dumps(all_menu)
+    return json.dumps(all_menu, ensure_ascii=False)
 
 # vim:ts=4:sw=4:sts=4

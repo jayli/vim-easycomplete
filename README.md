@@ -64,14 +64,8 @@ In most cases, the plugin already map these tow HOTKEYs for you successfully. Yo
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
 
-Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
-Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
-Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
-Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
-Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
-Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
-Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
-Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
+- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
+- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
 
 Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
 
@@ -246,6 +240,44 @@ endfunction
 ```
 
 So you should redefine at least three functions `completor`/`constructor`/`gotodefinition`.
+
+### Beautify colorscheme
+
+- Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
+- Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
+- Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
+- Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
+- Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
+- Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
+- Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
+
+Example:
+
+```
+let g:easycomplete_menuflag_buf = ""
+let g:easycomplete_kindflag_buf = "⚯"
+let g:easycomplete_menuflag_snip = ""
+let g:easycomplete_kindflag_snip = "⑈"
+let g:easycomplete_kindflag_dict = "≡"
+let g:easycomplete_menuflag_dict = ""
+let g:easycomplete_lsp_type_font = {
+      \ 't':'𝘵',
+      \ 'f':'𝘧',
+      \ 'c':'𝘤',
+      \ 'm':'𝘮',
+      \ 'u':'𝘶',
+      \ 'e':'𝘦',
+      \ 's':'𝘴',
+      \ 'v':'𝘷',
+      \ 'i':'𝘪',
+      \ 'p':'𝘱',
+      \ 'k':'𝘬',
+      \ 'r':'𝘳',
+      \ 'o':"𝘰",
+      \ }
+```
+
+<img src="https://gw.alicdn.com/imgextra/i1/O1CN01gmaa6V1pW8Q922ytB_!!6000000005367-2-tps-1318-994.png" width=550 />
 
 ### Issues
 
