@@ -386,7 +386,7 @@ function! s:FuzzySearchRegx(needle, haystack)
 
   let matching = match(a:haystack, needle_ls_regx)
   if matching < 0 | return v:false | endif
-  if &filetype == "vim" && matching > 3 
+  if &filetype == "vim" && matching > 3
     return v:false
   else
     return v:true
@@ -829,21 +829,22 @@ function! easycomplete#util#distinct(menu_list)
   let result_items = deepcopy(a:menu_list)
   let buf_list = []
   for item in a:menu_list
-    if item.menu == g:easycomplete_menuflag_buf || item.menu == g:easycomplete_menuflag_dict
+    " if item.menu == g:easycomplete_menuflag_buf || item.menu == g:easycomplete_menuflag_dict
+    if index(['buf'], get(item, 'plugin_name', '')) >= 0
       call add(buf_list, item.word)
     endif
   endfor
   for item in a:menu_list
-    if item.menu == g:easycomplete_menuflag_snip ||
-          \ (item.menu == g:easycomplete_menuflag_buf ||
-          \ item.menu == g:easycomplete_menuflag_dict)
+    if index(['buf','snips'], get(item, 'plugin_name', '')) >= 0
+    " if item.menu == g:easycomplete_menuflag_snip ||
+    "       \ (item.menu == g:easycomplete_menuflag_buf ||
+    "       \ item.menu == g:easycomplete_menuflag_dict)
       continue
     endif
     let word = s:GetItemWord(item)
     if index(buf_list, word) >= 0
       call filter(result_items,
-            \ '!((v:val.menu == "' . g:easycomplete_menuflag_buf .
-            \ '" || v:val.menu == "' . g:easycomplete_menuflag_dict . '") && v:val.word ==# "' . word . '")')
+            \ '!((get(v:val, "plugin_name", "") == "buf") && v:val.word ==# "' . word . '")')
     endif
   endfor
   return result_items

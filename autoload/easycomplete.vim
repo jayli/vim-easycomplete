@@ -1171,7 +1171,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
   let g:easycomplete_source[a:plugin_name].complete_result =
-        \ deepcopy(s:NormalizeSort(s:NormalizeMenulist(a:menu_list)))
+        \ deepcopy(s:NormalizeSort(s:NormalizeMenulist(a:menu_list, a:plugin_name)))
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
@@ -1348,7 +1348,7 @@ function! s:SortTextComparatorByLength(...)
   return call("easycomplete#util#SortTextComparatorByLength", a:000)
 endfunction
 
-function! s:NormalizeMenulist(arr)
+function! s:NormalizeMenulist(arr, plugin_name)
   if empty(a:arr)
     return []
   endif
@@ -1362,6 +1362,7 @@ function! s:NormalizeMenulist(arr)
             \ 'kind': '',      'equal' : 1,
             \ 'dup': 1,        'abbr': '',
             \ 'kind_number' : get(item, 'kind_number', 0),
+            \ 'plugin_name' : a:plugin_name,
             \ }
       call add(l:menu_list, l:menu_item)
     endif
@@ -1372,6 +1373,7 @@ function! s:NormalizeMenulist(arr)
             \   'dup': 1,        'info': '',
             \   'kind': '',      'abbr': '',
             \   'kind_number' : get(item, 'kind_number', 0),
+            \   'plugin_name' : a:plugin_name,
             \ },  item ))
     endif
   endfor
