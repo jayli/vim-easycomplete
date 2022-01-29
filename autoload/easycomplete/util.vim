@@ -185,10 +185,38 @@ function! easycomplete#util#trim(str)
   return ""
 endfunction " }}}
 
+function! s:GetPluginNameFromUserData(item)
+  let user_data = easycomplete#util#GetUserData(a:item)
+  let plugin_name = get(user_data, "plugin_name", "")
+  return plugin_name
+endfunction
+
+function! easycomplete#util#GetSha256(item)
+  let user_data = easycomplete#util#GetUserData(a:item)
+  let sha = get(user_data, "sha256", "")
+  return sha 
+endfunction
+
+function! easycomplete#util#GetUserData(item)
+  let user_data_str = get(a:item, 'user_data', "")
+  if easycomplete#util#IsJson(user_data_str)
+    let user_data = json_decode(user_data_str)
+    if empty(user_data)
+      return {}
+    else
+      return user_data
+    endif
+  else
+    return {}
+  endif
+endfunction
+
 " GetInfoByCompleteItem {{{
 function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
   let t_name = s:TrimWavyLine(t_name)
+  let t_plugin_name = s:GetPluginNameFromUserData(a:item)
+  let t_sha = easycomplete#util#GetSha256(a:item)
   let info = ""
   for item in a:all_menu
     if type(item) != type({})
@@ -196,7 +224,10 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     endif
     let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
     let i_name = s:TrimWavyLine(i_name)
-    if t_name ==# i_name && get(a:item, "menu") ==# get(item, "menu")
+    let i_plugin_name = get(item, 'plugin_name', '')
+    let i_plugin_name = s:GetPluginNameFromUserData(item) 
+    let i_sha = easycomplete#util#GetSha256(item)
+    if t_name ==# i_name && i_plugin_name ==# t_plugin_name && i_sha ==# t_sha
       if has_key(item, "info")
         let info = get(item, "info")
       endif
@@ -277,7 +308,7 @@ function! easycomplete#util#IsJson(str)
   else
     try
       call json_decode(a:str)
-    catch /^Vim\%((\a\+)\)\=:E474/
+    catch /^Vim\%((\a\+)\)\=:\(E474\|E491\)/
       let flag = v:false
     endtry
   endif
@@ -1192,11 +1223,11 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
     if stridx(word,"(") <= 0
       let ret["word"] = word . "()"
       let ret['abbr'] = word . "~"
-      let ret['user_data'] = json_encode({
+      let ret['user_data'] = json_encode(extend(easycomplete#util#GetUserData(a:val), {
             \ 'expandable': 1,
             \ 'placeholder_position': strlen(word) + 1,
             \ 'cursor_backing_steps': 1
-            \ })
+            \ }))
     endif
   endif
   return ret
@@ -1326,14 +1357,16 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
-
     let l:t_info = s:NormalizeLspInfo(get(l:completion_item, "documentation", ""))
     if !empty(get(l:completion_item, "detail", ""))
       let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
     else
       let l:vim_complete_item['info'] = l:t_info
     endif
-
+    let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
+          \   'plugin_name': a:plugin_name,
+          \   'sha256': sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info']))
+          \ }))
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
 
@@ -1489,4 +1522,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
 endfunction
