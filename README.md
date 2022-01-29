@@ -253,11 +253,11 @@ So you should redefine at least three functions `completor`/`constructor`/`gotod
 
 Example:
 
-```
+```vim
 let g:easycomplete_menuflag_buf = ""
 let g:easycomplete_kindflag_buf = "⚯"
 let g:easycomplete_menuflag_snip = ""
-let g:easycomplete_kindflag_snip = "⑈"
+let g:easycomplete_kindflag_snip = "𞢋"
 let g:easycomplete_kindflag_dict = "≡"
 let g:easycomplete_menuflag_dict = ""
 let g:easycomplete_lsp_type_font = {
