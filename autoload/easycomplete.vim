@@ -1027,7 +1027,7 @@ function! easycomplete#TypeEnterWithPUM()
   endif
   " 选中 snippet
   if (pumvisible() && !empty(l:item) && s:SnipSupports() &&
-        \ get(l:item, "menu") ==# "[S]" )
+        \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips")
     call s:ExpandSnipManually(get(l:item, "word"))
     call s:zizz()
     return "\<C-Y>"

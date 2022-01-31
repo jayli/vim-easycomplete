@@ -185,19 +185,23 @@ function! easycomplete#util#trim(str)
   return ""
 endfunction " }}}
 
-function! s:GetPluginNameFromUserData(item)
+function! easycomplete#util#GetPluginNameFromUserData(item) " {{{
+  return s:GetPluginNameFromUserData(a:item)
+endfunction " }}}
+
+function! s:GetPluginNameFromUserData(item) " {{{
   let user_data = easycomplete#util#GetUserData(a:item)
   let plugin_name = get(user_data, "plugin_name", "")
   return plugin_name
-endfunction
+endfunction " }}}
 
-function! easycomplete#util#GetSha256(item)
+function! easycomplete#util#GetSha256(item) " {{{
   let user_data = easycomplete#util#GetUserData(a:item)
   let sha = get(user_data, "sha256", "")
   return sha 
-endfunction
+endfunction " }}}
 
-function! easycomplete#util#GetUserData(item)
+function! easycomplete#util#GetUserData(item) " {{{
   let user_data_str = get(a:item, 'user_data', "")
   if easycomplete#util#IsJson(user_data_str)
     let user_data = json_decode(user_data_str)
@@ -209,7 +213,7 @@ function! easycomplete#util#GetUserData(item)
   else
     return {}
   endif
-endfunction
+endfunction " }}}
 
 " GetInfoByCompleteItem {{{
 function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)

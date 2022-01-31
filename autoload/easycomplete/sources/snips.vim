@@ -39,6 +39,9 @@ function! easycomplete#sources#snips#completor(opt, ctx)
           \ 'abbr' : trigger . '~',
           \ 'kind' : g:easycomplete_kindflag_snip,
           \ 'menu' : g:easycomplete_menuflag_snip,
+          \ 'user_data': json_encode({
+          \     'plugin_name': a:opt['name'],
+          \   }),
           \ 'info' : [description, "-----"] + code_info
           \ })
   endfor
