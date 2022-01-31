@@ -257,7 +257,7 @@ Example:
 let g:easycomplete_menuflag_buf = ""
 let g:easycomplete_kindflag_buf = "⚯"
 let g:easycomplete_menuflag_snip = ""
-let g:easycomplete_kindflag_snip = "𞢋"
+let g:easycomplete_kindflag_snip = "ട"
 let g:easycomplete_kindflag_dict = "≡"
 let g:easycomplete_menuflag_dict = ""
 let g:easycomplete_lsp_type_font = {
@@ -274,6 +274,8 @@ let g:easycomplete_lsp_type_font = {
       \ 'k':'𝘬',
       \ 'r':'𝘳',
       \ 'o':"𝘰",
+      \ 'l':"𝘭",
+      \ 'a':"𝘢",
       \ }
 ```
 
