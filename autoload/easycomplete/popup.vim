@@ -272,14 +272,15 @@ function! s:popup(info)
     return
   endif
 
-  let l:screen_line = line('.') - line('w0') + 1
+  let l:screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
+  let screen_enc = (win_screenpos(win_getid())[0] - 1)
   if l:screen_line <= s:event.row
     " 菜单向下展开
     let opt.row = s:event.row
+    let opt.row = winline() + screen_enc
   else
     " 菜单向上展开
     let opt.row = l:screen_line - opt.height - 1
-    let opt.row += (win_screenpos(win_getid())[0] - 1)
     if s:is_nvim
       let opt.row += 0
     endif
