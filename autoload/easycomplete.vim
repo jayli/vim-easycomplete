@@ -137,9 +137,11 @@ function! s:BindingTypingCommandOnce()
     nnoremap <silent><unique> <C-j> :EasyCompleteNextDiagnostic<CR>
     nnoremap <silent><unique> <C-k> :EasyCompletePreviousDiagnostic<CR>
   catch /^Vim\%((\a\+)\)\=:E227/
-    call easycomplete#util#log(
-          \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
-          \ )
+    if g:easycomplete_lsp_checking != 0
+      call easycomplete#util#log(
+            \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
+            \ )
+    endif
   endtry
 
   " TODO 不生效
