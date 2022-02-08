@@ -23,6 +23,7 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let s:opt = {}
   let s:menu_flag = "[TS]"
+  let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
   " 三种提示默认支持，和coc默认配置保持一致:
   " syntaxDiag/semanticDiag/suggestionDiag
   " requestCompleted表示一轮events完成
@@ -337,7 +338,6 @@ function! easycomplete#sources#ts#CompleteChanged()
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
-
 function! easycomplete#sources#ts#signature()
   call s:TsserverReload()
   let ctx = easycomplete#context()
@@ -567,7 +567,7 @@ function! easycomplete#sources#ts#GotoDefinition(...)
     return v:false
   endif
   let ext = tolower(easycomplete#util#extention())
-  if index(["js","jsx","ts","tsx","mjs","ejs"], ext) >= 0
+  if index(s:file_extensions, ext) >= 0
     let l:ctx = easycomplete#context()
     call s:GotoDefinition(l:ctx["filepath"], l:ctx["lnum"], l:ctx["col"])
     " return v:true 成功跳转，告知主进程
@@ -736,6 +736,12 @@ function! s:TsserverOpen()
   endif
   let l:file = easycomplete#context()['filepath']
   let l:args = {'file': l:file}
+  let l:file_extention = tolower(easycomplete#util#extention())
+  if index(["js","ts","jsx","tsx"], l:file_extention) >= 0
+    call extend(l:args, {
+          \  'scriptKindName': toupper(l:file_extention)
+          \ })
+  endif
   call s:SendCommandOneWay('open', l:args)
   " TODO: open 比较耗时，需要 open 完了再异步执行 config，需要绑定回调事件
   call s:ConfigTsserver()

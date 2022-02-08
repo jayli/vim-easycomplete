@@ -106,7 +106,7 @@ augroup easycomplete#PluginRegister
       \    "package.json", "tsconfig.json"
       \ ],
       \ 'command': 'tsserver'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': "dart",
@@ -129,7 +129,7 @@ augroup easycomplete#PluginRegister
       \      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
       \      "\\w.$"
       \    ]
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
@@ -139,7 +139,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
       \ 'command': 'ccls',
       \ 'semantic_triggers':["[^->]->$", "[^:]::$"]
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'php',
@@ -152,7 +152,7 @@ augroup easycomplete#PluginRegister
       \    "psalm.xml", "psalm.xml.dist"
       \ ],
       \ 'semantic_triggers':["\\$"]
-      \  })
+      \ })
 
   " css-languageserver 默认不带 completionProvider，必须要安装
   " snippets-supports
@@ -166,7 +166,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#css#GotoDefinition',
       \ 'command': 'css-languageserver',
       \ 'semantic_triggers':['[^:]:$']
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
@@ -176,7 +176,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#html#GotoDefinition',
       \ 'command': 'html-languageserver',
       \ 'semantic_triggers':['[^<]<$']
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'yml',
@@ -185,7 +185,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#yaml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#yaml#GotoDefinition',
       \ 'command': 'yaml-language-server',
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'sh',
@@ -194,7 +194,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#bash#constructor',
       \ 'gotodefinition': 'easycomplete#sources#bash#GotoDefinition',
       \ 'command': 'bash-language-server',
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
@@ -204,7 +204,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#json#GotoDefinition',
       \ 'command': 'json-languageserver',
       \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
@@ -213,7 +213,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
       \ 'command': 'pyls'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'java',
@@ -225,7 +225,7 @@ augroup easycomplete#PluginRegister
       \    "pom.xml", "build.gradle"
       \ ],
       \ 'command': 'eclipse-jdt-ls'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'go',
@@ -237,7 +237,8 @@ augroup easycomplete#PluginRegister
       \    "go.mod",
       \ ],
       \ 'command': 'gopls'
-      \  })
+      \ })
+
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'nim',
       \ 'whitelist': ['nim'],
@@ -245,7 +246,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#nim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#nim#GotoDefinition',
       \ 'command': 'nimlsp'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
@@ -257,7 +258,7 @@ augroup easycomplete#PluginRegister
       \    "build.gradle",
       \ ],
       \ 'command': 'groovy-language-server'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'lua',
@@ -267,7 +268,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
       \ 'command': 'emmylua-ls',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
-      \  })
+      \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rb',
       \ 'whitelist': ['ruby'],
@@ -275,7 +276,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#ruby#constructor',
       \ 'gotodefinition': 'easycomplete#sources#ruby#GotoDefinition',
       \ 'command': 'solargraph'
-      \  })
+      \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'kt',
       \ 'whitelist': ['kotlin'],
@@ -295,7 +296,7 @@ augroup easycomplete#PluginRegister
       \    "Cargo.toml",
       \ ],
       \ 'semantic_triggers':["::$"]
-      \  })
+      \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'xml',
       \ 'whitelist': ['xml'],
@@ -304,7 +305,7 @@ augroup easycomplete#PluginRegister
       \ 'gotodefinition': 'easycomplete#sources#xml#GotoDefinition',
       \ 'command': 'lemminx',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
-      \  })
+      \ })
 
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -314,13 +315,13 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
       \ 'command': 'cmake-language-server'
-      \  })
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
-      \  })
+      \ })
 augroup END
 
 augroup easycomplete#NormalBinding
