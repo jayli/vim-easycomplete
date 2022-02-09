@@ -99,7 +99,6 @@ function! s:HandleLspCallback(server, data) abort
 
       " Signature label.
       let l:label = l:signature['label']
-
       " Mark current parameter.
       if has_key(a:data['response']['result'], 'activeParameter')
         let l:parameters = get(l:signature, 'parameters', [])
@@ -111,6 +110,7 @@ function! s:HandleLspCallback(server, data) abort
         endif
       endif
 
+      " 参数label
       let l:param = ""
       if exists('l:parameter')
         let l:parameter_doc = s:GetParameterLabel(l:signature,l:parameter)
@@ -119,11 +119,16 @@ function! s:HandleLspCallback(server, data) abort
         endif
       endif
 
+      " doc 正文
       let l:full_doc = {}
       if has_key(l:signature, 'documentation')
-        let l:full_doc = l:signature['documentation']
+        let l:full_doc = get(l:signature, 'documentation', "")
+      else
+        let l:full_doc = get(l:parameter, "documentation", {})
       endif
 
+      " l:param 一般是参数类型，似乎不用显示
+      let l:param = ""
       call s:SignatureCallback(l:label, l:param, l:full_doc)
       return
     else
@@ -141,7 +146,11 @@ endfunction
 function! s:SignatureCallback(title, param, doc)
   let title = a:title
   let param = a:param
-  let content = empty(a:doc) ? "" : a:doc["value"]
+  if type(a:doc) == type("")
+    let content = a:doc
+  else
+    let content = empty(a:doc) ? "" : get(a:doc, "value", "")
+  endif
   let content = substitute(content, "```\\w\\+", "", "g")
   let content = substitute(content, "```", "", "g")
   let content = split(content, "\\n")
