@@ -60,3 +60,10 @@ function! easycomplete#python#GetSnippetsCodeInfo(snip_object)
   py3 vim.command('let ret = %s'% EasyCompleteUtil.snippets_code_info(filepath, line_number))
   return ret
 endfunction
+
+function! easycomplete#python#Sha256(str)
+  if !s:PreparePythonEnvironment() | return a:str | endif
+  py3 str = vim.eval("a:str")
+  py3 vim.command('let ret = "%s"'% EasyCompleteUtil.get_sha256(str))
+  return ret
+endfunction

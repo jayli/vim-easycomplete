@@ -3,8 +3,15 @@
 import json
 import vim
 import re
+import hashlib
 
 SNIPPETS_FILES_CTX = {}
+
+def get_sha256(str):
+    s = hashlib.sha256()
+    s.update(str.encode("utf8"))
+    sha_str= s.hexdigest()
+    return sha_str
 
 # Normal sort
 def _get_key(el):

@@ -1211,6 +1211,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
   let menu = exists('a:val.menu') ? a:val.menu : ""
   let abbr = exists('a:val.abbr') ? a:val.abbr : ""
   let info = exists('a:val.info') ? a:val.info : ""
+  let kind_number = exists('a:val.kind_number') ? a:val.kind_number : 0
   let user_data = exists('a:val.user_data') ? a:val.user_data : ""
   let ret = {
         \ "abbr":      abbr,
@@ -1221,7 +1222,8 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
         \ "word":      word,
         \ "info":      info,
         \ "equal":     1,
-        \ "user_data": user_data
+        \ "user_data": user_data,
+        \ "kind_number": kind_number,
         \ }
   if is_func
     if stridx(word,"(") <= 0
@@ -1369,7 +1371,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     endif
     let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
           \   'plugin_name': a:plugin_name,
-          \   'sha256': sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info']))
+          \   'sha256': easycomplete#util#Sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info']))
           \ }))
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
@@ -1379,6 +1381,16 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   endif
 
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
+endfunction
+
+function! easycomplete#util#Sha256(str)
+  if has("python3")
+    return easycomplete#python#Sha256(a:str)
+  elseif has("cryptv") && exists("*sha256")
+    return sha256(a:str)
+  else
+    return a:str
+  endif
 endfunction
 
 function! s:NormalizeLspInfo(info)
