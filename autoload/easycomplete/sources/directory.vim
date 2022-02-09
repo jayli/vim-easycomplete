@@ -114,8 +114,9 @@ function! s:TypingAPath(ctx)
   "   \<Tab> => done
   "   xxxss \ xxxss<Tab> => done
   "   "/<tab>" => 不起作用, fixed at 2019-09-28
+  " MoreInfo: #140
   let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-        \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
+        \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
 
   " 兼容单个 '/' 匹配的情况
   let spath = s:GetPathName(substitute(fpath,"^[\\.\\/].*\\/","./","g"))
