@@ -50,7 +50,7 @@ Useage
 
 You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
 Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t`
-for jumping back (Same as tags jumping). 
+for jumping back (Same as tags jumping).
 
 Or you can use `:EasyCompleteGotoDefinition` command.
 
@@ -70,6 +70,9 @@ Typing `./` or `../` to trigger directory completion suggestion.
 
 Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if
 you need.
+
+- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
+- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
 
 Typing `:h easycomplete` for help.
 

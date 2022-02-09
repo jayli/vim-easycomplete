@@ -34,14 +34,25 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ", 
                 \ "matchgroup=Conceal end=/\%(``\)\@!`/ containedin=TOP concealends"],"")
   let original_filetype = getwinvar(a:winid, "&filetype")
-  call easycomplete#util#execute(a:winid, [
-        \ "hi helpCommand cterm=underline gui=underline ctermfg=White guifg=White",
-        \ "silent! syntax clear NewCodeBlock",
-        \ regin_cmd,
-        \ "hi! link NewCodeBlock helpCommand",
-        \ "let &filetype='txt'",
-        \ "let &filetype='" . original_filetype . "'",
-        \ ])
+  if has("nvim")
+    let exec_cmd = [
+          \ "hi helpCommand cterm=underline gui=underline ctermfg=White guifg=White",
+          \ "silent! syntax clear NewCodeBlock",
+          \ regin_cmd,
+          \ "hi! link NewCodeBlock helpCommand",
+          \ "let &filetype='help'",
+          \ ]
+  else
+    let exec_cmd = [
+          \ "hi helpCommand cterm=underline gui=underline ctermfg=White guifg=White",
+          \ "silent! syntax clear NewCodeBlock",
+          \ regin_cmd,
+          \ "hi! link NewCodeBlock helpCommand",
+          \ "let &filetype='txt'",
+          \ "let &filetype='" . original_filetype . "'",
+          \ ]
+  endif
+  call easycomplete#util#execute(a:winid, exec_cmd)
 endfunction " }}}
 
 " Get back ground color form a GroupName {{{
@@ -104,7 +115,6 @@ endfunction " }}}
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
 endfunction " }}}
-
 
 " log {{{
 function! s:log(...)

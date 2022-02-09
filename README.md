@@ -1,12 +1,10 @@
 # Vim-EasyComplete
 
-[中文](README-cn.md) | [English](README.md)
-
-> A Fast Code Completion Plugin for VIM/NVIM with no redundancy.
+> A Fast & Minimalism Style Code Completion Plugin for VIM/NVIM.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin. 
+Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin.
 
 ![](https://gw.alicdn.com/imgextra/i4/O1CN01L2IJJD27ngf0JVb4l_!!6000000007842-1-tps-934-507.gif)
 
@@ -47,7 +45,6 @@ It use Tab to trigger completion suggestions. You can change this setting by
 let g:easycomplete_tab_trigger="<c-space>"
 ```
 
-There are four build-in popup menu themes to avoid cterm default ugliy styles: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
 
 ### Useage
 
@@ -243,6 +240,8 @@ So you should redefine at least three functions `completor`/`constructor`/`gotod
 
 ### Beautify colorscheme
 
+There are four build-in popup menu themes to avoid cterm default ugliy styles: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
+
 - Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
 - Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
 - Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
@@ -283,7 +282,7 @@ let g:easycomplete_lsp_type_font = {
 
 ### Issues
 
-[WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>,<https://zhuanlan.zhihu.com/p/425555993>
+[WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>, <https://zhuanlan.zhihu.com/p/425555993>
 
 ### License
 

@@ -33,7 +33,6 @@
 -webkit-gradient
 -webkit-linear-gradient
 -webkit-min-device-pixel-ratio
-A
 ABBR
 ADDRESS
 AREA
