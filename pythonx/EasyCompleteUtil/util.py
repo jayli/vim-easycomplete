@@ -3,9 +3,14 @@
 import json
 import vim
 import re
+import os
 import hashlib
 
 SNIPPETS_FILES_CTX = {}
+
+
+def listdir(path):
+    return os.listdir(path)
 
 def get_sha256(str):
     s = hashlib.sha256()

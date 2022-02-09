@@ -1023,6 +1023,20 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   endif
 endfunction
 
+function! easycomplete#util#ls(path)
+  " 中文有问题 TODO
+  let result_list = []
+  let is_win = has('win32') || has('win64')
+  if has("python3")
+    let result_list = easycomplete#python#ListDir(a:path)
+  elseif !is_win && executable("ls")
+    let result_list = systemlist('ls '. a:path . " 2>/dev/null")
+  else
+    let result_list = []
+  endif
+  return result_list
+endfunction
+
 function! easycomplete#util#trace(...)
   let name = exists('a:1') ? a:1 : ""
   let stack = expand('<stack>')

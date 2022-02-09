@@ -22,7 +22,11 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   let spath_start = a:typing_path.short_path_start
 
   " 查找目录
-  let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
+  try
+    let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
+  catch
+    echom v:exception
+  endtry
   if len(result) == 0
     if strwidth(a:ctx['char']) != 1
       call feedkeys("\<Tab>", "in")
@@ -57,12 +61,10 @@ function! s:GetDirAndFiles(typing_path, base)
 
   if a:base == ""
     " 查找目录下的文件和目录
-    let result_list = systemlist('ls '. path .
-          \ " 2>/dev/null")
+    let result_list = easycomplete#util#ls(path)
   else
     " 这里没考虑Cygwin的情况
-    let result_list = systemlist('ls '. s:GetPathName(path) .
-          \ " 2>/dev/null")
+    let result_list = easycomplete#util#ls(s:GetPathName(path))
     " 使用filter过滤，没有使用grep过滤，以便后续性能调优
     " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
     " 只有首次点击<Tab>时能忽略大小写，
@@ -158,4 +160,8 @@ function! s:GetPathName(path)
   let path =  simplify(a:path)
   let pathname = matchstr(path,"^.*\\/")
   return pathname
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction

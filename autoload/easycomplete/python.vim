@@ -67,3 +67,10 @@ function! easycomplete#python#Sha256(str)
   py3 vim.command('let ret = "%s"'% EasyCompleteUtil.get_sha256(str))
   return ret
 endfunction
+
+function! easycomplete#python#ListDir(path)
+  if !s:PreparePythonEnvironment() | return [] | endif
+  py3 path_str = vim.eval("a:path")
+  py3 vim.command('let ret = %s'% EasyCompleteUtil.listdir(path_str))
+  return ret
+endfunction
