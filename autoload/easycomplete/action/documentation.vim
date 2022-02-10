@@ -113,7 +113,7 @@ function! s:GetDocumentParams(item, server_name)
   return ret
 endfunction
 
-function! s:GetExtendedParamData(data) "{{{
+function! s:GetExtendedParamData(data)
   let plugin_name = easycomplete#util#GetLspPluginName()
   if plugin_name == "dart"
     return s:DartParamParser(a:data)
@@ -128,7 +128,7 @@ function! s:GetExtendedParamData(data) "{{{
     return s:RbParamParser(a:data)
   endif
   return a:data
-endfunction "}}}
+endfunction
 
 " Rust Hacking
 " TODO Rust completionItem/resolve not ready
