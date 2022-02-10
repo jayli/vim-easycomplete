@@ -24,7 +24,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     try
       let description = get(snippets, trigger, "")
       let description = empty(description) ? "Snippet: " . trigger : description
-      let snip_object = s:get_snip_object(trigger, g:current_ulti_dict_info)
+      let snip_object = s:GetSnipObject(trigger, g:current_ulti_dict_info)
     catch /^Vim\%((\a\+)\)\=:E684/
       continue
     endtry
@@ -41,8 +41,9 @@ function! easycomplete#sources#snips#completor(opt, ctx)
           \ 'menu' : g:easycomplete_menuflag_snip,
           \ 'user_data': json_encode({
           \     'plugin_name': a:opt['name'],
+          \     'sha256': easycomplete#util#Sha256(trigger . string(code_info)),
           \   }),
-          \ 'info' : [description, "-----"] + code_info
+          \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info)
           \ })
   endfor
 
@@ -50,7 +51,23 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   return v:true
 endfunction
 
-function! s:get_snip_object(trigger, current_ulti_dict_info)
+function! s:CodeInfoFilter(code_info)
+  let code_info = type(a:code_info) == type("") ? [a:code_info] : a:code_info
+  let count_index = 0
+  let result_info = []
+  while count_index < len(code_info)
+    let tmp_code_snip = code_info[count_index]
+    let tmp_code_snip = substitute(tmp_code_snip, "$\\d\\+","","g")
+    let tmp_code_snip = substitute(tmp_code_snip, "${\\d\\+:\\(\[^}\]\\+\\)}",'\=submatch(1)',"g")
+    let tmp_code_snip = substitute(tmp_code_snip, "${\\d\\+}",'',"g")
+    let tmp_code_snip = substitute(tmp_code_snip, "${\\(\[^}\]\\+\\)}"," ","g")
+    call add(result_info, tmp_code_snip)
+    let count_index += 1
+  endwhile
+  return result_info
+endfunction
+
+function! s:GetSnipObject(trigger, current_ulti_dict_info)
   let info_str = get(a:current_ulti_dict_info, a:trigger)['location']
   let info_str_array = split(info_str, ":")
   let snip_object = {}
