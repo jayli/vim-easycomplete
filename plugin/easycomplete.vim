@@ -96,17 +96,17 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#buf#completor',
       \ })
 
-  " au User easycomplete_default_plugin call easycomplete#RegisterSource({
-  "     \ 'name': 'ts',
-  "     \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
-  "     \ 'completor': function('easycomplete#sources#ts#completor'),
-  "     \ 'constructor' :function('easycomplete#sources#ts#constructor'),
-  "     \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
-  "     \ "root_uri_patterns": [
-  "     \    "package.json", "tsconfig.json"
-  "     \ ],
-  "     \ 'command': 'tsserver'
-  "     \ })
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'ts',
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
+      \ 'completor': function('easycomplete#sources#ts#completor'),
+      \ 'constructor' :function('easycomplete#sources#ts#constructor'),
+      \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
+      \ "root_uri_patterns": [
+      \    "package.json", "tsconfig.json"
+      \ ],
+      \ 'command': 'tsserver'
+      \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'deno',

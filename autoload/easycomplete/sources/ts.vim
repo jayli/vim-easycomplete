@@ -96,10 +96,15 @@ endfunction
 
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
+  if easycomplete#sources#deno#IsDenoProject()
+    call easycomplete#UnRegisterSource("ts")
+    return
+  else
+    call easycomplete#UnRegisterSource("deno")
+  endif
   if !s:TsserverIsReady()
     return
   endif
-
   augroup easycomplete#sources#ts#augroup
     autocmd!
     autocmd BufUnload *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#destory()

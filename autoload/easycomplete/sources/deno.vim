@@ -42,6 +42,11 @@ function! easycomplete#sources#deno#constructor(opt, ctx)
         \ 'workspace_config' : {},
         \ 'semantic_highlight' : {},
         \ })
+  if easycomplete#sources#deno#IsDenoProject()
+    call easycomplete#UnRegisterSource("ts")
+  else
+    call easycomplete#UnRegisterSource("deno")
+  endif
 endfunction
 
 function! easycomplete#sources#deno#completor(opt, ctx) abort
@@ -57,6 +62,51 @@ function! easycomplete#sources#deno#filter(matches)
   let matches = a:matches
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches
+endfunction
+
+function! easycomplete#sources#deno#IsTSOrJSFiletype()
+  if index(s:file_extensions, easycomplete#util#extention()) >= 0
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+function! easycomplete#sources#deno#IsDenoProject()
+  if !easycomplete#sources#deno#IsTSOrJSFiletype() | return v:false | endif
+  let current_file_path = easycomplete#util#GetCurrentFullName()
+  let current_file_dir = fnamemodify(expand('%'), ':p:h')
+  let ts_project_patterns = ["package.json", "tsconfig.json"]
+  let deno_project_patterns = ["deno.json", "deno.jsonc", "import_map.json"]
+  " 当存在 node_modules 时的情况要排除
+  if isdirectory(current_file_dir . "/node_modules")
+    return v:false
+  endif
+  for package_file in ts_project_patterns + deno_project_patterns
+    let project_package_file = easycomplete#util#FindNearestParentFile(current_file_path, package_file)
+    if !empty(project_package_file) && s:HasNodeMudulesDir(project_package_file)
+      return v:false
+    endif
+  endfor
+  " 存在 deno 配置文件
+  for package_file in deno_project_patterns
+    let project_package_file = easycomplete#util#FindNearestParentFile(current_file_path, package_file)
+    if !empty(project_package_file)
+      return v:true
+    endif
+  endfor
+  return v:false
+  " TODO 根据文件内容是否有 import http 来判断是否是 deno 文件
+endfunction
+
+function! s:HasNodeMudulesDir(package_file)
+  if empty(a:package_file) | return v:false | endif
+  let project_root = fnamemodify(a:package_file, ':p:h')
+  if isdirectory(project_root . "/node_modules")
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 function! s:log(...)

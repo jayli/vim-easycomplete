@@ -86,7 +86,9 @@ function! easycomplete#Enable()
   call s:SetupCompleteCache()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
-  call easycomplete#lsp#enable()
+  if !easycomplete#sources#deno#IsTSOrJSFiletype() || easycomplete#sources#deno#IsDenoProject()
+    call easycomplete#lsp#enable()
+  endif
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#sign#init()
     call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
@@ -712,14 +714,13 @@ function! easycomplete#RegisterSource(opt)
 endfunction
 
 function! easycomplete#UnRegisterSource(name)
-  if !has_key(a:opt, "name")
-    return
-  endif
   if !exists("g:easycomplete_source")
     let g:easycomplete_source = {}
     return
   endif
-  unlet g:easycomplete_source[a:name]
+  if has_key(g:easycomplete_source, a:name)
+    unlet g:easycomplete_source[a:name]
+  endif
 endfunction
 
 function! easycomplete#RegisterLspServer(opt, config)
