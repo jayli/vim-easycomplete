@@ -4,20 +4,16 @@ endif
 let g:easycomplete_sources_tss = 1
 
 function! easycomplete#sources#tss#constructor(opt, ctx)
-  if executable('typescript-language-server')
-    call easycomplete#lsp#register_server({
-          \ 'name': 'typescript-language-server',
-          \ 'cmd': {server_info->['typescript-language-server', '--stdio']},
-          \ 'root_uri':{server_info-> "file://". fnamemodify(expand('%'), ':p:h')},
-          \ 'initialization_options': {'diagnostics': 'true'},
-          \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
-          \ 'workspace_config': {},
-          \ 'semantic_highlight': {},
-          \ })
-  else
-    call s:log(printf("'typescript-language-server' is not avilable, Please install: '%s'",
-          \ 'npm -g install typescript-language-server'))
-  endif
+  " TODO 缺少 installer
+  call easycomplete#RegisterLspServer(a:opt, {
+        \ 'name': 'typescript-language-server',
+        \ 'cmd': {server_info->['typescript-language-server', '--stdio']},
+        \ 'root_uri':{server_info-> "file://". fnamemodify(expand('%'), ':p:h')},
+        \ 'initialization_options': {'diagnostics': 'true'},
+        \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx'],
+        \ 'workspace_config': {},
+        \ 'semantic_highlight': {},
+        \ })
 endfunction
 
 function! easycomplete#sources#tss#completor(opt, ctx) abort
@@ -25,7 +21,7 @@ function! easycomplete#sources#tss#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#tss#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["js","ts","jsx","tsx"])
+  return easycomplete#DoLspDefinition(["js","ts","jsx","tsx","mjs","ejs"])
 endfunction
 
 function! s:log(...)

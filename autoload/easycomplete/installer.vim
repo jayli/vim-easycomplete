@@ -107,15 +107,15 @@ endfunction
 
 function! s:executable(cmd) abort
   if executable(a:cmd)
-    return 1
+    return v:true
   endif
   let plug_name = easycomplete#GetPlugNameByCommand(a:cmd)
-  if empty(plug_name) | return 0 | endif
+  if empty(plug_name) | return v:false | endif
   let local_cmd = easycomplete#installer#LspServerDir() . '/' . plug_name . '/' . a:cmd
   if executable(local_cmd)
-    return 1
+    return v:true
   endif
-  return 0
+  return v:false
 endfunction
 
 function! easycomplete#installer#executable(...)

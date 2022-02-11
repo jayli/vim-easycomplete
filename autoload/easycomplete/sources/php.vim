@@ -1,7 +1,7 @@
-if exists('g:easycomplete_php')
+if exists('g:easycomplete_sources_php')
   finish
 endif
-let g:easycomplete_php = 1
+let g:easycomplete_sources_php = 1
 
 function! easycomplete#sources#php#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
