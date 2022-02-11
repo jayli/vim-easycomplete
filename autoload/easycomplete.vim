@@ -711,6 +711,17 @@ function! easycomplete#RegisterSource(opt)
   let g:easycomplete_source[a:opt["name"]] = a:opt
 endfunction
 
+function! easycomplete#UnRegisterSource(name)
+  if !has_key(a:opt, "name")
+    return
+  endif
+  if !exists("g:easycomplete_source")
+    let g:easycomplete_source = {}
+    return
+  endif
+  unlet g:easycomplete_source[a:name]
+endfunction
+
 function! easycomplete#RegisterLspServer(opt, config)
   let cmd = get(a:opt, 'command', '')
   if empty(cmd)
