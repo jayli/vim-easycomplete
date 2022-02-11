@@ -50,14 +50,14 @@ let g:easycomplete_tab_trigger="<c-space>"
 
 By default you can use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can use `:EasyCompleteGotoDefinition` command.
 
-Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>`:
+Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. The plugin has already map diagnostic jumping to `<C-j>` and `<C-k>`. You can change these mapping via:
 
 ```vim
-nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
-nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
+nnoremap <silent> <C-n> :EasyCompleteNextDiagnostic<CR>
+nnoremap <silent> <C-p> :EasyCompletePreviousDiagnostic<CR>
 ```
 
-In most cases, the plugin already map these tow HOTKEYs for you successfully. You only have to set custom diagnostic HOTKEYs manually in case of there was a conflict. By default press `<C-j>` or `<C-k>` for diagnostics jumping like this:
+You only have to set custom diagnostic HOTKEYs manually in case of there was a conflict. By default press `<C-j>` or `<C-k>` for diagnostics jumping like this:
 
 <img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
 
@@ -89,6 +89,7 @@ All commands:
 | `:EasyCompleteProfileStart`       | Start record diagnostics message         |
 | `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
 | `:EasyCompleteLint`               | Do diagnostic                            |
+| `:DenoCache`                      | Do Deno Cache for downloading modules    |
 
 ### Language Support
 
@@ -162,7 +163,7 @@ More info about semantic completion for each supported language:
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
 - Ruby: [solargraph](https://github.com/castwide/solargraph) required.
 - Nim: [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) downloading is very slow, You'd better intall minlsp manually.
-- Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required.
+- Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
 
 #### Snippet Support
 

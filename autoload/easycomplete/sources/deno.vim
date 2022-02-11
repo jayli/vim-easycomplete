@@ -5,47 +5,57 @@ let g:easycomplete_sources_deno = 1
 let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
 
 function! easycomplete#sources#deno#constructor(opt, ctx)
-  call easycomplete#RegisterLspServer(a:opt, {
-        \ 'name': 'deno',
-        \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'lsp']},
-        \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
-        \ 'initialization_options' : {
-        \   'enable': v:true,
-        \   'lint': v:true,
-        \   'unstable': v:true,
-        \   'importMap': v:null,
-        \   'codeLens': {
-        \     'implementations': v:true,
-        \     'references': v:true,
-        \     'referencesAllFunctions': v:true,
-        \     'test': v:true,
-        \     'testArgs': ['--allow-all'],
-        \   },
-        \   "suggest": {
-        \     "autoImports": v:true,
-        \     "completeFunctionCalls": v:true,
-        \     "names": v:true,
-        \     "paths": v:true,
-        \     "imports": {
-        \       "autoDiscover": v:false,
-        \       "hosts": {
-        \         "https://deno.land/": v:true,
-        \       },
-        \     },
-        \   },
-        \   'config': v:null,
-        \   'internalDebug': v:false,
-        \  },
-        \ 'config': {'refresh_pattern': '\(\$[a-zA-Z0-9_:]*\|\k\+\)$'},
-        \ 'allowlist': a:opt["whitelist"],
-        \ 'blocklist' : [],
-        \ 'workspace_config' : {},
-        \ 'semantic_highlight' : {},
-        \ })
-  if easycomplete#sources#deno#IsDenoProject()
+  if easycomplete#sources#deno#ok()
+    call easycomplete#RegisterLspServer(a:opt, {
+          \ 'name': 'deno',
+          \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'lsp']},
+          \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
+          \ 'initialization_options' : {
+          \   'enable': v:true,
+          \   'lint': v:true,
+          \   'unstable': v:true,
+          \   'importMap': v:null,
+          \   'codeLens': {
+          \     'implementations': v:true,
+          \     'references': v:true,
+          \     'referencesAllFunctions': v:true,
+          \     'test': v:true,
+          \     'testArgs': ['--allow-all'],
+          \   },
+          \   "suggest": {
+          \     "autoImports": v:true,
+          \     "completeFunctionCalls": v:true,
+          \     "names": v:true,
+          \     "paths": v:true,
+          \     "imports": {
+          \       "autoDiscover": v:false,
+          \       "hosts": {
+          \         "https://deno.land/": v:true,
+          \       },
+          \     },
+          \   },
+          \   'config': v:null,
+          \   'internalDebug': v:false,
+          \  },
+          \ 'config': {'refresh_pattern': '\(\$[a-zA-Z0-9_:]*\|\k\+\)$'},
+          \ 'allowlist': a:opt["whitelist"],
+          \ 'blocklist' : [],
+          \ 'workspace_config' : {},
+          \ 'semantic_highlight' : {},
+          \ })
     call easycomplete#UnRegisterSource("ts")
+
+    augroup easycomplete#DenoCommand
+      command! DenoCache :call easycomplete#sources#deno#cache()
+    augroup END
+  endif
+endfunction
+
+function! easycomplete#sources#deno#ok()
+  if easycomplete#sources#deno#IsTSOrJSFiletype() && easycomplete#sources#deno#IsDenoProject()
+    return v:true
   else
-    call easycomplete#UnRegisterSource("deno")
+    return v:false
   endif
 endfunction
 
@@ -55,6 +65,39 @@ endfunction
 
 function! easycomplete#sources#deno#GotoDefinition(...)
   return easycomplete#DoLspDefinition(s:file_extensions)
+endfunction
+
+function! easycomplete#sources#deno#cache()
+  if !easycomplete#sources#deno#ok()
+    call s:log("Please do `deno cache` under a deno project!")
+    return
+  endif
+  let current_file = easycomplete#util#GetCurrentFullName()
+  let deno_command = easycomplete#installer#GetCommand("deno")
+  let exec_command = deno_command . " cache " . current_file
+  call s:log('deno cache ' . current_file . ' ......')
+  if g:env_is_vim
+    let l:bufnr = term_start(exec_command, {
+        \ 'hidden' : 1,
+        \ 'term_rows': 5,
+        \ 'term_name':'deno_cache',
+        \ })
+    let l:job = term_getjob(l:bufnr)
+    if l:job != v:null
+      call job_setoptions(l:job, {'exit_cb': function('s:CachePost', [])})
+    endif
+  else
+    call termopen(exec_command, {
+        \ 'hidden' : 1,
+        \ 'term_rows': 5,
+        \ 'term_name':'deno_cache',
+        \ 'on_exit': function('s:CachePost', []),
+        \ })
+  endif
+endfunction
+
+function! s:CachePost(job, code, ...) abort
+  call s:log('`deno cache` Finished!')
 endfunction
 
 function! easycomplete#sources#deno#filter(matches)

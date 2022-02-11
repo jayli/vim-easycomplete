@@ -89,6 +89,7 @@ All commands:
 | :EasyCompleteProfileStart         | Start record diagnostics message         |
 | :EasyCompleteProfileStop          | Stop record diagnostics  message         |
 | :EasyCompleteLint                 | Do diagnostic                            |
+| :DenoCache                        | Do Deno Cache for downloading modules    |
 
 ===============================================================================
 
@@ -100,13 +101,13 @@ Most Language require LSP Server. Install missing LSP Server with
 `:EasyCompleteInstallServer` for current filetype (recommended). LSP Server
 will be installed in `~/.config/vim-easycomplete/servers`. >
 
-  :EasyCompleteInstall
+  :InstallLspServer
 
 Or you can install a lsp server with specified plugin name (not recommended).
 
 Take typescript/javascript for example: >
 
-  :EasyCompleteInstallServer ts
+  :InstallLspServer ts
 
 All supported languages:
 
@@ -116,6 +117,7 @@ All supported languages:
 | buf         | keywords & dictionary | No Need                | No Need   |
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |
 | ts          | JavaScript/TypeScript | tsserver               | Yes       |
+| deno        | JavaScript/TypeScript | deno                   | Yes       |
 | vim         | Vim                   | vim-language-server    | Yes       |
 | cpp         | C/C++                 | ccls                   | Yes       |
 | css         | CSS                   | css-languageserver     | Yes       |
@@ -134,6 +136,8 @@ All supported languages:
 | kt          | Kotlin                | kotlin-language-server | Yes       |
 | grvy        | Groovy                | groovy-language-server | Yes       |
 | cmake       | cmake                 | cmake-language-server  | Yes       |
+| dart        | dart                  | analysis...-snapshot   | Yes       |
+| php         | php                   | intelephense           | Yes       |
 
 EasyComplete needs ultisnips and vim-snippets for snippets support if you want.
 This two plugin is compatible with EasyComplete out of the box. Install with
@@ -143,6 +147,8 @@ vim-plug: >
   Plug 'honza/vim-snippets'
 
 ===============================================================================
+
+	Get More Info: <https://github.com/jayli/vim-easycomplete>
 
 Help
 
