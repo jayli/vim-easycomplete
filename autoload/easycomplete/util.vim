@@ -1465,7 +1465,9 @@ endfunction
 " Find a nearest to a `path` parent filename `filename` by traversing the filesystem upwards {{{
 function! easycomplete#util#FindNearestParentFile(path, filename) abort
   let l:relative_path = findfile(a:filename, a:path . ';')
-
+  if empty(l:relative_path)
+    let l:relative_path = finddir(a:filename, a:path . ';')
+  endif
   if !empty(l:relative_path)
     return fnamemodify(l:relative_path, ':p')
   else

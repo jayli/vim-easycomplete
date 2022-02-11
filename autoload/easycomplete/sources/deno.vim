@@ -138,6 +138,20 @@ function! easycomplete#sources#deno#IsDenoProject()
       return v:true
     endif
   endfor
+
+  let vscode_config = easycomplete#util#FindNearestParentFile(current_file_path, '.vscode')
+  if empty(vscode_config) | return v:false | endif
+  let vscode_settings = findfile(vscode_config . "/settings.json")
+  if empty(vscode_settings) | return v:false | endif
+  let vscode_json_str = join(readfile(vscode_settings), "")
+  let vscode_json_obj = js_decode(vscode_json_str)
+  if get(vscode_json_obj, "deno.enable", v:false)
+    " TODO 还需做这这个判断  "deno.unstable": true
+    if !get(vscode_json_obj, "deno.lint", v:false)
+      let g:easycomplete_diagnostics_enable = 0
+    endif
+    return v:true
+  endif
   return v:false
   " TODO 根据文件内容是否有 import http 来判断是否是 deno 文件
 endfunction
