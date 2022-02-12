@@ -199,7 +199,7 @@ function! easycomplete#GetCurrentLspContext()
       endif
     endif
   endfor
-  return get(g:easycomplete_source, item, {})
+  return get(g:easycomplete_source, l:ctx_name, {})
 endfunction
 
 " Second Complete Entry
