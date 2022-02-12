@@ -8,7 +8,7 @@ function! easycomplete#sources#deno#constructor(opt, ctx)
   if easycomplete#sources#deno#ok()
     call easycomplete#RegisterLspServer(a:opt, {
           \ 'name': 'deno',
-          \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'lsp']},
+          \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'lsp', '--unstable']},
           \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
           \ 'initialization_options' : {
           \   'enable': v:true,
