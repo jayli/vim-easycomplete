@@ -87,16 +87,20 @@ function! easycomplete#sources#deno#cache()
       call job_setoptions(l:job, {'exit_cb': function('s:CachePost', [])})
     endif
   else
-    call termopen(exec_command, {
+    call easycomplete#job#start(exec_command, {
         \ 'hidden' : 1,
         \ 'term_rows': 5,
         \ 'term_name':'deno_cache',
+        \ 'term_finish': 'close',
+        \ 'curwin':'0',
         \ 'on_exit': function('s:CachePost', []),
         \ })
+
   endif
 endfunction
 
 function! s:CachePost(job, code, ...) abort
+  " TODO 执行失败的判断
   call s:log('`deno cache` Finished!')
 endfunction
 
