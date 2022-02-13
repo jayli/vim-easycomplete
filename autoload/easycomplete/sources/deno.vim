@@ -116,6 +116,7 @@ function! easycomplete#sources#deno#IsTSOrJSFiletype()
 endfunction
 
 function! easycomplete#sources#deno#IsDenoProject()
+  if !exists('*js_decode') | return v:false | endif
   if !easycomplete#sources#deno#IsTSOrJSFiletype() | return v:false | endif
   let current_file_path = easycomplete#util#GetCurrentFullName()
   let current_file_dir = fnamemodify(expand('%'), ':p:h')
