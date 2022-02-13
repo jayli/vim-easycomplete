@@ -1024,7 +1024,6 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
 endfunction
 
 function! easycomplete#util#ls(path)
-  " 中文有问题 TODO
   let result_list = []
   let is_win = has('win32') || has('win64')
   if has("python3")
