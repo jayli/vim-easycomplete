@@ -24,7 +24,7 @@ endfunction
 function! easycomplete#installer#GetCommand(name)
   let opt = easycomplete#GetOptions(a:name)
   if empty(opt)
-    call easycomplete#util#info('error', 'plugin options is null')
+    call easycomplete#util#info('[error]', 'GetCommand(): plugin options is null')
     return ''
   endif
   let cmd = opt['command']
@@ -38,8 +38,17 @@ function! easycomplete#installer#GetCommand(name)
   return ''
 endfunction
 
+function! s:LspCmdInstalled(name)
+  let opt = easycomplete#GetOptions(a:name)
+  if empty(opt)
+    call easycomplete#util#info('[error]', 'LspCmdInstalled(): plugin options is null')
+    return v:false
+  endif
+  let cmd = get(opt, 'command', '')
+  return s:executable(cmd)
+endfunction
+
 function! easycomplete#installer#install(...) abort
-  echom 's'
   let lsp_plugin = easycomplete#util#GetLspPlugin()
   if (!exists('a:1') || empty('a:1')) && !has_key(lsp_plugin, 'name')
     call easycomplete#util#info('Error,', 'Unknown filetype.')
@@ -67,8 +76,10 @@ function! easycomplete#installer#install(...) abort
     return
   endif
 
-  if confirm(printf('Install %s lsp server?', l:name), "&Yes\n&Cancel") !=# 1
-    return
+  if s:LspCmdInstalled(l:name)
+    if confirm(printf('%s lsp server is already installed. reinstall it again?', l:name), "&Yes\n&Cancel") !=# 1
+      return
+    endif
   endif
 
   if isdirectory(l:lsp_server_dir)
