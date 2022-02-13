@@ -901,13 +901,15 @@ function! easycomplete#util#AutoLoadDict()
   if !exists("g:easycomplete_dict")
     let g:easycomplete_dict = []
   endif
-  if index(g:easycomplete_dict, &filetype) >= 0
+  let fname = get(easycomplete#GetCurrentLspContext(), "name", "")
+  if empty(fname) | return | endif
+  if index(g:easycomplete_dict, fname) >= 0
     return
   endif
-  call add(g:easycomplete_dict, &filetype)
+  call add(g:easycomplete_dict, fname)
   for es_path in split(&rtp, ",")
     if stridx(es_path, "vim-easycomplete") >= 0
-      let path =  globpath(es_path, 'dict/' . &filetype . '.txt')
+      let path =  globpath(es_path, 'dict/' . fname . '.txt')
       if len(path) != 0 && strridx(&dictionary, path) < 0
         silent noa execute 'setlocal dictionary+='.fnameescape(path)
       endif
