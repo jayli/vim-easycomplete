@@ -564,7 +564,7 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
         elseif t_maxwidth == maxwidth
           let t_maxwidth += 2
         endif
-        let t_info[l:count] = repeat("-", t_maxwidth)
+        let t_info[l:count] = repeat("─", t_maxwidth)
         break
       endif
       let l:count += 1
