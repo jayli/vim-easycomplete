@@ -94,6 +94,11 @@ function! easycomplete#Enable()
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
+  if s:SnipSupports()
+    let g:UltiSnipsSnippetDirectories = [
+          \ easycomplete#util#GetEasyCompleteRootDirectory() . "/UltiSnips"
+          \ ]
+  endif
   call timer_start(300, { -> easycomplete#AutoLoadDict() })
 endfunction
 
@@ -1640,40 +1645,20 @@ function! s:SameBeginning(ctx1, ctx2)
   endif
 endfunction
 
+function! easycomplete#Filename(...)
+  let template = get(a:000, 0, "$1")
+  let arg2 = get(a:000, 1, "")
+  let basename = expand('%:t:r')
+  if basename == ''
+    return arg2
+  else
+    return substitute(template, '$1', basename, 'g')
+  endif
+endfunction
+
+
 function! s:GetTypingWord()
   return easycomplete#util#GetTypingWord()
-endfunction
-
-function! s:HasKey(...)
-  return call('easycomplete#util#HasKey', a:000)
-endfunction
-
-function! s:AsyncRun(...)
-  return call('easycomplete#util#AsyncRun', a:000)
-endfunction
-
-function! s:StopAsyncRun(...)
-  return call('easycomplete#util#StopAsyncRun', a:000)
-endfunction
-
-function! s:NotInsertMode()
-  return call('easycomplete#util#NotInsertMode', a:000)
-endfunction
-
-function! s:log(...)
-  return call('easycomplete#util#log', a:000)
-endfunction
-
-function! s:console(...)
-  return call('easycomplete#log#log', a:000)
-endfunction
-
-function! s:trace(...)
-  return call('easycomplete#util#trace', a:000)
-endfunction
-
-function! Console(...)
-  return call('easycomplete#log#log', a:000)
 endfunction
 
 " LSP 的 completor 函数，通用函数，可以直接使用，也可以自己再封装一层
@@ -1806,5 +1791,36 @@ function! easycomplete#BufEnter()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call timer_start(1600, { -> easycomplete#lint() })
   endif
+endfunction
+function! s:HasKey(...)
+  return call('easycomplete#util#HasKey', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
+endfunction
+
+function! s:NotInsertMode()
+  return call('easycomplete#util#NotInsertMode', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
+endfunction
+
+function! Console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
 
