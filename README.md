@@ -114,8 +114,8 @@ All supported languages:
 
 | Plugin Name      | Languages             | Language Server               | Installer          | Env requirements|
 |------------------|-----------------------|:-----------------------------:|:------------------:|:---------------:|
-| directory        | directory suggestion  | No Need                       | No Need            | None            |
-| buf              | keywords & dictionary | No Need                       | No Need            | None            |
+| directory        | directory suggestion  | No Need                       | Integrated         | None            |
+| buf              | keywords & dictionary | No Need                       | Integrated         | None            |
 | snips            | Snippets Support      | ultisnips/vim-snippets        | No                 | python3         |
 | ts               | JavaScript/TypeScript | tsserver                      | Yes                | node/npm        |
 | deno             | JavaScript/TypeScript | deno                          | Yes                | deno            |
@@ -167,11 +167,10 @@ More info about semantic completion for each supported language:
 
 #### Snippet Support
 
-EasyComplete needs [ultisnips](https://github.com/SirVer/ultisnips) and [vim-snippets](https://github.com/honza/vim-snippets) for snippets support. This two plugin is compatible with EasyComplete out of the box. Install with vim-plug:
+Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed. Install with vim-plug:
 
 ```vim
 Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
 ```
 
 You may meet this error in neovim 0.4.4 with ultisnips:
