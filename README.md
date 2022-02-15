@@ -6,7 +6,7 @@
 
 Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin.
 
-![](https://gw.alicdn.com/imgextra/i4/O1CN01L2IJJD27ngf0JVb4l_!!6000000007842-1-tps-934-507.gif)
+<img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=550 />
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
@@ -59,7 +59,7 @@ nnoremap <silent> <C-p> :EasyCompletePreviousDiagnostic<CR>
 
 You only have to set custom diagnostic HOTKEYs manually in case of there was a conflict. By default press `<C-j>` or `<C-k>` for diagnostics jumping like this:
 
-<img src="https://gw.alicdn.com/imgextra/i3/O1CN01veJhM51xTOxgC2bc7_!!6000000006444-2-tps-1090-118.png" width=550 />
+<img src="https://img.alicdn.com/imgextra/i1/O1CN01g7PWjZ1q7EVKVpxno_!!6000000005448-1-tps-902-188.gif" width=600 />
 
 - Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
 - Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
@@ -72,7 +72,7 @@ Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if yo
 
 Vim-Easycomplete also support signature popup (Use `let g:easycomplete_signature_enable = 0` to disable):
 
-<img src="https://gw.alicdn.com/imgextra/i4/O1CN01dzWiPR2AEpMYNF1b1_!!6000000008172-2-tps-1350-402.png" width=680 />
+<img src="https://img.alicdn.com/imgextra/i4/O1CN01kNd19n1k7nINy4SQT_!!6000000004637-1-tps-862-228.gif" width=600 />
 
 Typing `:h easycomplete` for help.
 
@@ -280,7 +280,7 @@ let g:easycomplete_lsp_type_font = {
       \ }
 ```
 
-<img src="https://gw.alicdn.com/imgextra/i4/O1CN0131IrSF1Sl290CCasJ_!!6000000002286-2-tps-1218-924.png" width=550 />
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN01sS82tq1S8Ys9SNbCV_!!6000000002202-2-tps-1720-1026.png" width=550 />
 
 ### Issues
 
