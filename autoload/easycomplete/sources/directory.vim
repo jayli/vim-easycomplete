@@ -1,27 +1,22 @@
 
 function! easycomplete#sources#directory#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
-
   if !l:typing_path.isPath
-    " 这里是告诉引擎，该插件匹配结束，匹配了个空
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
-
   call easycomplete#util#AsyncRun(
         \ function('s:CompleteHandler'),
         \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path],
         \ 10 )
   " 展开目录时，中断其他complete逻辑
-  " 终端其他 complete 逻辑，设计上的问题，这里要用异步调 easycomplete#complete
-  " 方法
+  " 中断其他 complete 逻辑，设计上的问题，这里要用异步调
+  " easycomplete#complete()
   return v:false
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   let spath_start = a:typing_path.short_path_start
-
-  " 查找目录
   try
     let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
   catch
@@ -63,7 +58,7 @@ function! s:GetDirAndFiles(typing_path, base)
     " 查找目录下的文件和目录
     let result_list = easycomplete#util#ls(path)
   else
-    " 这里没考虑Cygwin的情况
+    " TODO 这里没考虑Cygwin的情况
     let result_list = easycomplete#util#ls(s:GetPathName(path))
     " 使用filter过滤，没有使用grep过滤，以便后续性能调优
     " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
@@ -98,10 +93,9 @@ endfunction
 " 判断当前是否正在输入一个地址path
 " base 原本想传入当前文件名字，实际上传不进来，这里也没用到
 function! s:TypingAPath(ctx)
-  " 这里不清楚为什么
+  " TODO 这里不清楚为什么
   " 输入 ./a/b/c ，./a/b/  两者得到的prefx都为空
-  " 前者应该得到 c
-  " 这里只能临时将base透传进来表示文件名
+  " 前者应该得到 c, 这里只能临时将base透传进来表示文件名
   let line  = getline('.')
   let coln  = col('.') - 1
   let coln  = a:ctx['col'] - 1
@@ -113,7 +107,6 @@ function! s:TypingAPath(ctx)
   "   \ a <Tab>  => done
   "   \<Tab> => done
   "   xxxss \ xxxss<Tab> => done
-  "   "/<tab>" => 不起作用, fixed at 2019-09-28
   " MoreInfo: #140
   let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
         \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
@@ -126,7 +119,6 @@ function! s:TypingAPath(ctx)
   let pathDict                 = {}
   let pathDict.line            = line
   let pathDict.prefx           = prefx
-  " fname 暂没用上
   let pathDict.fname           = s:GetFileName(prefx)
   let pathDict.fpath           = fpath " fullpath
   let pathDict.spath           = spath " shortpath
@@ -156,7 +148,6 @@ function! s:GetFileName(path)
   return fname
 endfunction
 
-" 同上
 function! s:GetPathName(path)
   let path =  simplify(a:path)
   let pathname = matchstr(path,"^.*\\/")

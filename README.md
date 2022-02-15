@@ -241,9 +241,9 @@ endfunction
 
 So you should redefine at least three functions `completor`/`constructor`/`gotodefinition`.
 
-### Beautify colorscheme
+### Customise vim completion menu
 
-There are four build-in popup menu themes to avoid cterm default ugliy styles: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). It can be ignored in most cases.
+There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
 
 - Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
 - Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
@@ -253,7 +253,7 @@ There are four build-in popup menu themes to avoid cterm default ugliy styles: `
 - Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
 - Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
 
-Example:
+Example configuration with <https://nerdfonts.com>:
 
 ```vim
 let g:easycomplete_menuflag_buf = ""
@@ -281,7 +281,7 @@ let g:easycomplete_lsp_type_font = {
       \ }
 ```
 
-<img src="https://gw.alicdn.com/imgextra/i1/O1CN01gmaa6V1pW8Q922ytB_!!6000000005367-2-tps-1318-994.png" width=550 />
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN0131IrSF1Sl290CCasJ_!!6000000002286-2-tps-1218-924.png" width=550 />
 
 ### Issues
 

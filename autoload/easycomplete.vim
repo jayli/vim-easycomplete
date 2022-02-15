@@ -12,7 +12,7 @@ function! easycomplete#LogStart()
   " call s:console()
 endfunction
 
-" 全局 Complete 注册插件，其中插件和 LSP Server 是包含关系
+" 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
 "   g:easycomplete_source['vim'].lsp 指向 lsp config
 let g:easycomplete_source  = {}
 " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
@@ -77,7 +77,6 @@ function! easycomplete#Enable()
   doautocmd <nomodeline> User easycomplete_default_plugin
   doautocmd <nomodeline> User easycomplete_custom_plugin
   call s:InitLocalVars()
-  " 要注意绑定顺序：
   "  - 必须要确保typing command先绑定
   "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
@@ -656,7 +655,7 @@ function! s:DoComplete(immediately)
   endif
 
   " 首次按键给一个延迟，体验更好
-  if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately == v:true
+  if index([':','.','/'], l:ctx['char']) >= 0 || a:immediately is v:true
     let word_first_type_delay = 0
   else
     let word_first_type_delay = 5
@@ -888,7 +887,7 @@ function! s:GetTypingWordByGtx()
   return l:ctx['typed'][strlen(l:gtx['typed']) - strlen(l:gtx['typing']) - offset:]
 endfunction
 
-" 只针对 FirstComplete 完成后的结果进行 Match 匹配动作，不再重新请求 LSP
+" For FirstComplete only
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
