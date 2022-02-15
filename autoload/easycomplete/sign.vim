@@ -297,7 +297,11 @@ function! easycomplete#sign#unhold()
     catch
     endtry
   endif
-  let sign_placed_list = sign_getplaced(current_fn)
+  try
+    let sign_placed_list = sign_getplaced(current_fn)
+  catch /^Vim\%((\a\+)\)\=:E158/
+    let sign_placed_list = []
+  endtry
   if empty(sign_placed_list)
     return
   endif
