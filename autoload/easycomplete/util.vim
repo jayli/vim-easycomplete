@@ -1,26 +1,5 @@
 """ 常用的工具函数
 scriptencoding utf-8
-" filetype() {{{
-function! easycomplete#util#filetype()
-  " SourcePost 事件中 &filetype 为空，应当从 bufname 中根据后缀获取
-  " TODO 这个函数需要重写
-  let ext_part = easycomplete#util#extention()
-  let filetype_dict = {
-        \ 'js':'javascript',
-        \ 'ts':'typescript',
-        \ 'jsx':'javascript.jsx',
-        \ 'tsx':'javascript.jsx',
-        \ 'py':'python',
-        \ 'rb':'ruby',
-        \ 'sh':'shell'
-        \ }
-  if index(['js','ts','jsx','tsx','py','rb','sh'], ext_part) >= 0
-    return filetype_dict[ext_part]
-  else
-    return ext_part
-  endif
-endfunction " }}}
-
 " get file extention {{{
 function! easycomplete#util#extention()
   let filename = fnameescape(fnamemodify(bufname('%'),':p'))
@@ -901,22 +880,29 @@ function! easycomplete#util#AutoLoadDict()
   if !exists("g:easycomplete_dict")
     let g:easycomplete_dict = []
   endif
-  let fname = get(easycomplete#GetCurrentLspContext(), "name", "")
-  if empty(fname) | return | endif
-  if index(g:easycomplete_dict, fname) >= 0
+  let plug_name = get(easycomplete#GetCurrentLspContext(), "name", "")
+  if empty(plug_name) | return | endif
+  if index(g:easycomplete_dict, plug_name) >= 0
     return
   endif
-  call add(g:easycomplete_dict, fname)
+  call add(g:easycomplete_dict, plug_name)
+  let es_path = easycomplete#util#GetEasyCompleteRootDirectory()
+  let path =  globpath(es_path, 'dict/' . plug_name. '.txt')
+  if len(path) != 0 && strridx(&dictionary, path) < 0
+    silent noa execute 'setlocal dictionary+='.fnameescape(path)
+  endif
+endfunction " }}}
+
+function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
+  let ret_path = ""
   for es_path in split(&rtp, ",")
     if stridx(es_path, "vim-easycomplete") >= 0
-      let path =  globpath(es_path, 'dict/' . fname . '.txt')
-      if len(path) != 0 && strridx(&dictionary, path) < 0
-        silent noa execute 'setlocal dictionary+='.fnameescape(path)
-      endif
+      let ret_path = es_path
       break
     endif
   endfor
-endfunction " }}}
+  return ret_path
+endfunction "}}}
 
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
@@ -1548,7 +1534,9 @@ function! easycomplete#util#fullfill(str)
     return a:str
   endif
 endfunction
+" }}}
 
+" utils function {{{
 function! easycomplete#util#IsGui()
   return (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
 endfunction
@@ -1560,3 +1548,5 @@ endfunction
 function! s:trace(...)
   return call('easycomplete#util#trace', a:000)
 endfunction
+" }}}
+

@@ -75,11 +75,13 @@ function! easycomplete#sources#deno#cache()
   let current_file = easycomplete#util#GetCurrentFullName()
   let deno_command = easycomplete#installer#GetCommand("deno")
   let exec_command = deno_command . " cache " . current_file
-  call s:log('deno cache ' . current_file . ' ......')
+  let current_dir = fnamemodify(expand('%'), ':p:h')
   if g:env_is_vim
+    bo 5new
+    call s:log('deno cache ' . current_file . ' ......')
     let l:bufnr = term_start(exec_command, {
-        \ 'hidden' : 1,
-        \ 'term_rows': 5,
+        \ 'hidden' : 0,
+        \ 'curwin' : 1,
         \ 'term_name':'deno_cache',
         \ })
     let l:job = term_getjob(l:bufnr)
@@ -87,21 +89,20 @@ function! easycomplete#sources#deno#cache()
       call job_setoptions(l:job, {'exit_cb': function('s:CachePost', [])})
     endif
   else
-    call easycomplete#job#start(exec_command, {
-        \ 'hidden' : 1,
+    bo 5new
+    call termopen(exec_command, {
+        \ 'cwd': current_dir,
+        \ 'hidden' : 0,
         \ 'term_rows': 5,
         \ 'term_name':'deno_cache',
-        \ 'term_finish': 'close',
-        \ 'curwin':'0',
         \ 'on_exit': function('s:CachePost', []),
         \ })
-
+    startinsert
   endif
 endfunction
 
 function! s:CachePost(job, code, ...) abort
-  " TODO 执行失败的判断
-  call s:log('`deno cache` Finished!')
+  call s:AsyncRun(function('easycomplete#util#info'), ['`deno cache` Finished!'], 10)
 endfunction
 
 function! easycomplete#sources#deno#filter(matches)
@@ -180,4 +181,12 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
 endfunction
