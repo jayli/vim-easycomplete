@@ -280,7 +280,7 @@ let g:easycomplete_lsp_type_font = {
       \ }
 ```
 
-<img src="https://img.alicdn.com/imgextra/i3/O1CN01sS82tq1S8Ys9SNbCV_!!6000000002202-2-tps-1720-1026.png" width=650 />
+<img src="https://img.alicdn.com/imgextra/i3/O1CN01sS82tq1S8Ys9SNbCV_!!6000000002202-2-tps-1720-1026.png?t=1" width=650 />
 
 ### Issues
 
