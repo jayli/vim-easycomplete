@@ -4,12 +4,11 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the best performance and experience. It requires VimScript only, and you don't even have to add one line of configuration if you want. It's definitely a minimalism style plugin.
+Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance . It requires VimScript only and you don't even have to add one line of configuration. It's definitely a minimalism style plugin.
 
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=650 />
 
 Vim-Easycomplete is easy to install and use. It contains these features:
-
 
 - Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
