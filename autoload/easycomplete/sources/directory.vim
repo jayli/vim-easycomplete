@@ -108,8 +108,13 @@ function! s:TypingAPath(ctx)
   "   \<Tab> => done
   "   xxxss \ xxxss<Tab> => done
   " MoreInfo: #140
-  let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-        \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
+  try
+    let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
+          \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
+  catch /^Vim\%((\a\+)\)\=:E945/
+    let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
+          \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
+  endtry
 
   " 兼容单个 '/' 匹配的情况
   let spath = s:GetPathName(substitute(fpath,"^[\\.\\/].*\\/","./","g"))
