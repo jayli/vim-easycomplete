@@ -116,7 +116,7 @@ All supported languages:
 |------------------|-----------------------|:-----------------------------:|:------------------:|:---------------:|
 | directory        | directory suggestion  | No Need                       | Integrated         | None            |
 | buf              | keywords & dictionary | No Need                       | Integrated         | None            |
-| snips            | Snippets Support      | ultisnips/vim-snippets        | No                 | python3         |
+| snips            | Snippets Support      | ultisnips                     | Manually           | python3         |
 | ts               | JavaScript/TypeScript | tsserver                      | Yes                | node/npm        |
 | deno             | JavaScript/TypeScript | deno                          | Yes                | deno            |
 | vim              | Vim                   | vim-language-server           | Yes                | node/npm        |
@@ -280,7 +280,7 @@ let g:easycomplete_lsp_type_font = {
       \ }
 ```
 
-<img src="https://img.alicdn.com/imgextra/i3/O1CN01sS82tq1S8Ys9SNbCV_!!6000000002202-2-tps-1720-1026.png?t=1" width=650 />
+<img src="https://gw.alicdn.com/imgextra/i4/O1CN01IZzToV1iOccEVRsqm_!!6000000004403-2-tps-1720-1026.png" width=650 />
 
 ### Issues
 
