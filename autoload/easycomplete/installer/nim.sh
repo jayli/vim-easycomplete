@@ -6,9 +6,8 @@ if  command -v nimlsp > /dev/null; then
   echo "install already"
 else
   echo "nimlsp is installing"
-  git clone --depth=1 https://github.com/PMunch/nimlsp.git .
-  nimble refresh https://h5.taobao.com/onepub/qWkNPVo4N
-  nimble build
+  nimble -y --nimbledir=$(pwd) install nimlsp
+  ln -s $(pwd)/bin/nimlsp .
   # nimble install nimlsp
 fi
 
