@@ -10,18 +10,17 @@ Vim-Easycomplete is a fast code completion plugin for vim/nvim, providing the be
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
-- Buffer keywords and dictionary support
-- Directory and file completion support
-- Goto definition support for all languages
-- Language lint with diagnostic
-- Signature helper
+
+- Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
-- LSP Server installation with one command
-- Snippet support with ultisnips. (python3 required)
+- Easy to install LSP Server with one command
+- Written in pure vim script for vim8 and neovim
+- Snippet support with ultisnips.
+- Brand New UI Design.
 
 ### Installation
 
-Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 is required (Of course, latest is recommended).
+Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 and higher is required.
 
 For vim-plug:
 
@@ -39,16 +38,19 @@ call dein#add('jayli/vim-easycomplete')
 
 ### Configuration
 
-It use Tab to trigger completion suggestions. You can change this setting by
+The plugin is out of box and config noghting.
 
-```vim
-let g:easycomplete_tab_trigger="<c-space>"
-```
 
 
 ### Useage
 
-By default you can use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can use `:EasyCompleteGotoDefinition` command.
+By default you can use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can map `:EasyCompleteGotoDefinition` by yourself.
+
+If you don't want use `Tab` to trigger completion suggestions. You can change this setting by:
+
+```vim
+let g:easycomplete_tab_trigger="<c-space>"
+```
 
 Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. The plugin has already map diagnostic jumping to `<C-j>` and `<C-k>`. You can change these mapping via:
 
@@ -89,6 +91,7 @@ All commands:
 | `:EasyCompleteProfileStart`       | Start record diagnostics message         |
 | `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
 | `:EasyCompleteLint`               | Do diagnostic                            |
+| `:LintEasyComplete`               | Do diagnostic                            |
 | `:DenoCache`                      | Do Deno Cache for downloading modules    |
 
 ### Language Support
@@ -286,6 +289,17 @@ let g:easycomplete_lsp_type_font = {
 
 [WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>, <https://zhuanlan.zhihu.com/p/425555993>
 
+### More Examples:
+
+Update Deno Cache via `:DenoCache`
+
+<img src="https://img.alicdn.com/imgextra/i4/O1CN01kjPu4M1FVNbRKVrUD_!!6000000000492-1-tps-943-607.gif" width=600 />
+
+Directory selecting:
+
+<img src="https://img.alicdn.com/imgextra/i2/O1CN01FciC1Q1WHV4HJ79qn_!!6000000002763-1-tps-1027-663.gif" width=600 />
+
 ### License
 
 MIT
+
