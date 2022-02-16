@@ -96,7 +96,7 @@ function! easycomplete#Enable()
   endif
   if s:SnipSupports()
     let g:UltiSnipsSnippetDirectories = [
-          \ easycomplete#util#GetEasyCompleteRootDirectory() . "/UltiSnips"
+          \ easycomplete#util#GetEasyCompleteRootDirectory() . "/ultisnips"
           \ ]
   endif
   call timer_start(300, { -> easycomplete#AutoLoadDict() })
