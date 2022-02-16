@@ -362,6 +362,7 @@ command! -nargs=? InstallLspServer :call easycomplete#installer#install(<q-args>
 command! EasyCompleteGotoDefinition :call easycomplete#defination()
 command! EasyCompleteCheck :call easycomplete#checking()
 command! EasyCompleteLint :call easycomplete#lint()
+command! LintEasycomplete :call easycomplete#lint()
 command! EasyCompleteSignature :call easycomplete#signature()
 command! EasyCompleteProfileStart :call easycomplete#util#ProfileStart()
 command! EasyCompleteProfileStop :call easycomplete#util#ProfileStop()
