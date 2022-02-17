@@ -41,10 +41,14 @@ endif
 if !exists("g:easycomplete_lsp_type_font")
   let g:easycomplete_lsp_type_font = {}
 endif
+if !exists("g:easycomplete_enable")
+  let g:easycomplete_enable = 1
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover' : 1,
       \ 'g:easycomplete_diagnostics_enable': 1,
       \ 'g:easycomplete_signature_enable': 1,
+      \ 'g:easycomplete_enable': g:easycomplete_enable,
       \ 'g:easycomplete_lsp_checking' : g:easycomplete_lsp_checking,
       \ 'g:easycomplete_menuflag_buf' : g:easycomplete_menuflag_buf,
       \ 'g:easycomplete_kindflag_buf' : g:easycomplete_kindflag_buf,
@@ -368,6 +372,8 @@ command! EasyCompleteProfileStart :call easycomplete#util#ProfileStart()
 command! EasyCompleteProfileStop :call easycomplete#util#ProfileStop()
 command! EasyCompleteNextDiagnostic : call easycomplete#sign#next()
 command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
+command! EasyCompleteDisable : call easycomplete#disable()
+command! EasyCompleteEnable : call easycomplete#StartUp()
 
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()

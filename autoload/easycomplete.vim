@@ -67,6 +67,9 @@ let g:easycomplete_first_render_delay = 1500
 " EasyComplete 入口函数
 function! easycomplete#Enable()
   if !easycomplete#util#EnvReady() | return | endif
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   call easycomplete#LogStart()
   " 插件要求在每个 BufferEnter 时调用
   if exists("b:easycomplete_loaded_done")
@@ -1725,6 +1728,9 @@ function! easycomplete#signature()
 endfunction
 
 function! easycomplete#CursorHold()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
         \ && easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#LintPopup()
@@ -1732,6 +1738,9 @@ function! easycomplete#CursorHold()
 endfunction
 
 function! easycomplete#TextChangedI()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   call easycomplete#typing() " for completion
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#handle()
@@ -1741,6 +1750,9 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! easycomplete#TextChangedP()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   let l:ctx = easycomplete#context()
   let line_length = strlen(l:ctx['typed'])
   let selected_item = easycomplete#GetCompletedItem()
@@ -1784,6 +1796,17 @@ endfunction
 
 function! easycomplete#InsertEnter()
   call easycomplete#sign#DiagHoverFlush()
+endfunction
+
+function! easycomplete#disable()
+  let g:easycomplete_enable = 0
+  call easycomplete#util#info('[Vim-EasyComplete] is shutdown.')
+endfunction
+
+function! easycomplete#StartUp()
+  let g:easycomplete_enable = 1
+  call easycomplete#Enable()
+  call easycomplete#util#info('[Vim-EasyComplete] is avilable.')
 endfunction
 
 function! easycomplete#BufEnter()

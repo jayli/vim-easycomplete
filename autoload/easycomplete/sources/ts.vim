@@ -322,6 +322,9 @@ endfunction
 " 动作转移到了 CompleteChanged 中，跟随光标移动实时读取当前 item 所
 " 需的 menuinfo，解决 #56 的问题
 function! easycomplete#sources#ts#CompleteChanged()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   let l:item = v:event.completed_item
   if !easycomplete#CompleteCursored() | return | endif
   if empty(s:request_queue_ctx)       | return | endif
@@ -520,6 +523,9 @@ function! s:FireTsCompletions(file, line, offset, prefix)
 endfunction
 
 function! easycomplete#sources#ts#lint()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   if !easycomplete#ok('g:easycomplete_diagnostics_enable')
     return
   endif

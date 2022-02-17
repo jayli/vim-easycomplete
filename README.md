@@ -83,6 +83,8 @@ All commands:
 |-----------------------------------|------------------------------------------|
 | `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
 | `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
+| `:EasyCompleteDisable`            | Disable EasyComplete                     |
+| `:EasyCompleteEnable`             | Enable EasyComplete                      |
 | `:EasyCompleteGotoDefinition`     | Goto definition position                 |
 | `:EasyCompleteCheck`              | Checking LSP server                      |
 | `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
