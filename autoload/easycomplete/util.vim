@@ -928,7 +928,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let filtered_menu = original_matching + fuzzymatching
     return filtered_menu
   else
-    " for nvim only
+    " for nvim
     try
       let word = a:word
       if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -1005,7 +1005,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       let result = original_matching_menu + otherwise_fuzzymatching
       let filtered_menu = result
     catch
-      call s:log(v:exception)
+      call s:log('[CompleteMenuFilter@Nvim]', v:exception)
     endtry
     return filtered_menu
   endif
@@ -1385,10 +1385,10 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
 endfunction
 
 function! easycomplete#util#Sha256(str)
-  if has("python3")
-    return easycomplete#python#Sha256(a:str)
-  elseif has("cryptv") && exists("*sha256")
+  if has("cryptv") && exists("*sha256")
     return sha256(a:str)
+  elseif has("python3")
+    return easycomplete#python#Sha256(a:str)
   else
     return a:str
   endif

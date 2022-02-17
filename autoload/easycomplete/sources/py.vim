@@ -8,6 +8,7 @@ function! easycomplete#sources#py#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'pyls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'allowlist': ['python'],
       \ })
 endfunction
