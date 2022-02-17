@@ -176,22 +176,22 @@ endfunction " }}}
 
 function! easycomplete#util#GetSha256(item) " {{{
   let user_data = easycomplete#util#GetUserData(a:item)
-  let sha = get(user_data, "sha256", "")
-  return sha 
+  let sha_code = get(user_data, "sha256", "")
+  return sha_code
 endfunction " }}}
 
 function! easycomplete#util#GetUserData(item) " {{{
   let user_data_str = get(a:item, 'user_data', "")
-  if easycomplete#util#IsJson(user_data_str)
+  try
     let user_data = json_decode(user_data_str)
     if empty(user_data)
       return {}
     else
       return user_data
     endif
-  else
+  catch /^Vim\%((\a\+)\)\=:\(E474\|E491\)/
     return {}
-  endif
+  endtry
 endfunction " }}}
 
 " GetInfoByCompleteItem {{{
@@ -208,7 +208,7 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
     let i_name = s:TrimWavyLine(i_name)
     let i_plugin_name = get(item, 'plugin_name', '')
-    let i_plugin_name = s:GetPluginNameFromUserData(item) 
+    let i_plugin_name = s:GetPluginNameFromUserData(item)
     let i_sha = easycomplete#util#GetSha256(item)
     if t_name ==# i_name && i_plugin_name ==# t_plugin_name && i_sha ==# t_sha
       if has_key(item, "info")
@@ -221,10 +221,11 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
 endfunction
 
 function! s:TrimWavyLine(str)
-  if strlen(a:str) >= 2 && a:str[-1:] == "~"
-    return a:str[0:-2]
-  endif
-  return a:str
+  return substitute(a:str, "\\(\\w\\)\\@<=\\~$", "", "g")
+  " if strlen(a:str) >= 2 && a:str[-1:] == "~"
+  "   return a:str[0:-2]
+  " endif
+  " return a:str
 endfunction
 " }}}
 
@@ -400,7 +401,7 @@ function! s:FuzzySearchRegx(needle, haystack)
 
   let matching = match(a:haystack, needle_ls_regx)
   if matching < 0 | return v:false | endif
-  if &filetype == "vim" && matching > 3
+  if index(["vim", "nim"], &filetype) >= 0 && matching > 3
     return v:false
   else
     return v:true
@@ -850,9 +851,6 @@ function! easycomplete#util#distinct(menu_list)
   endfor
   for item in a:menu_list
     if index(['buf','snips'], get(item, 'plugin_name', '')) >= 0
-    " if item.menu == g:easycomplete_menuflag_snip ||
-    "       \ (item.menu == g:easycomplete_menuflag_buf ||
-    "       \ item.menu == g:easycomplete_menuflag_dict)
       continue
     endif
     let word = s:GetItemWord(item)
@@ -928,7 +926,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let filtered_menu = original_matching + fuzzymatching
     return filtered_menu
   else
-    " for nvim only
+    " for nvim
     try
       let word = a:word
       if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -1005,7 +1003,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       let result = original_matching_menu + otherwise_fuzzymatching
       let filtered_menu = result
     catch
-      call s:log(v:exception)
+      call s:log('[CompleteMenuFilter@Nvim]', v:exception)
     endtry
     return filtered_menu
   endif
@@ -1040,28 +1038,21 @@ function! s:GetItemWord(item)
   if has_key(a:item, "matching_word")
     return a:item["matching_word"]
   endif
-  let t_str = empty(get(a:item, 'abbr', '')) ? get(a:item, 'word'): get(a:item, 'abbr', '')
-  let t_str = easycomplete#util#TrimWavyLine(t_str)
+  let abbr = get(a:item, 'abbr', '')
+  let word = get(a:item, 'word', '')
+  let t_str = empty(abbr) ? word : abbr
+  let t_str = s:TrimWavyLine(t_str)
   let a:item['matching_word'] = t_str
   return t_str
 endfunction
 
 " TODO 性能优化，4 次调用 0.08 s
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
-  let k1 = get(a:entry1,"abbr", "")
-  if empty(k1)
-    let k1 = get(a:entry1,"word", "")
-  endif
-  let k2 = get(a:entry2,"abbr", "")
-  if empty(k2)
-    let k2 = get(a:entry2,"word", "")
-  endif
-  if strlen(k1) > strlen(k2)
-    return v:true
-  else
-    return v:false
-  endif
-  return v:false
+  let l1 = get(a:entry1, "item_length", strlen(get(a:entry1,"abbr", get(a:entry1,"word", ""))))
+  let l2 = get(a:entry2, "item_length", strlen(get(a:entry2,"abbr", get(a:entry2,"word", ""))))
+  let a:entry1["item_length"] = l1
+  let a:entry2["item_length"] = l2
+  return strlen(l1) > strlen(l2)
 endfunction
 
 function! easycomplete#util#PrepareInfoPlaceHolder(key, val)
@@ -1177,29 +1168,41 @@ endfunction
 " }}}
 
 " LspType {{{
+" c_type is number
 function! easycomplete#util#LspType(c_type)
-  let l:kinds = {
-      \ 'Text':          1,  'Method':      2,
-      \ 'Function':      3,  'Constructor': 4,
-      \ 'Field':         5,  'Variable':    6,
-      \ 'Class':         7,  'Interface':   8,
-      \ 'Module':        9,  'Property':    10,
-      \ 'Unit':          11, 'Value':       12,
-      \ 'Enum':          13, 'Keyword':     14,
-      \ 'Snippet':       15, 'Color':       16,
-      \ 'File':          17, 'Reference':   18,
-      \ 'Folder':        19, 'EnumMember':  20,
-      \ 'Constant':      21, 'Struct':      22,
-      \ 'Event':         23, 'Operator':    24,
-      \ 'TypeParameter': 25
-      \ }
-  let l:type = ""
-  for item in keys(l:kinds)
-    if a:c_type == l:kinds[item]
-      let l:type = tolower(item[0])
-      break
-    endif
-  endfor
+  let l:kinds = [
+        \ '',
+        \ 'text',
+        \ 'method',
+        \ 'function',
+        \ 'constructor',
+        \ 'field',
+        \ 'variable',
+        \ 'class',
+        \ 'interface',
+        \ 'module',
+        \ 'property',
+        \ 'unit',
+        \ 'value',
+        \ 'enum',
+        \ 'keyword',
+        \ 'snippet',
+        \ 'color',
+        \ 'file',
+        \ 'reference',
+        \ 'folder',
+        \ 'enumMember',
+        \ 'constant',
+        \ 'struct',
+        \ 'event',
+        \ 'operator',
+        \ 'typeParameter',
+        \ ]
+  try
+    let l:type = l:kinds[str2nr(a:c_type)][0]
+  catch
+    let l:type = ""
+  endtry
   return get(g:easycomplete_lsp_type_font, l:type, l:type)
 endfunction
 " }}}
@@ -1292,6 +1295,51 @@ function! easycomplete#util#GetLspItem(vim_item)
   return lsp_item
 endfunction " }}}
 
+" {{{ BadBoy
+" 对 lsp response 的过滤，这个过滤本来应该 lsp 给做掉，但实际 lsp
+" 偷懒都给过来了, 导致渲染很慢, v:true === isBad
+let s:BadBoy = {}
+function! s:BadBoy.Nim(item, typing_word)
+  if &filetype != "nim" | return v:false | endif
+  let word = get(a:item, "label", "")
+  if empty(word) | return v:true | endif
+  let pos = stridx(word, a:typing_word)
+  if len(a:typing_word) == 1
+    if pos >= 0 && pos <= 5
+      return v:false
+    else
+      return v:true
+    endif
+  else
+    if s:FuzzySearchRegx(a:typing_word, word)
+      return v:false
+    else
+      return v:true
+    endif
+  endif
+endfunction
+
+function! s:BadBoy.Vim(item, typing_word)
+  if &filetype != "vim" | return v:false | endif
+  let word = get(a:item, "label", "")
+  if empty(word) | return v:true | endif
+  let pos = stridx(word, a:typing_word)
+  if len(a:typing_word) == 1
+    if pos >= 0 && pos <= 8
+      return v:false
+    else
+      return v:true
+    endif
+  else
+    if s:FuzzySearchRegx(a:typing_word, word)
+      return v:false
+    else
+      return v:true
+    endif
+  endif
+endfunction
+" }}}
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
@@ -1307,7 +1355,11 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   endif
 
   let l:vim_complete_items = []
+  let l:items_length = len(l:items)
+  let typing_word = easycomplete#util#GetTypingWord()
   for l:completion_item in l:items
+    if s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
+    if s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
     let l:vim_complete_item = {
           \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
@@ -1376,19 +1428,14 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
           \ }))
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
-
-  if index(['nim','kotlin','java'], &filetype) >= 0
-    let l:vim_complete_items = easycomplete#util#uniq(l:vim_complete_items)
-  endif
-
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
 endfunction
 
 function! easycomplete#util#Sha256(str)
-  if has("python3")
-    return easycomplete#python#Sha256(a:str)
-  elseif has("cryptv") && exists("*sha256")
+  if has("cryptv") && exists("*sha256")
     return sha256(a:str)
+  elseif has("python3")
+    return easycomplete#python#Sha256(a:str)
   else
     return a:str
   endif

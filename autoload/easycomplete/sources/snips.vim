@@ -9,31 +9,41 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
-
   if strlen(l:typing) == 0
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
+  call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
+        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+  " #133
+  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+  return v:true
+endfunction
 
+function! s:CompleteHandler(typing, name, ctx, startcol)
   let suggestions = []
   let snippets = UltiSnips#SnippetsInCurrentScope()
   call UltiSnips#SnippetsInCurrentScope(1)
 
   for trigger in keys(snippets)
-    " trigger 有可能是 i|n 这类包含特殊字符情况
     try
       let description = get(snippets, trigger, "")
       let description = empty(description) ? "Snippet: " . trigger : description
       let snip_object = s:GetSnipObject(trigger, g:current_ulti_dict_info)
     catch /^Vim\%((\a\+)\)\=:E684/
+      " trigger 有可能是 i|n 这类包含特殊字符情况
       continue
     endtry
-    " TODO Vim 性能比 Python 快五倍
-    if has('python3')
-      let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
-    else
+    try
+      " Vim 性能比 Python 快五倍
       let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
-    endif
+    catch
+      if has("python3")
+        let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
+      else
+        continue
+      endif
+    endtry
     call add(suggestions, {
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
@@ -46,9 +56,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
           \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info)
           \ })
   endfor
-
-  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], suggestions)
-  return v:true
+  call easycomplete#complete(a:name, a:ctx, a:startcol, suggestions)
 endfunction
 
 function! s:CodeInfoFilter(code_info)

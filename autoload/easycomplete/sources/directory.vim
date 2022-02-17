@@ -20,7 +20,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   try
     let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
   catch
-    echom v:exception
+    echom easycomplete#util#info('[Directory]', v:exception)
   endtry
   if len(result) == 0
     if strwidth(a:ctx['char']) != 1

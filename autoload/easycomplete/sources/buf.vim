@@ -12,13 +12,15 @@ function! easycomplete#sources#buf#completor(opt, ctx)
     return v:true
   endif
 
-  " 这里异步和非异步都可以
+  " 这里异步和非异步都可以，性能考虑，如果返回空用同步，如果数据量大用异步
   " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
   " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing,
   "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
   call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
-        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
+        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+  " #133
+  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
 endfunction
 
@@ -122,7 +124,6 @@ function! s:GetWrappedDictKeywordList()
     endfor
   endfor
   let b:globalDictKeywords = dictkeywords
-
   return dictkeywords
 endfunction
 
@@ -131,16 +132,9 @@ function! s:ArrayDistinct(list)
   if empty(a:list)
     return []
   else
-    let tmparray = []
     let uniqlist = uniq(a:list)
-    for item in uniqlist
-      if !empty(item) &&
-            \ !str2nr(item) &&
-            \ len(item) != 1
-        call add(tmparray,item)
-      endif
-    endfor
-    return tmparray
+    call filter(uniqlist, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
+    return uniqlist
   endif
 endfunction
 
