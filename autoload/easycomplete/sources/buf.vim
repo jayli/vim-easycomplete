@@ -124,7 +124,6 @@ function! s:GetWrappedDictKeywordList()
     endfor
   endfor
   let b:globalDictKeywords = dictkeywords
-
   return dictkeywords
 endfunction
 
@@ -133,16 +132,9 @@ function! s:ArrayDistinct(list)
   if empty(a:list)
     return []
   else
-    let tmparray = []
     let uniqlist = uniq(a:list)
-    for item in uniqlist
-      if !empty(item) &&
-            \ !str2nr(item) &&
-            \ len(item) != 1
-        call add(tmparray,item)
-      endif
-    endfor
-    return tmparray
+    call filter(uniqlist, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
+    return uniqlist
   endif
 endfunction
 

@@ -1656,7 +1656,6 @@ function! easycomplete#Filename(...)
   endif
 endfunction
 
-
 function! s:GetTypingWord()
   return easycomplete#util#GetTypingWord()
 endfunction

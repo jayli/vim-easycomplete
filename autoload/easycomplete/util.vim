@@ -401,7 +401,7 @@ function! s:FuzzySearchRegx(needle, haystack)
 
   let matching = match(a:haystack, needle_ls_regx)
   if matching < 0 | return v:false | endif
-  if &filetype == "vim" && matching > 3
+  if index(["vim", "nim"], &filetype) >= 0 && matching > 3
     return v:false
   else
     return v:true
@@ -851,9 +851,6 @@ function! easycomplete#util#distinct(menu_list)
   endfor
   for item in a:menu_list
     if index(['buf','snips'], get(item, 'plugin_name', '')) >= 0
-    " if item.menu == g:easycomplete_menuflag_snip ||
-    "       \ (item.menu == g:easycomplete_menuflag_buf ||
-    "       \ item.menu == g:easycomplete_menuflag_dict)
       continue
     endif
     let word = s:GetItemWord(item)
@@ -1298,6 +1295,51 @@ function! easycomplete#util#GetLspItem(vim_item)
   return lsp_item
 endfunction " }}}
 
+" {{{ BadBoy
+" 对 lsp response 的过滤，这个过滤本来应该 lsp 给做掉，但实际 lsp
+" 偷懒都给过来了, 导致渲染很慢, v:true === isBad
+let s:BadBoy = {}
+function! s:BadBoy.Nim(item, typing_word)
+  if &filetype != "nim" | return v:false | endif
+  let word = get(a:item, "label", "")
+  if empty(word) | return v:true | endif
+  let pos = stridx(word, a:typing_word)
+  if len(a:typing_word) == 1
+    if pos >= 0 && pos <= 5
+      return v:false
+    else
+      return v:true
+    endif
+  else
+    if s:FuzzySearchRegx(a:typing_word, word)
+      return v:false
+    else
+      return v:true
+    endif
+  endif
+endfunction
+
+function! s:BadBoy.Vim(item, typing_word)
+  if &filetype != "vim" | return v:false | endif
+  let word = get(a:item, "label", "")
+  if empty(word) | return v:true | endif
+  let pos = stridx(word, a:typing_word)
+  if len(a:typing_word) == 1
+    if pos >= 0 && pos <= 8
+      return v:false
+    else
+      return v:true
+    endif
+  else
+    if s:FuzzySearchRegx(a:typing_word, word)
+      return v:false
+    else
+      return v:true
+    endif
+  endif
+endfunction
+" }}}
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
@@ -1313,7 +1355,11 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   endif
 
   let l:vim_complete_items = []
+  let l:items_length = len(l:items)
+  let typing_word = easycomplete#util#GetTypingWord()
   for l:completion_item in l:items
+    if s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
+    if s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
     let l:vim_complete_item = {
           \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
