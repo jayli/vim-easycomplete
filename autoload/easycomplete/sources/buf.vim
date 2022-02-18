@@ -23,16 +23,16 @@ function! easycomplete#sources#buf#completor(opt, ctx)
 endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
-function! s:GetKeywords(base)
-  let bufKeywordList        = s:GetBufKeywordsList(a:base)
+function! s:GetKeywords(typing)
+  let bufKeywordList        = s:GetBufKeywordsList(a:typing)
   let wrappedBufKeywordList = map(bufKeywordList,
         \ '{"word":v:val,"dup":1,"icase":1,"kind":"' . g:easycomplete_kindflag_buf .
         \ '","equal":1,"menu": "' . g:easycomplete_menuflag_buf . '", "info": ""}')
   let result =  s:MenuArrayDistinct(extend(
         \       wrappedBufKeywordList,
-        \       s:GetWrappedDictKeywordList()
+        \       s:GetWrappedDictKeywordList(a:typing)
         \   ),
-        \   a:base)
+        \   a:typing)
   return result
 endfunction
 
@@ -54,10 +54,7 @@ function! s:GetBufKeywordsList(base)
     endfor
   endfor
 
-  if !empty(a:base)
-    let keywordList = filter(tmpkeywords, 'v:val =~ "^'. a:base .'"')
-  endif
-  let keywordList = s:ArrayDistinct(keywordList)
+  let keywordList = s:ArrayDistinct(tmpkeywords)
   if count(keywordList, a:base) == 1
     call remove(keywordList, index(keywordList, a:base))
   endif
@@ -68,7 +65,15 @@ endfunction
 " 将字典简单词表转换为补全浮窗所需的列表格式
 " 比如字典原始列表为 ['abc','def'] ，输出为
 " => [{"word":'abc',"kind":"[ID]","menu":"common.dict"}...]
-function! s:GetWrappedDictKeywordList()
+function! s:GetWrappedDictKeywordList(typing)
+  let global_dict_keyword = s:GetGlobalDictKeyword()
+  let localdicts = deepcopy(global_dict_keyword)
+  call filter(localdicts, 'v:val =~ "^' . a:typing . '"')
+  call map(localdicts, function('s:ArrayMapping'))
+  return localdicts
+endfunction
+
+function! s:GetGlobalDictKeyword()
   if exists("b:globalDictKeywords")
     return b:globalDictKeywords
   endif
@@ -112,17 +117,19 @@ function! s:GetWrappedDictKeywordList()
     endfor
 
     let localdicts = s:ArrayDistinct(localdicts)
-    for item in localdicts
-      call add(dictkeywords, {
-            \   "word" : item ,
-            \   "kind" : g:easycomplete_kindflag_dict,
-            \   "equal":1,
-            \   "menu" : g:easycomplete_menuflag_dict
-            \ })
-    endfor
+    let dictkeywords += localdicts
   endfor
   let b:globalDictKeywords = dictkeywords
   return dictkeywords
+endfunction
+
+function! s:ArrayMapping(key, val)
+  return {
+        \   "word" : a:val,
+        \   "kind" : g:easycomplete_kindflag_dict,
+        \   "equal": 1,
+        \   "menu" : g:easycomplete_menuflag_dict
+        \ }
 endfunction
 
 " List 去重，类似 uniq，纯数字要去掉

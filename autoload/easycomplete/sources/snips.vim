@@ -16,7 +16,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
   " #133
-  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+  " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
 endfunction
 

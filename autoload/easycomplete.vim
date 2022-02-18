@@ -1191,8 +1191,9 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
-  let g:easycomplete_source[a:plugin_name].complete_result =
-        \ deepcopy(s:NormalizeSort(s:NormalizeMenulist(a:menu_list, a:plugin_name)))
+  let norm_menu_list = s:NormalizeMenulist(a:menu_list, a:plugin_name)
+  let sort_menu_list = s:NormalizeSort(norm_menu_list)
+  let g:easycomplete_source[a:plugin_name].complete_result = deepcopy(sort_menu_list)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)

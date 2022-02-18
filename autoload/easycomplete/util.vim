@@ -920,7 +920,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let fuzzymatching = []
     let all_items = a:all_menu
     let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
-    if len(easycomplete#GetStuntMenuItems()) == 0
+    if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 1
       call sort(fuzzymatching, "easycomplete#util#SortTextComparatorByLength")
     endif
     let filtered_menu = original_matching + fuzzymatching
@@ -1325,7 +1325,7 @@ function! s:BadBoy.Vim(item, typing_word)
   if empty(word) | return v:true | endif
   let pos = stridx(word, a:typing_word)
   if len(a:typing_word) == 1
-    if pos >= 0 && pos <= 8
+    if pos >= 0 && pos <= 9
       return v:false
     else
       return v:true
