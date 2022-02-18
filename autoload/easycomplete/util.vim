@@ -1052,7 +1052,7 @@ function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
   let l2 = get(a:entry2, "item_length", strlen(get(a:entry2,"abbr", get(a:entry2,"word", ""))))
   let a:entry1["item_length"] = l1
   let a:entry2["item_length"] = l2
-  return strlen(l1) > strlen(l2)
+  return l1 > l2
 endfunction
 
 function! easycomplete#util#PrepareInfoPlaceHolder(key, val)

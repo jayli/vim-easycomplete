@@ -1324,7 +1324,7 @@ function! easycomplete#_complete(start, items)
   let g:easycomplete_complete_ctx = {
         \ 'start': a:start,
         \ 'candidates': a:items,
-        \}
+        \ }
   if mode() =~# 'i' && &paste != 1
     silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
   endif
@@ -1489,12 +1489,16 @@ function! easycomplete#AutoLoadDict()
   call easycomplete#util#AutoLoadDict()
 endfunction
 
+function! easycomplete#SnipSupports()
+  return s:SnipSupports()
+endfunction
+
 function! s:SnipSupports()
   if !has("python3")
     return v:false
   endif
   try
-    call funcref("UltiSnips#RefreshSnippets")
+    call funcref("UltiSnips#SnippetsInCurrentScope")
   catch /^Vim\%((\a\+)\)\=:E700/
     return v:false
   endtry

@@ -1,6 +1,6 @@
 
 function! easycomplete#sources#snips#completor(opt, ctx)
-  if !exists("*UltiSnips#SnippetsInCurrentScope")
+  if !easycomplete#SnipSupports()
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
@@ -50,7 +50,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol)
           \ 'kind' : g:easycomplete_kindflag_snip,
           \ 'menu' : g:easycomplete_menuflag_snip,
           \ 'user_data': json_encode({
-          \     'plugin_name': a:opt['name'],
+          \     'plugin_name': a:name,
           \     'sha256': easycomplete#util#Sha256(trigger . string(code_info)),
           \   }),
           \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info)
