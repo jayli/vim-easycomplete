@@ -300,6 +300,10 @@ Directory selecting:
 
 <img src="https://img.alicdn.com/imgextra/i2/O1CN01FciC1Q1WHV4HJ79qn_!!6000000002763-1-tps-1027-663.gif" width=600 />
 
+Handle backsapce typing
+
+<img src="https://img.alicdn.com/imgextra/i3/O1CN01obuQnJ1tIAoUNv8Up_!!6000000005878-1-tps-880-689.gif" width=600 />
+
 ### License
 
 MIT
