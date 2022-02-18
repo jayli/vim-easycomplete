@@ -38,6 +38,7 @@ function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, plugin_name, data) abort
+  if easycomplete#IsBacking() | return | endif
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
         \ !has_key(a:data['response'], 'result')

@@ -347,6 +347,7 @@ function! easycomplete#sources#ts#CompleteChanged()
 endfunction
 
 function! easycomplete#sources#ts#signature()
+  if !easycomplete#ok('g:easycomplete_signature_enable') | return | endif
   call s:TsserverReload()
   let ctx = easycomplete#context()
   let offset = ctx['col']
@@ -393,7 +394,7 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   if empty(a:item)
     return
   endif
-
+  if easycomplete#IsBacking() | return | endif
   let l:request_req = get(a:item, 'request_seq')
   let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
   let l:raw_list = get(a:item, 'body')

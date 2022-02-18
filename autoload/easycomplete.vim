@@ -35,7 +35,7 @@ let g:easycomplete_firstcomplete_ctx = {}
 let g:easycomplete_first_complete_hit = 0
 " 菜单显示最大 item 数量，默认和 coc 保持一致
 " viml 的跟指性能不佳，适当降低下 maxlength 的阈值到 35
-let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
+let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
 let g:easycomplete_diagnostics_render_delay = 200
