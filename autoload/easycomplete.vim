@@ -97,12 +97,8 @@ function! easycomplete#Enable()
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
-  if s:SnipSupports()
-    let g:UltiSnipsSnippetDirectories = [
-          \ easycomplete#util#GetEasyCompleteRootDirectory() . "/ultisnips"
-          \ ]
-  endif
   call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
+  call timer_start(400, { -> s:SnippetsInit()})
 endfunction
 
 function! s:InitLocalVars()
@@ -1495,11 +1491,22 @@ function! s:SnipSupports()
     return v:false
   endif
   try
-    call funcref("UltiSnips#SnippetsInCurrentScope")
-  catch /^Vim\%((\a\+)\)\=:E700/
+    call UltiSnips#SnippetsInCurrentScope()
+  catch /^Vim\%((\a\+)\)\=:117/
     return v:false
   endtry
   return v:true
+endfunction
+
+function! s:SnippetsInit()
+  if s:SnipSupports()
+    let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
+    let g:UltiSnipsSnippetDirectories = [
+          \ easycomplete_root . "/autoload/easycomplete/snippets/snipmate",
+          \ easycomplete_root . "/autoload/easycomplete/snippets/ultisnips"
+          \ ]
+    let g:UltiSnipsEnableSnipMate = 1
+  endif
 endfunction
 
 function! easycomplete#nill() abort

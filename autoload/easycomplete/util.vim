@@ -391,19 +391,16 @@ function! s:FuzzySearchRegx(needle, haystack)
   if qlen == tlen
     return a:needle ==? a:haystack ? v:true : v:false
   endif
-  let constraint = &filetype == 'vim' ? "\\{,14}" : "*"
+  let constraint = &filetype == 'vim' ? "\\{,14}" : "\\{-}"
 
   let needle_list = easycomplete#util#str2list(a:needle)
   let needle_ls = map(needle_list, { _, val -> nr2char(val)})
   let needle_ls_regx = join(needle_ls, "[a-zA-Z0-9_#:\.]" . constraint)
-
-  let matching = match(a:haystack, needle_ls_regx)
-  if matching < 0 | return v:false | endif
-  if index(["vim", "nim"], &filetype) >= 0 && matching > 3
-    return v:false
-  else
-    return v:true
+  if index(["vim", "nim"], &filetype) >= 0
+    let needle_ls_regx = "^[a-zA-Z0-9]\\{,4}" . needle_ls_regx
   endif
+  let matching = (a:haystack =~ needle_ls_regx)
+  return matching ? v:true : v:false
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)
@@ -1036,12 +1033,25 @@ function! s:GetItemWord(item)
   return t_str
 endfunction
 
-" TODO 性能优化，4 次调用 0.08 s
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
-  let l1 = get(a:entry1, "item_length", strlen(get(a:entry1,"abbr", get(a:entry1,"word", ""))))
-  let l2 = get(a:entry2, "item_length", strlen(get(a:entry2,"abbr", get(a:entry2,"word", ""))))
-  let a:entry1["item_length"] = l1
-  let a:entry2["item_length"] = l2
+  let l1 = get(a:entry1, "item_length", 0)
+  let l2 = get(a:entry2, "item_length", 0)
+  if empty(l1)
+    let k1 = get(a:entry1,"abbr", "")
+    if empty(k1)
+      let k1 = get(a:entry1,"word", "")
+    endif
+    let l1 = strlen(k1)
+    let a:entry1["item_length"] = l1
+  endif
+  if empty(l2)
+    let k2 = get(a:entry2,"abbr", "")
+    if empty(k2)
+      let k2 = get(a:entry2,"word", "")
+    endif
+    let l2 = strlen(k2)
+    let a:entry2["item_length"] = l2
+  endif
   return l1 > l2
 endfunction
 
@@ -1422,7 +1432,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
 endfunction
 
 function! easycomplete#util#Sha256(str)
-  if has("cryptv") && exists("*sha256")
+  if exists("*sha256")
     return sha256(a:str)
   elseif has("python3")
     return easycomplete#python#Sha256(a:str)
