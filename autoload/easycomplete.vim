@@ -1339,7 +1339,7 @@ function! s:emit(...)
   return call("easycomplete#util#emit", a:000)
 endfunction
 
-" TODO 性能 2 次调用 py: 0.10 vim: 0.57
+" PY: 0.004, VIM: 0.04 200 长度的列表，PY 比 VIM 快十倍
 " TODO PY 和 VIM 实现的一致性
 " 因为需要对全量列表进行排序，所以只在 FirstComplete 之前的数据准备时使用
 function! s:NormalizeSort(items)
