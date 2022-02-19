@@ -362,15 +362,24 @@ endfunction " }}}
 
 " FuzzySearch {{{
 function! easycomplete#util#FuzzySearch(needle, haystack)
-  " 性能测试：356 次调用实测情况
+  " 性能测试：
   "  - s:FuzzySearchRegx 速度最快
   "  - s:FuzzySearchCustom 速度次之
   "  - s:FuzzySearchSpeedUp 速度再次之
   "  - s:FuzzySearchPy 速度最差
-  return s:FuzzySearchRegx(a:needle, a:haystack) " 0.027728
-  return s:FuzzySearchCustom(a:needle, a:haystack) " 0.041983
-  return s:FuzzySearchSpeedUp(a:needle, a:haystack) " 0.054845
-  return s:FuzzySearchPy(a:needle, a:haystack) " 0.088703
+  " 同等条件测试结果：
+  " 564   0.033410   0.030417  <SNR>98_FuzzySearchRegx()
+  " 564   0.033523   0.030683  <SNR>98_FuzzySearchRegx()
+  " 604   0.043402   0.039086  <SNR>98_FuzzySearchCustom()
+  " 604   0.059750   0.053755  <SNR>98_FuzzySearchCustom()
+  " 604   0.042826   0.038499  <SNR>98_FuzzySearchSpeedUp()
+  " 604   0.052077   0.046813  <SNR>98_FuzzySearchSpeedUp()
+  " 604   0.369052   0.367013  easycomplete#python#FuzzySearchPy()
+  " 604   0.349416   0.347424  easycomplete#python#FuzzySearchPy()
+  return s:FuzzySearchRegx(a:needle, a:haystack)
+  return s:FuzzySearchCustom(a:needle, a:haystack)
+  return s:FuzzySearchSpeedUp(a:needle, a:haystack)
+  return s:FuzzySearchPy(a:needle, a:haystack)
 endfunction
 
 function! s:FuzzySearchRegx(needle, haystack)
@@ -382,7 +391,7 @@ function! s:FuzzySearchRegx(needle, haystack)
   if qlen == tlen
     return a:needle ==? a:haystack ? v:true : v:false
   endif
-  let constraint = &filetype == 'vim' ? "\\{,15}" : "*"
+  let constraint = &filetype == 'vim' ? "\\{,14}" : "*"
 
   let needle_list = easycomplete#util#str2list(a:needle)
   let needle_ls = map(needle_list, { _, val -> nr2char(val)})
