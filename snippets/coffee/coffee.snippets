@@ -35,19 +35,19 @@ snippet bfun
 		${0:# body...}
 # Class
 snippet cla class ..
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
 		${0}
 snippet cla class .. constructor: ..
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
 		constructor: (${2:args}) ->
 			${3}
 
 		${0}
 snippet cla class .. extends ..
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} extends ${2:ParentClass}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} extends ${2:ParentClass}
 		${0}
 snippet cla class .. extends .. constructor: ..
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} extends ${2:ParentClass}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} extends ${2:ParentClass}
 		constructor: (${3:args}) ->
 			${4}
 

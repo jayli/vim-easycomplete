@@ -1502,9 +1502,13 @@ function! s:SnippetsInit()
   if s:SnipSupports()
     let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
     let g:UltiSnipsSnippetDirectories = [
-          \ easycomplete_root . "/autoload/easycomplete/snippets/snipmate",
           \ easycomplete_root . "/autoload/easycomplete/snippets/ultisnips"
           \ ]
+    " Enable looking for SnipMate snippets in
+    " &runtimepath. UltiSnips will search only for
+    " directories named 'snippets' while looking for
+    " SnipMate snippets. Defaults to "1", so UltiSnips
+    " will look for SnipMate snippets.
     let g:UltiSnipsEnableSnipMate = 1
   endif
 endfunction

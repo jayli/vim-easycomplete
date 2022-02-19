@@ -120,7 +120,7 @@ snippet defma
 		${0}
 	end
 snippet defmo
-	defmodule ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
+	defmodule ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
 		${0}
 	end
 snippet %M
@@ -205,7 +205,7 @@ snippet dt
 snippet tp
 	@tag :pending
 snippet exunit
-	defmodule ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
+	defmodule ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
 		use ExUnit.Case, async: true
 
 		${0}

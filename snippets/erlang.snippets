@@ -1,9 +1,9 @@
 # module
 snippet mod
-	-module(${1:`vim_snippets#Filename()`}).
+	-module(${1:`easycomplete#Filename()`}).
 # module and export all
 snippet modall
-	-module(${1:`vim_snippets#Filename()`}).
+	-module(${1:`easycomplete#Filename()`}).
 	-compile([export_all]).
 
 	start() ->
@@ -92,7 +92,7 @@ snippet %p
 	%% @private
 # OTP application
 snippet application
-	-module(${1:`vim_snippets#Filename()`}).
+	-module(${1:`easycomplete#Filename()`}).
 
 	-behaviour(application).
 
@@ -110,7 +110,7 @@ snippet application
 		ok.
 # OTP supervisor
 snippet supervisor
-	-module(${1:`vim_snippets#Filename()`}).
+	-module(${1:`easycomplete#Filename()`}).
 
 	-behaviour(supervisor).
 
@@ -133,7 +133,7 @@ snippet supervisor
 		{ok, {RestartStrategy, Children}}.
 # OTP gen_server
 snippet gen_server
-	-module(${0:`vim_snippets#Filename()`}).
+	-module(${0:`easycomplete#Filename()`}).
 
 	-behaviour(gen_server).
 
@@ -182,7 +182,7 @@ snippet gen_server
 	%%%===================================================================
 # OTP gen_fsm
 snippet gen_fsm
-	-module(${0:`vim_snippets#Filename()`}).
+	-module(${0:`easycomplete#Filename()`}).
 
 	-behaviour(gen_fsm).
 
@@ -354,7 +354,7 @@ snippet gen_fsm
 	%%%===================================================================
 # OTP gen_event
 snippet gen_event
-	-module(${0:`vim_snippets#Filename()`}).
+	-module(${0:`easycomplete#Filename()`}).
 
 	-behaviour(gen_event).
 
@@ -490,7 +490,7 @@ snippet gen_event
 	%%%===================================================================
 # EUnit snippets
 snippet eunit
-	-module(${1:`vim_snippets#Filename()`}).
+	-module(${1:`easycomplete#Filename()`}).
 	-include_lib("eunit/include/eunit.hrl").
 
 	${0}
@@ -531,7 +531,7 @@ snippet asexc
 	?assertException(${1:Class}, ${2:Pattern}, ${0:Expression})
 # common_test test_SUITE
 snippet testsuite
-	-module(${0:`vim_snippets#Filename()`}).
+	-module(${0:`easycomplete#Filename()`}).
 
 	-include_lib("common_test/include/ct.hrl").
 

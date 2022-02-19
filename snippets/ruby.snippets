@@ -106,17 +106,17 @@ snippet until
 		${0:${VISUAL}}
 	end
 snippet cla class .. end
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
 		${0}
 	end
 snippet clai class .. initialize .. end
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
 		def initialize(${2:args})
 			${0}
 		end
 	end
 snippet cla< class .. < ParentClass .. initialize .. end
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} < ${2:ParentClass}
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} < ${2:ParentClass}
 		def initialize(${3:args})
 			${0}
 		end
@@ -131,7 +131,7 @@ snippet claself class << self .. end
 	end
 # class .. < DelegateClass .. initialize .. end
 snippet cla-
-	class ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} < DelegateClass(${2:ParentClass})
+	class ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} < DelegateClass(${2:ParentClass})
 		def initialize(${3:args})
 			super(${4:del_obj})
 
@@ -139,7 +139,7 @@ snippet cla-
 		end
 	end
 snippet mod module .. end
-	module ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
+	module ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`}
 		${0}
 	end
 # attr_reader
@@ -572,7 +572,7 @@ snippet clafn
 snippet sinc
 	class << self; self end
 snippet nam
-	namespace :${1:`vim_snippets#Filename()`} do
+	namespace :${1:`easycomplete#Filename()`} do
 		${0}
 	end
 snippet tas
@@ -673,11 +673,11 @@ snippet mthrow
 #     Rspec snippets     #
 ##########################
 snippet desc
-	describe ${1:`substitute(substitute(vim_snippets#Filename(), '_spec$', '', ''), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
+	describe ${1:`substitute(substitute(easycomplete#Filename(), '_spec$', '', ''), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
 		${0}
 	end
 snippet rdesc
-	RSpec.describe ${1:`substitute(substitute(vim_snippets#Filename(), '_spec$', '', ''), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
+	RSpec.describe ${1:`substitute(substitute(easycomplete#Filename(), '_spec$', '', ''), '\(_\|^\)\(.\)', '\u\2', 'g')`} do
 		${0}
 	end
 snippet descm

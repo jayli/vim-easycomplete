@@ -64,7 +64,7 @@ snippet ecl "extern crate log"
 	#[macro_use]
 	extern crate log;
 snippet mod
-	mod ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
+	mod ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
 		${0}
 	} /* $1 */
 # Testing
@@ -165,7 +165,7 @@ snippet fixme "FIXME comment"
 	// FIXME: $0
 # Struct
 snippet st "Struct definition"
-	struct ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
+	struct ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
 		${0}
 	}
 snippet impl "Struct/Trait implementation"
@@ -173,7 +173,7 @@ snippet impl "Struct/Trait implementation"
 		${0}
 	}
 snippet stn "Struct with new constructor"
-	pub struct ${1:`substitute(vim_snippets#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
+	pub struct ${1:`substitute(easycomplete#Filename(), '\(_\|^\)\(.\)', '\u\2', 'g')`} {
 		${0}
 	}
 

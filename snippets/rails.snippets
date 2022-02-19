@@ -361,7 +361,7 @@ snippet cmm class Migration... < ApplicationModel .. self.table_name .. end
 		self.table_name = :${2:model_name}s
 	end
 snippet migration class .. < ActiveRecord::Migration .. def up .. def down .. end
-	class `substitute( substitute(vim_snippets#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
+	class `substitute( substitute(easycomplete#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
 		def up
 			${0}
 		end
@@ -370,7 +370,7 @@ snippet migration class .. < ActiveRecord::Migration .. def up .. def down .. en
 		end
 	end
 snippet migration class .. < ActiveRecord::Migration .. def change .. end
-	class `substitute( substitute(vim_snippets#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
+	class `substitute( substitute(easycomplete#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
 		def change
 			${0}
 		end

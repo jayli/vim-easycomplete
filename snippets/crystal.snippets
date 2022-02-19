@@ -31,11 +31,11 @@ snippet wh
 		${0:${VISUAL}}
 	end
 snippet cla class .. end
-	class ${1:`substitute(vim_snippets#Filename(), "\(_\|^\)\(.\)", "\u\2", "g")`}
+	class ${1:`substitute(easycomplete#Filename(), "\(_\|^\)\(.\)", "\u\2", "g")`}
 		${0}
 	end
 snippet mod class .. end
-	module ${1:`substitute(vim_snippets#Filename(), "\(_\|^\)\(.\)", "\u\2", "g")`}
+	module ${1:`substitute(easycomplete#Filename(), "\(_\|^\)\(.\)", "\u\2", "g")`}
 		${0}
 	end
 snippet r
@@ -73,7 +73,7 @@ snippet dov
 		${2}
 	end
 snippet desc
-	describe ${1:`substitute(substitute(vim_snippets#Filename(), "_spec$", "", ""), "\(_\|^\)\(.\)", "\u\2", "g")`} do
+	describe ${1:`substitute(substitute(easycomplete#Filename(), "_spec$", "", ""), "\(_\|^\)\(.\)", "\u\2", "g")`} do
 		${0}
 	end
 snippet it

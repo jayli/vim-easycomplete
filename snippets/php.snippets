@@ -28,12 +28,12 @@ snippet ns
 	
 	${0:${VISUAL}}
 snippet c
-	class ${1:`vim_snippets#Filename()`}
+	class ${1:`easycomplete#Filename()`}
 	{
 		${0:${VISUAL}}
 	}
 snippet i
-	interface ${1:`vim_snippets#Filename()`}
+	interface ${1:`easycomplete#Filename()`}
 	{
 		${0:${VISUAL}}
 	}
@@ -56,7 +56,7 @@ snippet sm "PHP Class Setter"
 	 *
 	 * @param ${2:string} $$1 ${3:description}
 	 *
-	 * @return ${4:`vim_snippets#Filename()`}
+	 * @return ${4:`easycomplete#Filename()`}
 	 */
 	${5:public} function set${6:$1}(${7:$2 }$$1)
 	{
@@ -237,7 +237,7 @@ snippet interface
 	 * @package ${3:default}
 	 * @author ${4:`g:snips_author`}
 	 */
-	interface ${1:`vim_snippets#Filename()`}
+	interface ${1:`easycomplete#Filename()`}
 	{
 		${0:${VISUAL}}
 	}
@@ -249,7 +249,7 @@ snippet trait
 	 * @package ${3:default}
 	 * @author ${4:`g:snips_author`}
 	 */
-	trait ${1:`vim_snippets#Filename()`}
+	trait ${1:`easycomplete#Filename()`}
 	{
 		${0:${VISUAL}}
 	}
@@ -258,7 +258,7 @@ snippet class
 	/**
 	 * ${1}
 	 */
-	class ${2:`vim_snippets#Filename()`}
+	class ${2:`easycomplete#Filename()`}
 	{
 		${3}
 		/**
@@ -272,7 +272,7 @@ snippet class
 snippet nc
 	namespace ${1:`substitute(substitute(expand("%:h"), '\v^\w+\/(\u)', '\1', ''), '\/', '\\\', 'g')`};
 
-	${2:abstract }class ${3:`vim_snippets#Filename()`}
+	${2:abstract }class ${3:`easycomplete#Filename()`}
 	{
 		${0:${VISUAL}}
 	}
@@ -413,7 +413,7 @@ snippet gs "PHP Class Getter Setter"
 	 *
 	 * @param $2 $$1 ${5:description}
 	 *
-	 * @return ${6:`vim_snippets#Filename()`}
+	 * @return ${6:`easycomplete#Filename()`}
 	 */
 	public function set$3(${7:$2 }$$1)
 	{
