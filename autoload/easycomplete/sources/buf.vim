@@ -24,65 +24,100 @@ endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(typing)
-  let bufKeywordList        = s:GetBufKeywordsList(a:typing)
-  let wrappedBufKeywordList = map(bufKeywordList,
-        \ '{"word":v:val,"dup":1,"icase":1,"kind":"' . g:easycomplete_kindflag_buf .
-        \ '","equal":1,"menu": "' . g:easycomplete_menuflag_buf . '", "info": ""}')
-  let result =  s:MenuArrayDistinct(extend(
-        \       wrappedBufKeywordList,
-        \       s:GetWrappedDictKeywordList(a:typing)
-        \   ),
-        \   a:typing)
-  return result
+  " preform: 0.036s ~ 0.041s each time
+  let bufkeyword_list = s:GetBufKeywordsList(a:typing)
+  let dickeyword_list = s:GetDicKeywordsList(a:typing)
+  let combined_all  = bufkeyword_list + dickeyword_list
+  call s:ArrayDistinct(combined_all)
+  let combined_list = combined_all
+  let ret_list = []
+  for word in combined_list
+    if index(bufkeyword_list, word) >= 0
+      call add(ret_list, {
+            \ "word": word,
+            \ "dup" : 1,
+            \ "icase" : 1,
+            \ "equal" : 1,
+            \ "info" : "",
+            \ "kind" : g:easycomplete_kindflag_buf,
+            \ "menu" : g:easycomplete_menuflag_buf,
+            \ })
+    else
+      call add(ret_list, {
+            \ "word": word,
+            \ "dup" : 1,
+            \ "icase" : 1,
+            \ "equal" : 1,
+            \ "info" : "",
+            \ "kind" : g:easycomplete_kindflag_dict,
+            \ "menu" : g:easycomplete_menuflag_dict,
+            \ })
+    endif
+  endfor
+  return ret_list
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol)
-  let keywords_result = s:GetKeywords(a:typing)
+  try
+    let keywords_result = s:GetKeywords(a:typing)
+  catch
+    echom v:exception
+  endtry
   call easycomplete#complete(a:name, a:ctx, a:startcol, keywords_result)
 endfunction
 
 " 获取当前所有 buff 内的关键词列表
-function! s:GetBufKeywordsList(base)
+function! s:GetBufKeywordsList(typing)
+  if !exists("g:easycomplete_bufkw_storage")
+    let g:easycomplete_bufkw_storage = {}
+  endif
   let tmpkeywords = []
+  " preform: 0.022s
   for buf in getbufinfo()
-    if !(bufloaded(buf['bufnr']) && empty(getbufvar(buf['bufnr'], '&buftype')))
+    if !empty(getbufvar(buf['bufnr'], '&buftype'))
       continue
     endif
-    let lines = getbufline(buf.bufnr, 1 ,"$")
-    for line in lines
-      call extend(tmpkeywords, split(line,'[^A-Za-z0-9_#]'))
-    endfor
+    if !(bufloaded(buf['bufnr']))
+      continue
+    endif
+    let nr_key = 'k' . string(buf['bufnr']) " bufnr key
+    let tk_key = 'c' . string(buf['bufnr']) " changedtick key
+    let stored_kws = get(g:easycomplete_bufkw_storage, nr_key, [])
+    let stored_cgtk = get(g:easycomplete_bufkw_storage, tk_key, 0)
+    if buf["changedtick"] == stored_cgtk && !empty(stored_kws)
+      let tmpkeywords += copy(stored_kws)
+    else
+      let lines = getbufline(buf.bufnr, 1 ,"$")
+      let local_kwlist = []
+      for line in lines
+        let local_kwlist += split(line,'[^A-Za-z0-9_#]')
+      endfor
+      let g:easycomplete_bufkw_storage[nr_key] = local_kwlist
+      let g:easycomplete_bufkw_storage[tk_key] = buf["changedtick"]
+      let tmpkeywords += local_kwlist
+    endif
   endfor
-
-  let keywordList = s:ArrayDistinct(tmpkeywords)
-  if count(keywordList, a:base) == 1
-    call remove(keywordList, index(keywordList, a:base))
-  endif
-
-  return keywordList
+  " preform 0.020s for a 10222 -> 611 filter
+  call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
+  let keyword_list = tmpkeywords
+  return keyword_list
 endfunction
 
-" 将字典简单词表转换为补全浮窗所需的列表格式
-" 比如字典原始列表为 ['abc','def'] ，输出为
-" => [{"word":'abc',"kind":"[ID]","menu":"common.dict"}...]
-function! s:GetWrappedDictKeywordList(typing)
+function! s:GetDicKeywordsList(typing)
   let global_dict_keyword = s:GetGlobalDictKeyword()
   let localdicts = deepcopy(global_dict_keyword)
   call filter(localdicts, 'v:val =~ "^' . a:typing . '"')
-  call map(localdicts, function('s:ArrayMapping'))
   return localdicts
 endfunction
 
 function! s:GetGlobalDictKeyword()
-  if exists("b:globalDictKeywords")
-    return b:globalDictKeywords
+  if exists("b:easycomplete_global_dict")
+    return b:easycomplete_global_dict
   endif
-  let b:globalDictKeywords = []
-
+  let b:easycomplete_global_dict = []
   if empty(&dictionary)
     return []
   endif
-
   " 如果当前 Buff 所读取的字典目录存在
   let dictsFiles   = split(&dictionary,",")
   let dictkeywords = []
@@ -116,65 +151,18 @@ function! s:GetGlobalDictKeyword()
       endif
     endfor
 
-    let localdicts = s:ArrayDistinct(localdicts)
+    call s:ArrayDistinct(localdicts)
     let dictkeywords += localdicts
   endfor
-  let b:globalDictKeywords = dictkeywords
+  let b:easycomplete_global_dict = dictkeywords
   return dictkeywords
-endfunction
-
-function! s:ArrayMapping(key, val)
-  return {
-        \   "word" : a:val,
-        \   "kind" : g:easycomplete_kindflag_dict,
-        \   "equal": 1,
-        \   "menu" : g:easycomplete_menuflag_dict
-        \ }
 endfunction
 
 " List 去重，类似 uniq，纯数字要去掉
 function! s:ArrayDistinct(list)
-  if empty(a:list)
-    return []
-  else
-    let uniqlist = uniq(a:list)
-    call filter(uniqlist, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
-    return uniqlist
-  endif
-endfunction
-
-"popup 菜单内关键词去重，只做buff和dict里的keyword去重
-"传入的 list 不应包含 snippet 缩写
-"base 是要匹配的原始字符串
-function! s:MenuArrayDistinct(menuList, base)
-  if empty(a:menuList) || len(a:menuList) == 0
-    return []
-  endif
-
-  let menulist_tmp = []
-  for item in a:menuList
-    call add(menulist_tmp, item.word)
-  endfor
-
-  let menulist_filter = uniq(filter(menulist_tmp,
-        \ 'matchstrpos(v:val, "'.a:base.'")[1] == 0'))
-
-  "[word1,word2,word3...]
-  let menulist_assetlist = []
-  "[{word:word1,kind..},{word:word2,kind..}..]
-  let menulist_result = []
-
-  for item in a:menuList
-    let word = get(item, "word")
-    if index(menulist_assetlist, word) >= 0
-      continue
-    elseif index(menulist_filter, word) >= 0
-      call add(menulist_result,deepcopy(item))
-      call add(menulist_assetlist, word)
-    endif
-  endfor
-
-  return menulist_result
+  call uniq(sort(a:list))
+  call filter(a:list, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
+  return a:list 
 endfunction
 
 function! s:log(...)

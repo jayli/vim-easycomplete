@@ -22,6 +22,7 @@ endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol)
   let suggestions = []
+  " 0.010s for these two function call
   let snippets = UltiSnips#SnippetsInCurrentScope()
   call UltiSnips#SnippetsInCurrentScope(1)
 

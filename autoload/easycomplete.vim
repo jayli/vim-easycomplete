@@ -75,7 +75,7 @@ function! easycomplete#Enable()
   if exists("b:easycomplete_loaded_done")
     return
   endif
-  let b:easycomplete_loaded_done= 1
+  let b:easycomplete_loaded_done = 1
 
   doautocmd <nomodeline> User easycomplete_default_plugin
   doautocmd <nomodeline> User easycomplete_custom_plugin
@@ -102,7 +102,7 @@ function! easycomplete#Enable()
           \ easycomplete#util#GetEasyCompleteRootDirectory() . "/ultisnips"
           \ ]
   endif
-  call timer_start(300, { -> easycomplete#AutoLoadDict() })
+  call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
 endfunction
 
 function! s:InitLocalVars()
@@ -1484,10 +1484,6 @@ function! s:LetCompleteTaskQueueAllDone()
   for item in g:easycomplete_complete_taskqueue
     let item.done = 1
   endfor
-endfunction
-
-function! easycomplete#AutoLoadDict()
-  call easycomplete#util#AutoLoadDict()
 endfunction
 
 function! easycomplete#SnipSupports()
