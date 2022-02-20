@@ -8,7 +8,7 @@ def create_table(snip):
 	rows_amount = int(placeholders_string[0])
 	columns_amount = int(placeholders_string[1])
 
-	prefix_str = "from vimsnippets import display_width;"
+	prefix_str = "from EasyCompleteUtil.vimsnippets import display_width;"
 
 	# erase current line
 	snip.buffer[snip.line] = ""

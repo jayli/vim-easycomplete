@@ -7,7 +7,8 @@ import os
 import hashlib
 
 SNIPPETS_FILES_CTX = {}
-
+ALWAYS = 'always'
+NEVER = 'never'
 
 def listdir(path):
     return os.listdir(path)
@@ -118,8 +119,51 @@ def snippets_code_info(filename, line_number):
     return json.dumps(ret_array, ensure_ascii=False)
 
 def complete_menu_filter(all_menu, word, maxlength):
-    """
-    """
     return json.dumps(all_menu, ensure_ascii=False)
+
+"""
+Helper utilities to format javascript snippets.
+"""
+# {{{
+
+def get_option(snip, option, default=None):
+    return snip.opt('g:ultisnips_javascript["{}"]'.format(option), default)
+
+def semi(snip):
+    option = get_option(snip, 'semi', ALWAYS)
+
+    if option == NEVER:
+        ret = ''
+    elif option == ALWAYS:
+        ret = ';'
+    else:
+        ret = ';'
+    return ret
+
+
+def space_before_function_paren(snip):
+    option = get_option(snip, 'space-before-function-paren', NEVER)
+
+    if option == NEVER:
+        ret = ''
+    elif option == ALWAYS:
+        ret = ' '
+    else:
+        ret = ''
+    return ret
+
+
+def keyword_spacing(snip):
+    option = get_option(snip, 'keyword-spacing', ALWAYS)
+
+    if option == NEVER:
+        ret = ''
+    elif option == ALWAYS:
+        ret = ' '
+    else:
+        ret = ''
+    return ret
+
+# }}}
 
 # vim:ts=4:sw=4:sts=4
