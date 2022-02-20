@@ -1,98 +1,98 @@
 # Import
-snippet ir import React
+snippet ir_react import React
 	import React from 'react';
 
-snippet irc import React and Component
+snippet irc_react import React and Component
 	import React, { Component } from 'react';
 
-snippet irh import React hooks
+snippet irh_react import React hooks
 	import { use$1 } from 'react';
 
-snippet ird import ReactDOM
+snippet ird_react import ReactDOM
 	import ReactDOM from 'react-dom';
 
-snippet irp import PropTypes
+snippet irp_react import PropTypes
 	import PropTypes from 'prop-types';
 
 # Lifecycle Methods
-snippet cdm componentDidMount
+snippet cdm_react componentDidMount
 	componentDidMount() {
 		${1}
 	};
 
-snippet cdup componentDidUpdate
+snippet cdup_react componentDidUpdate
 	componentDidUpdate(prevProps, prevState) {
 		${1}
 	};
 
-snippet cwm componentWillMount
+snippet cwm_react componentWillMount
 	componentWillMount() {
 		${1}
 	};
 
-snippet cwr componentWillReceiveProps
+snippet cwr_react componentWillReceiveProps
 	componentWillReceiveProps(nextProps) {
 		${1}
 	};
 
-snippet cwun componentWillUnmount
+snippet cwun_react componentWillUnmount
 	componentWillUnmount() {
 		${1}
 	};
 
-snippet cwu componentWillUpdate
+snippet cwu_react componentWillUpdate
 	componentWillUpdate(nextProps, nextState) {
 		${1}
 	};
 
-snippet scu shouldComponentUpdate
+snippet scu_react shouldComponentUpdate
 	shouldComponentUpdate(nextProps, nextState) {
 		${1}
 	}
 
 # Props
-snippet spt static propTypes
+snippet spt_react static propTypes
 	static propTypes = {
 		${1}: PropTypes.${2}
 	};
 
-snippet pt propTypes
+snippet pt_react propTypes
 	${1}.propTypes = {
 		${2}: PropTypes.${2}
 	};
 
-snippet sdp static defaultProps
+snippet sdp_react static defaultProps
 	static defaultProps = {
 		${1}: ${2}	
 	};
 
-snippet dp defaultProps
+snippet dp_react defaultProps
 	${1}.defaultProps = {
 		${2}: ${3}
 	};
 
-snippet pp props
+snippet pp_react props
 	props.${1};
 
-snippet tp this props
+snippet tp_react this props
 	this.props.${1};
 
 # State
-snippet st
+snippet st_react
 	state = {
 		${1}: ${2},
 	};
 
-snippet sst
+snippet sst_react
 	this.setState({
 		${1}: ${2}
 	});
 
-snippet tst 
+snippet tst_react 
 	this.state.${1};
 
 # Component
-snippet raf
+snippet raf_react
 	const ${1:ComponentName} = (${2:props}) => {
 		${3:state}
 
@@ -103,7 +103,7 @@ snippet raf
 		);
 	};
 
-snippet rcla
+snippet rcla_react
 	class ${1:ClassName} extends Component {
 		render() {
 			return (
@@ -114,7 +114,7 @@ snippet rcla
 		}
 	}
 
-snippet ercla
+snippet ercla_react
 	export default class ${1:ClassName} extends Component {
 		render() {
 			return (
@@ -125,14 +125,14 @@ snippet ercla
 		};
 	};
 
-snippet ctor
+snippet ctor_react
 	constructor() {
 		super();
 
 		${1:state}
 	}
 
-snippet ren
+snippet ren_react
 	render() {
 		return (
 			<>
@@ -141,50 +141,16 @@ snippet ren
 		);
 	}
 
-snippet fup
+snippet fup_react
 	forceUpdate(${1:callback});
 
-# Hooks
-snippet uses useState
-	const [${1:state}, set${2}] = useState(${3:initialState});
-
-snippet usee useEffect
-	useEffect(() => {
-		${1}
-	});
-
-snippet userd useReducer
-	const [${1:state}, ${2:dispatch}] = useReducer(${3:reducer});
-
-snippet userf useRef
-	const ${1:refContainer} = useRef(${2:initialValue});
-
-snippet usect useContext
-	const ${1:value} = useContext(${2:MyContext});
-
-snippet usecb useCallback
-	const ${1:memoizedCallback} = useCallback(
-	() => {
-		${2}(${3})
-	},
-	[$3]
-	);
-
-snippet usem useMemo
-	const ${1:memoizedCallback} = useMemo(() => ${2}(${3}), [$3]);
-
-snippet usei useImperativeHandle
-	useImperativeHandle(${1:ref}, ${2:createHandle});
-
-snippet used useDebugValue
-	useDebugValue(${1:value});
 
 # ReactDOM methods
-snippet rdr ReactDOM.render
+snippet rdr_react ReactDOM.render
 	ReactDOM.render(${1}, ${2});
 
-snippet rdh ReactDOM.hydrate
+snippet rdh_react ReactDOM.hydrate
 	ReactDOM.hydrate(${1:element}, ${2:container}[, ${3:callback}]);
 
-snippet rdcp ReactDOM.createPortal
+snippet rdcp_react ReactDOM.createPortal
 	ReactDOM.createPortal(${1:child}, ${2:container});

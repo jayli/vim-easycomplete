@@ -237,58 +237,12 @@ snippet de
 	debugger;
 snippet cl "console.log"
 	console.log(${0});
-snippet cd "console.debug"
-	console.debug(${0});
-snippet ce "console.error"
-	console.error(${0});
-snippet cw "console.warn"
-	console.warn(${0});
-snippet ci "console.info"
-	console.info(${0});
-snippet ct "console.trace"
-	console.trace(${0:label});
-snippet ctime "console.time ... console.timeEnd"
-	console.time("${1:label}");
-	${0:${VISUAL}}
-	console.timeEnd("$1");
-snippet ctimestamp "console.timeStamp"
-	console.timeStamp("${1:label}");
-snippet ca "console.assert"
-	console.assert(${1:expression}, ${0:obj});
-snippet cclear "console.clear"
-	console.clear();
-snippet cdir "console.dir"
-	console.dir(${0:obj});
-snippet cdirx "console.dirxml"
-	console.dirxml(${1:object});
-snippet cgroup "console.group"
-	console.group("${1:label}");
-	${0:${VISUAL}}
-	console.groupEnd();
-snippet cgroupc "console.groupCollapsed"
-	console.groupCollapsed("${1:label}");
-	${0:${VISUAL}}
-	console.groupEnd();
-snippet cprof "console.profile"
-	console.profile("${1:label}");
-	${0:${VISUAL}}
-	console.profileEnd();
-snippet ctable "console.table"
-	console.table(${1:"${2:value}"});
-snippet clstr "console.log stringified"
-	console.log(JSON.stringify(${0}, null, 2));
 # Misc
 snippet us
 	'use strict';
 # setTimeout function
 snippet timeout
 	setTimeout(function () {${0}}${2}, ${1:10});
-snippet const
-	const ${1} = ${0};
-snippet constn
-	const ${1} = new ${0};
-snippet let
-	let ${1} = ${0};
 snippet im "import xyz from 'xyz'"
 	import ${1} from '${2:$1}';
 snippet imas "import * as xyz from 'xyz'"
@@ -298,16 +252,6 @@ snippet imm "import { member } from 'xyz'"
 snippet cla
 	class ${1} {
 		${0:${VISUAL}}
-	}
-snippet clax
-	class ${1} extends ${2} {
-		${0:${VISUAL}}
-	}
-snippet clac
-	class ${1} {
-		constructor(${2}) {
-			${0:${VISUAL}}
-		}
 	}
 snippet foro "for (const prop of object}) { ... }"
 	for (const ${1:prop} of ${2:object}) {
@@ -321,39 +265,7 @@ snippet fun*
 	function* ${1:function_name}(${2}) {
 		${0:${VISUAL}}
 	}
-snippet c=>
-	const ${1:function_name} = (${2}) => {
-		${0:${VISUAL}}
-	}
-snippet ca=>
-	const ${1:function_name} = async (${2}) => {
-		${0:${VISUAL}}
-	}
-snippet caf
-	const ${1:function_name} = (${2}) => {
-		${0:${VISUAL}}
-	}
-snippet casf
-	const ${1:function_name} = async (${2}) => {
-		${0:${VISUAL}}
-	}
-snippet =>
-	(${1}) => {
-		${0:${VISUAL}}
-	}
-snippet af "() =>"
-	(${1}) => ${0:${VISUAL}}
-snippet afb "() => {}"
-	(${1}) => {
-		${0:${VISUAL}}
-	}
-snippet sym
-	const ${1} = Symbol('${0}');
 snippet ed
 	export default ${0}
 snippet ${
 	\${${1}}${0}
-snippet as "async"
-	async ${0}
-snippet aw "await"
-	await ${0:${VISUAL}}
