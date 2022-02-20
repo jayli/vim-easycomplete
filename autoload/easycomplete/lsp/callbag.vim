@@ -27,127 +27,127 @@ endfunction
 
 " merge() {{{
 function! easycomplete#lsp#callbag#merge(...) abort
-    let l:data = { 'sources': a:000 }
-    return function('s:mergeFactory', [l:data])
+  let l:data = { 'sources': a:000 }
+  return function('s:mergeFactory', [l:data])
 endfunction
 
 function! s:mergeFactory(data, start, sink) abort
-    if a:start != 0 | return | endif
-    let a:data['sink'] = a:sink
-    let a:data['n'] = len(a:data['sources'])
-    let a:data['sourceTalkbacks'] = []
-    let a:data['startCount'] = 0
-    let a:data['endCount'] = 0
-    let a:data['ended'] = 0
-    let a:data['talkback'] = function('s:mergeTalkbackCallback', [a:data])
-    let l:i = 0
-    while l:i < a:data['n']
-        if a:data['ended'] | return | endif
-        call a:data['sources'][l:i](0, function('s:mergeSourceCallback', [a:data, l:i]))
-        let l:i += 1
-    endwhile
+  if a:start != 0 | return | endif
+  let a:data['sink'] = a:sink
+  let a:data['n'] = len(a:data['sources'])
+  let a:data['sourceTalkbacks'] = []
+  let a:data['startCount'] = 0
+  let a:data['endCount'] = 0
+  let a:data['ended'] = 0
+  let a:data['talkback'] = function('s:mergeTalkbackCallback', [a:data])
+  let l:i = 0
+  while l:i < a:data['n']
+    if a:data['ended'] | return | endif
+    call a:data['sources'][l:i](0, function('s:mergeSourceCallback', [a:data, l:i]))
+    let l:i += 1
+  endwhile
 endfunction
 
 function! s:mergeTalkbackCallback(data, t, d) abort
-    if a:t == 2 | let a:data['ended'] = 1 | endif
-    let l:i = 0
-    while l:i < a:data['n']
-        if l:i < len(a:data['sourceTalkbacks']) && a:data['sourceTalkbacks'][l:i] != 0
-            call a:data['sourceTalkbacks'][l:i](a:t, a:d)
-        endif
-        let l:i += 1
-    endwhile
+  if a:t == 2 | let a:data['ended'] = 1 | endif
+  let l:i = 0
+  while l:i < a:data['n']
+    if l:i < len(a:data['sourceTalkbacks']) && a:data['sourceTalkbacks'][l:i] != 0
+      call a:data['sourceTalkbacks'][l:i](a:t, a:d)
+    endif
+    let l:i += 1
+  endwhile
 endfunction
 
 function! s:mergeSourceCallback(data, i, t, d) abort
-    if a:t == 0
-        call insert(a:data['sourceTalkbacks'], a:d, a:i)
-        let a:data['startCount'] += 1
-        if a:data['startCount'] == 1 | call a:data['sink'](0, a:data['talkback']) | endif
-    elseif a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d)
-        let a:data['ended'] = 1
-        let l:j = 0
-        while l:j < a:data['n']
-            if l:j != a:i && l:j < len(a:data['sourceTalkbacks']) && a:data['sourceTalkbacks'][l:j] != 0
-                call a:data['sourceTalkbacks'][l:j](2, easycomplete#lsp#callbag#undefined())
-            endif
-            let l:j += 1
-        endwhile
-        call a:data['sink'](2, a:d)
-    elseif a:t == 2
-        let a:data['sourceTalkbacks'][a:i] = 0
-        let a:data['endCount'] += 1
-        if a:data['endCount'] == a:data['n'] | call a:data['sink'](2, easycomplete#lsp#callbag#undefined()) | endif
-    else
-        call a:data['sink'](a:t, a:d)
-    endif
+  if a:t == 0
+    call insert(a:data['sourceTalkbacks'], a:d, a:i)
+    let a:data['startCount'] += 1
+    if a:data['startCount'] == 1 | call a:data['sink'](0, a:data['talkback']) | endif
+  elseif a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d)
+    let a:data['ended'] = 1
+    let l:j = 0
+    while l:j < a:data['n']
+      if l:j != a:i && l:j < len(a:data['sourceTalkbacks']) && a:data['sourceTalkbacks'][l:j] != 0
+        call a:data['sourceTalkbacks'][l:j](2, easycomplete#lsp#callbag#undefined())
+      endif
+      let l:j += 1
+    endwhile
+    call a:data['sink'](2, a:d)
+  elseif a:t == 2
+    let a:data['sourceTalkbacks'][a:i] = 0
+    let a:data['endCount'] += 1
+    if a:data['endCount'] == a:data['n'] | call a:data['sink'](2, easycomplete#lsp#callbag#undefined()) | endif
+  else
+    call a:data['sink'](a:t, a:d)
+  endif
 endfunction
 " }}}
 "
 " filter() {{{
 function! easycomplete#lsp#callbag#filter(condition) abort
-    let l:data = { 'condition': a:condition }
-    return function('s:filterCondition', [l:data])
+  let l:data = { 'condition': a:condition }
+  return function('s:filterCondition', [l:data])
 endfunction
 
 function! s:filterCondition(data, source) abort
-    let a:data['source'] = a:source
-    return function('s:filterConditionSource', [a:data])
+  let a:data['source'] = a:source
+  return function('s:filterConditionSource', [a:data])
 endfunction
 
 function! s:filterConditionSource(data, start, sink) abort
-    if a:start != 0 | return | endif
-    let a:data['sink'] = a:sink
-    call a:data['source'](0, function('s:filterSourceCallback', [a:data]))
+  if a:start != 0 | return | endif
+  let a:data['sink'] = a:sink
+  call a:data['source'](0, function('s:filterSourceCallback', [a:data]))
 endfunction
 
 function! s:filterSourceCallback(data, t, d) abort
-    if a:t == 0
-        let a:data['talkback'] = a:d
-        call a:data['sink'](a:t, a:d)
-    elseif a:t == 1
-        if a:data['condition'](a:d)
-            call a:data['sink'](a:t, a:d)
-        else
-            call a:data['talkback'](1, easycomplete#lsp#callbag#undefined())
-        endif
+  if a:t == 0
+    let a:data['talkback'] = a:d
+    call a:data['sink'](a:t, a:d)
+  elseif a:t == 1
+    if a:data['condition'](a:d)
+      call a:data['sink'](a:t, a:d)
     else
-        call a:data['sink'](a:t, a:d)
+      call a:data['talkback'](1, easycomplete#lsp#callbag#undefined())
     endif
+  else
+    call a:data['sink'](a:t, a:d)
+  endif
 endfunction
 " }}}
 
 " tap() {{{
 function! easycomplete#lsp#callbag#tap(...) abort
-    let l:data = {}
-    if a:0 > 0 && type(a:1) == type({}) " a:1 { next, error, complete }
-        if has_key(a:1, 'next') | let l:data['next'] = a:1['next'] | endif
-        if has_key(a:1, 'error') | let l:data['error'] = a:1['error'] | endif
-        if has_key(a:1, 'complete') | let l:data['complete'] = a:1['complete'] | endif
-    else " a:1 = next, a:2 = error, a:3 = complete
-        if a:0 >= 1 | let l:data['next'] = a:1 | endif
-        if a:0 >= 2 | let l:data['error'] = a:2 | endif
-        if a:0 >= 3 | let l:data['complete'] = a:3 | endif
-    endif
-    return function('s:tapFactory', [l:data])
+  let l:data = {}
+  if a:0 > 0 && type(a:1) == type({}) " a:1 { next, error, complete }
+    if has_key(a:1, 'next') | let l:data['next'] = a:1['next'] | endif
+    if has_key(a:1, 'error') | let l:data['error'] = a:1['error'] | endif
+    if has_key(a:1, 'complete') | let l:data['complete'] = a:1['complete'] | endif
+  else " a:1 = next, a:2 = error, a:3 = complete
+    if a:0 >= 1 | let l:data['next'] = a:1 | endif
+    if a:0 >= 2 | let l:data['error'] = a:2 | endif
+    if a:0 >= 3 | let l:data['complete'] = a:3 | endif
+  endif
+  return function('s:tapFactory', [l:data])
 endfunction
 
 function! s:tapFactory(data, source) abort
-    let a:data['source'] = a:source
-    return function('s:tapSouceFactory', [a:data])
+  let a:data['source'] = a:source
+  return function('s:tapSouceFactory', [a:data])
 endfunction
 
 function! s:tapSouceFactory(data, start, sink) abort
-    if a:start != 0 | return | endif
-    let a:data['sink'] = a:sink
-    call a:data['source'](0, function('s:tapSourceCallback', [a:data]))
+  if a:start != 0 | return | endif
+  let a:data['sink'] = a:sink
+  call a:data['source'](0, function('s:tapSourceCallback', [a:data]))
 endfunction
 
 function! s:tapSourceCallback(data, t, d) abort
-    if a:t == 1 && has_key(a:data, 'next') | call a:data['next'](a:d) | endif
-    if a:t == 2 && easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'complete') | call a:data['complete']() | endif
-    if a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'error') | call a:data['error'](a:d) | endif
-    call a:data['sink'](a:t, a:d)
+  if a:t == 1 && has_key(a:data, 'next') | call a:data['next'](a:d) | endif
+  if a:t == 2 && easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'complete') | call a:data['complete']() | endif
+  if a:t == 2 && !easycomplete#lsp#callbag#isUndefined(a:d) && has_key(a:data, 'error') | call a:data['error'](a:d) | endif
+  call a:data['sink'](a:t, a:d)
 endfunction
 " }}}
 

@@ -7,7 +7,10 @@ function! easycomplete#sources#cpp#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'ccls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
-      \ 'initialization_options':{'cache': {'directory': '/tmp/ccls/cache'},'completion': {'detailedLabel': v:false}},
+      \ 'initialization_options':{
+      \    'cache': {'directory': '/tmp/ccls/cache'},
+      \    'completion': {'detailedLabel': v:false }
+      \  },
       \ 'allowlist': ["c", "cc", "cpp", "c++", "objc", "objcpp", "hpp"],
       \ })
 endfunction
