@@ -4,7 +4,7 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance . It requires VimScript only and you don't even have to add one line of configuration. It's definitely a minimalism style plugin.
+Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure Vim Script. You don't need to configure anything. Especially, You don't have to install Node and a bunch of Node Modules unless you're a js/ts developer. It's definitely a minimalism style plugin.
 
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=650 />
 
@@ -244,7 +244,7 @@ endfunction
 
 So you should redefine at least three functions `completor`/`constructor`/`gotodefinition`.
 
-### Customise vim completion menu
+### Beautify the vim completion menu
 
 There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
 

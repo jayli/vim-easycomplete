@@ -1,34 +1,35 @@
 *easycomplete.txt*		Vim-EasyComplete Plugin
 
 			Copyright (c) 2020-2022 @Jayli
-	More Info: <https://github.com/jayli/vim-easycomplete>
+	More Info: https://github.com/jayli/vim-easycomplete
 
 EasyComplete                                                     *easycomplete*
 
 ===============================================================================
-
 Introduction
 
-Vim-Easycomplete is a fast code completion plugin for vim/nvim. In order to
-provide the best performance and experience. I remove all non-essential
-requirements and environment dependencies so that it has minimum redundancy.
-
-It requires vim script only, and you don't even have to add one line of
-configuration if you want. It's definitely a minimalism style plugin.
+Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work
+everywhere out of the box with high-speed performance. It requires pure Vim Script.
+You don't need to configure anything. Especially, You don't have to install Node
+and a bunch of Node Modules unless you're a js/ts developer. It's definitely a
+minimalism style plugin.
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
-- Buffer keywords and dictionary support
-- Directory and file completion support
-- Goto definition support for all languages
-- Language lint with diagnostic
-- Signature helper
+- Buffer Keywords/Directory support
 - LSP support
-- LSP Server installation with one command
-- Snippet support with ultisnips. (python3 required)
+- Easy to install LSP Server with one command
+- Written in pure vim script for vim8 and neovim
+- Snippet support with ultisnips.
+- Brand New UI Design.
+
+==============================================================================
+Requirements
+
+Neovim >= 0.4.0 or Vim >= 8.0, for best experience, use neovim >= 0.5.0
+or vim >= 8.2.
 
 ===============================================================================
-
 Installation
 
 Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD.
@@ -36,16 +37,15 @@ For neovim users, 0.4.4 is required (Of course, latest is recommended).
 
 Configuration
 
-It use Tab to trigger completion suggestions. You can change this setting by
+It use Tab to trigger completion suggestions. You can change this setting by >
 
   let g:easycomplete_tab_trigger="<c-space>"
-
+<
 There are four build-in popup menu themes for default styles confliction: `dark`,
-`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). This config 
+`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). This config
 can be ignored in most cases.
 
 ===============================================================================
-
 Useage
 
 You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
@@ -59,7 +59,7 @@ diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>` 
 
   nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
   nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
-
+<
 In most cases, the plugin already map these tow HOTKEYs for you successfully. You
 only have to set custom diagnostic HOTKEYs manually in case of there was a conflict.
 
@@ -79,20 +79,22 @@ Typing `:h easycomplete` for help.
 All commands:
 
 | Command                           | Description                              |
-| --------------------------------- | ---------------------------------------- |
-| :EasyCompleteInstallServer        | Install LSP server for current fileytpe  |
-| :InstallLspServer                 | Same as EasyCompleteInstallServer        |
-| :EasyCompleteGotoDefinition       | Goto definition position                 |
-| :EasyCompleteCheck                | Checking LSP server                      |
-| :EasyCompletePreviousDiagnostic   | Goto Previous diagnostic                 |
-| :EasyCompleteNextDiagnostic       | Goto Next diagnostic                     |
-| :EasyCompleteProfileStart         | Start record diagnostics message         |
-| :EasyCompleteProfileStop          | Stop record diagnostics  message         |
-| :EasyCompleteLint                 | Do diagnostic                            |
-| :DenoCache                        | Do Deno Cache for downloading modules    |
+|-----------------------------------|------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
+| `:EasyCompleteDisable`            | Disable EasyComplete                     |
+| `:EasyCompleteEnable`             | Enable EasyComplete                      |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
+| `:EasyCompleteCheck`              | Checking LSP server                      |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
+| `:EasyCompleteLint`               | Do diagnostic                            |
+| `:LintEasyComplete`               | Do diagnostic                            |
+| `:DenoCache`                      | Do Deno Cache for downloading modules    |
 
 ===============================================================================
-
 Language Support
 
 EasyComplete support keywords/dictionary/directory completion by default.
@@ -102,13 +104,13 @@ Most Language require LSP Server. Install missing LSP Server with
 will be installed in `~/.config/vim-easycomplete/servers`. >
 
   :InstallLspServer
-
+<
 Or you can install a lsp server with specified plugin name (not recommended).
 
 Take typescript/javascript for example: >
 
   :InstallLspServer ts
-
+<
 All supported languages:
 
 | Plugin Name | Languages             | Language Server        | Installer |
@@ -139,16 +141,56 @@ All supported languages:
 | dart        | dart                  | analysis...-snapshot   | Yes       |
 | php         | php                   | intelephense           | Yes       |
 
-EasyComplete needs ultisnips and vim-snippets for snippets support if you want.
-This two plugin is compatible with EasyComplete out of the box. Install with
+EasyComplete needs ultisnips for snippets support if you want.
+This plugin is compatible with Vim-EasyComplete out of the box. Install with
 vim-plug: >
 
   Plug 'SirVer/ultisnips'
-  Plug 'honza/vim-snippets'
+<
+===============================================================================
+Beautify the vim completion menu
 
+There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and
+`sharp`. (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu
+via these configurations:
+
+- Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
+- Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
+- Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
+- Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
+- Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
+- Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
+- Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
+
+Example configuration with <https://nerdfonts.com>: >
+
+  let g:easycomplete_menuflag_buf = ""
+  let g:easycomplete_kindflag_buf = "⚯"
+  let g:easycomplete_menuflag_snip = ""
+  let g:easycomplete_kindflag_snip = "ട"
+  let g:easycomplete_kindflag_dict = "≡"
+  let g:easycomplete_menuflag_dict = ""
+  let g:easycomplete_lsp_type_font = {
+        \ 't':'𝘵',
+        \ 'f':'𝘧',
+        \ 'c':'𝘤',
+        \ 'm':'𝘮',
+        \ 'u':'𝘶',
+        \ 'e':'𝘦',
+        \ 's':'𝘴',
+        \ 'v':'𝘷',
+        \ 'i':'𝘪',
+        \ 'p':'𝘱',
+        \ 'k':'𝘬',
+        \ 'r':'𝘳',
+        \ 'o':"𝘰",
+        \ 'l':"𝘭",
+        \ 'a':"𝘢",
+        \ }
+<
 ===============================================================================
 
-	Get More Info: <https://github.com/jayli/vim-easycomplete>
+	Get More Info: https://github.com/jayli/vim-easycomplete
 
 Help
 
