@@ -889,6 +889,27 @@ function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
   return ret_path
 endfunction "}}}
 
+function! easycomplete#util#MatchFuzzy(array, word, ...)
+  let dict = exists('a:1') ? a:1 : {}
+  if exists('*matchfuzzy')
+    if has_key(dict, "key")
+      return matchfuzzy(a:array, a:word, dict)
+    else
+      return matchfuzzy(a:array, a:word)
+    endif
+  else
+    let b:easycomplete_temp_word = a:word
+    if has_key(dict, "key")
+      let b:easycomplete_temp_key = get(dict, "key", "")
+      let ret = filter(copy(a:array),
+            \ 's:FuzzySearchRegx(b:easycomplete_temp_word, get(v:val, b:easycomplete_temp_key))')
+    else
+      let ret = filter(copy(a:array), 's:FuzzySearchRegx(b:easycomplete_temp_word, v:val)')
+    endif
+    return ret
+  endif
+endfunction
+
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
 " maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
@@ -907,6 +928,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let fuzzymatching = []
     let all_items = a:all_menu
     let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
+    " let fuzzymatching = easycomplete#util#MatchFuzzy(all_items, word, {'key': "word"})
     if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 1
       call sort(fuzzymatching, "easycomplete#util#SortTextComparatorByLength")
     endif
