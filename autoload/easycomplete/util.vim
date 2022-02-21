@@ -24,8 +24,7 @@ function! easycomplete#util#GetAttachedPlugins()
 endfunction " }}}
 
 " AsyncRun {{{
-" 运行一个全局的 Timer，只在 complete 的时候用
-" 参数：method, args, timer
+" 参数：method, args, delay
 " method 必须是一个全局方法,
 " timer 为空则默认为0
 function! easycomplete#util#AsyncRun(...)
@@ -54,7 +53,6 @@ function! easycomplete#util#call(method, args) abort
       call call(a:method, a:args)
     endif
     let g:easycomplete_popup_timer = -1
-    " redraw " bugfix: redraw 会造成光标的闪烁
   catch /.*/
     return 0
   endtry
@@ -222,10 +220,6 @@ endfunction
 
 function! s:TrimWavyLine(str)
   return substitute(a:str, "\\(\\w\\)\\@<=\\~$", "", "g")
-  " if strlen(a:str) >= 2 && a:str[-1:] == "~"
-  "   return a:str[0:-2]
-  " endif
-  " return a:str
 endfunction
 " }}}
 
@@ -236,7 +230,7 @@ endfunction " }}}
 
 " deletebufline {{{
 function! util#deletebufline(bn, fl, ll)
-  " version <= 801 deletebufline dos not exists
+  " vim version <= 801 deletebufline dos not exists
   if exists("deletebufline")
     call deletebufline(a:bn, a:fl, a:ll)
   else
@@ -530,8 +524,8 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     endfor
 
     " 构造分割线
-    let l:count = 0
-    for item in t_info
+    for i in range(len(t_info))
+      let item = t_info[i]
       " 构造分割线
       if trim(item) =~ "^-\\+$"
         if t_maxwidth < maxwidth
@@ -539,10 +533,9 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
         elseif t_maxwidth == maxwidth
           let t_maxwidth += 2
         endif
-        let t_info[l:count] = repeat("─", t_maxwidth)
+        let t_info[i] = repeat("─", t_maxwidth)
         break
       endif
-      let l:count += 1
     endfor
 
     " hack for vim popup menu scrollbar
@@ -1610,4 +1603,3 @@ function! s:trace(...)
   return call('easycomplete#util#trace', a:000)
 endfunction
 " }}}
-

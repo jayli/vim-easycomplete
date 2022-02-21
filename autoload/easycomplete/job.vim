@@ -1,4 +1,5 @@
 " Author: Prabir Shrestha <mail at prabir dot me>
+" Modified: Jayli <bachi at taobao dot com>
 " Website: https://github.com/prabirshrestha/async.vim
 " License: The MIT License {{{
 "   The MIT License (MIT)
