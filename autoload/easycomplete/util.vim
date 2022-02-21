@@ -889,6 +889,10 @@ function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
   return ret_path
 endfunction "}}}
 
+" TODO this function need to be updated
+" matchfuzzy is not aviable in nvim(<= 0.5.0)
+" This Custom empletation is lack of sorting by matching score
+" Custom MatchFuzzy {{{
 function! easycomplete#util#MatchFuzzy(array, word, ...)
   let dict = exists('a:1') ? a:1 : {}
   if exists('*matchfuzzy')
@@ -908,7 +912,7 @@ function! easycomplete#util#MatchFuzzy(array, word, ...)
     endif
     return ret
   endif
-endfunction
+endfunction " }}}
 
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
@@ -927,13 +931,12 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let fuzzymatching = []
     let all_items = a:all_menu
     let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
-    " let fuzzymatching = easycomplete#util#MatchFuzzy(all_items, word, {'key': "word"})
     if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 1
       call sort(fuzzymatching, "easycomplete#util#SortTextComparatorByLength")
     endif
     let filtered_menu = original_matching + fuzzymatching
     return filtered_menu
-  else
+  else " for nvim(<=0.5.0)
     " 完整匹配
     let original_matching_menu = []
     " 非完整匹配
