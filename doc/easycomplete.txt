@@ -79,20 +79,20 @@ Typing `:h easycomplete` for help.
 All commands:
 
 | Command                           | Description                              |
-|-----------------------------------|------------------------------------------|
-| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
-| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
-| `:EasyCompleteDisable`            | Disable EasyComplete                     |
-| `:EasyCompleteEnable`             | Enable EasyComplete                      |
-| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
-| `:EasyCompleteCheck`              | Checking LSP server                      |
-| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
-| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
-| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
-| `:EasyCompleteLint`               | Do diagnostic                            |
-| `:LintEasyComplete`               | Do diagnostic                            |
-| `:DenoCache`                      | Do Deno Cache for downloading modules    |
+| --------------------------------- | ---------------------------------------- |
+| `:EasyCompleteInstallServer`        | Install LSP server for current fileytpe  |
+| `:InstallLspServer`                 | Same as `EasyCompleteInstallServer`        |
+| `:EasyCompleteDisable`              | Disable EasyComplete                     |
+| `:EasyCompleteEnable`               | Enable EasyComplete                      |
+| `:EasyCompleteGotoDefinition`       | Goto definition position                 |
+| `:EasyCompleteCheck`                | Checking LSP server                      |
+| `:EasyCompletePreviousDiagnostic`   | Goto Previous diagnostic                 |
+| `:EasyCompleteNextDiagnostic`       | Goto Next diagnostic                     |
+| `:EasyCompleteProfileStart`         | Start record diagnostics message         |
+| `:EasyCompleteProfileStop`          | Stop record diagnostics  message         |
+| `:EasyCompleteLint`                 | Do diagnostic                            |
+| `:LintEasyComplete`                 | Do diagnostic                            |
+| `:DenoCache`                        | Do Deno Cache for downloading modules    |
 
 ===============================================================================
 Language Support
@@ -140,6 +140,7 @@ All supported languages:
 | cmake       | cmake                 | cmake-language-server  | Yes       |
 | dart        | dart                  | analysis...-snapshot   | Yes       |
 | php         | php                   | intelephense           | Yes       |
+| cs          | C#                    | omnisharp-lsp          | Yes       |
 
 EasyComplete needs ultisnips for snippets support if you want.
 This plugin is compatible with Vim-EasyComplete out of the box. Install with
