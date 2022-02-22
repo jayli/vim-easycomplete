@@ -323,6 +323,16 @@ augroup easycomplete#PluginRegister
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
 
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'c#',
+      \ 'whitelist': ['cs'],
+      \ 'completor': 'easycomplete#sources#cs#completor',
+      \ 'constructor' :'easycomplete#sources#cs#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#cs#GotoDefinition',
+      \ 'command': 'omnisharp-lsp',
+      \ 'semantic_triggers':[]
+      \ })
+
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',

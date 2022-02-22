@@ -143,6 +143,7 @@ All supported languages:
 | kt               | Kotlin                | kotlin-language-server        | Yes                | java/jdk        |
 | grvy             | Groovy                | groovy-language-server        | Yes                | java/jdk        |
 | cmake            | cmake                 | cmake-language-server         | Yes                | python3/pip3    |
+| cs               | C#                    | omnisharp-lsp                 | Yes                | None            |
 
 More info about semantic completion for each supported language:
 
@@ -168,6 +169,7 @@ More info about semantic completion for each supported language:
 - Ruby: [solargraph](https://github.com/castwide/solargraph) required.
 - Nim: [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) downloading is very slow, You'd better intall minlsp manually via `choosenim` follow [this guide](https://github.com/jayli/vim-easycomplete/issues/155#issuecomment-1041581629).
 - Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
+- C# : [omnisharp](http://www.omnisharp.net/) required.
 
 #### Snippet Support
 
