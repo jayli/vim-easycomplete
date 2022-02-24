@@ -445,7 +445,7 @@ function! s:CompleteMenuMap(key, val)
         \ "abbr": val_name,
         \ "dup": 1,
         \ "icase": 1,
-        \ "kind": exists('a:val.kind') ? get(g:easycomplete_lsp_type_font, a:val.kind[0], a:val.kind[0]) : "",
+        \ "kind": exists('a:val.kind') ? easycomplete#util#LspType(a:val.kind) : "",
         \ "menu": s:menu_flag,
         \ "word": val_name,
         \ "info": "",
