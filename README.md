@@ -136,6 +136,7 @@ All supported languages:
 | py               | Python                | pyls                          | Yes                | python3/pip3    |
 | java             | Java                  | eclipse-jdt-ls                | Yes                | java11/jdk      |
 | go               | Go                    | gopls                         | Yes                | go              |
+| r                | R                     | r-languageserver              | Yes                | R               |
 | rb               | Ruby                  | solargraph                    | Yes                | ruby/bundle     |
 | lua              | Lua                   | emmylua-ls                    | Yes                | java/jdk        |
 | nim              | Nim                   | nimlsp                        | Yes                | nim/nimble      |
@@ -170,6 +171,7 @@ More info about semantic completion for each supported language:
 - Nim: [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) downloading is very slow, You'd better intall minlsp manually via `choosenim` follow [this guide](https://github.com/jayli/vim-easycomplete/issues/155#issuecomment-1041581629).
 - Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
 - C# : [omnisharp](http://www.omnisharp.net/) required.
+- R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
 
 #### Snippet Support
 

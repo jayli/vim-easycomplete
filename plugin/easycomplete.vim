@@ -333,6 +333,16 @@ augroup easycomplete#PluginRegister
       \ 'semantic_triggers':[]
       \ })
 
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'r',
+      \ 'whitelist': ['r'],
+      \ 'completor': 'easycomplete#sources#r#completor',
+      \ 'constructor' :'easycomplete#sources#r#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#r#GotoDefinition',
+      \ 'command': 'r-languageserver',
+      \ 'semantic_triggers':[]
+      \ })
+
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
