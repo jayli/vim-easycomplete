@@ -268,24 +268,21 @@ let g:easycomplete_kindflag_snip = "ട"
 let g:easycomplete_kindflag_dict = "≡"
 let g:easycomplete_menuflag_dict = ""
 let g:easycomplete_lsp_type_font = {
-      \ 't':'𝘵',
-      \ 'f':'𝘧',
-      \ 'c':'𝘤',
-      \ 'm':'𝘮',
-      \ 'u':'𝘶',
-      \ 'e':'𝘦',
-      \ 's':'𝘴',
-      \ 'v':'𝘷',
-      \ 'i':'𝘪',
-      \ 'p':'𝘱',
-      \ 'k':'𝘬',
-      \ 'r':'𝘳',
-      \ 'o':"𝘰",
-      \ 'l':"𝘭",
-      \ 'a':"𝘢",
+      \ 'constructor' : '⚯',
+      \ 'class' : '≡',
+      \ 'constant' : '𝘤',
+      \ 'function' : '𝘧',
+      \ 'filed' : '𝘧',
+      \ 'folder': '𝘧',
+      \ 't':'𝘵', 'f':'𝘧', 'c':'𝘤', 'm':'𝘮', 'u':'𝘶', 'e':'𝘦',
+      \ 's':'𝘴', 'v':'𝘷', 'i':'𝘪', 'p':'𝘱', 'k':'𝘬', 'r':'𝘳',
+      \ 'o':"𝘰", 'l':"𝘭", 'a':"𝘢",
       \ }
 ```
 
+You can define icon alias via giving fullnames and shortname. The fullnames should be: text, method, function, constructor, field, variable, class, interface, module, property, unit, value, enum, keyword, snippet, color, file, reference, folder, enummember, constant, struct, event, operator, typeparameter, var, const.
+
+screenshots: 
 <img src="https://gw.alicdn.com/imgextra/i4/O1CN01IZzToV1iOccEVRsqm_!!6000000004403-2-tps-1720-1026.png" width=650 />
 
 ### Issues

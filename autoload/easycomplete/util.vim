@@ -1177,40 +1177,55 @@ endfunction
 " LspType {{{
 " c_type is number
 function! easycomplete#util#LspType(c_type)
-  let l:kinds = [
-        \ '',
-        \ 'text',
-        \ 'method',
-        \ 'function',
-        \ 'constructor',
-        \ 'field',
-        \ 'variable',
-        \ 'class',
-        \ 'interface',
-        \ 'module',
-        \ 'property',
-        \ 'unit',
-        \ 'value',
-        \ 'enum',
-        \ 'keyword',
-        \ 'snippet',
-        \ 'color',
-        \ 'file',
-        \ 'reference',
-        \ 'folder',
-        \ 'enumMember',
-        \ 'constant',
-        \ 'struct',
-        \ 'event',
-        \ 'operator',
-        \ 'typeParameter',
-        \ ]
-  try
-    let l:type = l:kinds[str2nr(a:c_type)][0]
-  catch
-    let l:type = ""
-  endtry
-  return get(g:easycomplete_lsp_type_font, l:type, l:type)
+  if string(a:c_type) =~ "^\\d\\{0,2}$"
+    let l:kinds = [
+          \ '',
+          \ 'text',
+          \ 'method',
+          \ 'function',
+          \ 'constructor',
+          \ 'field',
+          \ 'variable',
+          \ 'class',
+          \ 'interface',
+          \ 'module',
+          \ 'property',
+          \ 'unit',
+          \ 'value',
+          \ 'enum',
+          \ 'keyword',
+          \ 'snippet',
+          \ 'color',
+          \ 'file',
+          \ 'reference',
+          \ 'folder',
+          \ 'enummember',
+          \ 'constant',
+          \ 'struct',
+          \ 'event',
+          \ 'operator',
+          \ 'typeparameter',
+          \ ]
+    call extend(l:kinds, [
+          \ 'const'
+          \ ])
+    try
+      let l:type_fullname = l:kinds[str2nr(a:c_type)]
+      let l:type_shortname = l:type_fullname[0]
+    catch
+      let l:type_fullname = ""
+      let l:type_shortname = ""
+    endtry
+  else
+    let l:type_fullname = a:c_type
+    let l:type_shortname = l:type_fullname[0]
+  endif
+  if has_key(g:easycomplete_lsp_type_font, l:type_fullname)
+    let symble = get(g:easycomplete_lsp_type_font, l:type_fullname)
+  else
+    let symble = get(g:easycomplete_lsp_type_font, l:type_shortname, l:type_shortname)
+  endif
+  return symble
 endfunction
 " }}}
 
