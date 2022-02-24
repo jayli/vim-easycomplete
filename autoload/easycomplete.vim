@@ -49,7 +49,7 @@ let g:easycomplete_insert_char = ''
 "   }
 " ]
 let g:easycomplete_complete_taskqueue = []
-let g:easycomplete_popup_width = 50
+let g:easycomplete_popup_width = 60
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
 let b:old_changedtick = 0
