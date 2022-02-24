@@ -284,7 +284,8 @@ let g:easycomplete_lsp_type_font = {
 
 You can define icon alias via giving fullnames and shortname. The fullnames should be: text, method, function, constructor, field, variable, class, interface, module, property, unit, value, enum, keyword, snippet, color, file, reference, folder, enummember, constant, struct, event, operator, typeparameter, var, const.
 
-screenshots: 
+screenshots:
+
 <img src="https://gw.alicdn.com/imgextra/i4/O1CN01IZzToV1iOccEVRsqm_!!6000000004403-2-tps-1720-1026.png" width=650 />
 
 ### Issues
