@@ -5,11 +5,13 @@ let g:easycomplete_tn = 1
 
 let s:tn_job = v:null
 let s:ctx = v:null
+let s:opt = v:null
 let s:name = ''
 let s:tn_ready = v:false
-
+let s:tn_render_timer = 0
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
+  let s:opt = a:opt
   let name = get(a:opt, "name", "")
   let s:name = name
   if !easycomplete#installer#LspServerInstalled(name)
@@ -23,14 +25,31 @@ function! easycomplete#sources#tn#available()
   return s:tn_ready
 endfunction
 
+function! s:flush()
+  let global_opt = get(g:easycomplete_source, s:name, {})
+  let global_opt.complete_result = []
+endfunction
+
+" 只更新 g:easycomplete_sources['tn'].complete_result
+function! easycomplete#sources#tn#refresh()
+  call easycomplete#sources#tn#completor(s:opt, easycomplete#context())
+endfunction
+
+function! easycomplete#sources#tn#GetGlboalSoucresItems()
+  return g:easycomplete_source[s:name].complete_result
+endfunction
+
 function! easycomplete#sources#tn#completor(opt, ctx) abort
   if !s:tn_ready
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
+  let l:params = s:GetTabNineParams(a:opt, a:ctx)
+  call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
+  return v:true
+endfunction
 
-
-
+function! s:GetTabNineParams(opt, ctx)
   let l:config = {'line_limit': 1000, 'max_num_result': 10}
   let l:line_limit = 1000
   let l:max_num_result = 10
@@ -65,10 +84,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
-
-  call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
-
-  return v:true
+  return l:params
 endfunction
 
 function! s:TabNineRequest(name, param, opt, ctx) abort
@@ -82,8 +98,6 @@ function! s:TabNineRequest(name, param, opt, ctx) abort
         \     a:name : a:param
         \   },
         \ }
-
-
   let l:buffer = json_encode(l:req) . "\n"
   let s:ctx = a:ctx
   call easycomplete#job#send(s:tn_job, l:buffer)
@@ -120,14 +134,33 @@ function! s:StdOutCallback(job_id, data, event)
   endif
   " a:data is a list
   try
-    call s:CompleteResultHandler(a:data)
+    let result = s:NormalizeCompleteResult(a:data)
+    if empty(result)
+      call s:flush()
+    endif
+    if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
+      call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
+    else
+      if s:tn_render_timer > 0
+        call timer_stop(s:tn_render_timer)
+        let s:tn_render_timer = 0
+      endif
+      let s:tn_render_timer = timer_start(1,
+            \ { -> easycomplete#util#call(function("s:UpdateRendering"), [result])
+            \ })
+    endif
   catch
     call s:log("[TabNine Error]:", "StdOutCallback", v:exception)
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
   endtry
 endfunction
 
-function! s:CompleteResultHandler(data)
+function! s:UpdateRendering(result)
+  call easycomplete#StoreCompleteSourceItems(s:name, a:result)
+  call easycomplete#TabNineCompleteRendering()
+endfunction
+
+function! s:NormalizeCompleteResult(data)
   let l:col = s:ctx['col']
   let l:typed = s:ctx['typed']
 
@@ -169,7 +202,7 @@ function! s:CompleteResultHandler(data)
     endif
     call add(l:words, l:word)
   endfor
-  call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], l:words)
+  return l:words
 endfunction
 
 function! s:log(...)
@@ -178,4 +211,12 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:AsyncRun(...)
+  return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:StopAsyncRun(...)
+  return call('easycomplete#util#StopAsyncRun', a:000)
 endfunction
