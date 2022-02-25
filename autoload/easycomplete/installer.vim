@@ -133,6 +133,10 @@ function! easycomplete#installer#executable(...)
   return call("s:executable", a:000)
 endfunction
 
+function! easycomplete#installer#LspServerInstalled(...)
+  return call("s:LspCmdInstalled", a:000)
+endfunction
+
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction

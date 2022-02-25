@@ -35,6 +35,8 @@ DIR=\$(cd \$(dirname \$0); pwd)
 \$DIR/binaries/$path/TabNine \$*
 EOF
 
+touch tabnine.log
+
 chmod +x TabNine
 
 

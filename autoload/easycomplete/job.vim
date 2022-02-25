@@ -104,6 +104,12 @@ endfunction
 function! s:job_start(cmd, opts) abort
   let l:jobtypes = s:job_supported_types()
   let l:jobtype = ''
+  
+  if type(a:cmd) == type([])
+    let cmd_str = join(a:cmd, ' ')
+  else
+    let cmd_str = a:cmd
+  endif
 
   if has_key(a:opts, 'type')
     if type(a:opts.type) == type('')
@@ -141,7 +147,7 @@ function! s:job_start(cmd, opts) abort
           \ 'on_stderr': function('s:on_stderr'),
           \ 'on_exit': function('s:on_exit'),
           \})
-    let l:job = jobstart(a:cmd, l:jobopt)
+    let l:job = jobstart(cmd_str, l:jobopt)
     if l:job <= 0
       return l:job
     endif
@@ -163,7 +169,7 @@ function! s:job_start(cmd, opts) abort
     if has('patch-8.1.889')
       let l:jobopt['noblock'] = 1
     endif
-    let l:job  = job_start(a:cmd, l:jobopt)
+    let l:job  = job_start(cmd_str, l:jobopt)
     if job_status(l:job) !=? 'run'
       return -1
     endif
@@ -209,7 +215,7 @@ function! s:job_send(jobid, data, opts) abort
   let l:jobinfo = s:jobs[a:jobid]
   let l:close_stdin = get(a:opts, 'close_stdin', 0)
   if l:jobinfo.type == s:job_type_nvimjob
-    call jobsend(a:jobid, a:data)
+    call chansend(a:jobid, a:data)
     if l:close_stdin
       call chanclose(a:jobid, 'stdin')
     endif

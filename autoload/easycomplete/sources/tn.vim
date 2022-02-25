@@ -65,13 +65,29 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
-  " TODO here
-  " call s:request('Autocomplete', l:params, a:opt, a:ctx)
 
-
+  call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
 
   call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
+endfunction
+
+function! s:TabNineRequest(name, param, opt, ctx) abort
+  if s:tn_job == v:null || !s:tn_ready
+    return
+  endif
+
+  let l:req = {
+        \ 'version': '4.1.3',
+        \ 'request': {
+        \     a:name : a:param
+        \   },
+        \ }
+
+
+  let l:buffer = json_encode(l:req) . "\n"
+  let s:ctx = a:ctx
+  call easycomplete#job#send(s:tn_job, l:buffer)
 endfunction
 
 function! s:StartTabNine()
@@ -102,6 +118,7 @@ function! s:StdOutCallback(job_id, data, event)
   if a:event != 'stdout'
     return
   endif
+  call s:log(a:data)
 endfunction
 
 function! s:log(...)
