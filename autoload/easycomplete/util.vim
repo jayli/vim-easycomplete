@@ -1269,7 +1269,11 @@ endfunction " }}}
 " 判断 item 是否由 languageServer 给出
 function easycomplete#util#ItemIsFromLS(item)
   let menu_str = get(a:item, "menu", "")
+  if !exists("b:easycomplete_lsp_plugin")
+    return v:false
+  endif
   let plugin_name = get(b:easycomplete_lsp_plugin, "name", "")
+  if plugin_name == "tn" | return v:false | endif
   if "[". toupper(plugin_name) ."]" ==# menu_str
     return v:true
   else
