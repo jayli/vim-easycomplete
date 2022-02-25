@@ -248,7 +248,32 @@ function! s:CompleteTypingMatch(...)
     call s:flush()
     return
   endif
-  call s:SecondComplete(col('.') - strlen(word), filtered_menu, g:easycomplete_menuitems, word)
+  let s:easycomplete_start_pos = col('.') - strlen(word)
+  call s:SecondComplete(s:easycomplete_start_pos, filtered_menu, g:easycomplete_menuitems, word)
+endfunction
+
+" 这里调用是异步回来，需要记录上一次 complete 的 start_pos
+function! easycomplete#TabNineCompleteRendering()
+  let current_items = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
+  let tabnine_result = easycomplete#sources#tn#GetGlboalSoucresItems()
+  let result = tabnine_result + current_items
+  let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(s:GetTypingWord()) : s:easycomplete_start_pos
+  call s:SecondCompleteRendering(start_pos, result)
+endfunction
+
+function! s:SecondCompleteRendering(start_pos, result)
+  if g:env_is_iterm
+    call s:StopAsyncRun()
+    if len(g:easycomplete_stunt_menuitems) < 40
+      call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+    else
+      call s:StopAsyncRun()
+      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 0)
+    endif
+  else
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+  endif
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
@@ -258,20 +283,9 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " ===================================
-  if g:env_is_iterm
-    call s:StopAsyncRun()
-    if len(g:easycomplete_stunt_menuitems) < 40
-      call s:AsyncRun(function('s:complete'), [a:start_pos, result], 0)
-    else
-      call s:StopAsyncRun()
-      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, result], 0)
-    endif
-  else
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:complete'), [a:start_pos, result], 0)
-  endif
-  " ===================================
+  " 防止抖动用的
+  let result_all = easycomplete#sources#tn#GetGlboalSoucresItems() + result
+  call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
   " 所以这里要确保 g:easycomplete_menuitems 不会被修改
@@ -889,10 +903,13 @@ function! s:GetTypingWordByGtx()
   return l:ctx['typed'][strlen(l:gtx['typed']) - strlen(l:gtx['typing']) - offset:]
 endfunction
 
-" For FirstComplete only
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
+    " tabnine
+    if easycomplete#sources#tn#available()
+      call easycomplete#sources#tn#refresh()
+    endif
     let l:vim_word = s:GetTypingWordByGtx()
     call s:CompleteTypingMatch(l:vim_word)
     let b:typing_ctx = easycomplete#context()
@@ -1185,9 +1202,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
-  let norm_menu_list = s:NormalizeMenulist(a:menu_list, a:plugin_name)
-  let sort_menu_list = s:NormalizeSort(norm_menu_list)
-  let g:easycomplete_source[a:plugin_name].complete_result = deepcopy(sort_menu_list)
+  call easycomplete#StoreCompleteSourceItems(a:plugin_name, a:menu_list)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let start_pos = col('.') - strwidth(typing_word)
@@ -1203,6 +1218,12 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   endif
 endfunction
 
+function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
+  let norm_menu_list = s:NormalizeMenulist(a:result, a:plugin_name)
+  let sort_menu_list = s:NormalizeSort(norm_menu_list)
+  let g:easycomplete_source[a:plugin_name].complete_result = deepcopy(sort_menu_list)
+endfunction
+
 function! s:EchoLspMenuItems()
   let ret = []
   for item in g:easycomplete_menuitems
@@ -1216,6 +1237,7 @@ endfunction
 function! s:CombineAllMenuitems()
   let result = []
   for name in keys(g:easycomplete_source)
+    if name == "tn" | continue | endif
     call extend(result, get(g:easycomplete_source[name], 'complete_result', []))
   endfor
   return result
@@ -1278,6 +1300,13 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
       endif
+
+      " tabnine
+      if easycomplete#sources#tn#available()
+        let tabnine_result = easycomplete#sources#tn#GetGlboalSoucresItems()
+        let result = tabnine_result + copy(result)
+      endif
+
       " Info: 调用 complete 有两种方法
       "    第一种是直接执行 complete, complete(a:start_pos, result)
       "    第二种是通过<Plug>Complete,easycomplete#_complete(a:start_pos, result)
@@ -1542,6 +1571,7 @@ function! s:flush()
     call s:StopAsyncRun()
     call s:AsyncRun(function("complete"),[col("."),[]],50)
   endif
+  let s:easycomplete_start_pos = 0
 endfunction
 
 function! s:ResetCompletedItem()
@@ -1693,10 +1723,10 @@ endfunction
 " lsp 各项配置检查是否通过
 function! easycomplete#ok(str)
   let varstr = substitute(a:str, "[abvgsl]:","","i")
-  let flag = v:false
+  let flag = 0
   let value = get(g:easycomplete_config, a:str, 0)
   if exists(a:str) && get(g:, varstr, 0) == 0
-    let flag = v:false
+    let flag = 0
   elseif exists(a:str) && get(g:, varstr, 0) != 0
     let flag = get(g:, varstr, 0)
   elseif !exists(a:str)
@@ -1784,6 +1814,7 @@ function! easycomplete#TextChangedP()
     if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
       return
     endif
+
     let g:easycomplete_start = reltime()
     let delay = len(g:easycomplete_stunt_menuitems) > 180 ?
           \ (g:env_is_iterm && g:env_is_vim ? 35 : (g:env_is_nvim ? 10 : 20)) : (has("nvim") ? 2 : 4)

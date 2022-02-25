@@ -62,6 +62,9 @@ function! easycomplete#installer#install(...) abort
     call s:log("Please install LSP Server with correct command or under supported filetype.")
     return
   endtry
+  if l:name == "tabnine"
+    let l:name = "tn"
+  endif
   let l:install_script = easycomplete#installer#InstallerDir() . '/' . l:name . '.sh'
   let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . l:name
 
@@ -131,6 +134,10 @@ endfunction
 
 function! easycomplete#installer#executable(...)
   return call("s:executable", a:000)
+endfunction
+
+function! easycomplete#installer#LspServerInstalled(...)
+  return call("s:LspCmdInstalled", a:000)
 endfunction
 
 function! s:log(...)

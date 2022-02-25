@@ -15,6 +15,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
 - Snippet support with ultisnips.
+- [TabNine support](#TabNine-Support). (Highly Recommend!)
 - Brand New UI Design.
 
 ### Installation
@@ -123,6 +124,7 @@ All supported languages:
 | snips            | Snippets Support      | ultisnips                     | Manually           | python3         |
 | ts               | JavaScript/TypeScript | tsserver                      | Yes                | node/npm        |
 | deno             | JavaScript/TypeScript | deno                          | Yes                | deno            |
+| tn               | TabNine               | TabNine                       | Yes                | None            |
 | vim              | Vim                   | vim-language-server           | Yes                | node/npm        |
 | cpp              | C/C++                 | ccls                          | Yes                | ruby/brew       |
 | css              | CSS                   | css-languageserver            | Yes                | node/npm        |
@@ -172,6 +174,7 @@ More info about semantic completion for each supported language:
 - Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
 - C# : [omnisharp](http://www.omnisharp.net/) required.
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
+- TabNine: [TabNine](https://www.tabnine.com/)
 
 #### Snippet Support
 
@@ -181,15 +184,22 @@ Vim-EasyComplete does not support snippets by default. If you want snippet integ
 Plug 'SirVer/ultisnips'
 ```
 
-You may meet this error in neovim 0.4.4 with ultisnips:
+> [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
+
+#### TabNine Support
+
+Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
+
+Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can change default configuration of TabNine via `g:easycomplete_tabnine_config`:
 
 ```vim
-Error detected while processing /home/xxx/.vim/plugged/ultisnips/autoload/UltiSnips.vim:
-line    7:
-E319: No "python3" provider found. Run ":checkhealth provider"
+let g:easycomplete_tabnine_config = {
+    \ 'line_limit': 1000,
+    \ 'max_num_result' : 10,
+    \ }
 ```
 
-Which means python neovim package is missing. Fix it via `pip3 install neovim`.
+---------------------
 
 ### Add custom completion plugin
 
