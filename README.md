@@ -190,7 +190,7 @@ Plug 'SirVer/ultisnips'
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
-Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. Config TabNine via `g:easycomplete_tabnine_config`:
+Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can change default configuration of TabNine via `g:easycomplete_tabnine_config`:
 
 ```vim
 let g:easycomplete_tabnine_config = {
