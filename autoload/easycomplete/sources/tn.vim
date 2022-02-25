@@ -61,9 +61,8 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
 endfunction
 
 function! s:GetTabNineParams(opt, ctx)
-  let l:config = {'line_limit': 1000, 'max_num_result': 10}
-  let l:line_limit = 1000
-  let l:max_num_result = 10
+  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000)
+  let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 10)
   let l:pos = getpos('.')
   let l:last_line = line('$')
   let l:before_line = max([1, l:pos[1] - l:line_limit])
