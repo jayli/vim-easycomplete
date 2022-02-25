@@ -176,7 +176,7 @@ function! s:StdOutCallback(job_id, data, event)
         call timer_stop(s:tn_render_timer)
         let s:tn_render_timer = 0
       endif
-      let s:tn_render_timer = timer_start(50,
+      let s:tn_render_timer = timer_start(60,
             \ { -> easycomplete#util#call(function("s:UpdateRendering"), [result])
             \ })
     endif
