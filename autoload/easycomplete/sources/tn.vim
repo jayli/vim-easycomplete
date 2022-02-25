@@ -18,12 +18,15 @@ function! easycomplete#sources#tn#constructor(opt, ctx)
   if !easycomplete#installer#LspServerInstalled(name)
     return v:true
   endif
+  if !easycomplete#ok('g:easycomplete_tabnine_enable')
+    return v:true
+  endif
   call s:StartTabNine()
   return v:true
 endfunction
 
 function! easycomplete#sources#tn#available()
-  if easycomplete#ok('g:easycomplete_tabnine')
+  if easycomplete#ok('g:easycomplete_tabnine_enable')
     return s:tn_ready
   else
     return v:false
@@ -37,6 +40,9 @@ endfunction
 
 " 只更新 g:easycomplete_sources['tn'].complete_result
 function! easycomplete#sources#tn#refresh()
+  if !easycomplete#ok('g:easycomplete_tabnine_enable')
+    return
+  endif
   call easycomplete#sources#tn#completor(s:opt, easycomplete#context())
 endfunction
 
@@ -94,9 +100,18 @@ endfunction
 
 function! easycomplete#sources#tn#GetTabNineVersion()
   if empty(s:version)
-    let s:version = system('echo `curl -sS https://update.tabnine.com/bundles/version`' . " 2>/dev/null")
+    let l:tabnine_cmd = easycomplete#installer#GetCommand(s:name)
+    let l:tabnine_dir = fnameescape(fnamemodify(l:tabnine_cmd, ':p:h'))
+    let l:version_file = l:tabnine_dir . '/version'
+
+    for line in readfile(l:version_file, '', 10)
+      if trim(line) =~ "^\\d\\{-}.\\d\\{-}.\\d\\{-}$"
+        let s:version = trim(line)
+        break
+      endif
+    endfor
   endif
-  return trim(s:version)
+  return s:version
 endfunction
 
 function! s:TabNineRequest(name, param, opt, ctx) abort
@@ -137,7 +152,11 @@ function! s:StartTabNine()
   else
     let s:tn_ready = v:true
   endif
-  call timer_start(10, { -> easycomplete#sources#tn#GetTabNineVersion()})
+  call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
+endfunction
+
+function! s:GetVersion(job_id, data, event)
+
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
@@ -158,7 +177,7 @@ function! s:StdOutCallback(job_id, data, event)
         call timer_stop(s:tn_render_timer)
         let s:tn_render_timer = 0
       endif
-      let s:tn_render_timer = timer_start(1,
+      let s:tn_render_timer = timer_start(50,
             \ { -> easycomplete#util#call(function("s:UpdateRendering"), [result])
             \ })
     endif

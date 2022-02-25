@@ -157,7 +157,7 @@ vim-plug: >
 
 Install TabNine language server: `InstallLspServer tabnine` or `InstallLspServer tn`
 
-Set `let g:easycomplete_tabnine = 0` to disable TabNine.
+Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine.
 
 ===============================================================================
 
