@@ -200,7 +200,6 @@ function! s:NormalizeCompleteResult(data)
   let l:lwlen = len(l:kw)
 
   let l:startcol = l:col - l:lwlen
-
   if type(a:data) == type([]) && len(a:data) >= 1
     let l:data = a:data[0]
     let l:response = json_decode(l:data)
@@ -227,10 +226,10 @@ function! s:NormalizeCompleteResult(data)
       let l:word['user_data'] = json_encode(l:user_data)
     endif
 
-    let l:word['menu'] = '[tabnine]'
-    " TODO nvim 里 if 永远为 false
+    let l:word['menu'] = '[TN]'
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
+      " let l:word.kind = l:result['detail']
     endif
     call add(l:words, l:word)
   endfor
