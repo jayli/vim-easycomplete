@@ -44,6 +44,9 @@ endif
 if !exists("g:easycomplete_tabnine_enable")
   let g:easycomplete_tabnine_enable = 1
 endif
+if !exists("g:easycomplete_tabnine_config")
+  let g:easycomplete_tabnine_config = {}
+endif
 if !exists("g:easycomplete_enable")
   let g:easycomplete_enable = 1
 endif
@@ -61,6 +64,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_menuflag_snip': g:easycomplete_menuflag_snip,
       \ 'g:easycomplete_kindflag_snip': g:easycomplete_kindflag_snip,
       \ 'g:easycomplete_lsp_type_font': g:easycomplete_lsp_type_font,
+      \ 'g:easycomplete_tabnine_config': g:easycomplete_tabnine_config,
       \ }
 
 " VIM 最低版本 8.2

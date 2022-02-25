@@ -157,7 +157,14 @@ vim-plug: >
 
 Install TabNine language server: `InstallLspServer tabnine` or `InstallLspServer tn`
 
-Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine.
+Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. Config TabNine via
+`g:easycomplete_tabnine_config`, For example: >
+
+  let g:easycomplete_tabnine_config = {
+      \ 'line_limit': 1000,
+      \ 'max_num_result' : 10,
+      \ }
+<
 
 ===============================================================================
 
