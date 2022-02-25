@@ -68,7 +68,6 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
 
   call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
 
-  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
 endfunction
 
@@ -116,9 +115,61 @@ endfunction
 
 function! s:StdOutCallback(job_id, data, event)
   if a:event != 'stdout'
+    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
     return
   endif
-  call s:log(a:data)
+  " a:data is a list
+  try
+    call s:CompleteResultHandler(a:data)
+  catch
+    call s:log("[TabNine Error]:", "StdOutCallback", v:exception)
+    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+  endtry
+endfunction
+
+function! s:CompleteResultHandler(data)
+  let l:col = s:ctx['col']
+  let l:typed = s:ctx['typed']
+
+  let l:kw = matchstr(l:typed, '\w\+$')
+  let l:lwlen = len(l:kw)
+
+  let l:startcol = l:col - l:lwlen
+
+  if type(a:data) == type([]) && len(a:data) >= 1
+    let l:data = a:data[0]
+    let l:response = json_decode(l:data)
+  elseif type(a:data) == type({})
+    let l:response = a:data
+  else
+    let l:response = json_decode(a:data)
+  endif
+  let l:words = []
+  for l:result in l:response['results']
+    let l:word = {}
+
+    let l:new_prefix = get(l:result, 'new_prefix')
+    if l:new_prefix == ''
+      continue
+    endif
+    let l:word['word'] = l:new_prefix
+
+    if get(l:result, 'old_suffix', '') != '' || get(l:result, 'new_suffix', '') != ''
+      let l:user_data = {
+            \   'old_suffix': get(l:result, 'old_suffix', ''),
+            \   'new_suffix': get(l:result, 'new_suffix', ''),
+            \ }
+      let l:word['user_data'] = json_encode(l:user_data)
+    endif
+
+    let l:word['menu'] = '[tabnine]'
+    " TODO nvim 里 if 永远为 false
+    if get(l:result, 'detail')
+      let l:word['menu'] .= ' ' . l:result['detail']
+    endif
+    call add(l:words, l:word)
+  endfor
+  call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], l:words)
 endfunction
 
 function! s:log(...)
