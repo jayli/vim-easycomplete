@@ -15,7 +15,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
 - Snippet support with ultisnips.
-- TabNine support.
+- [TabNine support](#TabNine-Support). (Highly Recommend!)
 - Brand New UI Design.
 
 ### Installation
