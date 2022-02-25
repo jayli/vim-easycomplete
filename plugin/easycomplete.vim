@@ -41,6 +41,9 @@ endif
 if !exists("g:easycomplete_lsp_type_font")
   let g:easycomplete_lsp_type_font = {}
 endif
+if !exists("g:easycomplete_tabnine")
+  let g:easycomplete_tabnine = 1
+endif
 if !exists("g:easycomplete_enable")
   let g:easycomplete_enable = 1
 endif
@@ -48,6 +51,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover' : 1,
       \ 'g:easycomplete_diagnostics_enable': 1,
       \ 'g:easycomplete_signature_enable': 1,
+      \ 'g:easycomplete_tabnine' : 1,
       \ 'g:easycomplete_enable': g:easycomplete_enable,
       \ 'g:easycomplete_lsp_checking' : g:easycomplete_lsp_checking,
       \ 'g:easycomplete_menuflag_buf' : g:easycomplete_menuflag_buf,

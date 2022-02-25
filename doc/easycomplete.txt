@@ -125,6 +125,7 @@ All supported languages:
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |
 | ts          | JavaScript/TypeScript | tsserver               | Yes       |
 | deno        | JavaScript/TypeScript | deno                   | Yes       |
+| tn          | TabNine               | TabNine                | Yes       |
 | vim         | Vim                   | vim-language-server    | Yes       |
 | cpp         | C/C++                 | ccls                   | Yes       |
 | css         | CSS                   | css-languageserver     | Yes       |
@@ -153,6 +154,11 @@ vim-plug: >
 
   Plug 'SirVer/ultisnips'
 <
+
+Install TabNine language server: `InstallLspServer tabnine` or `InstallLspServer tn`
+
+Set `let g:easycomplete_tabnine = 0` to disable TabNine.
+
 ===============================================================================
 
 Beautify the vim completion menu

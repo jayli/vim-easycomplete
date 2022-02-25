@@ -9,6 +9,7 @@ let s:opt = v:null
 let s:name = ''
 let s:tn_ready = v:false
 let s:tn_render_timer = 0
+let s:version = ''
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
   let s:opt = a:opt
@@ -22,7 +23,11 @@ function! easycomplete#sources#tn#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#tn#available()
-  return s:tn_ready
+  if easycomplete#ok('g:easycomplete_tabnine')
+    return s:tn_ready
+  else
+    return v:false
+  endif
 endfunction
 
 function! s:flush()
@@ -87,13 +92,20 @@ function! s:GetTabNineParams(opt, ctx)
   return l:params
 endfunction
 
+function! easycomplete#sources#tn#GetTabNineVersion()
+  if empty(s:version)
+    let s:version = system('echo `curl -sS https://update.tabnine.com/bundles/version`' . " 2>/dev/null")
+  endif
+  return trim(s:version)
+endfunction
+
 function! s:TabNineRequest(name, param, opt, ctx) abort
   if s:tn_job == v:null || !s:tn_ready
     return
   endif
 
   let l:req = {
-        \ 'version': '4.1.3',
+        \ 'version': easycomplete#sources#tn#GetTabNineVersion(),
         \ 'request': {
         \     a:name : a:param
         \   },
@@ -125,6 +137,7 @@ function! s:StartTabNine()
   else
     let s:tn_ready = v:true
   endif
+  call timer_start(10, { -> easycomplete#sources#tn#GetTabNineVersion()})
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
