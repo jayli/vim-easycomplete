@@ -95,6 +95,14 @@ augroup easycomplete#PluginRegister
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'tn',
+      \ 'whitelist': ['*'],
+      \ 'completor': function('easycomplete#sources#tn#completor'),
+      \ 'constructor' :function('easycomplete#sources#tn#constructor'),
+      \ 'command': 'TabNine'
+      \  })
+
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#buf#completor',
@@ -102,7 +110,8 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'ts',
-      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx',
+      \               'javascriptreact', 'typescriptreact'],
       \ 'completor': function('easycomplete#sources#ts#completor'),
       \ 'constructor' :function('easycomplete#sources#ts#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#ts#GotoDefinition'),
@@ -114,7 +123,8 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'deno',
-      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx', 'javascriptreact', 'typescriptreact'],
+      \ 'whitelist': ['javascript','typescript','javascript.jsx','typescript.tsx',
+      \               'javascriptreact', 'typescriptreact'],
       \ 'completor': 'easycomplete#sources#deno#completor',
       \ 'constructor' : 'easycomplete#sources#deno#constructor',
       \ 'gotodefinition': 'easycomplete#sources#deno#GotoDefinition',
