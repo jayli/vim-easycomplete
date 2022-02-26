@@ -107,7 +107,7 @@ augroup easycomplete#PluginRegister
       \ 'whitelist': ['*'],
       \ 'completor': function('easycomplete#sources#tn#completor'),
       \ 'constructor' :function('easycomplete#sources#tn#constructor'),
-      \ 'command': 'TabNine'
+      \ 'command': 'TabNine',
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({

@@ -190,7 +190,10 @@ Plug 'SirVer/ultisnips'
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
-Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can change default configuration of TabNine via `g:easycomplete_tabnine_config`:
+Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
+
+- *line_limit*: The number of lines before and after the cursor to send to TabNine. If the option is smaller, the performance may be improved. (default: 1000)
+- *max_num_result*: Max results from TabNine. (default: 10)
 
 ```vim
 let g:easycomplete_tabnine_config = {
@@ -198,6 +201,8 @@ let g:easycomplete_tabnine_config = {
     \ 'max_num_result' : 10,
     \ }
 ```
+
+By default, an API key is not required to use TabNine in vim-easycomplete. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `<Tab>` after `Tabnine::config` in insert mode to open the configuration panel.
 
 ---------------------
 
