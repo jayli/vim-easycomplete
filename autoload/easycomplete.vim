@@ -800,7 +800,6 @@ function! s:CompletorCallingAtFirstComplete(...)
         \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
         \          ])
         \ })
-  try
 
   " TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
   " 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
@@ -815,6 +814,7 @@ function! s:CompletorCallingAtFirstComplete(...)
   " 这里默认只有 directory 唯一一个需要排他的情况，把 directory 提前。
   " 设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
   " 情况，还不清楚，先这样hack掉
+  try
     let source_names = ['directory']
     for name in keys(g:easycomplete_source)
       if name !=# 'directory'
@@ -838,7 +838,7 @@ function! s:CompletorCallingAtFirstComplete(...)
       endif
     endwhile
   catch
-    echom v:exception
+    call s:log('[FirstComplete]',v:exception)
     call s:flush()
   endtry
 endfunction
@@ -914,7 +914,7 @@ function! s:CompleteMatchAction()
     call s:CompleteTypingMatch(l:vim_word)
     let b:typing_ctx = easycomplete#context()
   catch
-    echom v:exception
+    call s:log('[CompleteMatchAction]', v:exception)
   endtry
 endfunction
 
@@ -1107,7 +1107,7 @@ function! s:ExpandSnipManually(word)
     endif
   catch
     " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
-    echom v:exception
+    call s:log('[ExpandSnipManually]', v:exception)
   endtry
 endfunction
 
@@ -1327,7 +1327,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
     call s:LetCompleteTaskQueueAllDone()
   catch
-    echom v:exception
+    call s:log('[FirstCompleteRendering]', v:exception)
   endtry
 endfunction
 

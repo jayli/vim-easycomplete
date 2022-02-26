@@ -154,13 +154,12 @@ function! s:StartTabNine()
   call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
 endfunction
 
-function! s:GetVersion(job_id, data, event)
-
-endfunction
-
 function! s:StdOutCallback(job_id, data, event)
   if a:event != 'stdout'
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+    return
+  endif
+  if !easycomplete#CheckContextSequence(s:ctx)
     return
   endif
   " a:data is a list
