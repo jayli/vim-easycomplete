@@ -325,6 +325,10 @@ Handle backsapce typing
 
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01obuQnJ1tIAoUNv8Up_!!6000000005878-1-tps-880-689.gif" width=600 />
 
+TabNine supporting:
+
+<img src="https://img.alicdn.com/imgextra/i3/O1CN013nBG6n1WjRE8rgMNi_!!6000000002824-1-tps-933-364.gif" width=600 />
+
 ### License
 
 MIT
