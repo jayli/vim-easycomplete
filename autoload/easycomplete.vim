@@ -355,7 +355,7 @@ function! s:BackChecking()
       " 单行后退非到达首字母的后退
       return v:true
     endif
-    if curr_ctx['typed'] ==# old_ctx['typed']
+    if curr_ctx['typed'] ==# old_ctx['typed'] && strlen(curr_ctx['line']) == strlen(old_ctx['line']) - 1
       " 单行在 Normal 模式下按下 s 键
       return v:true
     endif
@@ -369,6 +369,7 @@ function! s:BackChecking()
   else
     return v:false
   endif
+  return v:false
 endfunction
 
 function! easycomplete#Up()
@@ -399,6 +400,7 @@ function! easycomplete#context() abort
   let l:ret['filetype'] = &filetype " filetype
   let l:ret['filepath'] = expand('%:p') " filepath
   let line = getline(l:ret['lnum']) " 当前行内容
+  let l:ret['line'] = line
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标前敲入的内容
   let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " 当前单个字符
   let l:ret['typing'] = s:GetTypingWord() " 当前敲入的单词
@@ -604,6 +606,11 @@ function! easycomplete#typing()
   endif
 
   if !easycomplete#FireCondition()
+    if easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
+      call s:flush()
+      " TODO here nvim 中匹配菜单打开后迅速被关闭了
+      call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
+    endif
     return ""
   endif
 
@@ -623,13 +630,10 @@ function! easycomplete#typing()
   elseif s:zizzing()
     return ""
   endif
-
   if pumvisible()
     return ""
   endif
-
   let b:typing_ctx = easycomplete#context()
-
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
   return ""
@@ -1793,6 +1797,17 @@ function! easycomplete#TextChangedP()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+
+  " tabnine
+  if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
+    call s:CloseCompletionMenu()
+    call s:flush()
+    call s:StopZizz()
+    call timer_start(60, { -> easycomplete#TextChangedI()})
+    let b:old_changedtick = b:changedtick
+    return
+  endif
+
   let l:ctx = easycomplete#context()
   let line_length = strlen(l:ctx['typed'])
   let selected_item = easycomplete#GetCompletedItem()

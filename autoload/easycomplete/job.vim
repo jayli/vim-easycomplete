@@ -215,7 +215,11 @@ function! s:job_send(jobid, data, opts) abort
   let l:jobinfo = s:jobs[a:jobid]
   let l:close_stdin = get(a:opts, 'close_stdin', 0)
   if l:jobinfo.type == s:job_type_nvimjob
-    call chansend(a:jobid, a:data)
+    try
+      call chansend(a:jobid, a:data)
+    catch
+      " Bugfix: Can't send data to closed stream
+    endtry
     if l:close_stdin
       call chanclose(a:jobid, 'stdin')
     endif

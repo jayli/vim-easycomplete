@@ -10,6 +10,11 @@ let s:name = ''
 let s:tn_ready = v:false
 let s:tn_render_timer = 0
 let s:version = ''
+" 只用作空格、等号、逗号这些情况强制触发 Tabnine complete 的标志位
+" 0: 触发条件一律遵循 easycomplete#condition() 条件，和 FirstComplete 混合在一
+" 起返回结果
+" 1：单独触发
+let s:force_complete = 0
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
   let s:opt = a:opt
@@ -36,14 +41,45 @@ endfunction
 function! s:flush()
   let global_opt = get(g:easycomplete_source, s:name, {})
   let global_opt.complete_result = []
+  let s:force_complete = 0
+endfunction
+
+function! s:ResetForceCompleteFlag()
+  let s:force_complete = 0
 endfunction
 
 " 只更新 g:easycomplete_sources['tn'].complete_result
-function! easycomplete#sources#tn#refresh()
+" refresh(v:true), 强制给出匹配菜单
+function! easycomplete#sources#tn#refresh(...)
+  if exists("a:1") && a:1 == v:true
+    let s:force_complete = 1
+    call timer_start(100, { -> s:ResetForceCompleteFlag()})
+  else
+    let s:force_complete = 0
+  endif
   if !easycomplete#ok('g:easycomplete_tabnine_enable')
     return
   endif
   call easycomplete#sources#tn#completor(s:opt, easycomplete#context())
+endfunction
+
+function! easycomplete#sources#tn#FireCondition()
+  let l:ctx = easycomplete#context()
+  let l:char = l:ctx["char"]
+  let l:typed = l:ctx["typed"]
+  if strlen(l:typed) >= 2
+    if l:typed[strlen(l:typed) - 2] != " " && l:typed[strlen(l:typed) - 1] == " "
+      return v:true
+    endif
+    let charset = [":","=",",",";",")", "]", "}", ">"]
+    if index(charset, l:char) >= 0 &&
+          \ index(charset, l:typed[strlen(l:typed) - 2]) < 0
+      return v:true
+    endif
+    return v:false
+  else
+    return v:false
+  endif
 endfunction
 
 function! easycomplete#sources#tn#GetGlboalSoucresItems()
@@ -61,7 +97,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
 endfunction
 
 function! s:GetTabNineParams(opt, ctx)
-  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000)
+  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000) "{{{
   let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 10)
   let l:pos = getpos('.')
   let l:last_line = line('$')
@@ -94,11 +130,11 @@ function! s:GetTabNineParams(opt, ctx)
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
-  return l:params
+  return l:params "}}}
 endfunction
 
 function! easycomplete#sources#tn#GetTabNineVersion()
-  if empty(s:version)
+  if empty(s:version) " {{{
     let l:tabnine_cmd = easycomplete#installer#GetCommand(s:name)
     let l:tabnine_dir = fnameescape(fnamemodify(l:tabnine_cmd, ':p:h'))
     let l:version_file = l:tabnine_dir . '/version'
@@ -110,14 +146,13 @@ function! easycomplete#sources#tn#GetTabNineVersion()
       endif
     endfor
   endif
-  return s:version
+  return s:version " }}}
 endfunction
 
 function! s:TabNineRequest(name, param, opt, ctx) abort
-  if s:tn_job == v:null || !s:tn_ready
+  if s:tn_job == v:null || !s:tn_ready " {{{
     return
   endif
-
   let l:req = {
         \ 'version': easycomplete#sources#tn#GetTabNineVersion(),
         \ 'request': {
@@ -126,11 +161,11 @@ function! s:TabNineRequest(name, param, opt, ctx) abort
         \ }
   let l:buffer = json_encode(l:req) . "\n"
   let s:ctx = a:ctx
-  call easycomplete#job#send(s:tn_job, l:buffer)
+  call easycomplete#job#send(s:tn_job, l:buffer) " }}}
 endfunction
 
 function! s:StartTabNine()
-  if empty(s:name)
+  if empty(s:name) " {{{
     return
   endif
   let name = s:name
@@ -143,7 +178,6 @@ function! s:StartTabNine()
         \   '--log-file-path',
         \   l:log_file,
         \ ]
-
   let s:tn_job = easycomplete#job#start(l:cmd,
         \ {'on_stdout': function('s:StdOutCallback')})
   if s:tn_job <= 0
@@ -151,7 +185,7 @@ function! s:StartTabNine()
   else
     let s:tn_ready = v:true
   endif
-  call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
+  call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()}) " }}}
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
@@ -160,6 +194,8 @@ function! s:StdOutCallback(job_id, data, event)
     return
   endif
   if !easycomplete#CheckContextSequence(s:ctx)
+    call easycomplete#sources#tn#refresh()
+    " call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
     return
   endif
   " a:data is a list
@@ -168,21 +204,28 @@ function! s:StdOutCallback(job_id, data, event)
     if empty(result)
       call s:flush()
     endif
-    if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
-      call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
-    else
+    if s:force_complete
       call easycomplete#util#call(function("s:UpdateRendering"), [result])
-      " if s:tn_render_timer > 0
-      "   call timer_stop(s:tn_render_timer)
-      "   let s:tn_render_timer = 0
-      " endif
-      " let s:tn_render_timer = timer_start(60,
-      "       \ { -> easycomplete#util#call(function("s:UpdateRendering"), [result])
-      "       \ })
+    else
+      if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
+        " First Complete
+        call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
+      else
+        " Second Complete
+        call easycomplete#util#call(function("s:UpdateRendering"), [result])
+        " if s:tn_render_timer > 0
+        "   call timer_stop(s:tn_render_timer)
+        "   let s:tn_render_timer = 0
+        " endif
+        " let s:tn_render_timer = timer_start(60,
+        "       \ { -> easycomplete#util#call(function("s:UpdateRendering"), [result])
+        "       \ })
+      endif
     endif
   catch
     call s:log("[TabNine Error]:", "StdOutCallback", v:exception)
-    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+    let l:ctx = easycomplete#context()
+    call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
   endtry
 endfunction
 
