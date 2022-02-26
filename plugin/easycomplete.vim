@@ -35,6 +35,9 @@ endif
 if !exists("g:easycomplete_kindflag_dict")
   let g:easycomplete_kindflag_dict = ""
 endif
+if !exists("g:easycomplete_kindflag_tabnine")
+  let g:easycomplete_kindflag_tabnine = ""
+endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
 endif
@@ -51,20 +54,21 @@ if !exists("g:easycomplete_enable")
   let g:easycomplete_enable = 1
 endif
 let g:easycomplete_config = {
-      \ 'g:easycomplete_diagnostics_hover' : 1,
+      \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
-      \ 'g:easycomplete_signature_enable': 1,
-      \ 'g:easycomplete_tabnine_enable' : g:easycomplete_tabnine_enable,
-      \ 'g:easycomplete_enable': g:easycomplete_enable,
-      \ 'g:easycomplete_lsp_checking' : g:easycomplete_lsp_checking,
-      \ 'g:easycomplete_menuflag_buf' : g:easycomplete_menuflag_buf,
-      \ 'g:easycomplete_kindflag_buf' : g:easycomplete_kindflag_buf,
-      \ 'g:easycomplete_menuflag_dict': g:easycomplete_menuflag_dict,
-      \ 'g:easycomplete_kindflag_dict': g:easycomplete_kindflag_dict,
-      \ 'g:easycomplete_menuflag_snip': g:easycomplete_menuflag_snip,
-      \ 'g:easycomplete_kindflag_snip': g:easycomplete_kindflag_snip,
-      \ 'g:easycomplete_lsp_type_font': g:easycomplete_lsp_type_font,
-      \ 'g:easycomplete_tabnine_config': g:easycomplete_tabnine_config,
+      \ 'g:easycomplete_signature_enable':   1,
+      \ 'g:easycomplete_tabnine_enable':     g:easycomplete_tabnine_enable,
+      \ 'g:easycomplete_enable':             g:easycomplete_enable,
+      \ 'g:easycomplete_lsp_checking':       g:easycomplete_lsp_checking,
+      \ 'g:easycomplete_menuflag_buf':       g:easycomplete_menuflag_buf,
+      \ 'g:easycomplete_kindflag_buf':       g:easycomplete_kindflag_buf,
+      \ 'g:easycomplete_menuflag_dict':      g:easycomplete_menuflag_dict,
+      \ 'g:easycomplete_kindflag_dict':      g:easycomplete_kindflag_dict,
+      \ 'g:easycomplete_menuflag_snip':      g:easycomplete_menuflag_snip,
+      \ 'g:easycomplete_kindflag_snip':      g:easycomplete_kindflag_snip,
+      \ 'g:easycomplete_kindflag_tabnine':   g:easycomplete_kindflag_tabnine,
+      \ 'g:easycomplete_lsp_type_font':      g:easycomplete_lsp_type_font,
+      \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
       \ }
 
 " VIM 最低版本 8.2

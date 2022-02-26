@@ -272,6 +272,7 @@ There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `
 - Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
 - Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
 - Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
+- Set `let g:easycomplete_kindflag_tabnine = ''` for TabNine kind flag.
 - Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
 
 Example configuration with <https://nerdfonts.com>:
@@ -283,6 +284,7 @@ let g:easycomplete_menuflag_snip = ""
 let g:easycomplete_kindflag_snip = "ട"
 let g:easycomplete_kindflag_dict = "≡"
 let g:easycomplete_menuflag_dict = ""
+let g:easycomplete_kindflag_tabnine = ""
 let g:easycomplete_lsp_type_font = {
       \ 'text' : '⚯',         'method':'m',    'function': 'f',
       \ 'constructor' : '≡',  'field': 'f',    'default':'d',

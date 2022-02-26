@@ -226,6 +226,9 @@ function! s:NormalizeCompleteResult(data)
     endif
 
     let l:word['menu'] = '[TN]'
+    if !empty(g:easycomplete_kindflag_tabnine)
+      let l:word["kind"] = g:easycomplete_kindflag_tabnine
+    endif
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
       " let l:word.kind = l:result['detail']
