@@ -212,7 +212,8 @@ endfunction
 function! s:job_send(jobid, data, opts) abort
   " INFO 在一个window里切换 buffer 时，job 会停止
   " Added by jayli
-  let l:jobinfo = s:jobs[a:jobid]
+  let l:jobinfo = get(s:jobs,a:jobid)
+  if empty(l:jobinfo) | return | endif
   let l:close_stdin = get(a:opts, 'close_stdin', 0)
   if l:jobinfo.type == s:job_type_nvimjob
     try
