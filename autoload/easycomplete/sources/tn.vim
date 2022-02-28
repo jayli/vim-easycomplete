@@ -71,7 +71,7 @@ function! easycomplete#sources#tn#FireCondition()
     if l:typed[strlen(l:typed) - 2] != " " && l:typed[strlen(l:typed) - 1] == " "
       return v:true
     endif
-    let charset = [":","=",",",";",")", "]", "}", ">"]
+    let charset = [":","=",",",";",")", "]", "}", ">", "'", '"']
     if index(charset, l:char) >= 0 &&
           \ index(charset, l:typed[strlen(l:typed) - 2]) < 0
       return v:true
@@ -274,7 +274,6 @@ function! s:NormalizeCompleteResult(data)
     endif
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
-      " let l:word.kind = l:result['detail']
     endif
     call add(l:words, l:word)
   endfor
