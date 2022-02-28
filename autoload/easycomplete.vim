@@ -835,7 +835,7 @@ function! s:CompletorCallingAtFirstComplete(...)
       endif
     endwhile
   catch
-    call s:log('[FirstComplete]',v:exception)
+    " call s:log('[FirstComplete]',v:exception)
     call s:flush()
   endtry
 endfunction
