@@ -74,10 +74,10 @@ function! easycomplete#Enable()
     return
   endif
   let b:easycomplete_loaded_done = 1
-
+  let b:typing_ctx = easycomplete#context()
   doautocmd <nomodeline> User easycomplete_default_plugin
   doautocmd <nomodeline> User easycomplete_custom_plugin
-  call s:InitLocalVars()
+  call s:SetCompleteOption()
   "  - 必须要确保typing command先绑定
   "  - 然后绑定插件里的typing command
   call s:BindingTypingCommandOnce()
@@ -99,14 +99,7 @@ function! easycomplete#Enable()
   call timer_start(400, { -> s:SnippetsInit()})
 endfunction
 
-function! s:InitLocalVars()
-  if !exists("g:easycomplete_tab_trigger")
-    let g:easycomplete_tab_trigger = "<Tab>"
-  endif
-  if !exists("g:easycomplete_shift_tab_trigger")
-    let g:easycomplete_shift_tab_trigger = "<S-Tab>"
-  endif
-  let b:typing_ctx = easycomplete#context()
+function! s:SetCompleteOption()
   setlocal completeopt-=menu
   setlocal completeopt+=noinsert
   setlocal completeopt+=menuone
@@ -606,9 +599,9 @@ function! easycomplete#typing()
   endif
 
   if !easycomplete#FireCondition()
+    " tabnine
     if easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
       call s:flush()
-      " TODO here nvim 中匹配菜单打开后迅速被关闭了
       call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
     endif
     return ""
@@ -1798,13 +1791,16 @@ function! easycomplete#TextChangedP()
     return
   endif
 
+  if g:env_is_nvim && b:old_changedtick == b:changedtick
+    return
+  endif
+
   " tabnine
   if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
     call s:CloseCompletionMenu()
     call s:flush()
     call s:StopZizz()
-    call timer_start(60, { -> easycomplete#TextChangedI()})
-    let b:old_changedtick = b:changedtick
+    call easycomplete#TextChangedI()
     return
   endif
 

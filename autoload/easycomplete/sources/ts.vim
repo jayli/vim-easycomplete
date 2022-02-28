@@ -397,6 +397,7 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   if easycomplete#IsBacking() | return | endif
   let l:request_req = get(a:item, 'request_seq')
   let l:ctx = easycomplete#util#GetCtxByRequestSeq(l:request_req)
+  if empty(l:ctx) | return | endif
   let l:raw_list = get(a:item, 'body')
   if empty(l:raw_list)
     call s:DoComplete(l:ctx, [])

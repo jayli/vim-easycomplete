@@ -53,6 +53,12 @@ endif
 if !exists("g:easycomplete_enable")
   let g:easycomplete_enable = 1
 endif
+if !exists("g:easycomplete_tab_trigger")
+  let g:easycomplete_tab_trigger = "<Tab>"
+endif
+if !exists("g:easycomplete_shift_tab_trigger")
+  let g:easycomplete_shift_tab_trigger = "<S-Tab>"
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
