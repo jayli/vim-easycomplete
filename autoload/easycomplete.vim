@@ -1795,15 +1795,6 @@ function! easycomplete#TextChangedP()
     return
   endif
 
-  " tabnine
-  if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
-    call s:CloseCompletionMenu()
-    call s:flush()
-    call s:StopZizz()
-    call easycomplete#TextChangedI()
-    return
-  endif
-
   let l:ctx = easycomplete#context()
   let line_length = strlen(l:ctx['typed'])
   let selected_item = easycomplete#GetCompletedItem()
@@ -1816,9 +1807,18 @@ function! easycomplete#TextChangedP()
     " 在 FristComplete 时，TextChangedI 触发后会执行 complete()，还会触发一次
     " TextChangedP，如果两个事件的 changedtick 相同，则丢弃 TextChangedP 事件
   elseif easycomplete#CompleteCursored() &&
-        \ easycomplete#GetCompletedItem()["word"] == l:ctx['typed'][line_length - word_str_len:line_length - 1]
+        \ get(selected_item, "word", "") == l:ctx['typed'][line_length - word_str_len:line_length - 1]
     " 直接按下 C-P 或者 C-N 不做任何处理
   elseif pumvisible() && !s:zizzing()
+    " tabnine, 空格trigger出的tabnine menu 敲入字母后的逻辑
+    if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
+      call s:CloseCompletionMenu()
+      call s:flush()
+      call s:StopZizz()
+      call easycomplete#TextChangedI()
+      return
+    endif
+
     " 再次确保这里的逻辑要躲过 FirstComplete
     " 同时判断是否已经发生过了 firstCompleteHit
     " 目的仍然是避免FirstComplete的重复渲染
