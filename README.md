@@ -6,7 +6,7 @@
 
 ### Why
 
-There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. I used coc.nvim for a long time. It’s experience is good. But there are a few things I don’t like. These plugins tend to have too much dependencies and do not have minimal configuration. For example, I wish not install Node if I programming c++ or go. In my opinion vim is more lightweight than vscode so I don’t want the fully integrated features of it. Besides other completion plugins neither have good experiences enough nor compatible with vim and nvim at the same time. Therefor I created [vim-easycomplete](https://github.com/jayli/vim-easycomplete) according to my personal habits.
+There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. I used coc.nvim for a long time. It’s experience is good. But there are a few things I don’t like. These plugins tend to have too much dependencies and do not have minimal configuration. For example, I don't want to install Node when programming c++ or golang. In my opinion vim is more lightweight than vscode so I don’t need the fully integrated features of it. Besides other completion plugins neither have good experiences enough nor compatible with vim and nvim at the same time. Therefor I created [vim-easycomplete](https://github.com/jayli/vim-easycomplete) according to my personal habits.
 
 ### What
 
