@@ -1,22 +1,30 @@
 # Vim-EasyComplete
 
-> A Fast & Minimalism Style Code Completion Plugin for VIM/NVIM.
+> A Fast & Minimalism Style Code Completion Plugin for vim/nvim.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don't need to configure anything. Especially, You don't have to install Node and a bunch of Node Modules unless you're a js/ts developer. It's definitely a minimalism style plugin.
+### Why
+
+There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. I used coc.nvim for a long time. It’s experience is good. But there are a few things I don’t like. These plugins tend to have too much dependencies and do not have minimal configuration. For example, I wish not install Node if I programming c++ or go. In my opinion vim is more lightweight than vscode so I don’t want the fully integrated features of it. Besides other completion plugins neither have good experiences enough nor compatible with vim and nvim at the same time. Therefor I created [vim-easycomplete](https://github.com/jayli/vim-easycomplete) according to my personal habits.
+
+### What
+
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don’t need to configure anything. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a javascript/typescript programmer.
 
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=650 />
 
-Vim-Easycomplete is easy to install and use. It contains these features:
+It is easy to install and use. It contains these features:
 
 - Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
-- Easy to install LSP Server with one command
 - [TabNine support](#TabNine-Support). (Highly Recommend!)
+- Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
 - Snippet support with ultisnips.
-- Brand New UI Design.
+- Fast performance
+
+The reason I decided to use pure vim script instead of lua or python is that I want a wider range of compatibility. And I made a lot of async handling with vim script to avoid the block of vim.
 
 ### Installation
 
