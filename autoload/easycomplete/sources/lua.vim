@@ -7,7 +7,7 @@ function! easycomplete#sources#lua#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'emmylua-ls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
-      \ 'whitelist': ['lua'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

@@ -9,7 +9,7 @@ function! easycomplete#sources#py#constructor(opt, ctx)
       \ 'name': 'pyls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
-      \ 'allowlist': ['python'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

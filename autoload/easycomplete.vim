@@ -146,6 +146,16 @@ function! s:BindingTypingCommandOnce()
   nnoremap <silent> <c-]> :EasyCompleteGotoDefinition<CR>
 endfunction
 
+function! easycomplete#FileTypes(plugin_name, filetypes)
+  if !exists("g:easycomplete_filetypes")
+    let g:easycomplete_filetypes = {}
+  endif
+  let tmp_opt = get(g:easycomplete_filetypes, a:plugin_name, {"whitelist":[]})
+  let added_types = get(tmp_opt, "whitelist", [])
+  let ret = added_types + a:filetypes
+  return ret
+endfunction
+
 " 检查当前注册的插件中所依赖的 command 是否已经安装
 function! easycomplete#checking()
   call s:flush()

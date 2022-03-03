@@ -16,7 +16,7 @@ function! easycomplete#sources#go#constructor(opt, ctx)
       \         'test': v:true,
       \     },
       \ },
-      \ 'allowlist': ['go'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

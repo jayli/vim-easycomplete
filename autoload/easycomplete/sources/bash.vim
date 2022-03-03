@@ -8,7 +8,7 @@ function! easycomplete#sources#bash#constructor(opt, ctx)
       \ 'name': 'bash-languageserver',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), 'start'],
       \ 'root_uri':{server_info->fnamemodify(expand('%'), ':p:h')},
-      \ 'allowlist': ['sh'],
+      \ 'allowlist': a:opt['whitelist'],
       \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\|\k\+\)$'},
       \ })
 endfunction

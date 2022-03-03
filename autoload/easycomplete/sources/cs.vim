@@ -8,7 +8,7 @@ function! easycomplete#sources#cs#constructor(opt, ctx)
       \ 'name': 'omnisharp-lsp',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), '-lsp'],
       \ 'root_uri':{server_info->easycomplete#util#GetDefaultRootUri()},
-      \ 'allowlist': ['cs'],
+      \ 'allowlist': a:opt['whitelist'],
       \ 'config': {},
       \ })
 endfunction

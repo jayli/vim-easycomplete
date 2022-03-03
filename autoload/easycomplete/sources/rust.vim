@@ -9,7 +9,7 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
       \ 'name': 'rust-analyzer',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
-      \ 'allowlist': ['rust'],
+      \ 'allowlist': a:opt["whitelist"],
       \ 'initialization_options': {
       \     'completion': {
       \       'autoimport': { 'enable': v:true },

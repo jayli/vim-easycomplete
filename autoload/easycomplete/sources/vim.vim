@@ -7,7 +7,7 @@ function! easycomplete#sources#vim#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'vimls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
-      \ 'whitelist': ['vim'],
+      \ 'allowlist': a:opt["whitelist"],
       \ 'initialization_options': {
       \   'vimruntime': expand($VIMRUNTIME),
       \   'runtimepath': &rtp,

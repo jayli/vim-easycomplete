@@ -50,6 +50,9 @@ endif
 if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
 endif
+if !exists("g:easycomplete_filetypes")
+  let g:easycomplete_filetypes = {}
+endif
 if !exists("g:easycomplete_enable")
   let g:easycomplete_enable = 1
 endif
@@ -154,7 +157,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': "dart",
-      \ 'whitelist': ['dart'],
+      \ 'whitelist': easycomplete#FileTypes("dart", ["dart"]),
       \ 'completor': function('easycomplete#sources#dart#completor'),
       \ 'constructor' :function('easycomplete#sources#dart#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#dart#GotoDefinition'),
@@ -163,7 +166,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
-      \ 'whitelist': ['vim'],
+      \ 'whitelist': easycomplete#FileTypes("vim", ["vim"]),
       \ 'completor': 'easycomplete#sources#vim#completor',
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
@@ -177,7 +180,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
-      \ 'whitelist': ["c", "cc", "cpp", "c++", "objc", "objcpp"],
+      \ 'whitelist': easycomplete#FileTypes("cpp", ["c", "cc", "cpp", "c++", "objc", "objcpp", "hpp"]),
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
@@ -187,7 +190,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'php',
-      \ 'whitelist': ["php"],
+      \ 'whitelist': easycomplete#FileTypes("php", ["php"]),
       \ 'completor': 'easycomplete#sources#php#completor',
       \ 'constructor' :'easycomplete#sources#php#constructor',
       \ 'gotodefinition': 'easycomplete#sources#php#GotoDefinition',
@@ -204,7 +207,7 @@ augroup easycomplete#PluginRegister
   " 用户自行安装
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'css',
-      \ 'whitelist': ['css', 'less', 'sass', 'scss'],
+      \ 'whitelist': easycomplete#FileTypes("css", ['css', 'less', 'sass', 'scss']),
       \ 'completor': 'easycomplete#sources#css#completor',
       \ 'constructor' :'easycomplete#sources#css#constructor',
       \ 'gotodefinition': 'easycomplete#sources#css#GotoDefinition',
@@ -214,7 +217,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
-      \ 'whitelist': ['html'],
+      \ 'whitelist': easycomplete#FileTypes("html", ["html"]),
       \ 'completor': 'easycomplete#sources#html#completor',
       \ 'constructor' :'easycomplete#sources#html#constructor',
       \ 'gotodefinition': 'easycomplete#sources#html#GotoDefinition',
@@ -224,7 +227,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'yml',
-      \ 'whitelist': ['yaml'],
+      \ 'whitelist': easycomplete#FileTypes("yml", ["yaml"]),
       \ 'completor': 'easycomplete#sources#yaml#completor',
       \ 'constructor' :'easycomplete#sources#yaml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#yaml#GotoDefinition',
@@ -233,7 +236,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'sh',
-      \ 'whitelist': ['sh'],
+      \ 'whitelist': easycomplete#FileTypes("sh", ["sh"]),
       \ 'completor': 'easycomplete#sources#bash#completor',
       \ 'constructor' :'easycomplete#sources#bash#constructor',
       \ 'gotodefinition': 'easycomplete#sources#bash#GotoDefinition',
@@ -242,7 +245,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'json',
-      \ 'whitelist': ['json'],
+      \ 'whitelist': easycomplete#FileTypes("json", ['json','jsonc']),
       \ 'completor': 'easycomplete#sources#json#completor',
       \ 'constructor' :'easycomplete#sources#json#constructor',
       \ 'gotodefinition': 'easycomplete#sources#json#GotoDefinition',
@@ -252,7 +255,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
-      \ 'whitelist': ['py','python'],
+      \ 'whitelist': easycomplete#FileTypes("py", ["py","python"]),
       \ 'completor': 'easycomplete#sources#py#completor',
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
@@ -261,7 +264,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'java',
-      \ 'whitelist': ['java'],
+      \ 'whitelist': easycomplete#FileTypes("java", ["java"]),
       \ 'completor': 'easycomplete#sources#java#completor',
       \ 'constructor' :'easycomplete#sources#java#constructor',
       \ 'gotodefinition': 'easycomplete#sources#java#GotoDefinition',
@@ -273,7 +276,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'go',
-      \ 'whitelist': ['go'],
+      \ 'whitelist': easycomplete#FileTypes("go", ["go"]),
       \ 'completor': 'easycomplete#sources#go#completor',
       \ 'constructor' :'easycomplete#sources#go#constructor',
       \ 'gotodefinition': 'easycomplete#sources#go#GotoDefinition',
@@ -285,7 +288,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'nim',
-      \ 'whitelist': ['nim'],
+      \ 'whitelist': easycomplete#FileTypes("nim", ["nim"]),
       \ 'completor': 'easycomplete#sources#nim#completor',
       \ 'constructor' :'easycomplete#sources#nim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#nim#GotoDefinition',
@@ -294,7 +297,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
-      \ 'whitelist': ['groovy'],
+      \ 'whitelist': easycomplete#FileTypes("grvy", ["groovy"]),
       \ 'completor': 'easycomplete#sources#grvy#completor',
       \ 'constructor' :'easycomplete#sources#grvy#constructor',
       \ 'gotodefinition': 'easycomplete#sources#grvy#GotoDefinition',
@@ -306,7 +309,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'lua',
-      \ 'whitelist': ['lua'],
+      \ 'whitelist': easycomplete#FileTypes("lua", ["lua"]),
       \ 'completor': 'easycomplete#sources#lua#completor',
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
@@ -315,7 +318,7 @@ augroup easycomplete#PluginRegister
       \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rb',
-      \ 'whitelist': ['ruby'],
+      \ 'whitelist': easycomplete#FileTypes("rb", ["ruby"]),
       \ 'completor': 'easycomplete#sources#ruby#completor',
       \ 'constructor' :'easycomplete#sources#ruby#constructor',
       \ 'gotodefinition': 'easycomplete#sources#ruby#GotoDefinition',
@@ -323,7 +326,7 @@ augroup easycomplete#PluginRegister
       \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'kt',
-      \ 'whitelist': ['kotlin'],
+      \ 'whitelist': easycomplete#FileTypes("kt", ["kotlin"]),
       \ 'completor': 'easycomplete#sources#kotlin#completor',
       \ 'constructor' :'easycomplete#sources#kotlin#constructor',
       \ 'gotodefinition': 'easycomplete#sources#kotlin#GotoDefinition',
@@ -331,7 +334,7 @@ augroup easycomplete#PluginRegister
       \  })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rust',
-      \ 'whitelist': ['rust'],
+      \ 'whitelist': easycomplete#FileTypes("rust", ["rust"]),
       \ 'completor': 'easycomplete#sources#rust#completor',
       \ 'constructor' :'easycomplete#sources#rust#constructor',
       \ 'gotodefinition': 'easycomplete#sources#rust#GotoDefinition',
@@ -343,7 +346,7 @@ augroup easycomplete#PluginRegister
       \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'xml',
-      \ 'whitelist': ['xml'],
+      \ 'whitelist': easycomplete#FileTypes("xml", ["xml"]),
       \ 'completor': 'easycomplete#sources#xml#completor',
       \ 'constructor' :'easycomplete#sources#xml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#xml#GotoDefinition',
@@ -353,7 +356,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'c#',
-      \ 'whitelist': ['cs'],
+      \ 'whitelist': easycomplete#FileTypes("c#", ["cs"]),
       \ 'completor': 'easycomplete#sources#cs#completor',
       \ 'constructor' :'easycomplete#sources#cs#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cs#GotoDefinition',
@@ -363,7 +366,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'r',
-      \ 'whitelist': ['r'],
+      \ 'whitelist': easycomplete#FileTypes("r", ['r', 'rmd', 'rmarkdown']),
       \ 'completor': 'easycomplete#sources#r#completor',
       \ 'constructor' :'easycomplete#sources#r#constructor',
       \ 'gotodefinition': 'easycomplete#sources#r#GotoDefinition',
@@ -374,7 +377,7 @@ augroup easycomplete#PluginRegister
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
-      \ 'whitelist': ['cmake','make'],
+      \ 'whitelist': easycomplete#FileTypes("cmake", ['cmake', 'make', 'CMakeLists.txt']),
       \ 'completor': 'easycomplete#sources#cmake#completor',
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',

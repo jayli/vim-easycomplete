@@ -183,6 +183,19 @@ More info about semantic completion for each supported language:
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
 
+Add filetypes whitelist for specified language plugin:
+
+```vim
+let g:easycomplete_filetypes = {
+      \   "sh": {
+      \     "whitelist": ["shell"]
+      \   },
+      \   "r": {
+      \     "whitelist": ["rmd", "rmarkdown"]
+      \   },
+      \ }
+```
+
 #### Snippet Support
 
 Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed. Install with vim-plug:

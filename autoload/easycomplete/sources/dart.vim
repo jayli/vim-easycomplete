@@ -9,7 +9,7 @@ function! easycomplete#sources#dart#constructor(opt, ctx)
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
       \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
       \ 'initialization_options': v:null,
-      \ 'allowlist': ['dart'],
+      \ 'allowlist': a:opt['whitelist'],
       \ 'config': {},
       \ 'semantic_highlight': {}
       \ })

@@ -8,7 +8,7 @@ function! easycomplete#sources#html#constructor(opt, ctx)
       \ 'name': 'html-languageserver',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
       \ 'initialization_options':{'embeddedLanguages': {'css': v:true, 'javascript': v:true}},
-      \ 'allowlist': ['html'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

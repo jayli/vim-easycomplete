@@ -7,7 +7,7 @@ function! easycomplete#sources#r#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'r-languageserver',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
-      \ 'allowlist': ['r'],
+      \ 'allowlist': a:opt['whitelist'],
       \ 'root_uri':{server_info->easycomplete#util#GetDefaultRootUri()},
       \ })
 endfunction
@@ -17,7 +17,7 @@ function! easycomplete#sources#r#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#r#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["r"])
+  return easycomplete#DoLspDefinition(["r", "rmd", "rmarkdown"])
 endfunction
 
 function! s:log(...)

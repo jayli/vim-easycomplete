@@ -11,7 +11,7 @@ function! easycomplete#sources#cmake#constructor(opt, ctx)
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
       \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
       \ 'initialization_options': {'buildDirectory': 'build'},
-      \ 'allowlist': ['cmake', 'make', 'CMakeLists.txt']
+      \ 'allowlist': a:opt['whitelist'],
       \ })
 endfunction
 

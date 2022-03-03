@@ -9,7 +9,7 @@ function! easycomplete#sources#php#constructor(opt, ctx)
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'config': {'refresh_pattern': '\(\$[a-zA-Z0-9_:]*\|\k\+\)$'},
-      \ 'allowlist': ['php'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

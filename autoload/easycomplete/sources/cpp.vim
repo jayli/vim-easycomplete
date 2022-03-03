@@ -11,7 +11,7 @@ function! easycomplete#sources#cpp#constructor(opt, ctx)
       \    'cache': {'directory': '/tmp/ccls/cache'},
       \    'completion': {'detailedLabel': v:false }
       \  },
-      \ 'allowlist': ["c", "cc", "cpp", "c++", "objc", "objcpp", "hpp"],
+      \ 'allowlist': a:opt['whitelist'],
       \ })
 endfunction
 

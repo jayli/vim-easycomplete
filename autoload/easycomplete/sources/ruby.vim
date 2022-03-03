@@ -10,7 +10,7 @@ function! easycomplete#sources#ruby#constructor(opt, ctx)
       \ 'initialization_options':  {
       \     'diagnostics': 'true'
       \ },
-      \ 'allowlist': ['ruby'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

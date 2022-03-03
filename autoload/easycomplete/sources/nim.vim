@@ -9,7 +9,7 @@ function! easycomplete#sources#nim#constructor(opt, ctx)
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'initialization_options' : {'diagnostics': 'true'},
-      \ 'allowlist': ['nim'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 

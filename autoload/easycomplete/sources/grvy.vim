@@ -8,7 +8,7 @@ function! easycomplete#sources#grvy#constructor(opt, ctx)
       \ 'name': 'groovy-language-server',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
-      \ 'allowlist': ['groovy'],
+      \ 'allowlist': a:opt["whitelist"],
       \ })
 endfunction
 
