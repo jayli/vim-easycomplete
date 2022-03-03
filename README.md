@@ -153,7 +153,7 @@ All supported languages:
 | kt               | Kotlin                | kotlin-language-server        | Yes                | java/jdk        |
 | grvy             | Groovy                | groovy-language-server        | Yes                | java/jdk        |
 | cmake            | cmake                 | cmake-language-server         | Yes                | python3/pip3    |
-| cs               | C#                    | omnisharp-lsp                 | Yes                | None            |
+| c#               | C#                    | omnisharp-lsp                 | Yes                | None            |
 
 More info about semantic completion for each supported language:
 
