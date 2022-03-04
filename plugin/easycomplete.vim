@@ -438,4 +438,3 @@ inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=seasycomplete#CleverSh
 inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 inoremap <silent> <Plug>EasycompleteNill <C-r>=easycomplete#nill()<CR>
 inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>
-
