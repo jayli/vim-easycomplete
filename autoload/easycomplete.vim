@@ -1526,7 +1526,7 @@ function! s:SnipSupports()
   endif
   try
     call UltiSnips#SnippetsInCurrentScope()
-  catch /^Vim\%((\a\+)\)\=:117/
+  catch /117/
     return v:false
   endtry
   return v:true
