@@ -1743,7 +1743,6 @@ function! easycomplete#ok(str)
   return flag
 endfunction
 
-" v:true 立即渲染，v:false 延时渲染
 function! easycomplete#lint()
   call easycomplete#action#diagnostics#do()
 endfunction
@@ -1766,7 +1765,6 @@ function! easycomplete#defination()
   call easycomplete#action#defination#do()
 endfunction
 
-" for 外部调用
 function! easycomplete#signature()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#do()
@@ -1788,7 +1786,7 @@ function! easycomplete#TextChangedI()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
-  call easycomplete#typing() " for completion
+  call easycomplete#typing()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#handle()
   endif
@@ -1814,13 +1812,13 @@ function! easycomplete#TextChangedP()
     let word_str_len = strlen(selected_item["word"])
   endif
   if b:old_changedtick == b:changedtick
-    " 在 FristComplete 时，TextChangedI 触发后会执行 complete()，还会触发一次
-    " TextChangedP，如果两个事件的 changedtick 相同，则丢弃 TextChangedP 事件
+    " in neovim textchangedI and textchangedP will fired at the same time with
+    " firstcomplete
   elseif easycomplete#CompleteCursored() &&
         \ get(selected_item, "word", "") == l:ctx['typed'][line_length - word_str_len:line_length - 1]
     " 直接按下 C-P 或者 C-N 不做任何处理
   elseif pumvisible() && !s:zizzing()
-    " tabnine, 空格trigger出的tabnine menu 敲入字母后的逻辑
+    " tabnine, 空格 trigger 出的 tabnine menu 敲入字母后的逻辑
     if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
       call s:CloseCompletionMenu()
       call s:flush()
@@ -1828,14 +1826,9 @@ function! easycomplete#TextChangedP()
       call easycomplete#TextChangedI()
       return
     endif
-
-    " 再次确保这里的逻辑要躲过 FirstComplete
-    " 同时判断是否已经发生过了 firstCompleteHit
-    " 目的仍然是避免FirstComplete的重复渲染
     if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
       return
     endif
-
     let g:easycomplete_start = reltime()
     let delay = len(g:easycomplete_stunt_menuitems) > 180 ?
           \ (g:env_is_iterm && g:env_is_vim ? 35 : (g:env_is_nvim ? 10 : 20)) : (has("nvim") ? 2 : 4)

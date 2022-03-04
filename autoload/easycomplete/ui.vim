@@ -31,7 +31,7 @@ endfunction " }}}
 " markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
-  let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ", 
+  let regin_cmd = join(["syntax region NewCodeBlock matchgroup=Conceal start=/\%(``\)\@!`/ ",
                 \ "matchgroup=Conceal end=/\%(``\)\@!`/ containedin=TOP concealends"],"")
   let original_filetype = getwinvar(a:winid, "&filetype")
   if has("nvim")
