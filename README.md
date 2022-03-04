@@ -162,11 +162,11 @@ More info about semantic completion for each supported language:
 - Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (`go get golang.org/x/tools/gopls`)
 - Vim Script: [vim-language-server](https://github.com/iamcco/vim-language-server) required.
 - C++/C/OC：[Clangd](https://github.com/clangd/clangd) required.
-- CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support)，You must install it manually.
+- CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - PHP: [intelephense](https://www.npmjs.com/package/intelephense)
 - Dart: [analysis-server-dart-snapshot](https://storage.googleapis.com/dart-archive/)
-- HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support) manually.
+- HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets) manually.
 - Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
 - Cmake: [cmake-language-server](https://github.com/regen100/cmake-language-server) required.
