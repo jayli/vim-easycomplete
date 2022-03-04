@@ -1442,6 +1442,9 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
+    if a:plugin_name == "cpp" && l:vim_complete_item['word'] =~ "^\\(•\\|\\s\\)" 
+      let l:vim_complete_item['word'] = substitute(l:vim_complete_item['word'], "^\\(•\\|\\s\\)", "", "g")
+    endif
     let l:t_info = s:NormalizeLspInfo(get(l:completion_item, "documentation", ""))
     if !empty(get(l:completion_item, "detail", ""))
       let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
@@ -1468,7 +1471,12 @@ function! easycomplete#util#Sha256(str)
 endfunction
 
 function! s:NormalizeLspInfo(info)
-  let l:li = split(a:info, "\n")
+  if type(a:info) == type({})
+    let info = get(a:info, "value", "")
+  else
+    let info = a:info
+  endif
+  let l:li = split(info, "\n")
   let l:str = []
 
   for item in l:li

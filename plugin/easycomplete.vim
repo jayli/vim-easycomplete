@@ -184,7 +184,10 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
-      \ 'command': 'ccls',
+      \ 'command': 'clangd',
+      \ "root_uri_patterns": [
+      \    "compile_flags.txt", "compile_commands.json"
+      \ ],
       \ 'semantic_triggers':["[^->]->$", "[^:]::$"]
       \ })
 

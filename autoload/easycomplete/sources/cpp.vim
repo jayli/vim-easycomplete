@@ -5,10 +5,10 @@ let g:easycomplete_sources_cpp = 1
 
 function! easycomplete#sources#cpp#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'ccls',
+      \ 'name': 'clangd',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'initialization_options':{
-      \    'cache': {'directory': '/tmp/ccls/cache'},
+      \    'cache': {'directory': '/tmp/clangd/cache'},
       \    'completion': {'detailedLabel': v:false }
       \  },
       \ 'allowlist': a:opt['whitelist'],

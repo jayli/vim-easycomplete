@@ -133,7 +133,7 @@ All supported languages:
 | deno             | JavaScript/TypeScript | deno                          | Yes                | deno            |
 | tn               | TabNine               | TabNine                       | Yes                | None            |
 | vim              | Vim                   | vim-language-server           | Yes                | node/npm        |
-| cpp              | C/C++                 | ccls                          | Yes                | ruby/brew       |
+| cpp              | C/C++/OC              | clangd                        | Yes                | None            |
 | css              | CSS                   | css-languageserver            | Yes                | node/npm        |
 | html             | HTML                  | html-languageserver           | Yes                | node/npm        |
 | yml              | YAML                  | yaml-language-server          | Yes                | node/npm        |
@@ -161,7 +161,7 @@ More info about semantic completion for each supported language:
 - Python: [pyls](https://github.com/palantir/python-language-server) required. (`pip install python-language-server`)
 - Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (`go get golang.org/x/tools/gopls`)
 - Vim Script: [vim-language-server](https://github.com/iamcco/vim-language-server) required.
-- C++/C：Install ccls with `brew install ccls`. If you want to install latest version. Please install it manually [following this guide](https://github.com/MaskRay/ccls).
+- C++/C/OC：[Clangd](https://github.com/clangd/clangd) required.
 - CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets-support)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - PHP: [intelephense](https://www.npmjs.com/package/intelephense)
