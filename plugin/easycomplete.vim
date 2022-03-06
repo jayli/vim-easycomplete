@@ -258,7 +258,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
-      \ 'whitelist': easycomplete#FileTypes("py", ["py","python"]),
+      \ 'whitelist': easycomplete#FileTypes("py", ["py","python","pyi"]),
       \ 'completor': 'easycomplete#sources#py#completor',
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
@@ -380,7 +380,7 @@ augroup easycomplete#PluginRegister
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
-      \ 'whitelist': easycomplete#FileTypes("cmake", ['cmake', 'make', 'CMakeLists.txt']),
+      \ 'whitelist': easycomplete#FileTypes("cmake", ['cmake', 'make','mak', 'CMakeLists.txt']),
       \ 'completor': 'easycomplete#sources#cmake#completor',
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
