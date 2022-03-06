@@ -380,7 +380,7 @@ augroup easycomplete#PluginRegister
   " TODO cmake-languageserver 本身有 bug，等其更新
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cmake',
-      \ 'whitelist': easycomplete#FileTypes("cmake", ['cmake', 'make', 'CMakeLists.txt']),
+      \ 'whitelist': easycomplete#FileTypes("cmake", ['cmake', 'make','mak', 'CMakeLists.txt']),
       \ 'completor': 'easycomplete#sources#cmake#completor',
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
