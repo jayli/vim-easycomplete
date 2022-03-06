@@ -258,7 +258,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'py',
-      \ 'whitelist': easycomplete#FileTypes("py", ["py","python"]),
+      \ 'whitelist': easycomplete#FileTypes("py", ["py","python","pyi"]),
       \ 'completor': 'easycomplete#sources#py#completor',
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',

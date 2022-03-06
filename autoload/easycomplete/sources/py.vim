@@ -18,7 +18,7 @@ function! easycomplete#sources#py#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#py#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["py"])
+  return easycomplete#DoLspDefinition(["py", "pyi"])
 endfunction
 
 function! s:log(...)
