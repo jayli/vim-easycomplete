@@ -316,9 +316,10 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#lua#completor',
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
-      \ 'command': 'emmylua-ls',
+      \ 'command': 'sumneko-lua-language-server',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
+      " \ 'command': 'emmylua-ls',
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rb',
       \ 'whitelist': easycomplete#FileTypes("rb", ["ruby"]),

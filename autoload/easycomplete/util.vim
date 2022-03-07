@@ -1374,7 +1374,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     let l:incomplete = 0
   elseif type(l:result) == type({})
     let l:items = l:result['items']
-    let l:incomplete = l:result['isIncomplete']
+    let l:incomplete = get(l:result, "isIncomplete", 0)
   else
     let l:items = []
     let l:incomplete = 0
