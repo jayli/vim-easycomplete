@@ -65,11 +65,11 @@ function! easycomplete#sources#lua#GotoDefinition(...)
 endfunction
 
 function! easycomplete#sources#lua#filter(matches)
-  " let ctx = easycomplete#context()
-  " let matches = a:matches
-  " let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
-  " return matches
-  return a:matches
+  let ctx = easycomplete#context()
+  let matches = a:matches
+  let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
+  return matches
+  " return a:matches
 endfunction
 
 function! s:log(...)
