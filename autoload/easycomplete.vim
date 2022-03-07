@@ -1081,8 +1081,15 @@ function! easycomplete#TypeEnterWithPUM()
     call s:zizz()
     " 新增 expandable 支持 for #48
     if easycomplete#util#expandable(l:item)
-      let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-      call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
+      let oitems = easycomplete#util#GetLspItem(l:item)
+      let insert_text = get(oitems, 'insertText', '')
+      if !empty(insert_text) && s:SnipSupports()
+        let word = get(l:item, "word")
+        call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
+      else
+        let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
+        call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
+      endif
       if easycomplete#ok('g:easycomplete_signature_enable')
         call s:AsyncRun("easycomplete#action#signature#do",[], 60)
       endif
@@ -1091,6 +1098,7 @@ function! easycomplete#TypeEnterWithPUM()
   endif
   return "\<CR>"
 endfunction
+
 
 function! s:CursorExpandableSnipPosition(back)
   call cursor(getcurpos()[1], getcurpos()[2] - a:back)

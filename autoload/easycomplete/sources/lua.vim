@@ -65,8 +65,10 @@ function! easycomplete#sources#lua#GotoDefinition(...)
 endfunction
 
 function! easycomplete#sources#lua#filter(matches)
-  " LUA lsp 功能不强，部分支持了 function expand
-  " 而且匹配项的类型判断有一些错误，先保持原样不做修饰了
+  " let ctx = easycomplete#context()
+  " let matches = a:matches
+  " let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
+  " return matches
   return a:matches
 endfunction
 
