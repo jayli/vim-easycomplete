@@ -147,7 +147,7 @@ All supported languages:
 | go               | Go                    | gopls                         | Yes                | go              |
 | r                | R                     | r-languageserver              | Yes                | R               |
 | rb               | Ruby                  | solargraph                    | Yes                | ruby/bundle     |
-| lua              | Lua                   | emmylua-ls                    | Yes                | java/jdk        |
+| lua              | Lua                   | sumneko-lua-language-server   | Yes                | Lua             |
 | nim              | Nim                   | nimlsp                        | Yes                | nim/nimble      |
 | rust             | Rust                  | rust-analyzer                 | Yes                | None            |
 | kt               | Kotlin                | kotlin-language-server        | Yes                | java/jdk        |
@@ -172,7 +172,7 @@ More info about semantic completion for each supported language:
 - Cmake: [cmake-language-server](https://github.com/regen100/cmake-language-server) required.
 - Kotlin: [kotlin-language-server](https://github.com/fwcd/kotlin-language-server) required.
 - Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
-- Lua: [emmylua-ls](https://github.com/EmmyLua/EmmyLua-LanguageServer) required.
+- Lua: [sumneko-lua-language-server](https://github.com/sumneko/lua-language-server) required.
 - Xml: [lemminx](https://github.com/eclipse/lemminx) required.
 - Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
