@@ -8,6 +8,8 @@ let s:ctx = v:null
 let s:opt = v:null
 let s:name = ''
 let s:tn_ready = v:false
+" TabNine 第一次匹配需要大量算法运算，比较耗时，完成第一次之后速度比较快
+let b:module_building = v:false
 let s:tn_render_timer = 0
 let s:version = ''
 " 只用作空格、等号、逗号这些情况强制触发 Tabnine complete 的标志位
@@ -90,6 +92,9 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
   if !s:tn_ready
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
+  endif
+  if b:module_building == v:false
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
   let l:params = s:GetTabNineParams(a:opt, a:ctx)
   call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
@@ -193,6 +198,7 @@ function! s:StdOutCallback(job_id, data, event)
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
     return
   endif
+  let b:module_building = v:true
   if !easycomplete#CheckContextSequence(s:ctx)
     call easycomplete#sources#tn#refresh()
     " call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
