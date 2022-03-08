@@ -1314,7 +1314,7 @@ function! easycomplete#util#GetLspItem(vim_item)
           \ && get(item, "menu") ==# get(a:vim_item, "menu")
           \ && get(item, "kind") ==# get(a:vim_item, "kind")
           \ && get(item, "abbr") ==# get(a:vim_item, "abbr")
-      let lsp_item = copy(get(item,'lsp_item', {}))
+      let lsp_item = get(easycomplete#util#GetUserData(item), 'lsp_item', {})
       break
     endif
   endfor
@@ -1453,7 +1453,8 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     endif
     let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
           \   'plugin_name': a:plugin_name,
-          \   'sha256': easycomplete#util#Sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info']))
+          \   'sha256': easycomplete#util#Sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info'])),
+          \   'lsp_item': l:completion_item
           \ }))
     let l:vim_complete_items += [l:vim_complete_item]
   endfor
