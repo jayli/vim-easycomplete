@@ -362,7 +362,7 @@ function! easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
                         \ [
                         \ string(item['range']['start']['line'] + 1),
                         \ decimal_str
-                        \ ], 
+                        \ ],
                         \ ".")
     let item.sortNumber = float2nr(str2float(sort_number) * 1000)
     call add(ret, item)
