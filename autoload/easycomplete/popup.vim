@@ -373,7 +373,9 @@ function! s:VimShow(opt, windowtype)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
-  call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  if a:windowtype == "float"
+    call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  endif
 endfunction
 
 function! s:NVimShow(opt, windowtype)
@@ -399,7 +401,9 @@ function! s:NVimShow(opt, windowtype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
-  call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  if a:windowtype == "float"
+    call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  endif
   silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
 

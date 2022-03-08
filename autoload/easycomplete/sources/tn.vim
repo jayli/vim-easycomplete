@@ -70,6 +70,9 @@ function! easycomplete#sources#tn#FireCondition()
   let l:char = l:ctx["char"]
   let l:typed = l:ctx["typed"]
   if strlen(l:typed) >= 2
+    if l:typed[-2:] == "' " || l:typed[-2:] == '" '
+      return v:false
+    endif
     if l:typed[strlen(l:typed) - 2] != " " && l:typed[strlen(l:typed) - 1] == " "
       return v:true
     endif
@@ -94,7 +97,8 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     return v:true
   endif
   if !exists('b:module_building') | let b:module_building = v:false | endif
-  if b:module_building == v:false
+  if b:module_building == v:false && len(easycomplete#GetStuntMenuItems()) == 0
+    " 防止 tabnine 初始模型构建时的 UI 阻塞
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
   let l:params = s:GetTabNineParams(a:opt, a:ctx)
@@ -220,7 +224,9 @@ function! s:StdOutCallback(job_id, data, event)
         call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
       else
         " Second Complete
-        call easycomplete#util#call(function("s:UpdateRendering"), [result])
+        if !easycomplete#CompleteCursored()
+          call easycomplete#util#call(function("s:UpdateRendering"), [result])
+        endif
         " if s:tn_render_timer > 0
         "   call timer_stop(s:tn_render_timer)
         "   let s:tn_render_timer = 0
