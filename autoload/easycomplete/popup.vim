@@ -354,6 +354,10 @@ function! s:VimShow(opt, windowtype)
   " TODO: 在 iTerm2 下，执行 popup_move/popup_setoptions/popup_create 会造成
   " complete menu 的闪烁，原因未知
   let winid = g:easycomplete_popup_win[a:windowtype]
+  if opt.filetype == "lua"
+    " lua documentation 中包含大量注释，妨碍阅读，改成 help
+    let opt.filetype = "help"
+  endif
   if winid != 0
     call setwinvar(winid, '&wincolor', opt.highlight)
     call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
@@ -373,7 +377,9 @@ function! s:VimShow(opt, windowtype)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
-  call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  if a:windowtype == "float"
+    call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  endif
 endfunction
 
 function! s:NVimShow(opt, windowtype)
@@ -399,7 +405,9 @@ function! s:NVimShow(opt, windowtype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
-  call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  if a:windowtype == "float"
+    call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  endif
   silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
 

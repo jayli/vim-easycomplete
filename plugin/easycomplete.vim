@@ -166,7 +166,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'vim',
-      \ 'whitelist': easycomplete#FileTypes("vim", ["vim"]),
+      \ 'whitelist': easycomplete#FileTypes("vim", ["vim","vimrc","nvim"]),
       \ 'completor': 'easycomplete#sources#vim#completor',
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',

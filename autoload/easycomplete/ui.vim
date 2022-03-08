@@ -48,7 +48,6 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
           \ "silent! syntax clear NewCodeBlock",
           \ regin_cmd,
           \ "hi! link NewCodeBlock helpCommand",
-          \ "let &filetype='txt'",
           \ "let &filetype='" . original_filetype . "'",
           \ ]
   endif

@@ -49,7 +49,7 @@ let g:easycomplete_insert_char = ''
 "   }
 " ]
 let g:easycomplete_complete_taskqueue = []
-let g:easycomplete_popup_width = 60
+let g:easycomplete_popup_width = 70
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
 let b:old_changedtick = 0
@@ -845,7 +845,6 @@ function! s:CompletorCallingAtFirstComplete(...)
       endif
     endwhile
   catch
-    " call s:log('[FirstComplete]',v:exception)
     call s:flush()
   endtry
 endfunction
@@ -1231,6 +1230,14 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   if g:env_is_vim
     call easycomplete#popup#close("popup")
   endif
+endfunction
+
+function! easycomplete#GetStuntItems()
+  let arr = []
+  for item in g:easycomplete_stunt_menuitems
+    call add(arr, get(item, "word"))
+  endfor
+  return arr
 endfunction
 
 function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
