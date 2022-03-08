@@ -390,18 +390,20 @@ function! s:NVimShow(opt, windowtype)
   else
     let hl = 'Pmenu'
   endif
+  let filetype = &filetype == "lua" ? "help" : &filetype
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
   unlet winargs[2].filetype
   noa let winid = nvim_open_win(s:buf[a:windowtype], 0, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
   call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'on')
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
+  " call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'number', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
+  call setbufvar(winbufnr(winid), '&filetype', filetype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
