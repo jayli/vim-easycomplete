@@ -169,7 +169,11 @@ function! s:TabNineRequest(name, param, opt, ctx) abort
         \     a:name : a:param
         \   },
         \ }
-  let l:buffer = json_encode(l:req) . "\n"
+  try
+    let l:buffer = json_encode(l:req) . "\n"
+  catch /474/
+    return
+  endtry
   let s:ctx = a:ctx
   call easycomplete#job#send(s:tn_job, l:buffer) " }}}
 endfunction
