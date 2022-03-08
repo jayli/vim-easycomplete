@@ -93,6 +93,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
+  if !exists('b:module_building') | let b:module_building = v:false | endif
   if b:module_building == v:false
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
@@ -198,6 +199,7 @@ function! s:StdOutCallback(job_id, data, event)
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
     return
   endif
+  if !exists('b:module_building') | let b:module_building = v:false | endif
   let b:module_building = v:true
   if !easycomplete#CheckContextSequence(s:ctx)
     call easycomplete#sources#tn#refresh()
