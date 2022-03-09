@@ -1762,6 +1762,10 @@ function! easycomplete#lint()
   call easycomplete#action#diagnostics#do()
 endfunction
 
+function! easycomplete#reference()
+  call easycomplete#action#reference#do()
+endfunction
+
 function! easycomplete#BufWritePost()
   call easycomplete#lint()
 endfunction

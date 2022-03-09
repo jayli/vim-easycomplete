@@ -897,8 +897,6 @@ function! s:ensure_start(buf, server_name, cb) abort
 endfunction
 
 function! s:on_request(server_name, id, request) abort
-  call s:log('<---', 's:on_request', a:id, a:request)
-
   let l:stream_data = { 'server': a:server_name, 'request': a:request }
   call easycomplete#lsp#stream(1, l:stream_data) " notify stream before callbacks
 
