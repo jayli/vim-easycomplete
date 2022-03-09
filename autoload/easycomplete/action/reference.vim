@@ -15,7 +15,10 @@ endfunction
 function! s:do()
   let l:request_params = { 'context': { 'includeDeclaration': v:false } }
   let l:server_names = easycomplete#util#FindLspServers()['server_names']
-  if empty(l:server_names) | return | endif
+  if empty(l:server_names)
+    call s:DoTSReference()
+    return
+  endif
   let l:server_name = l:server_names[0]
   if !easycomplete#lsp#HasProvider(l:server_name, 'referencesProvider')
     call s:log('[LSP References]: referencesProvider is not supported')
@@ -33,6 +36,17 @@ function! s:do()
         \ },
         \ 'on_notification': function('s:HandleLspCallback', [l:server_name]),
         \ })
+
+endfunction
+
+function! s:DoTSReference()
+  let all_plugins = easycomplete#GetAllPlugins()
+  if has_key(all_plugins, "ts") && easycomplete#sources#deno#IsTSOrJSFiletype() &&
+        \ !easycomplete#sources#deno#IsDenoProject()
+    if get(easycomplete#GetCurrentLspContext(), "name", "") == 'ts'
+      call easycomplete#sources#ts#reference()
+    endif
+  endif
 endfunction
 
 function! s:HandleLspCallback(server_name, data)

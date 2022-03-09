@@ -108,6 +108,7 @@ All commands:
 | `:EasyCompleteLint`               | Do diagnostic                            |
 | `:LintEasyComplete`               | Do diagnostic                            |
 | `:DenoCache`                      | Do Deno Cache for downloading modules    |
+| `:CleanLog`                       | close quickfix window                    |
 
 ### Language Support
 

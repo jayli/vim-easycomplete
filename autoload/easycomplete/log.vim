@@ -133,13 +133,17 @@ function! s:EmptyLogWindow()
 endfunction
 
 function! easycomplete#log#clean()
-  call s:EmptyLogWindow()
+  if s:LogRunning()
+    call s:EmptyLogWindow()
+  endif
+  cclose
 endfunction
 
 function! easycomplete#log#close()
   if s:LogRunning()
     call s:CloseLogWindow()
   endif
+  cclose
 endfunction
 
 function! easycomplete#log#quit()
