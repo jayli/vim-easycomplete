@@ -255,6 +255,11 @@ endfunction
 function! s:NormalizeCompleteResult(data)
   let l:col = s:ctx['col']
   let l:typed = s:ctx['typed']
+  if &filetype == "vim" && stridx(l:typed, "#") >= 0
+    let prefix = matchstr(l:typed, "^\\(\\w\\{-}#\\)\\+")
+  else
+    let prefix = ""
+  endif
 
   let l:kw = matchstr(l:typed, '\w\+$')
   let l:lwlen = len(l:kw)
@@ -292,6 +297,10 @@ function! s:NormalizeCompleteResult(data)
     endif
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
+    endif
+    if &filetype == 'vim'
+      let l:word['abbr'] = l:word['word']
+      let l:word['word'] = prefix . l:word['word']
     endif
     call add(l:words, l:word)
   endfor
