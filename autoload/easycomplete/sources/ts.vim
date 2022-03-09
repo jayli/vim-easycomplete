@@ -386,7 +386,7 @@ function! easycomplete#sources#ts#SignatureCallback(response)
   let offset_col = strlen(offset_str)
 
   let info = easycomplete#util#NormalizeSignatureDetail(item, hl_index)
-  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col])
+  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col], 'signature')
 endfunction
 
 " job complete 回调
