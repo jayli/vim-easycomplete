@@ -1082,12 +1082,16 @@ function! easycomplete#TypeEnterWithPUM()
     if easycomplete#util#expandable(l:item)
       let oitems = easycomplete#util#GetLspItem(l:item)
       let insert_text = get(oitems, 'insertText', '')
-      if !empty(insert_text) && s:SnipSupports()
+      let user_data = easycomplete#util#GetUserData(l:item)
+      let custom_expand = get(user_data, 'custom_expand', 0)
+      if custom_expand
+        let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
+        call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
+      elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
       else
-        let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-        call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
+        " do nothing
       endif
       if easycomplete#ok('g:easycomplete_signature_enable')
         call s:AsyncRun("easycomplete#action#signature#do",[], 60)
@@ -1760,6 +1764,10 @@ endfunction
 
 function! easycomplete#lint()
   call easycomplete#action#diagnostics#do()
+endfunction
+
+function! easycomplete#reference()
+  call easycomplete#action#reference#do()
 endfunction
 
 function! easycomplete#BufWritePost()

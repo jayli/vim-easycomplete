@@ -126,6 +126,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
   call s:RegistResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
   call s:RegistResponseCallback('easycomplete#sources#ts#SignatureCallback', 'signatureHelp')
+  call s:RegistResponseCallback('easycomplete#sources#ts#ReferenceCallback', 'references')
   call s:RegistResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
   call s:RegistResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
@@ -346,6 +347,41 @@ function! easycomplete#sources#ts#CompleteChanged()
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
+function! easycomplete#sources#ts#reference()
+  call s:TsserverReload()
+  let ctx = easycomplete#context()
+  let offset = ctx['col']
+  let file = ctx['filepath']
+  let l:args = {'file': file, 'line': line("."), 'offset': offset}
+  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['references',  l:args], 18)
+endfunction
+
+function! easycomplete#sources#ts#ReferenceCallback(data)
+  let body = get(a:data, "body", {})
+  let refs = get(body, 'refs', [])
+  if empty(refs)
+    call s:log("[TS]: No references found")
+    return
+  endif
+
+  let quick_window_list = []
+  for item in refs
+    let filename = get(item, "file", "")
+    let lnum = get(item, "start")["line"]
+    let col = get(item, "start")['offset']
+    call add(quick_window_list, {
+          \  'filename': filename,
+          \  'lnum':     lnum,
+          \  'col':      col,
+          \  'text':     get(item, 'lineText', ''),
+          \  'valid':    0,
+          \ })
+  endfor
+  call setqflist(quick_window_list, 'r')
+  copen
+endfunction
+
+
 function! easycomplete#sources#ts#signature()
   if !easycomplete#ok('g:easycomplete_signature_enable') | return | endif
   call s:TsserverReload()
@@ -386,7 +422,7 @@ function! easycomplete#sources#ts#SignatureCallback(response)
   let offset_col = strlen(offset_str)
 
   let info = easycomplete#util#NormalizeSignatureDetail(item, hl_index)
-  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col])
+  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col], 'signature')
 endfunction
 
 " job complete 回调
@@ -705,9 +741,10 @@ function! s:MessageHandler(msg)
   let l:event_name = s:GetTsserverEventType(l:item)
   let l:response_name = s:GetTsserverResponseType(l:item)
 
-  " normal 模式下只处理 definition 事件，其他事件均在插入模式下处理
-  if easycomplete#util#NotInsertMode() && l:response_name !=# 'definition'
-    return
+  if easycomplete#util#NotInsertMode() " Normal mod
+    if index(['definition', 'references'], l:response_name) < 0
+      return
+    endif
   endif
 
   " 执行 event 的回调

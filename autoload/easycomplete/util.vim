@@ -1439,6 +1439,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
       let l:vim_complete_item['abbr'] = l:completion_item['label']
       let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
       let l:vim_complete_item["user_data"] = json_encode({
+        \ 'custom_expand': 1,
         \ 'expandable': 1,
         \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
         \ 'cursor_backing_steps': 1

@@ -56,7 +56,11 @@ You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
 Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t`
 for jumping back (Same as tags jumping).
 
-Or you can use `:EasyCompleteGotoDefinition` command.
+Or you can use `:EasyCompleteGotoDefinition` and `:EasyCompleteReference` command. >
+
+  nmap gr :EasyCompleteReference<CR>
+  nmap gd :EasyCompleteGotoDefinition<CR>
+<
 
 Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for
 diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>` >
@@ -89,6 +93,7 @@ All commands:
 | `:EasyCompleteDisable`              | Disable EasyComplete                     |
 | `:EasyCompleteEnable`               | Enable EasyComplete                      |
 | `:EasyCompleteGotoDefinition`       | Goto definition position                 |
+| `:EasyCompleteReference`            | find references                          |
 | `:EasyCompleteCheck`                | Checking LSP server                      |
 | `:EasyCompletePreviousDiagnostic`   | Goto Previous diagnostic                 |
 | `:EasyCompleteNextDiagnostic`       | Goto Next diagnostic                     |
@@ -97,6 +102,7 @@ All commands:
 | `:EasyCompleteLint`                 | Do diagnostic                            |
 | `:LintEasyComplete`                 | Do diagnostic                            |
 | `:DenoCache`                        | Do Deno Cache for downloading modules    |
+| `:CleanLog`                         | close quickfix window                    |
 
 ===============================================================================
 

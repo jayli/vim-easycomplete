@@ -15,9 +15,11 @@
 "     - float 用作signature和diagnostics
 
 " popup window 最大高度
-let s:max_height = 60
+let s:max_height = 15
 let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
+" signature/lint
+let s:float_type = "signature"
 
 augroup easycomplete#popup#au
   autocmd!
@@ -67,13 +69,14 @@ function! easycomplete#popup#test()
         \ "~/.vim/bundle/vim-easycomplete/autoload/easycomplete/popup.vim [+] [utf-8]",
         \ "asdkjfo ajodij aojf aojf a;fj alfj",
         \ "testing testing"]
-  call easycomplete#popup#float(content, 'ErrorMsg', 0, "python", [0,0])
+  call easycomplete#popup#float(content, 'ErrorMsg', 0, "python", [0,0], 'signature')
 endfunction
 
 " content, hl, direction: 0, 向下，1，向上
 " ft, 文件类型
 " offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
-function! easycomplete#popup#float(content, hl, direction, ft, offset)
+" float_type: signature lint
+function! easycomplete#popup#float(content, hl, direction, ft, offset, float_type)
   if type(a:content) == type('')
     let content = [a:content]
   elseif type(a:content) == type([])
@@ -166,9 +169,9 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset)
 
   if s:is_nvim
     call easycomplete#popup#close("float")
-    call s:NVimShow(opt, "float")
+    call s:NVimShow(opt, "float", a:float_type)
   elseif s:is_vim
-    call s:VimShow(opt, "float")
+    call s:VimShow(opt, "float", a:float_type)
   endif
 endfunction
 
@@ -288,9 +291,9 @@ function! s:popup(info)
 
   if s:is_nvim
     call easycomplete#popup#close("popup")
-    call s:NVimShow(opt, "popup")
+    call s:NVimShow(opt, "popup", '')
   elseif s:is_vim
-    call s:VimShow(opt, "popup")
+    call s:VimShow(opt, "popup", '')
   endif
 endfunction
 
@@ -334,7 +337,7 @@ function! s:StartPopupAsyncRun(method, args, times)
 endfunction
 
 " windowtype: float/popup
-function! s:VimShow(opt, windowtype)
+function! s:VimShow(opt, windowtype, float_type)
   if s:is_nvim | return | endif
   let opt = {
         \ 'filetype': a:opt.filetype,
@@ -377,12 +380,12 @@ function! s:VimShow(opt, windowtype)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
-  if a:windowtype == "float"
+  if a:windowtype == "float" && a:float_type == "signature"
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
   endif
 endfunction
 
-function! s:NVimShow(opt, windowtype)
+function! s:NVimShow(opt, windowtype, float_type)
   if s:is_vim | return | endif
   if exists('a:opt.highlight')
     let hl = a:opt.highlight
@@ -397,17 +400,17 @@ function! s:NVimShow(opt, windowtype)
   noa let winid = nvim_open_win(s:buf[a:windowtype], 0, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
   call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'on')
-  " call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
+  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'number', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
-  call setbufvar(winbufnr(winid), '&filetype', filetype)
+  " call setbufvar(winbufnr(winid), '&filetype', filetype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
-  if a:windowtype == "float"
+  if a:windowtype == "float" && a:float_type == "signature"
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
   endif
   silent doautocmd <nomodeline> User FloatPreviewWinOpen

@@ -492,7 +492,7 @@ function! s:PopupMsg(diagnostics_info)
   let showing = s:MsgNormalize(a:diagnostics_info, msg)
   let g:easycomplete_diagnostics_last_popup = showing
   let style = s:GetPopupStyle(a:diagnostics_info["severity"])
-  call easycomplete#popup#float(showing, style, 0, "txt", [0,0])
+  call easycomplete#popup#float(showing, style, 0, "txt", [0,0], 'lint')
 endfunction
 
 function! s:GetPopupStyle(severity)
