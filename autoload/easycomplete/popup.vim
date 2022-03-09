@@ -15,7 +15,8 @@
 "     - float 用作signature和diagnostics
 
 " popup window 最大高度
-let s:max_height = 15
+let s:popup_max_height = 50
+let s:float_max_height = 15
 let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 " signature/lint
@@ -90,7 +91,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     return
   endif
   let prevw_width = easycomplete#popup#DisplayWidth(content, float_maxwidth)
-  let prevw_height = easycomplete#popup#DisplayHeight(content, prevw_width) - 1
+  let prevw_height = easycomplete#popup#DisplayHeight(content, prevw_width, 'float') - 1
   call s:InitBuf(content, 'float', a:ft)
   let opt = extend({
         \   'relative':'editor',
@@ -246,7 +247,7 @@ function! s:popup(info)
   endif
   call s:InitBuf(info, 'popup', &filetype)
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
-  let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width) - 1
+  let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width, 'popup') - 1
   let opt = {
         \ 'focusable': v:true,
         \ 'width': prevw_width,
@@ -464,14 +465,18 @@ function! easycomplete#popup#DisplayWidth(lines, max_width)
   return width
 endfunction
 
-function! easycomplete#popup#DisplayHeight(lines, width)
+function! easycomplete#popup#DisplayHeight(lines, width, type)
   " 1 for padding
   let height = 1
   " for line in a:lines
   "   let height += (strdisplaywidth(line) + a:width - 1) / a:width
   " endfor
   let height = len(a:lines) + 1
-  let max_height = s:max_height
+  if a:type == "float"
+    let max_height = s:float_max_height
+  else
+    let max_height = s:popup_max_height
+  endif
   return height > max_height ? max_height : height
 endfunction
 
