@@ -1,4 +1,13 @@
 
+augroup easycomplete#closeQF
+  autocmd!
+  autocmd QuitPre * call easycomplete#action#reference#CloseQF()
+augroup END
+
+function! easycomplete#action#reference#CloseQF()
+  cclose
+endfunction
+
 function! easycomplete#action#reference#do()
   call s:do()
 endfunction
@@ -36,27 +45,31 @@ function! s:HandleLspCallback(server_name, data)
     return
   endif
   let reference_list = get(a:data['response'], 'result', [])
-  call s:log(reference_list)
   let quick_window_list = []
+  if empty(reference_list)
+    call s:log("No references found")
+    return
+  endif
   for item in reference_list
+    let filename = easycomplete#util#TrimFileName(get(item, "uri", ""))
+    let lnum = str2nr(get(item, "range", "")['start']['line']) + 1
+    let col = str2nr(get(item, "range", "")['start']['character']) + 1
     call add(quick_window_list, {
-          \  'filename': easycomplete#util#TrimFileName(get(item, "uri", "")),
-          \  'lnum': str2nr(get(item, "range", "")['start']['line']) + 1,
-          \  'col':str2nr(get(item, "range", "")['start']['character']),
-          \  'type':'W',
-          \  'text':'sdf',
-          \  'valid':1,
+          \  'filename': filename,
+          \  'lnum':     lnum,
+          \  'col':      col,
+          \  'text':     s:GetFileContext(filename, lnum, col),
+          \  'valid':    0,
           \ })
   endfor
-  try
-    call s:log(quick_window_list)
-    call setqflist([])
-    " TODO not work
-    call setqflist(quick_window_list, 'r')
-  catch
-    echom v:exception
+  call setqflist(quick_window_list, 'r')
+  copen
+endfunction
 
-  endtry
+function! s:GetFileContext(filename, lnum, col)
+  let lines = readfile(a:filename, '', a:lnum)
+  let str = lines[a:lnum - 1][0:100]
+  return str
 endfunction
 
 function! s:console(...)
