@@ -255,11 +255,6 @@ endfunction
 function! s:NormalizeCompleteResult(data)
   let l:col = s:ctx['col']
   let l:typed = s:ctx['typed']
-  if &filetype == "vim" && stridx(l:typed, "#") >= 0
-    let prefix = matchstr(l:typed, "^\\(\\w\\{-}#\\)\\+")
-  else
-    let prefix = ""
-  endif
 
   let l:kw = matchstr(l:typed, '\w\+$')
   let l:lwlen = len(l:kw)
@@ -272,6 +267,12 @@ function! s:NormalizeCompleteResult(data)
     let l:response = a:data
   else
     let l:response = json_decode(a:data)
+  endif
+  let old_prefix = get(l:response, 'old_prefix', "")
+  if old_prefix !=# s:ctx["typing"]
+    let tn_prefix = substitute(s:ctx['typing'], old_prefix . "$","","g")
+  else
+    let tn_prefix = ""
   endif
   let l:words = []
   for l:result in l:response['results']
@@ -298,10 +299,8 @@ function! s:NormalizeCompleteResult(data)
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
     endif
-    if &filetype == 'vim'
-      let l:word['abbr'] = l:word['word']
-      let l:word['word'] = prefix . l:word['word']
-    endif
+    let l:word['abbr'] = l:word['word']
+    let l:word['word'] = tn_prefix . l:word['word']
     call add(l:words, l:word)
   endfor
   return l:words
