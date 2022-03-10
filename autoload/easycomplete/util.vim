@@ -1261,6 +1261,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
       let ret['abbr'] = word . "~"
       let ret['user_data'] = json_encode(extend(easycomplete#util#GetUserData(a:val), {
             \ 'expandable': 1,
+            \ 'custom_expand': 1,
             \ 'placeholder_position': strlen(word) + 1,
             \ 'cursor_backing_steps': 1
             \ }))
