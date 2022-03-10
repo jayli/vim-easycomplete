@@ -44,7 +44,7 @@ endfunction
 " /a/b/c => 直接从根查询
 " TODO ~/ 的支持
 function! s:GetDirAndFiles(typing_path, base)
-  let fpath   = a:typing_path.fpath
+  let fpath   = easycomplete#util#GetFullName(a:typing_path.fpath)
   let fname   = bufname('%')
   let bufpath = s:GetPathName(fname)
 

@@ -787,7 +787,7 @@ function! s:TsserverOpen()
   let l:file = easycomplete#context()['filepath']
   let l:args = {'file': l:file}
   let l:file_extention = tolower(easycomplete#util#extention())
-  if index(["js","ts","jsx","tsx"], l:file_extention) >= 0
+  if index(s:file_extensions, l:file_extention) >= 0
     call extend(l:args, {
           \  'scriptKindName': toupper(l:file_extention)
           \ })
