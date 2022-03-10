@@ -4,6 +4,7 @@ augroup easycomplete#closeQF
   autocmd QuitPre * call easycomplete#action#reference#CloseQF()
 augroup END
 
+
 function! easycomplete#action#reference#CloseQF()
   cclose
 endfunction
@@ -78,6 +79,13 @@ function! s:HandleLspCallback(server_name, data)
   endfor
   call setqflist(quick_window_list, 'r')
   copen
+  call s:hi()
+endfunction
+
+function! s:hi()
+  if easycomplete#ui#GetHiColor("qfLineNr", "fg") == 'NONE'
+    hi qfLineNr ctermfg=LightBlue guifg=#64b0e7
+  endif
 endfunction
 
 function! s:GetFileContext(filename, lnum, col)
