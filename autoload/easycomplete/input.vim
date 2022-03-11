@@ -31,12 +31,21 @@ function! easycomplete#input#pop(old_text, callbag)
   let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
 
   try
-    let buf = term_start("tail -f " . s:CreateBlankFile(), {
-            \ 'term_highlight' : 'Pmenu',
-            \ 'hidden': 1,
-            \ 'term_finish': 'close',
-            \ 'exit_cb': function('s:InputCallback')
-            \ })
+    if has("nvim")
+      let buf = termopen("tail -f " . s:CreateBlankFile(), {
+              \ 'term_highlight' : 'Pmenu',
+              \ 'hidden': 1,
+              \ 'term_finish': 'close',
+              \ 'exit_cb': function('s:InputCallback')
+              \ })
+    else
+      let buf = term_start("tail -f " . s:CreateBlankFile(), {
+              \ 'term_highlight' : 'Pmenu',
+              \ 'hidden': 1,
+              \ 'term_finish': 'close',
+              \ 'exit_cb': function('s:InputCallback')
+              \ })
+    endif
   catch /475/
   endtry
 
@@ -50,17 +59,56 @@ function! easycomplete#input#pop(old_text, callbag)
       call setbufvar(buf, '&undolevels', -1)
   " noa silent call deletebufline(buf, 1, '$')
 
-  noa let winid = popup_create(buf, opt)
-  call setwinvar(winid, 'autohide', 1)
-  call setwinvar(winid, 'float', 1)
-  call setwinvar(winid, '&list', 0)
-  call setwinvar(winid, '&number', 0)
-  call setwinvar(winid, '&relativenumber', 0)
-  call setwinvar(winid, '&cursorcolumn', 0)
-  call setwinvar(winid, '&colorcolumn', 0)
-  call setwinvar(winid, '&wrap', 1)
-  call setwinvar(winid, '&linebreak', 1)
-  call setwinvar(winid, '&conceallevel', 0)
+  if has("nvim")
+    unlet opt.line
+    unlet opt.borderchars
+    unlet opt.minheight
+    unlet opt.cursorline
+    unlet opt.filetype
+    unlet opt.minwidth
+    unlet opt.fixed
+    unlet opt.maxwidth
+    unlet opt.maxheight
+    unlet opt.firstline
+    unlet opt.padding
+    unlet opt.title
+    let opt['col'] = str2nr(col("."))
+    let opt.row = winline() + 1
+    let opt = {
+        \ 'relative': 'cursor',
+        \ 'row': 1,
+        \ 'col': 3,
+        \ 'width': 59,
+        \ 'height': 1,
+        \ 'style': 'minimal',
+        \ 'border': [1,1,1,1],
+        \ 'prompt': 1,
+        \ }
+    let opt = s:convert_config_nvim(opt)
+    let winid = nvim_open_win(buf, 0, opt)
+    call nvim_win_set_var(winid, 'syntax', 'on')
+    call nvim_win_set_option(winid, 'number', v:false)
+    call nvim_win_set_option(winid, 'relativenumber', v:false)
+    call nvim_win_set_option(winid, 'cursorline', v:false)
+    call nvim_win_set_option(winid, 'cursorcolumn', v:false)
+    call nvim_win_set_option(winid, 'colorcolumn', '')
+    if has('nvim-0.5.0')
+      call setwinvar(winid, '&scrolloff', 0)
+    endif
+
+  else
+    noa let winid = popup_create(buf, opt)
+    call setwinvar(winid, 'autohide', 1)
+    call setwinvar(winid, 'float', 1)
+    call setwinvar(winid, '&list', 0)
+    call setwinvar(winid, '&number', 0)
+    call setwinvar(winid, '&relativenumber', 0)
+    call setwinvar(winid, '&cursorcolumn', 0)
+    call setwinvar(winid, '&colorcolumn', 0)
+    call setwinvar(winid, '&wrap', 1)
+    call setwinvar(winid, '&linebreak', 1)
+    call setwinvar(winid, '&conceallevel', 0)
+  endif
   call easycomplete#util#execute(winid, [
         \ 'tnoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
         \ 'tnoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
@@ -71,6 +119,49 @@ function! easycomplete#input#pop(old_text, callbag)
   let s:input_buf = buf
   let b:Callbag = a:callbag
   let s:old_text = a:old_text
+endfunction
+
+function! s:empty_border(border) abort
+  if empty(a:border)
+    return 1
+  endif
+  if a:border[0] == 0 && a:border[1] == 0 && a:border[2] == 0 && a:border[3] == 0
+    return 1
+  endif
+  return 0
+endfunction
+
+function! s:convert_config_nvim(config) abort
+  let valids = ['relative', 'win', 'anchor', 'width', 'height', 'bufpos', 'col', 'row', 'focusable', 'style']
+  let result = {}
+  for i in valids
+    if has_key(a:config, i)
+      let result[i] = get(a:config, i, "")
+    endif
+  endfor
+  let border = get(a:config, 'border', [])
+  if !s:empty_border(border)
+    if result['relative'] ==# 'cursor' && result['row'] < 0
+      " move top when has bottom border
+      if get(border, 2, 0)
+        let result['row'] = result['row'] - 1
+      endif
+    else
+      " move down when has top border
+      if get(border, 0, 0) && !get(a:config, 'prompt', 0)
+        let result['row'] = result['row'] + 1
+      endif
+    endif
+    " move right when has left border
+    if get(border, 3, 0)
+      let result['col'] = result['col'] + 1
+    endif
+    let result['width'] = float2nr(result['width'] + 1 - get(border,3, 0))
+  else
+    let result['width'] = float2nr(result['width'] + 1)
+  endif
+  let result['height'] = float2nr(result['height'])
+  return result
 endfunction
 
 function! s:CreateBlankFile()
