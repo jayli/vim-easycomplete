@@ -84,8 +84,12 @@ endfunction
 
 function! s:hi()
   if easycomplete#ui#GetHiColor("qfLineNr", "fg") == 'NONE'
-    hi qfLineNr ctermfg=LightBlue guifg=#64b0e7
+    hi qfLineNr ctermfg=LightBlue guifg=#6d96bf
   endif
+endfunction
+
+function! easycomplete#action#reference#hi()
+  call s:hi()
 endfunction
 
 function! s:GetFileContext(filename, lnum, col)
@@ -100,4 +104,8 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
 endfunction

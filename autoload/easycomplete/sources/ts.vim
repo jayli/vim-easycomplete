@@ -23,6 +23,7 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:request_seq = 1
   let s:opt = {}
   let s:menu_flag = "[TS]"
+  let s:rename_text = ""
   let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
   " 三种提示默认支持，和coc默认配置保持一致:
   " syntaxDiag/semanticDiag/suggestionDiag
@@ -127,11 +128,11 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
   call s:RegistResponseCallback('easycomplete#sources#ts#SignatureCallback', 'signatureHelp')
   call s:RegistResponseCallback('easycomplete#sources#ts#ReferenceCallback', 'references')
+  call s:RegistResponseCallback('easycomplete#sources#ts#RenameCallback', 'rename')
   call s:RegistResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
   call s:RegistResponseCallback('easycomplete#sources#ts#TsReloadingCallback', 'reload')
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
-
   let s:opt = a:opt
 endfunction
 
@@ -142,6 +143,45 @@ function! easycomplete#sources#ts#init()
   " 及重新给每个 buf 做 open 的动作，因此这里绑定了 InsertEnter 来做这个事情
   call s:StartTsserver()
   call s:TsserverOpen()
+endfunction
+
+function! easycomplete#sources#ts#rename(new_name)
+  call s:TsserverReload()
+  let ctx = easycomplete#context()
+  let offset = ctx['col']
+  let file = ctx['filepath']
+  let l:args = {'file': file, 'line': line("."), 'offset': offset,
+        \ 'findInComments': v:true,
+        \ 'findInString'  : v:true,
+        \ }
+  let s:rename_text = a:new_name
+  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['rename',  l:args], 10)
+endfunction
+
+function! easycomplete#sources#ts#RenameCallback(data)
+  let info = s:get(a:data, "body", "info")
+  let locs = s:get(a:data, "body", "locs")
+  if empty(locs) || !s:get(info, "canRename")
+    call s:log("Nothing should be changed!")
+    return
+  endif
+
+  let changed_count = 0
+  for item in locs
+    let filename = s:get(item, "file")
+    let file_edits = s:get(item, 'locs')
+
+    for l:edit in file_edits
+      let lnum = s:get(l:edit, "start", "line")
+      let col_start = s:get(l:edit, "start", "offset")
+      let col_end = s:get(l:edit, "end", "offset") - 1
+      let new_text = s:rename_text
+      call easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
+      let changed_count += 1
+    endfor
+  endfor
+  call s:log("Changed", changed_count, "locations!")
+  let s:rename_text = ""
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
@@ -379,6 +419,7 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
   endfor
   call setqflist(quick_window_list, 'r')
   copen
+  call easycomplete#action#reference#hi()
 endfunction
 
 
@@ -524,6 +565,7 @@ endfunction
 
 function! s:TsFlush()
   let s:request_queue_ctx = {}
+  let s:rename_text = ""
   call s:EntryDetailsStatusReset()
   let g:easycomplete_completechanged_event = {}
 endfunction
@@ -742,7 +784,7 @@ function! s:MessageHandler(msg)
   let l:response_name = s:GetTsserverResponseType(l:item)
 
   if easycomplete#util#NotInsertMode() " Normal mod
-    if index(['definition', 'references'], l:response_name) < 0
+    if index(['definition', 'references', 'rename'], l:response_name) < 0
       return
     endif
   endif
@@ -930,4 +972,8 @@ endfunction
 
 function! s:StopAsyncRun(...)
   return call('easycomplete#util#StopAsyncRun', a:000)
+endfunction
+
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
 endfunction
