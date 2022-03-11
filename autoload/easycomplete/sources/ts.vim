@@ -145,7 +145,7 @@ function! easycomplete#sources#ts#init()
   call s:TsserverOpen()
 endfunction
 
-function! easycomplete#sources#ts#rename(new_name)
+function! easycomplete#sources#ts#rename(old_name, new_name)
   call s:TsserverReload()
   let ctx = easycomplete#context()
   let offset = ctx['col']

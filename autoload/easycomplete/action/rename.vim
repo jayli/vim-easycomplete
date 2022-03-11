@@ -1,4 +1,6 @@
 
+let s:server_name = ""
+
 function! easycomplete#action#rename#do()
   call s:do()
 endfunction
@@ -16,25 +18,29 @@ function! s:do()
     return
   endif
 
-  let new_name = input("New Name:")
+  let s:server_name = l:server_name
+  call easycomplete#input#pop("", function("s:InputCallback"))
 
-  call easycomplete#lsp#send_request(l:server_name, {
-        \ 'method': 'textDocument/rename',
-        \ 'params': {
-        \   'textDocument': easycomplete#lsp#get_text_document_identifier(),
-        \   'position': easycomplete#lsp#get_position(),
-        \   'newName' : new_name,
-        \ },
-        \ 'on_notification': function('s:HandleLspCallback', [l:server_name]),
-        \ })
+endfunction
+
+function! s:InputCallback(old_text, new_text)
+  call easycomplete#lsp#send_request(s:server_name, {
+        \   'method': 'textDocument/rename',
+        \   'params': {
+        \     'textDocument': easycomplete#lsp#get_text_document_identifier(),
+        \     'position': easycomplete#lsp#get_position(),
+        \     'newName' : a:new_text,
+        \   },
+        \   'on_notification': function('s:HandleLspCallback', [s:server_name]),
+        \   })
 endfunction
 
 function! s:DoTSRename()
-  let new_name = input("New Name:")
-  call easycomplete#sources#ts#rename(new_name)
+  call easycomplete#input#pop("", function("easycomplete#sources#ts#rename"))
 endfunction
 
 function! s:HandleLspCallback(server_name, data)
+  call s:log(a:data)
   let changes = s:get(a:data, "response", "result", "changes")
   if empty(changes)
     call s:log("Nothing to be changed")

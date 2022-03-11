@@ -1,6 +1,6 @@
 let s:installer_dir = expand('<sfile>:h:h') . '/easycomplete/installer'
 let s:root_dir = expand('<sfile>:h:h')
-let s:data_dir = expand('~/.config/vim-easycomplete')
+let s:data_dir = easycomplete#util#ConfigRoot()
 " LSP Server 安装目录，目录结构：
 " ~/.config/vim-easycomplete/
 "     └─ servers/

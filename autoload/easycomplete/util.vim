@@ -1634,19 +1634,7 @@ endfunction
 " col_end: 1,2,3
 function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
   let fullpath = fnamemodify(a:filename,':p')
-  try
-    let content = readfile(fullpath, a:lnum)
-  catch /484/
-    " File is not exists or can not open
-    return
-  endtry
-
   let buf_edit = v:false
-
-  let old_line = content[a:lnum - 1]
-  let old_prefix = old_line[0:a:col_start - 2]
-  let old_suffix = old_line[a:col_end:-1]
-  let new_line = join([old_prefix, old_suffix], a:new_text)
 
   " edit buf
   for buf in getbufinfo()
@@ -1654,6 +1642,10 @@ function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_tex
       continue
     endif
     if fnamemodify(get(buf, "name", ""), ":p") == fullpath
+      let old_line = getbufline(buf['bufnr'], a:lnum, a:lnum)[0]
+      let old_prefix = old_line[0:a:col_start - 2]
+      let old_suffix = old_line[a:col_end:-1]
+      let new_line = join([old_prefix, old_suffix], a:new_text)
       call setbufline(buf["bufnr"], a:lnum, new_line)
       let buf_edit = v:true
       break
@@ -1662,6 +1654,16 @@ function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_tex
 
   if !buf_edit
     " edit file
+    try
+      let content = readfile(fullpath, a:lnum)
+    catch /484/
+      " File is not exists or can not open
+      return
+    endtry
+    let old_line = content[a:lnum - 1]
+    let old_prefix = old_line[0:a:col_start - 2]
+    let old_suffix = old_line[a:col_end:-1]
+    let new_line = join([old_prefix, old_suffix], a:new_text)
     let content[a:lnum - 1] = new_line
     call writefile(content, fullpath, "s")
   endif
@@ -1690,3 +1692,8 @@ function! easycomplete#util#get(obj, ...) " {{{
   endfor
   return tmp
 endfunction " }}}
+
+function! easycomplete#util#ConfigRoot()
+  let config_dir = expand('~/.config/vim-easycomplete')
+  return config_dir
+endfunction
