@@ -1770,6 +1770,10 @@ function! easycomplete#reference()
   call easycomplete#action#reference#do()
 endfunction
 
+function! easycomplete#rename()
+  call easycomplete#action#rename#do()
+endfunction
+
 function! easycomplete#BufWritePost()
   call easycomplete#lint()
 endfunction

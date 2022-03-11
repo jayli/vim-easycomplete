@@ -51,11 +51,12 @@ The plugin is out of box and config noghting.
 
 ### Useage
 
-By default it use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can map `:EasyCompleteGotoDefinition` and `:EasyCompleteReference` (find references).
+By default it use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can map `:EasyCompleteGotoDefinition`, `:EasyCompleteReference` (find references) and `:EasyCompleteRename` (Rename).
 
 ```vim
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
+noremap rn :EasyCompleteRename<CR>
 ```
 
 If you don't want use `Tab` to trigger completion suggestions. You can change this setting by:
@@ -99,7 +100,8 @@ All commands:
 | `:EasyCompleteDisable`            | Disable EasyComplete                     |
 | `:EasyCompleteEnable`             | Enable EasyComplete                      |
 | `:EasyCompleteGotoDefinition`     | Goto definition position                 |
-| `:EasyCompleteReference`          | find references                          |
+| `:EasyCompleteReference`          | Find references                          |
+| `:EasyCompleteRename`             | Rename                                   |
 | `:EasyCompleteCheck`              | Checking LSP server                      |
 | `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
 | `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |

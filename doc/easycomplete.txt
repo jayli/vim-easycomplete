@@ -94,6 +94,7 @@ All commands:
 | `:EasyCompleteEnable`               | Enable EasyComplete                      |
 | `:EasyCompleteGotoDefinition`       | Goto definition position                 |
 | `:EasyCompleteReference`            | find references                          |
+| `:EasyCompleteRename`               | rename                                   |
 | `:EasyCompleteCheck`                | Checking LSP server                      |
 | `:EasyCompletePreviousDiagnostic`   | Goto Previous diagnostic                 |
 | `:EasyCompleteNextDiagnostic`       | Goto Next diagnostic                     |

@@ -1628,6 +1628,45 @@ function! easycomplete#util#fullfill(str)
 endfunction
 " }}}
 
+" TextEdit {{{
+" lnum: 1,2,3
+" col_start: 1,2,3
+" col_end: 1,2,3
+function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
+  let fullpath = fnamemodify(a:filename,':p')
+  try
+    let content = readfile(fullpath, a:lnum)
+  catch /484/
+    " File is not exists or can not open
+    return
+  endtry
+
+  let buf_edit = v:false
+
+  let old_line = content[a:lnum - 1]
+  let old_prefix = old_line[0:a:col_start - 2]
+  let old_suffix = old_line[a:col_end:-1]
+  let new_line = join([old_prefix, old_suffix], a:new_text)
+
+  " edit buf
+  for buf in getbufinfo()
+    if !empty(getbufvar(buf['bufnr'], '&buftype')) || !(bufloaded(buf['bufnr']))
+      continue
+    endif
+    if fnamemodify(get(buf, "name", ""), ":p") == fullpath
+      call setbufline(buf["bufnr"], a:lnum, new_line)
+      let buf_edit = v:true
+      break
+    endif
+  endfor
+
+  if !buf_edit
+    " edit file
+    let content[a:lnum - 1] = new_line
+    call writefile(content, fullpath, "s")
+  endif
+endfunction " }}}
+
 " utils function {{{
 function! easycomplete#util#IsGui()
   return (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
@@ -1641,3 +1680,13 @@ function! s:trace(...)
   return call('easycomplete#util#trace', a:000)
 endfunction
 " }}}
+
+function! easycomplete#util#get(obj, ...) " {{{
+  let params = deepcopy(a:000)
+  let tmp = a:obj
+  for item in params
+    let tmp = get(tmp, item, 0)
+    if empty(tmp) | break | endif
+  endfor
+  return tmp
+endfunction " }}}

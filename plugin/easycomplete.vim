@@ -430,6 +430,7 @@ command! EasyCompletePreviousDiagnostic : call easycomplete#sign#previous()
 command! EasyCompleteDisable : call easycomplete#disable()
 command! EasyCompleteEnable : call easycomplete#StartUp()
 command! EasyCompleteReference : call easycomplete#reference()
+command! EasyCompleteRename : call easycomplete#rename()
 
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()

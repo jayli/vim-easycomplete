@@ -35,8 +35,25 @@ function! s:DoTSRename()
 endfunction
 
 function! s:HandleLspCallback(server_name, data)
-  " TODO Here
-  call s:log(a:data)
+  let changes = s:get(a:data, "response", "result", "changes")
+  if empty(changes)
+    call s:log("Nothing to be changed")
+    return
+  endif
+
+  for filename in changes->keys()
+    let file_edits = s:get(changes, filename)
+    let fullfname = easycomplete#util#TrimFileName(filename)
+    for item in file_edits
+      let lnum = s:get(item, "range", "start", "line") + 1
+      let col_start = s:get(item, "range", "start", "character") + 1
+      let col_end = s:get(item, "range", "end", "character")
+      let new_text = s:get(item, "newText")
+      call s:log(fullfname, lnum, col_start, col_end, new_text)
+      call easycomplete#util#TextEdit(fullfname, lnum, col_start, col_end, new_text)
+    endfor
+  endfor
+  call s:log("Rename Done!")
 endfunction
 
 function! s:console(...)
@@ -45,4 +62,8 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
 endfunction
