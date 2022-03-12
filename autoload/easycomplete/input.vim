@@ -40,8 +40,8 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
     let height = s:input_height
     let opts = {
       \ 'relative':  'editor',
-      \ 'row':       line('.'),
-      \ 'col':       col('.'),
+      \ 'row':       winline(),
+      \ 'col':       wincol(),
       \ 'width':     width,
       \ 'height':    height,
       \ 'style':     'minimal',
