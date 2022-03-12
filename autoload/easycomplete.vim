@@ -1813,6 +1813,9 @@ function! easycomplete#TextChangedI()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+  if exists('b:easycomplete_enable') && empty(b:easycomplete_enable)
+    return
+  endif
   call easycomplete#typing()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#handle()

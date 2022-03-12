@@ -1,167 +1,139 @@
 let s:input_winid = 0
 let s:input_buf = 0
 let s:tempfile = ""
+let s:input_width = 50
+let s:input_height = 3
 let b:Callbag = v:null
 let s:old_text = ""
+let s:input_title = "New Name:"
 let s:win_borderchars = ['─', '│', '─', '│', '┌', '┐', '┘', '└']
 
 function! s:InputCallback(...)
   call s:flush()
 endfunction
 
-function! easycomplete#input#pop(old_text, callbag)
-  let title = "Input New Name:"
+function! s:ResetBuf(buf)
+  let buf = a:buf
+  call setbufvar(buf, '&signcolumn', 'no')
+  call setbufvar(buf, '&filetype', 'none')
+  call setbufvar(buf, '&buftype', "nofile")
+  call setbufvar(buf, '&bufhidden', 1)
+  call setbufvar(buf, '&modifiable', 1)
+  call setbufvar(buf, '&buflisted', 0)
+  call setbufvar(buf, '&swapfile', 0)
+  call setbufvar(buf, '&undolevels', -1)
+  call setbufvar(buf, 'easycomplete_enable', 0)
+endfunction
+
+
+" relative
+" line
+" col
+" width
+" height
+" title
+" highlight
+" focusable
+
+function! s:CreateNvimInputWindow(old_text, callback) abort
+    let width = s:input_width
+    let height = s:input_height
+    let opts = {
+      \ 'relative':  'editor',
+      \ 'row':       line('.'),
+      \ 'col':       col('.'),
+      \ 'width':     width,
+      \ 'height':    height,
+      \ 'style':     'minimal',
+      \ 'focusable': v:false
+    \ }
+
+    let title = s:input_title
+    let top = "┌─" . title . repeat("─", width - strlen(title) - 3) . "┐"
+    let mid = "│" . repeat(" ", width - 2) . "│"
+    let bot = "└" . repeat("─", width - 2) . "┘"
+
+    let lines = [top] + repeat([mid], height - 2) + [bot]
+    let border_bufnr = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(border_bufnr, 0, -1, v:true, lines)
+    let s:border_winid = nvim_open_win(border_bufnr, v:true, opts)
+    let opts.row += 1
+    let opts.height -= 2
+    let opts.col += 2
+    let opts.width -= 4
+    let opts.focusable = v:true
+    let text_bufnr = nvim_create_buf(v:false, v:true)
+    call s:ResetBuf(text_bufnr)
+    let text_winid = nvim_open_win(text_bufnr, v:true, opts)
+    set winhl=Normal:Float
+    au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
+    call easycomplete#util#execute(text_winid, [
+          \ 'inoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
+          \ 'inoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
+          \ 'call feedkeys("i","n")'
+          \ ])
+    return [text_bufnr, text_winid]
+endfunction
+
+function! s:CreateVimInputWindow(old_text, callback) abort
   let opt = {
         \ 'filetype':    "txt",
         \ 'col':         'cursor',
         \ 'border':      [1,1,1,1],
         \ 'borderchars': s:win_borderchars,
         \ 'cursorline':  0,
-        \ 'maxwidth':    50,
+        \ 'maxwidth':    s:input_width,
         \ 'line':        'cursor+1',
         \ 'maxheight':   1,
-        \ 'minwidth':    50,
+        \ 'minwidth':    s:input_width,
         \ 'minheight':   1,
-        \ 'title':       title,
+        \ 'title':       s:input_title,
         \ 'focusable':   v:true,
         \ 'firstline':   1,
         \ 'fixed':       1,
         \ 'padding':     [0,0,0,0],
         \ }
   let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
-
   try
-    if has("nvim")
-      let buf = termopen("tail -f " . s:CreateBlankFile(), {
-              \ 'term_highlight' : 'Pmenu',
-              \ 'hidden': 1,
-              \ 'term_finish': 'close',
-              \ 'exit_cb': function('s:InputCallback')
-              \ })
-    else
-      let buf = term_start("tail -f " . s:CreateBlankFile(), {
-              \ 'term_highlight' : 'Pmenu',
-              \ 'hidden': 1,
-              \ 'term_finish': 'close',
-              \ 'exit_cb': function('s:InputCallback')
-              \ })
-    endif
+    let buf = term_start("tail -f " . s:CreateBlankFile(), {
+            \ 'term_highlight' : 'Pmenu',
+            \ 'hidden': 1,
+            \ 'term_finish': 'close',
+            \ 'exit_cb': function('s:InputCallback')
+            \ })
   catch /475/
   endtry
 
-  " noa let buf = bufadd('')
-  " noa call bufload(buf)
-  noa call setbufvar(buf, '&filetype', "none")
-  noa call setbufvar(buf, '&buftype', "nofile")
-  noa call setbufvar(buf, '&modifiable', 1)
-  noa call setbufvar(buf, '&buflisted', 0)
-      call setbufvar(buf, '&swapfile', 0)
-      call setbufvar(buf, '&undolevels', -1)
-  " noa silent call deletebufline(buf, 1, '$')
-
-  if has("nvim")
-    unlet opt.line
-    unlet opt.borderchars
-    unlet opt.minheight
-    unlet opt.cursorline
-    unlet opt.filetype
-    unlet opt.minwidth
-    unlet opt.fixed
-    unlet opt.maxwidth
-    unlet opt.maxheight
-    unlet opt.firstline
-    unlet opt.padding
-    unlet opt.title
-    let opt['col'] = str2nr(col("."))
-    let opt.row = winline() + 1
-    let opt = {
-        \ 'relative': 'cursor',
-        \ 'row': 1,
-        \ 'col': 3,
-        \ 'width': 59,
-        \ 'height': 1,
-        \ 'style': 'minimal',
-        \ 'border': [1,1,1,1],
-        \ 'prompt': 1,
-        \ }
-    let opt = s:convert_config_nvim(opt)
-    let winid = nvim_open_win(buf, 0, opt)
-    call nvim_win_set_var(winid, 'syntax', 'on')
-    call nvim_win_set_option(winid, 'number', v:false)
-    call nvim_win_set_option(winid, 'relativenumber', v:false)
-    call nvim_win_set_option(winid, 'cursorline', v:false)
-    call nvim_win_set_option(winid, 'cursorcolumn', v:false)
-    call nvim_win_set_option(winid, 'colorcolumn', '')
-    if has('nvim-0.5.0')
-      call setwinvar(winid, '&scrolloff', 0)
-    endif
-
-  else
-    noa let winid = popup_create(buf, opt)
-    call setwinvar(winid, 'autohide', 1)
-    call setwinvar(winid, 'float', 1)
-    call setwinvar(winid, '&list', 0)
-    call setwinvar(winid, '&number', 0)
-    call setwinvar(winid, '&relativenumber', 0)
-    call setwinvar(winid, '&cursorcolumn', 0)
-    call setwinvar(winid, '&colorcolumn', 0)
-    call setwinvar(winid, '&wrap', 1)
-    call setwinvar(winid, '&linebreak', 1)
-    call setwinvar(winid, '&conceallevel', 0)
-  endif
+  call s:ResetBuf(buf)
+  noa let winid = popup_create(buf, opt)
+  call setwinvar(winid, 'autohide', 1)
+  call setwinvar(winid, 'float', 1)
+  call setwinvar(winid, '&list', 0)
+  call setwinvar(winid, '&number', 0)
+  call setwinvar(winid, '&relativenumber', 0)
+  call setwinvar(winid, '&cursorcolumn', 0)
+  call setwinvar(winid, '&colorcolumn', 0)
+  call setwinvar(winid, '&wrap', 1)
+  call setwinvar(winid, '&linebreak', 1)
+  call setwinvar(winid, '&conceallevel', 0)
   call easycomplete#util#execute(winid, [
         \ 'tnoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
         \ 'tnoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
-        \ '',
-        \ ''
         \ ])
-  let s:input_winid = winid
-  let s:input_buf = buf
+
+  return [buf, winid]
+endfunction
+
+function! easycomplete#input#pop(old_text, callbag)
+  if has("nvim")
+    let input_obj = s:CreateNvimInputWindow(a:old_text, a:callbag)
+  else
+    let input_obj = s:CreateVimInputWindow(a:old_text, a:callbag)
+  endif
+  let s:input_winid = input_obj[1]
+  let s:input_buf = input_obj[0]
   let b:Callbag = a:callbag
   let s:old_text = a:old_text
-endfunction
-
-function! s:empty_border(border) abort
-  if empty(a:border)
-    return 1
-  endif
-  if a:border[0] == 0 && a:border[1] == 0 && a:border[2] == 0 && a:border[3] == 0
-    return 1
-  endif
-  return 0
-endfunction
-
-function! s:convert_config_nvim(config) abort
-  let valids = ['relative', 'win', 'anchor', 'width', 'height', 'bufpos', 'col', 'row', 'focusable', 'style']
-  let result = {}
-  for i in valids
-    if has_key(a:config, i)
-      let result[i] = get(a:config, i, "")
-    endif
-  endfor
-  let border = get(a:config, 'border', [])
-  if !s:empty_border(border)
-    if result['relative'] ==# 'cursor' && result['row'] < 0
-      " move top when has bottom border
-      if get(border, 2, 0)
-        let result['row'] = result['row'] - 1
-      endif
-    else
-      " move down when has top border
-      if get(border, 0, 0) && !get(a:config, 'prompt', 0)
-        let result['row'] = result['row'] + 1
-      endif
-    endif
-    " move right when has left border
-    if get(border, 3, 0)
-      let result['col'] = result['col'] + 1
-    endif
-    let result['width'] = float2nr(result['width'] + 1 - get(border,3, 0))
-  else
-    let result['width'] = float2nr(result['width'] + 1)
-  endif
-  let result['height'] = float2nr(result['height'])
-  return result
 endfunction
 
 function! s:CreateBlankFile()
@@ -178,7 +150,12 @@ function! s:DeleteBlankFile()
 endfunction
 
 function! easycomplete#input#PromptHandlerCR()
-  let new_text_line = term_getline(s:input_buf, '.',)
+  if has("nvim")
+    let new_text_line = get(getbufline(s:input_buf, 1, 1), 0, "")
+  else
+    let new_text_line = term_getline(s:input_buf, '.',)
+  endif
+  call s:log(new_text_line)
   if empty(new_text_line) || empty(trim(new_text_line))
     call s:log("New text is empty. Nothing will be changed.")
     call s:close()
@@ -204,7 +181,11 @@ endfunction
 
 function! s:close()
   if s:input_winid
-    call easycomplete#util#execute(s:input_winid, ["silent noa call feedkeys('\<C-C>')"])
+    if has('nvim')
+      call easycomplete#util#execute(s:input_winid, ["silent noa call feedkeys('\<C-C>ZZ')"])
+    else
+      call easycomplete#util#execute(s:input_winid, ["silent noa call feedkeys('\<C-C>')"])
+    endif
     let s:input_winid = 0
   endif
 endfunction
