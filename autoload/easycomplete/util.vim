@@ -1712,7 +1712,7 @@ function! easycomplete#util#get(obj, ...) " {{{
   return tmp
 endfunction " }}}
 
-function! easycomplete#util#ConfigRoot()
+function! easycomplete#util#ConfigRoot() " {{{
   let config_dir = expand('~/.config/vim-easycomplete')
   return config_dir
-endfunction
+endfunction " }}}

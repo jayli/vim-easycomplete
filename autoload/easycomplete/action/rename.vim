@@ -52,35 +52,43 @@ function! s:HandleLspCallback(server_name, data)
 
   let changed_count = 0
   call setqflist([], 'r')
-  for filename in changes->keys()
-    let file_edits = s:get(changes, filename)
-    let fullfname = easycomplete#util#TrimFileName(filename)
-    for item in file_edits
-      let lnum = s:get(item, "range", "start", "line") + 1
-      let col_start = s:get(item, "range", "start", "character") + 1
-      let col_end = s:get(item, "range", "end", "character")
-      let new_text = s:get(item, "newText")
-      let success = easycomplete#util#TextEdit(fullfname, lnum, col_start, col_end, new_text)
-      if success !=# 0
-        let changed_count += 1
-        let bufnr = bufnr(bufname(fullname))
-        call setqflist({
-          \  'filename': filename,
-          \  'lnum':     lnum,
-          \  'col':      col_start,
-          \  'text':     getbufline(bufnr, lnum, lnum),
-          \  'valid':    0,
-          \ })
-      endif
+  try
+    for filename in changes->keys()
+      let file_edits = s:get(changes, filename)
+      let fullfname = easycomplete#util#TrimFileName(filename)
+      for item in file_edits
+        let lnum = s:get(item, "range", "start", "line") + 1
+        let col_start = s:get(item, "range", "start", "character") + 1
+        let col_end = s:get(item, "range", "end", "character")
+        let new_text = s:get(item, "newText")
+        let success_status = easycomplete#util#TextEdit(fullfname, lnum, col_start, col_end, new_text)
+        if success_status !=# 0
+          let changed_count += 1
+          let bufnr = bufnr(bufname(fullfname))
+          call setqflist([{
+            \  'filename': easycomplete#util#TrimFileName(filename),
+            \  'lnum':     lnum,
+            \  'col':      col_start,
+            \  'text':     getbufline(bufnr, lnum, lnum)[0],
+            \  'valid':    0,
+            \ }], "a")
+        endif
+      endfor
     endfor
-  endfor
-  if len(getqflist()) > 0
-    copen
-    call easycomplete#ui#qfhl()
-    call s:log("Use `:wa` to save all changes.", "Changed", changed_count, "locations!")
-  else
-    call s:log("Changed", changed_count, "locations!")
-  endif
+    if len(getqflist()) > 0
+      let current_winid = bufwinid(bufnr(""))
+      copen
+      call easycomplete#util#GotoWindow(current_winid)
+      call easycomplete#ui#qfhl()
+      call s:log("`:wa` to save all changes.", "Changed", changed_count, "locations!",
+            \ "`:cclose` or `:CleanLog` to close changelist. `:copen` to open changelist")
+    else
+      call s:log("Changed", changed_count, "locations!")
+    endif
+  catch
+    echom v:exception
+
+  endtry
   call s:flush()
 endfunction
 

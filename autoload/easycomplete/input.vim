@@ -145,7 +145,6 @@ function! easycomplete#input#PromptHandlerCR()
   else
     let new_text_line = term_getline(s:input_buf, '.',)
   endif
-  call s:log(new_text_line)
   if empty(new_text_line) || empty(trim(new_text_line))
     call s:log("New text is empty. Nothing will be changed.")
     call s:close()
