@@ -65,6 +65,30 @@ function! easycomplete#installer#install(...) abort
   if l:name == "tabnine"
     let l:name = "tn"
   endif
+  let s:name = l:name
+  if s:LspCmdInstalled(l:name)
+    call easycomplete#confirm#pop(l:name . " lsp server is already installed. reinstall it again?",
+          \ function("s:ConfirmCallback"))
+  else
+    call s:ConfirmCallback(v:null, 1)
+  endif
+endfunction
+
+function! s:ConfirmCallback(error, res)
+  if !empty(a:error)
+    call s:log(a:error)
+    return
+  endif
+
+  if a:res == 1
+    call s:DoInstall(s:name)
+  else
+    call easycomplete#util#info("Stop reinstall.")
+  endif
+endfunction
+
+function! s:DoInstall(name)
+  let l:name = a:name
   let l:install_script = easycomplete#installer#InstallerDir() . '/' . l:name . '.sh'
   let l:lsp_server_dir = easycomplete#installer#LspServerDir() . '/' . l:name
 
@@ -77,12 +101,6 @@ function! easycomplete#installer#install(...) abort
   if !filereadable(l:install_script)
     call easycomplete#util#info('Error,', 'Install script is not found.')
     return
-  endif
-
-  if s:LspCmdInstalled(l:name)
-    if confirm(printf('%s lsp server is already installed. reinstall it again?', l:name), "&Yes\n&Cancel") !=# 1
-      return
-    endif
   endif
 
   if isdirectory(l:lsp_server_dir)

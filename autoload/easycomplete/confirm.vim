@@ -3,7 +3,7 @@ function! easycomplete#confirm#pop(title, cb) abort
   if g:env_is_vim && exists('*popup_dialog')
     try
       call popup_dialog(a:title. ' (y/n)?', {
-        \ 'highlight': 'Normal',
+        \ 'highlight': 'Pmenu',
         \ 'filter': 'popup_filter_yesno',
         \ 'callback': {id, res -> a:cb(v:null, res)},
         \ 'borderchars': s:win_borderchars,
@@ -77,7 +77,7 @@ function! easycomplete#confirm#pop(title, cb) abort
       endif
     endw
     call s:close(text_winid)
-    call a:cb(v:null, res)
+    call timer_start(40, { -> a:cb(v:null, res) })
   elseif exists('*confirm')
     let choice = confirm(a:title, "&Yes\n&No")
     call a:cb(v:null, choice == 1)
@@ -97,7 +97,7 @@ endfunction
 
 " for nvim only
 function! s:close(winid)
-  call easycomplete#util#execute(a:winid, ["call feedkeys('ZZ','n')"])
+  call easycomplete#util#execute(a:winid, ["q!"])
 endfunction
 
 function! s:log(...)
