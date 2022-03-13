@@ -66,7 +66,7 @@ function! s:HandleLspCallback(server_name, data)
           let changed_count += 1
           let bufnr = bufnr(bufname(fullfname))
           call setqflist([{
-            \  'filename': easycomplete#util#TrimFileName(filename),
+            \  'filename': fullfname,
             \  'lnum':     lnum,
             \  'col':      col_start,
             \  'text':     getbufline(bufnr, lnum, lnum)[0],
@@ -80,14 +80,13 @@ function! s:HandleLspCallback(server_name, data)
       copen
       call easycomplete#util#GotoWindow(current_winid)
       call easycomplete#ui#qfhl()
-      call s:log("`:wa` to save all changes.", "Changed", changed_count, "locations!",
+      call s:log("[LS] `:wa` to save all changes.", "Changed", changed_count, "locations!",
             \ "`:cclose` or `:CleanLog` to close changelist. `:copen` to open changelist")
     else
-      call s:log("Changed", changed_count, "locations!")
+      call s:log("[LS] Changed", changed_count, "locations!")
     endif
   catch
     echom v:exception
-
   endtry
   call s:flush()
 endfunction

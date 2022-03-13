@@ -167,6 +167,7 @@ function! easycomplete#sources#ts#RenameCallback(data)
   endif
 
   let changed_count = 0
+  call setqflist([], 'r')
   for item in locs
     let filename = s:get(item, "file")
     let file_edits = s:get(item, 'locs')
@@ -176,12 +177,32 @@ function! easycomplete#sources#ts#RenameCallback(data)
       let col_start = s:get(l:edit, "start", "offset")
       let col_end = s:get(l:edit, "end", "offset") - 1
       let new_text = s:rename_text
-      call easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
-      let changed_count += 1
+      let success_status = easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
+      if success_status !=# 0
+        let changed_count += 1
+        let bufnr = bufnr(bufname(filename))
+        call setqflist([{
+          \  'filename': filename,
+          \  'lnum':     lnum,
+          \  'col':      col_start,
+          \  'text':     getbufline(bufnr, lnum, lnum)[0],
+          \  'valid':    0,
+          \ }], "a")
+      endif
     endfor
   endfor
-  call s:log("Changed", changed_count, "locations!")
+  if len(getqflist()) > 0
+    let current_winid = bufwinid(bufnr(""))
+    copen
+    call easycomplete#util#GotoWindow(current_winid)
+    call easycomplete#ui#qfhl()
+    call s:log("[TS] `:wa` to save all changes.", "Changed", changed_count, "locations!",
+          \ "`:cclose` or `:CleanLog` to close changelist. `:copen` to open changelist")
+  else
+    call s:log("[TS] Changed", changed_count, "locations!")
+  endif
   let s:rename_text = ""
+  call easycomplete#action#rename#flush()
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
