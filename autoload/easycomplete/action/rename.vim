@@ -1,5 +1,9 @@
 
 let s:server_name = ""
+" 0, 初始状态，遇到修改时需要 confirm
+" -1, 设定不允许修改
+" 1, 设定允许修改，遇到修改时不需要 confirm
+let g:easycomplete_external_modified = 0
 
 function! easycomplete#action#rename#do()
   call s:do()
@@ -8,6 +12,7 @@ endfunction
 function! s:do()
   let l:request_params = { 'context': { 'includeDeclaration': v:false } }
   let l:server_names = easycomplete#util#FindLspServers()['server_names']
+  let g:easycomplete_external_modified = 0
   if empty(l:server_names)
     call s:DoTSRename()
     return
@@ -20,7 +25,6 @@ function! s:do()
 
   let s:server_name = l:server_name
   call easycomplete#input#pop("", function("s:InputCallback"))
-
 endfunction
 
 function! s:InputCallback(old_text, new_text)
@@ -40,7 +44,6 @@ function! s:DoTSRename()
 endfunction
 
 function! s:HandleLspCallback(server_name, data)
-  call s:log(a:data)
   let changes = s:get(a:data, "response", "result", "changes")
   if empty(changes)
     call s:log("Nothing to be changed")
@@ -48,6 +51,7 @@ function! s:HandleLspCallback(server_name, data)
   endif
 
   let changed_count = 0
+  call setqflist([], 'r')
   for filename in changes->keys()
     let file_edits = s:get(changes, filename)
     let fullfname = easycomplete#util#TrimFileName(filename)
@@ -56,11 +60,36 @@ function! s:HandleLspCallback(server_name, data)
       let col_start = s:get(item, "range", "start", "character") + 1
       let col_end = s:get(item, "range", "end", "character")
       let new_text = s:get(item, "newText")
-      call easycomplete#util#TextEdit(fullfname, lnum, col_start, col_end, new_text)
-      let changed_count += 1
+      let success = easycomplete#util#TextEdit(fullfname, lnum, col_start, col_end, new_text)
+      if success !=# 0
+        let changed_count += 1
+        let bufnr = bufnr(bufname(fullname))
+        call setqflist({
+          \  'filename': filename,
+          \  'lnum':     lnum,
+          \  'col':      col_start,
+          \  'text':     getbufline(bufnr, lnum, lnum),
+          \  'valid':    0,
+          \ })
+      endif
     endfor
   endfor
-  call s:log("Changed", changed_count, "locations!")
+  if len(getqflist()) > 0
+    copen
+    call easycomplete#ui#qfhl()
+    call s:log("Use `:wa` to save all changes.", "Changed", changed_count, "locations!")
+  else
+    call s:log("Changed", changed_count, "locations!")
+  endif
+  call s:flush()
+endfunction
+
+function! s:flush()
+  call easycomplete#action#rename#flush()
+endfunction
+
+function! easycomplete#action#rename#flush()
+  let g:easycomplete_external_modified = 0
 endfunction
 
 function! s:console(...)

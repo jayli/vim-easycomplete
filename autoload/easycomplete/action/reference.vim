@@ -83,13 +83,11 @@ function! s:HandleLspCallback(server_name, data)
 endfunction
 
 function! s:hi()
-  if easycomplete#ui#GetHiColor("qfLineNr", "fg") == 'NONE'
-    hi qfLineNr ctermfg=LightBlue guifg=#6d96bf
-  endif
+  call easycomplete#ui#qfhl()
 endfunction
 
 function! easycomplete#action#reference#hi()
-  call s:hi()
+  call easycomplete#ui#qfhl()
 endfunction
 
 function! s:GetFileContext(filename, lnum, col)

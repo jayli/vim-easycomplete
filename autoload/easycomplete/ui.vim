@@ -116,6 +116,12 @@ function! easycomplete#ui#ClearSyntax(group)
   endtry
 endfunction " }}}
 
+function! easycomplete#ui#qfhl() " {{{
+  if easycomplete#ui#GetHiColor("qfLineNr", "fg") == 'NONE'
+    hi qfLineNr ctermfg=LightBlue guifg=#6d96bf
+  endif
+endfunction " }}}
+
 " console {{{
 function! s:console(...)
   return call('easycomplete#log#log', a:000)

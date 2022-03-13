@@ -25,54 +25,44 @@ function! s:ResetBuf(buf)
   call setbufvar(buf, 'easycomplete_enable', 0)
 endfunction
 
-
-" relative
-" line
-" col
-" width
-" height
-" title
-" highlight
-" focusable
-
 function! s:CreateNvimInputWindow(old_text, callback) abort
-    let width = s:input_width
-    let height = s:input_height
-    let opts = {
-      \ 'relative':  'editor',
-      \ 'row':       winline(),
-      \ 'col':       wincol(),
-      \ 'width':     width,
-      \ 'height':    height,
-      \ 'style':     'minimal',
-      \ 'focusable': v:false
+  let width = s:input_width
+  let height = s:input_height
+  let opts = {
+    \ 'relative':  'editor',
+    \ 'row':       winline(),
+    \ 'col':       wincol(),
+    \ 'width':     width,
+    \ 'height':    height,
+    \ 'style':     'minimal',
+    \ 'focusable': v:false
     \ }
 
-    let title = s:input_title
-    let top = "┌─" . title . repeat("─", width - strlen(title) - 3) . "┐"
-    let mid = "│" . repeat(" ", width - 2) . "│"
-    let bot = "└" . repeat("─", width - 2) . "┘"
+  let title = s:input_title
+  let top = "┌─" . title . repeat("─", width - strlen(title) - 3) . "┐"
+  let mid = "│" . repeat(" ", width - 2) . "│"
+  let bot = "└" . repeat("─", width - 2) . "┘"
 
-    let lines = [top] + repeat([mid], height - 2) + [bot]
-    let border_bufnr = nvim_create_buf(v:false, v:true)
-    call nvim_buf_set_lines(border_bufnr, 0, -1, v:true, lines)
-    let s:border_winid = nvim_open_win(border_bufnr, v:true, opts)
-    let opts.row += 1
-    let opts.height -= 2
-    let opts.col += 2
-    let opts.width -= 4
-    let opts.focusable = v:true
-    let text_bufnr = nvim_create_buf(v:false, v:true)
-    call s:ResetBuf(text_bufnr)
-    let text_winid = nvim_open_win(text_bufnr, v:true, opts)
-    set winhl=Normal:Float
-    au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
-    call easycomplete#util#execute(text_winid, [
-          \ 'inoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
-          \ 'inoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
-          \ 'call feedkeys("i","n")'
-          \ ])
-    return [text_bufnr, text_winid]
+  let lines = [top] + repeat([mid], height - 2) + [bot]
+  let border_bufnr = nvim_create_buf(v:false, v:true)
+  call nvim_buf_set_lines(border_bufnr, 0, -1, v:true, lines)
+  let s:border_winid = nvim_open_win(border_bufnr, v:true, opts)
+  let opts.row += 1
+  let opts.height -= 2
+  let opts.col += 2
+  let opts.width -= 4
+  let opts.focusable = v:true
+  let text_bufnr = nvim_create_buf(v:false, v:true)
+  call s:ResetBuf(text_bufnr)
+  let text_winid = nvim_open_win(text_bufnr, v:true, opts)
+  set winhl=Normal:Float
+  au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
+  call easycomplete#util#execute(text_winid, [
+        \ 'inoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
+        \ 'inoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
+        \ 'call feedkeys("i","n")'
+        \ ])
+  return [text_bufnr, text_winid]
 endfunction
 
 function! s:CreateVimInputWindow(old_text, callback) abort

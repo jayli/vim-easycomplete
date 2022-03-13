@@ -1632,9 +1632,12 @@ endfunction
 " lnum: 1,2,3
 " col_start: 1,2,3
 " col_end: 1,2,3
+" return
+"   - 1: modify existing buf
+"   - 2: modify external file
+"   - 0: modify nothing
 function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
   let fullpath = fnamemodify(a:filename,':p')
-  let buf_edit = v:false
 
   " edit buf
   for buf in getbufinfo()
@@ -1647,26 +1650,42 @@ function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_tex
       let old_suffix = old_line[a:col_end:-1]
       let new_line = join([old_prefix, old_suffix], a:new_text)
       call setbufline(buf["bufnr"], a:lnum, new_line)
-      let buf_edit = v:true
+      return 1
       break
     endif
   endfor
 
-  if !buf_edit
-    " edit file
-    try
-      let content = readfile(fullpath, a:lnum)
-    catch /484/
-      " File is not exists or can not open
-      return
-    endtry
-    let old_line = content[a:lnum - 1]
-    let old_prefix = old_line[0:a:col_start - 2]
-    let old_suffix = old_line[a:col_end:-1]
-    let new_line = join([old_prefix, old_suffix], a:new_text)
-    let content[a:lnum - 1] = new_line
-    call writefile(content, fullpath, "s")
+  " external file
+  try
+    let content = readfile(fullpath, a:lnum)
+  catch /484/
+    " File is not exists or can not open
+    return 0
+  endtry
+  if g:easycomplete_external_modified == 0
+    let modify_or_not = confirm("Allow files that vim/nvim doesn't open to be modified? ", "&Yes\n&No")
+    if modify_or_not !=# 1
+      let g:easycomplete_external_modified = -1
+      return 0
+    else
+      let g:easycomplete_external_modified = 1
+    endif
+  elseif g:easycomplete_external_modified == -1
+    return 0
   endif
+  let old_line = content[a:lnum - 1]
+  let old_prefix = old_line[0:a:col_start - 2]
+  let old_suffix = old_line[a:col_end:-1]
+  let new_line = join([old_prefix, old_suffix], a:new_text)
+  let content[a:lnum - 1] = new_line
+  " 这两句添加了一个 unlisted buf...，不能 bnext 过去, 只能用 badd
+  " call new_buf = bufadd(fullpath)
+  " call bufload(new_buf)
+  exec "badd " . fullpath
+  let new_bufnr = bufnr(bufname(fullpath))
+  call setbufline(buf["bufnr"], a:lnum, new_line)
+  " call writefile(content, fullpath, "s")
+  return 2
 endfunction " }}}
 
 " utils function {{{
