@@ -1,3 +1,4 @@
+" for rename only
 let s:input_winid = 0
 let s:input_buf = 0
 let s:tempfile = ""
