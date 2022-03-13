@@ -56,7 +56,7 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
   let text_bufnr = nvim_create_buf(v:false, v:true)
   call s:ResetBuf(text_bufnr)
   let text_winid = nvim_open_win(text_bufnr, v:true, opts)
-  let winhl = "'Normal:Pmenu"
+  let winhl = "Normal:Pmenu"
   call setwinvar(s:border_winid, '&winhl', winhl)
   call setwinvar(text_winid, '&winhl', winhl)
   call setwinvar(s:border_winid, '&list', 0)

@@ -52,7 +52,7 @@ function! easycomplete#confirm#pop(title, cb) abort
     call setbufvar(text_bufnr, '&modifiable', 0)
     call setbufvar(text_bufnr, '&buflisted', 0)
     let text_winid = nvim_open_win(text_bufnr, v:true, opts)
-    let winhl = "'Normal:Pmenu"
+    let winhl = "Normal:Pmenu"
     call setwinvar(s:border_winid, '&winhl', winhl)
     call setwinvar(text_winid, '&winhl', winhl)
     call setwinvar(s:border_winid, '&list', 0)

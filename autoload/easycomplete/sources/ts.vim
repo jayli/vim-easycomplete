@@ -229,7 +229,7 @@ function! s:ConfirmCallback(error, res)
   endfor
   call s:log(getqflist())
   if len(getqflist()) > 0
-    call easycomplete#util#info("Changed", changed_count, "locations!","Use `:wa` to save all changes,.",
+    call easycomplete#util#info("Changed", changed_count, "locations!","Use `:wa` to save all changes,",
           \ "`:cclose` or `:CleanLog` to close changelist, `:copen` to open changelist")
     call timer_start(50, { -> easycomplete#util#SideOpenQFWindow()})
   else
