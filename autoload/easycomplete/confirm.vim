@@ -14,9 +14,9 @@ function! easycomplete#confirm#pop(title, cb) abort
     endtry
     return
   endif
-  if has('nvim-0.4.0')
+  if g:env_is_nvim
     let text = ' '. a:title . ' (y/n)? '
-    let width = min([&columns - 4, strdisplaywidth(text)])
+    let width = min([&columns - 4, strdisplaywidth(text) + 2])
     let height = 3
     let top = ((&lines - height) / 2) - 1
     let left = (&columns - width) / 2
@@ -37,6 +37,9 @@ function! easycomplete#confirm#pop(title, cb) abort
     let lines = [top] + repeat([mid], height - 2) + [bot]
     let border_bufnr = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_lines(border_bufnr, 0, -1, v:true, lines)
+    call setbufvar(border_bufnr, '&buftype', "nofile")
+    call setbufvar(border_bufnr, '&modifiable', 0)
+    call setbufvar(border_bufnr, '&buflisted', 0)
     let s:border_winid = nvim_open_win(border_bufnr, v:true, opts)
     let opts.row += 1
     let opts.height -= 2
@@ -44,6 +47,10 @@ function! easycomplete#confirm#pop(title, cb) abort
     let opts.width -= 4
     let opts.focusable = v:true
     let text_bufnr = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(text_bufnr, 0, -1, v:true, [text])
+    call setbufvar(text_bufnr, '&buftype', "nofile")
+    call setbufvar(text_bufnr, '&modifiable', 0)
+    call setbufvar(text_bufnr, '&buflisted', 0)
     let text_winid = nvim_open_win(text_bufnr, v:true, opts)
     let winhl = "'Normal:Pmenu"
     call setwinvar(s:border_winid, '&winhl', winhl)
@@ -55,11 +62,11 @@ function! easycomplete#confirm#pop(title, cb) abort
     call setwinvar(s:border_winid, '&colorcolumn', 0)
     call setwinvar(s:border_winid, '&wrap', 1)
     au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
-
+    redraw
     while 1
       let key = nr2char(getchar())
       if key == "\<C-c>"
-        let res = -1 
+        let res = -1
         break
       elseif key == "\<esc>" || key == 'n' || key == 'N'
         let res = 0
@@ -69,7 +76,7 @@ function! easycomplete#confirm#pop(title, cb) abort
         break
       endif
     endw
-    call s:close(winid)
+    call s:close(text_winid)
     call a:cb(v:null, res)
   elseif exists('*confirm')
     let choice = confirm(a:title, "&Yes\n&No")
@@ -90,7 +97,7 @@ endfunction
 
 " for nvim only
 function! s:close(winid)
-  call easycomplete#util#execute(winid, ["silent noa call feedkeys('ZZ')"])
+  call easycomplete#util#execute(a:winid, ["call feedkeys('ZZ','n')"])
 endfunction
 
 function! s:log(...)

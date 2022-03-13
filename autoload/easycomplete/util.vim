@@ -35,6 +35,13 @@ function! easycomplete#util#AsyncRun(...)
   return g:easycomplete_popup_timer
 endfunction " }}}
 
+function! easycomplete#util#SideOpenQFWindow() " {{{
+  let current_winid = bufwinid(bufnr(""))
+  copen
+  call easycomplete#ui#qfhl()
+  call easycomplete#util#GotoWindow(current_winid)
+endfunction " }}}
+
 " StopAsyncRun {{{
 function! easycomplete#util#StopAsyncRun()
   if exists('g:easycomplete_popup_timer') && g:easycomplete_popup_timer > 0

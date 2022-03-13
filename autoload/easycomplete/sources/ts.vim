@@ -227,13 +227,11 @@ function! s:ConfirmCallback(error, res)
       endif
     endfor
   endfor
+  call s:log(getqflist())
   if len(getqflist()) > 0
-    let current_winid = bufwinid(bufnr(""))
-    copen
-    call easycomplete#util#GotoWindow(current_winid)
-    call easycomplete#ui#qfhl()
-    call easycomplete#util#info("Use `:wa` to save all changes.", "Changed", changed_count, "locations!",
-          \ "`:cclose` or `:CleanLog` to close changelist. `:copen` to open changelist")
+    call easycomplete#util#info("Changed", changed_count, "locations!","Use `:wa` to save all changes,.",
+          \ "`:cclose` or `:CleanLog` to close changelist, `:copen` to open changelist")
+    call timer_start(50, { -> easycomplete#util#SideOpenQFWindow()})
   else
     call easycomplete#util#info("[TS] Changed", changed_count, "locations!")
   endif
