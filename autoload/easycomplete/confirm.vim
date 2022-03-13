@@ -1,6 +1,6 @@
 let s:win_borderchars = ['─', '│', '─', '│', '┌', '┐', '┘', '└']
 function! easycomplete#confirm#pop(title, cb) abort
-  if s:is_vim && exists('*popup_dialog')
+  if g:env_is_vim && exists('*popup_dialog')
     try
       call popup_dialog(a:title. ' (y/n)?', {
         \ 'highlight': 'Normal',
@@ -10,7 +10,7 @@ function! easycomplete#confirm#pop(title, cb) abort
         \ 'borderhighlight': ['Pmenu']
         \ })
     catch /.*/
-      call a:cb(v:exception)
+      call a:cb(v:exception, 0)
     endtry
     return
   endif
@@ -59,7 +59,7 @@ function! easycomplete#confirm#pop(title, cb) abort
     while 1
       let key = nr2char(getchar())
       if key == "\<C-c>"
-        let res = -1
+        let res = -1 
         break
       elseif key == "\<esc>" || key == 'n' || key == 'N'
         let res = 0
@@ -82,7 +82,6 @@ function! easycomplete#confirm#pop(title, cb) abort
     redraw!
     if !(confirm ==? "y" || confirm ==? "\r")
       echohl Moremsg | echo 'Cancelled.' | echohl None
-      return 0
       call a:cb(v:null, 0)
     end
     call a:cb(v:null, 1)
@@ -94,3 +93,6 @@ function! s:close(winid)
   call easycomplete#util#execute(winid, ["silent noa call feedkeys('ZZ')"])
 endfunction
 
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
+endfunction

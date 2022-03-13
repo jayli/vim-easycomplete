@@ -1632,11 +1632,12 @@ endfunction
 " lnum: 1,2,3
 " col_start: 1,2,3
 " col_end: 1,2,3
+" edit_external_file: v:true/v:false
 " return
 "   - 1: modify existing buf
 "   - 2: modify external file
 "   - 0: modify nothing
-function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
+function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text, edit_external_file)
   let fullpath = fnamemodify(a:filename,':p')
 
   " edit buf
@@ -1662,28 +1663,47 @@ function! easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_tex
     " File is not exists or can not open
     return 0
   endtry
-  if g:easycomplete_external_modified == 0
-    let modify_or_not = confirm("Allow external files to be modified? ", "&Yes\n&No")
-    if modify_or_not !=# 1
-      let g:easycomplete_external_modified = -1
-      return 0
-    else
-      let g:easycomplete_external_modified = 1
-    endif
-  elseif g:easycomplete_external_modified == -1
+  if a:edit_external_file
+    call s:EditExternalBuf(fullpath, content, a:lnum, a:col_start, a:col_end, a:new_text)
+    return 2
+  else
     return 0
   endif
+endfunction
+
+function! s:EditConfirmCallback(error, res)
+  if a:res == 1
+    let g:easycomplete_external_modified = 1
+    call s:EditExternalBuf(fullpath, content, a:lnum, a:col_start, a:col_end, a:new_text)
+  elseif a:res == 0
+    let g:easycomplete_external_modified = -1
+  endif
+endfunction
+
+function! s:EditExternalBuf(fullpath, content, lnum, col_start, col_end, new_text)
+  let content = a:content
   let old_line = content[a:lnum - 1]
   let old_prefix = old_line[0:a:col_start - 2]
   let old_suffix = old_line[a:col_end:-1]
   let new_line = join([old_prefix, old_suffix], a:new_text)
   let content[a:lnum - 1] = new_line
-  exec "badd " . fullpath
-  let new_bufnr = bufnr(bufname(fullpath))
+  exec "badd " . a:fullpath
+  let new_bufnr = bufnr(bufname(a:fullpath))
   call bufload(new_bufnr)
   call setbufline(new_bufnr, a:lnum, new_line)
-  return 2
-endfunction " }}}
+endfunction
+" }}}
+
+function! easycomplete#util#GetBufListWithFileName()
+  let buflist = []
+  for buf in getbufinfo()
+    if !empty(getbufvar(buf['bufnr'], '&buftype')) || !(bufloaded(buf['bufnr']))
+      continue
+    endif
+    call add(buflist, fnamemodify(get(buf, "name", ""), ":p"))
+  endfor
+  return buflist
+endfunction
 
 " utils function {{{
 function! easycomplete#util#IsGui()

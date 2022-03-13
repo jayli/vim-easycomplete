@@ -22,6 +22,7 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:notify_callback = {}
   let s:request_seq = 1
   let s:opt = {}
+  let s:locs = v:null
   let s:menu_flag = "[TS]"
   let s:rename_text = ""
   let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
@@ -158,6 +159,22 @@ function! easycomplete#sources#ts#rename(old_name, new_name)
   call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['rename',  l:args], 10)
 endfunction
 
+function! s:HasExternalFiles(changes)
+  let changes = a:changes
+  let flag = v:false
+  let buflist = easycomplete#util#GetBufListWithFileName()
+  for item in changes
+    let filename = s:get(item, "file")
+    let file_edits = s:get(changes, filename)
+    let fullfname = easycomplete#util#TrimFileName(filename)
+    if index(buflist, fullfname) < 0
+      let flag = v:true
+      break
+    endif
+  endfor
+  return flag
+endfunction
+
 function! easycomplete#sources#ts#RenameCallback(data)
   let info = s:get(a:data, "body", "info")
   let locs = s:get(a:data, "body", "locs")
@@ -166,18 +183,37 @@ function! easycomplete#sources#ts#RenameCallback(data)
     return
   endif
 
+  let s:locs = locs
+  if s:HasExternalFiles(locs)
+    call easycomplete#confirm#pop("Do you want to modify external files which are not in vim buffers?",
+          \ function("s:ConfirmCallback"))
+  else
+    call s:ConfirmCallback(v:null, 0)
+  endif
+
+endfunction
+
+function! s:ConfirmCallback(error, res)
+  if !empty(a:error)
+    call s:log(a:error)
+    return
+  endif
+  if empty(s:locs)
+    return
+  endif
+  let modify_ext_files = a:res == 1 ? v:true : v:false
   let changed_count = 0
   call setqflist([], 'r')
+  let locs = s:locs
   for item in locs
     let filename = s:get(item, "file")
     let file_edits = s:get(item, 'locs')
-
     for l:edit in file_edits
       let lnum = s:get(l:edit, "start", "line")
       let col_start = s:get(l:edit, "start", "offset")
       let col_end = s:get(l:edit, "end", "offset") - 1
       let new_text = s:rename_text
-      let success_status = easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text)
+      let success_status = easycomplete#util#TextEdit(filename, lnum, col_start, col_end, new_text, modify_ext_files)
       if success_status !=# 0
         let changed_count += 1
         let bufnr = bufnr(bufname(filename))
@@ -196,13 +232,12 @@ function! easycomplete#sources#ts#RenameCallback(data)
     copen
     call easycomplete#util#GotoWindow(current_winid)
     call easycomplete#ui#qfhl()
-    call s:log("[TS] `:wa` to save all changes.", "Changed", changed_count, "locations!",
+    call easycomplete#util#info("Use `:wa` to save all changes.", "Changed", changed_count, "locations!",
           \ "`:cclose` or `:CleanLog` to close changelist. `:copen` to open changelist")
   else
-    call s:log("[TS] Changed", changed_count, "locations!")
+    call easycomplete#util#info("[TS] Changed", changed_count, "locations!")
   endif
-  let s:rename_text = ""
-  call easycomplete#action#rename#flush()
+  call s:TsFlush()
 endfunction
 
 function! easycomplete#sources#ts#DefinationCallback(item)
@@ -589,6 +624,7 @@ function! s:TsFlush()
   let s:rename_text = ""
   call s:EntryDetailsStatusReset()
   let g:easycomplete_completechanged_event = {}
+  let s:locs = v:null
 endfunction
 
 function! s:StopTsserver()
