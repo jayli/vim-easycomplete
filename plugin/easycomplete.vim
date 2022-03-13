@@ -95,6 +95,7 @@ if has('vim_starting')
   augroup EasyCompleteStart
     autocmd!
     autocmd BufReadPost,BufNewFile * call easycomplete#Enable()
+    autocmd QuitPre * call easycomplete#action#reference#CloseQF()
   augroup END
 else
   call easycomplete#Enable()

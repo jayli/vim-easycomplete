@@ -1,10 +1,4 @@
 
-augroup easycomplete#closeQF
-  autocmd!
-  autocmd QuitPre * call easycomplete#action#reference#CloseQF()
-augroup END
-
-
 function! easycomplete#action#reference#CloseQF()
   cclose
 endfunction

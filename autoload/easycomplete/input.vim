@@ -55,7 +55,15 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
   let text_bufnr = nvim_create_buf(v:false, v:true)
   call s:ResetBuf(text_bufnr)
   let text_winid = nvim_open_win(text_bufnr, v:true, opts)
-  set winhl=Normal:Float
+  let winhl = "'Normal:Pmenu"
+  call setwinvar(s:border_winid, '&winhl', winhl)
+  call setwinvar(text_winid, '&winhl', winhl)
+  call setwinvar(s:border_winid, '&list', 0)
+  call setwinvar(s:border_winid, '&number', 0)
+  call setwinvar(s:border_winid, '&relativenumber', 0)
+  call setwinvar(s:border_winid, '&cursorcolumn', 0)
+  call setwinvar(s:border_winid, '&colorcolumn', 0)
+  call setwinvar(s:border_winid, '&wrap', 1)
   au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
   call easycomplete#util#execute(text_winid, [
         \ 'inoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
