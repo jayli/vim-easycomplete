@@ -131,3 +131,12 @@ endfunction " }}}
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction " }}}
+
+function! easycomplete#ui#test()
+  echom "test ok"
+  lua require('init')
+endfunction
+
+function! easycomplete#ui#api()
+  echom "api"
+endfunction

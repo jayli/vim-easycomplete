@@ -9,6 +9,7 @@ let s:old_text = ""
 let s:input_title = "New Name:"
 let s:win_borderchars = ['─', '│', '─', '│', '┌', '┐', '┘', '└']
 let s:current_winid = 0
+let s:text_winid = 0 " for nvim only
 
 function! s:InputCallback(...)
   call s:flush()
@@ -89,13 +90,18 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
   call setwinvar(s:border_winid, '&cursorcolumn', 0)
   call setwinvar(s:border_winid, '&colorcolumn', 0)
   call setwinvar(s:border_winid, '&wrap', 1)
-  au WinClosed * ++once :q | call nvim_win_close(s:border_winid, v:true)
+  let s:text_winid = text_winid
+  au WinClosed * ++once :q | call easycomplete#input#teardown()
   call easycomplete#util#execute(text_winid, [
-        \ 'inoremap <expr> <CR> easycomplete#input#PromptHandlerCR()',
-        \ 'inoremap <expr> <ESC> easycomplete#input#PromptHandlerESC()',
+        \ 'inoremap <buffer><expr> <CR> easycomplete#input#PromptHandlerCR()',
+        \ 'inoremap <buffer><expr> <ESC> easycomplete#input#PromptHandlerESC()',
         \ 'call feedkeys("i","n")'
         \ ])
   return [text_bufnr, text_winid]
+endfunction
+
+function! easycomplete#input#teardown()
+  call nvim_win_close(s:border_winid, v:true)
 endfunction
 
 function! s:CreateVimInputWindow(old_text, callback) abort
