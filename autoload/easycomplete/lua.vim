@@ -1,7 +1,8 @@
 
+
 function! easycomplete#lua#test()
   echom "test ok"
-  lua require('init').api()
+  " lua require('init').api()
 endfunction
 
 function! easycomplete#lua#api()
