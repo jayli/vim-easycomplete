@@ -30,9 +30,9 @@ end
 
 function EasyComplete.init()
   console(1,1,2,9, "sdf")
-  print('-------------------------')
-  print('xcv')
-  print(table)
+  console('------------------------')
+  console('xcv')
+  console(table)
 end
 
 return EasyComplete
