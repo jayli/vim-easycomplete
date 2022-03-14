@@ -1701,7 +1701,7 @@ function! s:EditExternalBuf(fullpath, content, lnum, col_start, col_end, new_tex
 endfunction
 " }}}
 
-function! easycomplete#util#GetBufListWithFileName()
+function! easycomplete#util#GetBufListWithFileName() " {{{
   let buflist = []
   for buf in getbufinfo()
     if !empty(getbufvar(buf['bufnr'], '&buftype')) || !(bufloaded(buf['bufnr']))
@@ -1710,7 +1710,7 @@ function! easycomplete#util#GetBufListWithFileName()
     call add(buflist, fnamemodify(get(buf, "name", ""), ":p"))
   endfor
   return buflist
-endfunction
+endfunction " }}}
 
 " utils function {{{
 function! easycomplete#util#IsGui()
@@ -1740,3 +1740,5 @@ function! easycomplete#util#ConfigRoot() " {{{
   let config_dir = expand('~/.config/vim-easycomplete')
   return config_dir
 endfunction " }}}
+
+
