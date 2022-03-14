@@ -8,6 +8,7 @@ let b:Callbag = v:null
 let s:old_text = ""
 let s:input_title = "New Name:"
 let s:win_borderchars = ['─', '│', '─', '│', '┌', '┐', '┘', '└']
+let s:current_winid = 0
 
 function! s:InputCallback(...)
   call s:flush()
@@ -29,10 +30,30 @@ endfunction
 function! s:CreateNvimInputWindow(old_text, callback) abort
   let width = s:input_width
   let height = s:input_height
+  let screen_pos_row= (win_screenpos(win_getid())[0] - 1)
+  let screen_pos_col = (win_screenpos(win_getid())[1] - 1)
+  let s:current_winid = win_getid()
+  if winline() == winheight(win_getid()) - 1
+    let bdr_row_offset = -2
+    let txt_row_offset = 0
+  elseif winline() == winheight(win_getid())
+    let bdr_row_offset = -1
+    let txt_row_offset = -1
+  else
+    let bdr_row_offset = 0
+    let txt_row_offset = 0
+  endif
+  if wincol() + width > winwidth(win_getid())
+    let bdr_col_offset = -1 * (wincol() + width - winwidth(win_getid()))
+    let txt_col_offset = 0
+  else
+    let bdr_col_offset = 0
+    let txt_col_offset = 0
+  endif
   let opts = {
     \ 'relative':  'editor',
-    \ 'row':       winline(),
-    \ 'col':       wincol(),
+    \ 'row':       screen_pos_row + winline() + bdr_row_offset,
+    \ 'col':       screen_pos_col + wincol() + bdr_col_offset,
     \ 'width':     width,
     \ 'height':    height,
     \ 'style':     'minimal',
@@ -48,11 +69,14 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
   let border_bufnr = nvim_create_buf(v:false, v:true)
   call nvim_buf_set_lines(border_bufnr, 0, -1, v:true, lines)
   let s:border_winid = nvim_open_win(border_bufnr, v:true, opts)
-  let opts.row += 1
+  let border_window_pos = nvim_win_get_position(s:border_winid)
+
+  let opts.row += (1 + txt_row_offset)
   let opts.height -= 2
-  let opts.col += 2
+  let opts.col += (2 + txt_col_offset)
   let opts.width -= 4
   let opts.focusable = v:true
+
   let text_bufnr = nvim_create_buf(v:false, v:true)
   call s:ResetBuf(text_bufnr)
   let text_winid = nvim_open_win(text_bufnr, v:true, opts)
@@ -174,13 +198,17 @@ endfunction
 
 function! easycomplete#input#PromptHandlerESC()
   call s:close()
+  call timer_start(20, { -> easycomplete#util#GotoWindow(s:current_winid) })
   return ""
 endfunction
 
 function! s:close()
   if s:input_winid
     if has('nvim')
-      call easycomplete#util#execute(s:input_winid, ["silent noa call feedkeys('\<C-C>ZZ')"])
+      call easycomplete#util#execute(s:input_winid, [
+            \ "silent noa call feedkeys('\<C-C>')",
+            \ "silent noa call feedkeys(':silent! close!\<CR>', 'n')",
+            \ ])
     else
       call easycomplete#util#execute(s:input_winid, ["silent noa call feedkeys('\<C-C>')"])
     endif
