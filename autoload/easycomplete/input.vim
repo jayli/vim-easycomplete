@@ -191,8 +191,8 @@ function! easycomplete#input#PromptHandlerCR()
   endif
   let new_text = trim(new_text_line)
   if new_text =~ "\\s"
-    call s:log("New text should not contains space character.")
     call s:close()
+    call timer_start(20, { -> s:log("New text should not contains space character.") })
     return ""
   endif
   let Callbag = b:Callbag
