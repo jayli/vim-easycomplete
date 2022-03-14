@@ -1635,6 +1635,17 @@ function! easycomplete#util#fullfill(str)
 endfunction
 " }}}
 
+function! easycomplete#util#FileExists(file) " {{{
+  let fullname = easycomplete#util#GetFullName(easycomplete#util#TrimFileName(a:file))
+  try
+    let content = readfile(fullname, 1)
+  catch /484/
+    " File is not exists or can not open
+    return v:false
+  endtry
+  return v:true
+endfunction " }}}
+
 " TextEdit {{{
 " lnum: 1,2,3
 " col_start: 1,2,3
@@ -1739,6 +1750,16 @@ endfunction " }}}
 function! easycomplete#util#ConfigRoot() " {{{
   let config_dir = expand('~/.config/vim-easycomplete')
   return config_dir
+endfunction " }}}
+
+function! easycomplete#util#GetConfigPath(plugin_name) " {{{
+  let plugin_name = a:plugin_name
+  if a:plugin_name == "tabnine"
+    let plugin_name = "tn"
+  endif
+  let config_root = easycomplete#util#ConfigRoot()
+  let config_path = config_root . '/servers/' . plugin_name . '/config.json'
+  return config_path
 endfunction " }}}
 
 

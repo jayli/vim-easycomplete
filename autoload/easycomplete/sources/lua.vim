@@ -42,13 +42,21 @@ let g:sumneko_lua_language_server_workspace_config = {
         \      'preloadFileSize': 100,
         \      'useGitIgnore': v:true
         \    }
+        \  },
+        \  "sumneko-lua": {
+        \    'enableNvimLuaDev': v:true
         \  }
-        \}
+        \ }
 
 function! easycomplete#sources#lua#constructor(opt, ctx)
+  let config_param = ""
+  let config_path = easycomplete#util#GetConfigPath(a:opt["name"])
+  if easycomplete#util#FileExists(config_path)
+    let config_param = "--configpath=" . config_path
+  endif
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'sumneko-lua-language-server',
-      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
+      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), config_param]},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'config': {},
       \ 'workspace_config': g:sumneko_lua_language_server_workspace_config,

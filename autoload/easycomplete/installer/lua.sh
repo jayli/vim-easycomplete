@@ -17,6 +17,25 @@ set -e
 
 # On MacOS, use clangd in Command Line Tools for Xcode.
 
+# --------------------------------------------------------------write config file
+cat <<EOF >config.json
+{
+  "Lua": {
+    "workspace.library": {
+      "/usr/share/nvim/runtime/lua": true,
+      "/usr/share/nvim/runtime/lua/vim": true,
+      "/usr/share/nvim/runtime/lua/vim/lsp": true
+    },
+    "diagnostics": {
+      "globals": [ "vim" ]
+    }
+  },
+  "sumneko-lua.enableNvimLuaDev": true
+}
+EOF
+
+echo "write config.json ok."
+
 user_root=$(echo $(pwd) | sed -e "s/\/.config.*$//g")
 nvim_lsp_path="$user_root/.local/share/nvim/lsp_servers/sumneko_lua/extension/server/bin"
 
