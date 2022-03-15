@@ -18,6 +18,7 @@ function! s:InitVars()
   let g:debugger.log_bufinfo = 0
   let g:debugger.log_winid = 0
   let g:debugger.log_winnr = 0
+  let g:debugger.log_bufnr = 0
   let g:debugger.log_term_winid = 0
 endfunction
 
@@ -68,11 +69,22 @@ function! easycomplete#log#log(...)
     call s:InitLogFile()
     call s:InitLogWindow()
     call s:AppendLog(l:res)
+    call s:GotoBottom()
   else
     call call(s:log, a:000)
   endif
   call s:GotoOriginalWindow()
 endfunction
+
+function! s:GotoBottom()
+  try
+    let line_nr = getbufinfo(g:debugger.log_bufnr)[0]['linecount']
+    call easycomplete#util#execute(g:debugger.log_winid, 'call cursor('.line_nr.',0)')
+  catch
+    echom v:exception
+  endtry
+endfunction
+
 
 function! s:flush()
   let g:debugger.log_term_winid = 0
@@ -117,6 +129,7 @@ function! s:InitLogWindow()
   let g:debugger.log_term_winid = bufwinid('log_debugger_window_name')
   let g:debugger.log_winnr = winnr()
   let g:debugger.log_bufinfo = getbufinfo(bufnr(''))
+  let g:debugger.log_bufnr = bufnr("")
   let g:debugger.log_winid = bufwinid(bufnr(""))
   call s:AppendLog(copy(get(g:debugger, 'init_msg')))
   call s:GotoOriginalWindow()
