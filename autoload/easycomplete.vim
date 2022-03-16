@@ -1678,6 +1678,9 @@ function s:zizzing()
 endfunction
 
 function! s:SameCtx(ctx1, ctx2)
+  if type(a:ctx1) != type({}) || type(a:ctx2) != type({})
+    return v:false
+  endif
   if !has_key(a:ctx1, 'lnum') || !has_key(a:ctx2, 'lnum')
     return v:false
   endif
