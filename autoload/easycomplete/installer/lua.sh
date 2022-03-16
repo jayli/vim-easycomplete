@@ -27,7 +27,7 @@ cat <<EOF >config.json
       "/usr/share/nvim/runtime/lua/vim/lsp": true
     },
     "diagnostics": {
-      "globals": [ "vim" ]
+      "globals": [ "vim" , "use" , "use_rocks"]
     }
   },
   "sumneko-lua.enableNvimLuaDev": true
