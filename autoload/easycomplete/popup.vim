@@ -28,6 +28,7 @@ augroup easycomplete#popup#au
   autocmd BufLeave * call easycomplete#popup#close()
   autocmd BufWinLeave * call easycomplete#popup#close()
   autocmd WinLeave * call easycomplete#popup#close()
+  autocmd InsertLeave * call easycomplete#popup#close()
   if s:is_nvim
     autocmd VimResume * call easycomplete#popup#reopen()
   endif
@@ -48,10 +49,6 @@ let s:buf = {
       \ "popup":0,
       \ "float":0,
       \ }
-
-function! easycomplete#popup#InsertLeave()
-  call easycomplete#popup#close()
-endfunction
 
 function! easycomplete#popup#MenuPopupChanged(info)
   if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
@@ -445,7 +442,10 @@ function! easycomplete#popup#close(...)
     if g:easycomplete_popup_win[windowtype]
       let id = win_id2win(g:easycomplete_popup_win[windowtype])
       if id > 0
-        execute id . 'close!'
+        let winid = g:easycomplete_popup_win[windowtype]
+        if nvim_win_is_valid(winid)
+          call timer_start(50, { ->nvim_win_close(winid, 1) })
+        endif
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []

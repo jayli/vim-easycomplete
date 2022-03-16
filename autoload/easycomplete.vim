@@ -316,7 +316,6 @@ function! easycomplete#InsertLeave()
   if s:zizzing()
     return
   endif
-  call easycomplete#popup#InsertLeave()
   call s:flush()
 endfunction
 

@@ -1,5 +1,5 @@
 local EasyComplete = {}
-local debug = false
+-- local debug = false
 
 -- all in all 入口
 function main()
@@ -15,7 +15,20 @@ function main()
 end
 
 function EasyComplete.typing()
-  console(print(vim.api.nvim_command("echo v:char")))
+
+  print({
+
+
+  })
+
+  print({
+    pcall(function()
+      console { 123 }
+      local aaa = vim.api.nvim_command("echo g:easycomplete_default_plugin_init")
+    end)
+  })
+
+
 end
 
 function foo()
@@ -36,7 +49,6 @@ function console__(...)
   end
   print('sss',args)
 end
-
 
 function EasyComplete.init()
   console = vim.fn['easycomplete#log#log']
