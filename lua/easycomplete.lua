@@ -1,5 +1,5 @@
+-- local debug = true
 local EasyComplete = {}
--- local debug = false
 
 -- all in all 入口
 function main()
@@ -12,13 +12,23 @@ function main()
   console(table)
   console__(1,2,3)
   foo()
+  console("=================================")
+  my_func()
 end
 
-function EasyComplete.typing()
+function my_func()
+  -- log(vim.inspect(vim.api))
+
+  console(vim.api.nvim_get_option('updatetime'))
+
+end
+
+function EasyComplete.typing(...)
+
+  local ctx = vim.fn['easycomplete#context']()
 
   print({
-
-
+    console(vim.api.nvim_eval('g:easycomplete_default_plugin_init'))
   })
 
   print({
@@ -52,6 +62,7 @@ end
 
 function EasyComplete.init()
   console = vim.fn['easycomplete#log#log']
+  log = vim.fn["easycomplete#util#info"]
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
     main()
   else
