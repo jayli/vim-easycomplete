@@ -44,6 +44,12 @@ For dein.vim
 call dein#add('jayli/vim-easycomplete')
 ```
 
+For Packer.nvim
+
+```lua
+use { 'jayli/vim-easycomplete' }
+```
+
 ### Configuration
 
 The plugin is out of box and config noghting.
@@ -211,6 +217,12 @@ Vim-EasyComplete does not support snippets by default. If you want snippet integ
 
 ```vim
 Plug 'SirVer/ultisnips'
+```
+
+for Packer.nvim
+
+```vim
+use { 'SirVer/ultisnips' }
 ```
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
