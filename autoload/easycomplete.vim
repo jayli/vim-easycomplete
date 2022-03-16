@@ -377,16 +377,18 @@ endfunction
 function! easycomplete#Up()
   if pumvisible()
     call s:zizz()
+  else
+    call easycomplete#popup#close("float")
   endif
-  call easycomplete#popup#close("float")
   return "\<Up>"
 endfunction
 
 function! easycomplete#Down()
   if pumvisible()
     call s:zizz()
+  else
+    call easycomplete#popup#close("float")
   endif
-  call easycomplete#popup#close("float")
   return "\<Down>"
 endfunction
 
