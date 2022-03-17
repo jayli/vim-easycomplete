@@ -62,6 +62,9 @@ endif
 if !exists("g:easycomplete_shift_tab_trigger")
   let g:easycomplete_shift_tab_trigger = "<S-Tab>"
 endif
+if !exists("g:easycomplete_sign_text")
+  let g:easycomplete_sign_text = {}
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,

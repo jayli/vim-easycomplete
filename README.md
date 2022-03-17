@@ -301,7 +301,7 @@ function! g:Tss_GotoDefinition(...)
 endfunction
 ```
 
-So you should redefine at least three functions `completor`/`constructor`/`gotodefinition`.
+So you should implement at least three functions `completor`/`constructor`/`gotodefinition`.
 
 ### Beautify the vim completion menu
 
@@ -343,11 +343,22 @@ let g:easycomplete_lsp_type_font = {
       \ }
 ```
 
+Config error sign text:
+
+```vim
+let g:easycomplete_sign_text = {
+      \   'error':       "◉",
+      \   'warning':     "▲",
+      \   'information': '◎',
+      \   'hint':        '▧'
+      \ }
+```
+
 You can define icon alias via giving fullnames and shortname.
 
 screenshots:
 
-<img src="https://gw.alicdn.com/imgextra/i4/O1CN01IZzToV1iOccEVRsqm_!!6000000004403-2-tps-1720-1026.png" width=650 />
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN013D8ONB1lf3gOkkYI4_!!6000000004845-2-tps-1246-618.png" width=650 />
 
 ### Issues
 
