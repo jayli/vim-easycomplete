@@ -63,17 +63,36 @@ function! s:HandleLspCallback(server_name, data)
     let filename = easycomplete#util#TrimFileName(get(item, "uri", ""))
     let lnum = str2nr(get(item, "range", "")['start']['line']) + 1
     let col = str2nr(get(item, "range", "")['start']['character']) + 1
-    call add(quick_window_list, {
+    let new_item = 
+          \ {
           \  'filename': filename,
           \  'lnum':     lnum,
           \  'col':      col,
           \  'text':     s:GetFileContext(filename, lnum, col),
           \  'valid':    0,
-          \ })
+          \ }
+    if s:HasItem(quick_window_list, new_item)
+      continue
+    endif
+    call add(quick_window_list, new_item)
   endfor
   call setqflist(quick_window_list, 'r')
   copen
   call s:hi()
+endfunction
+
+function! s:HasItem(rlist, item)
+  let flag = v:false
+  for v in a:rlist
+    if      v.filename ==# a:item.filename &&
+          \ v.lnum     ==# a:item.lnum     &&
+          \ v.col      ==# a:item.col      &&
+          \ v.text     ==# a:item.text
+      let flag = v:true
+      break
+    endif
+  endfor
+  return flag
 endfunction
 
 function! s:hi()
