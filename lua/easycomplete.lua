@@ -13,14 +13,28 @@ function main()
   console__(1,2,3)
   foo()
   console("=================================")
-  my_func()
+  vim.cmd([[
+    autocmd CompleteChanged * lua require("easycomplete").complete_changed()
+  ]])
 end
 
-function my_func()
-  -- log(vim.inspect(vim.api))
+function EasyComplete.complete_changed()
+  console('--',get(vim.v.event, "completed_item", "user_data"))
+end
 
-  console(vim.api.nvim_get_option('updatetime'))
-
+function get(a, ...)
+  local args = {...}
+  if type(a) ~= "table" then
+    return a
+  end
+  local tmp_obj = a
+  for i = 1, #args do
+    tmp_obj = tmp_obj[args[i]]
+    if type(tmp_obj) == nil then
+      break
+    end
+  end
+  return tmp_obj
 end
 
 function EasyComplete.typing(...)
@@ -28,16 +42,15 @@ function EasyComplete.typing(...)
   local ctx = vim.fn['easycomplete#context']()
 
   print({
-    console(vim.api.nvim_eval('g:easycomplete_default_plugin_init'))
+    console(vim.v.event)
   })
 
   print({
     pcall(function()
-      console { 123 }
+      console { aaa = 123 , bb = 456 }
       local aaa = vim.api.nvim_command("echo g:easycomplete_default_plugin_init")
     end)
   })
-
 
 end
 

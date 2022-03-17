@@ -573,7 +573,8 @@ function! s:ShowDiagMsg(diagnostics_info)
   if strlen(showing) > winwidth(winnr()) - offset
     let showing = showing[0:winwidth(winnr()) - offset - 3] . '...'
   endif
-  echo showing
+  " echo showing
+  echo ""
 endfunction
 
 function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)

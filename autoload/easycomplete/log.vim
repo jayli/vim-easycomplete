@@ -101,7 +101,7 @@ endfunction
 
 function! s:LogRunning()
   " 不加这一句进入新 buf 时会开一个新的 log 窗口
-  call s:log("checking log is runing or not")
+  call easycomplete#util#info("Log Window Checking...")
   return g:debugger.log_winid == 0 ? v:false : v:true
 endfunction
 
