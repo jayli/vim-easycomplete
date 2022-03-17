@@ -433,6 +433,13 @@ function! easycomplete#popup#close(...)
     return
   endif
   let windowtype = a:1
+  if windowtype == "float" &&
+        \ bufnr() != expand("<abuf>") &&
+        \ !empty(expand("<abuf>")) &&
+        \ pumvisible() &&
+        \ easycomplete#util#InsertMode()
+    return
+  endif
   if s:is_vim
     if g:easycomplete_popup_win[windowtype]
       call popup_close(g:easycomplete_popup_win[windowtype])

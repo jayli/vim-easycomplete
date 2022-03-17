@@ -20,6 +20,7 @@ function! s:InitVars()
   let g:debugger.log_winnr = 0
   let g:debugger.log_bufnr = 0
   let g:debugger.log_term_winid = 0
+  let g:debugger.status = 'stop'
 endfunction
 
 function! s:InitCommand()
@@ -40,7 +41,7 @@ function! s:InitCommand()
         \ "│   Use <C-C> to close log window.   │",
         \ "│ Authored by Jayli bachi@taobao.com │",
         \ "└────────────────────────────────────┘"]
-  call s:InitVars()
+  call s:flush()
   augroup easycomplete#logging
     autocmd!
     autocmd QuitPre * call easycomplete#log#quit()
@@ -60,7 +61,11 @@ function! easycomplete#log#log(...)
     let g:vim_log_enabled = 1
   endif
   call s:InitCommand()
-  call s:InitVars()
+  if s:LogRunning()
+    " do nothing
+  else
+    call s:flush()
+  endif
   if g:vim_log_enabled != 1
     return
   endif
@@ -85,17 +90,17 @@ function! s:GotoBottom()
   endtry
 endfunction
 
-
 function! s:flush()
-  let g:debugger.log_term_winid = 0
-  let g:debugger.log_winnr = 0
   let g:debugger.log_bufinfo = 0
   let g:debugger.log_winid = 0
+  let g:debugger.log_winnr = 0
+  let g:debugger.log_bufnr = 0
+  let g:debugger.log_term_winid = 0
   let g:debugger.status = 'stop'
 endfunction
 
 function! s:LogRunning()
-  return g:debugger.status == 'running' ? 1 : 0
+  return g:debugger.log_winid == 0 ? v:false : v:true
 endfunction
 
 function! s:InitLogWindow()
@@ -115,14 +120,16 @@ function! s:InitLogWindow()
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
-        \ 'curwin':'1'
+        \ 'curwin':'1',
+        \ 'exit_cb': function('s:LogCallback')
         \ })
   else
     call termopen("tail -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
-        \ 'curwin':'1'
+        \ 'curwin':'1',
+        \ 'exit_cb': function('s:LogCallback')
         \ })
   endif
   exec 'setl statusline=%1*\ Normal\ %*%5*\ Log\ Window\ %*\ %r%f[%M]%=Depth\ :\ %L\ '
@@ -133,6 +140,10 @@ function! s:InitLogWindow()
   let g:debugger.log_winid = bufwinid(bufnr(""))
   call s:AppendLog(copy(get(g:debugger, 'init_msg')))
   call s:GotoOriginalWindow()
+endfunction
+
+function! s:LogCallback(...)
+  call s:flush()
 endfunction
 
 function! s:EmptyLogWindow()
@@ -158,7 +169,11 @@ endfunction
 
 function! easycomplete#log#quit()
   if get(g:debugger, 'log_winid') == bufwinid(bufnr(""))
-    call term_sendkeys("log_debugger_window_name","\<C-C>")
+    if g:env_is_vim
+      call term_sendkeys("log_debugger_window_name","\<C-C>")
+    else
+      call feedkeys("\<C-C>", "t")
+    endif
   endif
   if get(g:debugger, 'original_winid') == bufwinid(bufnr(""))
     if s:LogRunning()
@@ -167,6 +182,7 @@ function! easycomplete#log#quit()
     endif
   endif
   call s:DelLogFile()
+  call s:flush()
 endfunction
 
 function! s:CloseLogWindow()

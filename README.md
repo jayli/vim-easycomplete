@@ -52,8 +52,7 @@ use { 'jayli/vim-easycomplete' }
 
 ### Configuration
 
-The plugin is out of box and config noghting.
-
+The plugin is out of box and config noghting. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
 
 ### Useage
 
