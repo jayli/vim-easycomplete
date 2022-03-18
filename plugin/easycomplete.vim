@@ -335,6 +335,7 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
       \ 'command': 'sumneko-lua-language-server',
+      \ 'lsp_name':'sumneko_lua',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
       " \ 'command': 'emmylua-ls',

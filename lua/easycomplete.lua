@@ -1,40 +1,49 @@
 -- local debug = true
 local EasyComplete = {}
+local Util = require "easycomplete_util"
+local console = vim.fn['easycomplete#log#log']
+local log = vim.fn["easycomplete#util#info"]
 
 -- all in all 入口
-function main()
-  vim.cmd([[
-    autocmd TextChangedI * lua require("easycomplete").typing()
-  ]])
-  console(1,1,2,9, "sdf")
-  console('------------------------')
-  console('xcv')
-  console(table)
-  console__(1,2,3)
-  foo()
-  console("=================================")
-  vim.cmd([[
-    autocmd CompleteChanged * lua require("easycomplete").complete_changed()
-  ]])
+local function main()
+  if not Util.nvim_installer_installed() then
+    return
+  end
+
+  local filetype = vim.o.filetype
+  local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
+  local nvim_lsp_installer_root = vim.fn["easycomplete#util#NVimLspInstallRoot"]()
+  local current_lsp_context =vim.fn["easycomplete#GetCurrentLspContext"]()
+  local current_lsp_name = Util.get(current_lsp_context, "lsp_name")
+  local nvim_lsp_ready = Util.nvim_lsp_installed(current_lsp_name)
+  local easy_lsp_ready = Util.easy_lsp_installed(plugin_name)
+  console(easy_lsp_ready, nvim_lsp_ready, current_lsp_name)
+
+  console(filetype, plugin_name, nvim_lsp_installer_root)
+  console()
+  console(Util.get(current_lsp_context, "lsp_name"))
+  console()
+  console(require'nvim-lsp-installer.servers'.get_installed_server_names())
+  console(require'nvim-lsp-installer'.get_install_completion())
+
+  -- vim.cmd([[
+  --   autocmd TextChangedI * lua require("easycomplete").typing()
+  -- ]])
+  -- console(1,1,2,9, "sdf")
+  -- console('------------------------')
+  -- console('xcv')
+  -- console(table)
+  -- foo()
+  -- console("=================================")
+  -- vim.cmd([[
+  --   autocmd CompleteChanged * lua require("easycomplete").complete_changed()
+  -- ]])
 end
+
+
 
 function EasyComplete.complete_changed()
-  console('--',get(vim.v.event, "completed_item", "user_data"))
-end
-
-function get(a, ...)
-  local args = {...}
-  if type(a) ~= "table" then
-    return a
-  end
-  local tmp_obj = a
-  for i = 1, #args do
-    tmp_obj = tmp_obj[args[i]]
-    if type(tmp_obj) == nil then
-      break
-    end
-  end
-  return tmp_obj
+  console('--',Util.get(vim.v.event, "completed_item", "user_data"))
 end
 
 function EasyComplete.typing(...)
@@ -65,17 +74,7 @@ function foo()
   console('>>---------------')
 end
 
-function console__(...)
-  local args = {...}
-  for i,v in ipairs{...} do
-    print(i,v)
-  end
-  print('sss',args)
-end
-
 function EasyComplete.init()
-  console = vim.fn['easycomplete#log#log']
-  log = vim.fn["easycomplete#util#info"]
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
     main()
   else
@@ -84,4 +83,3 @@ function EasyComplete.init()
 end
 
 return EasyComplete
-

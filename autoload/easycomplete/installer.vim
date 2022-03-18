@@ -12,6 +12,7 @@ let s:data_dir = easycomplete#util#ConfigRoot()
 "             ├─ css-language-server       <------  command
 "             ...
 let s:lsp_servers_dir = s:data_dir . '/servers'
+let s:nvim_lsp_servers_dir = easycomplete#util#NVimLspInstallRoot()
 
 function! easycomplete#installer#InstallerDir() abort
   return s:installer_dir

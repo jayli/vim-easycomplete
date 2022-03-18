@@ -1752,6 +1752,11 @@ function! easycomplete#util#ConfigRoot() " {{{
   return config_dir
 endfunction " }}}
 
+function! easycomplete#util#NVimLspInstallRoot() " {{{
+  let config_dir = expand('~/.local/share/nvim/lsp_servers/')
+  return config_dir
+endfunction " }}}
+
 function! easycomplete#util#GetConfigPath(plugin_name) " {{{
   let plugin_name = a:plugin_name
   if a:plugin_name == "tabnine"
