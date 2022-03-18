@@ -358,7 +358,7 @@ You can define icon alias via giving fullnames and shortname.
 
 screenshots:
 
-<img src="https://gw.alicdn.com/imgextra/i3/O1CN013D8ONB1lf3gOkkYI4_!!6000000004845-2-tps-1246-618.png" width=650 />
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN013D8ONB1lf3gOkkYI4_!!6000000004845-2-tps-1246-618.png?t=1" width=650 />
 
 ### Issues
 
