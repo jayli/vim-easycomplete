@@ -588,6 +588,7 @@ function! s:CompleteMenuMap(key, val)
     let ret['word'] = val_name . "()"
     let ret['abbr'] = val_name . "~"
     let ret['user_data'] = json_encode({
+          \ 'custom_expand': 1,
           \ 'expandable': 1,
           \ 'placeholder_position': strlen(val_name) + 1,
           \ 'cursor_backing_steps': 1
