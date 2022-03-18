@@ -1761,5 +1761,3 @@ function! easycomplete#util#GetConfigPath(plugin_name) " {{{
   let config_path = config_root . '/servers/' . plugin_name . '/config.json'
   return config_path
 endfunction " }}}
-
-

@@ -65,6 +65,9 @@ endif
 if !exists("g:easycomplete_sign_text")
   let g:easycomplete_sign_text = {}
 endif
+if !exists("g:easycomplete_cursor_word_hl")
+  let g:easycomplete_cursor_word_hl = 0
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
@@ -81,6 +84,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_kindflag_tabnine':   g:easycomplete_kindflag_tabnine,
       \ 'g:easycomplete_lsp_type_font':      g:easycomplete_lsp_type_font,
       \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
+      \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
       \ }
 
 " VIM 最低版本 8.2
@@ -100,6 +104,12 @@ if has('vim_starting')
     autocmd BufReadPost,BufNewFile * call easycomplete#Enable()
     autocmd QuitPre * call easycomplete#action#reference#CloseQF()
   augroup END
+  if g:easycomplete_cursor_word_hl
+    augroup EasyCompleteCursorWordHL
+      autocmd!
+      autocmd! CursorHold * call easycomplete#ui#HighlightWordUnderCursor()
+    augroup END
+  endif
 else
   call easycomplete#Enable()
 endif

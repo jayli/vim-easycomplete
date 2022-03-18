@@ -122,6 +122,35 @@ function! easycomplete#ui#qfhl() " {{{
   endif
 endfunction " }}}
 
+function! easycomplete#ui#HighlightWordUnderCursor() " {{{
+  if empty(g:easycomplete_cursor_word_hl) | return | endif
+  let disabled_ft = ["help", "qf", "fugitive", "nerdtree", "gundo", "diff", "fzf", "floaterm"]
+  if &diff || &buftype == "terminal" || index(disabled_ft, &filetype) >= 0
+    return
+  endif
+  if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
+    let bgcolor = easycomplete#ui#GetBgColor("Search")
+    let prefix_key = easycomplete#util#IsGui() ? "guibg" : "ctermbg"
+    let append_str = s:IsSearchWord() ? join([prefix_key, bgcolor], "=") : join([prefix_key, "NONE"], "=")
+    exec "hi MatchWord cterm=underline gui=underline " . append_str
+    exec '2match' 'MatchWord' '/\V\<'.expand('<cword>').'\>/'
+  else
+    2match none
+  endif
+endfunction
+
+function! s:IsSearchWord()
+  let current_word = expand('<cword>')
+  let search_word = histget("search")
+  let search_word = substitute(search_word, "^\\\\\<", "", "g")
+  let search_word = substitute(search_word, "\\\\\>$", "", "g")
+  if &ignorecase
+    return current_word == search_word
+  else
+    return current_word ==# search_word
+  endif
+endfunction " }}}
+
 " console {{{
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
@@ -130,4 +159,9 @@ endfunction " }}}
 " log {{{
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction " }}}
+
+" get {{{
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
 endfunction " }}}
