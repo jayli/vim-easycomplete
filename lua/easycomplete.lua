@@ -1,4 +1,4 @@
-local debug = true
+-- local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
 local console = vim.fn['easycomplete#log#log']
