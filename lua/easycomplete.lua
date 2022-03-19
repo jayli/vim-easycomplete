@@ -1,4 +1,4 @@
--- local debug = true
+local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
 local console = vim.fn['easycomplete#log#log']
@@ -19,10 +19,14 @@ local function main()
   local easy_lsp_ready = Util.easy_lsp_installed(plugin_name)
   console(easy_lsp_ready, nvim_lsp_ready, current_lsp_name)
 
-  console(filetype, plugin_name, nvim_lsp_installer_root)
-  console()
+  if not easy_lsp_ready and nvim_lsp_ready then
+    vim.cmd([[InstallLspServer]])
+  end
+
+  console('-------------')
+  console(Util.get(current_lsp_context,'lsp'))
+  console('-------------')
   console(Util.get(current_lsp_context, "lsp_name"))
-  console()
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
 

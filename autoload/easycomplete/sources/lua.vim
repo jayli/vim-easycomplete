@@ -56,7 +56,7 @@ function! easycomplete#sources#lua#constructor(opt, ctx)
   endif
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'sumneko-lua-language-server',
-      \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), config_param]},
+      \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), config_param],
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'config': {},
       \ 'workspace_config': g:sumneko_lua_language_server_workspace_config,
