@@ -307,25 +307,26 @@ So you should implement at least three functions `completor`/`constructor`/`goto
 
 There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
 
-- Set `let g:easycomplete_menuflag_buf = '[B]'` for keywords menu flag.
-- Set `let g:easycomplete_kindflag_buf = ''` for keywords kind flag.
-- Set `let g:easycomplete_menuflag_dict = '[D]'` for dictionary menu flag.
-- Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
-- Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
-- Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
-- Set `let g:easycomplete_kindflag_tabnine = ''` for TabNine kind flag.
-- Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
-
 Example configuration with <https://nerdfonts.com>:
 
 ```vim
-let g:easycomplete_menuflag_buf = ""
-let g:easycomplete_kindflag_buf = "⚯"
-let g:easycomplete_menuflag_snip = ""
-let g:easycomplete_kindflag_snip = "ട"
-let g:easycomplete_kindflag_dict = "≡"
-let g:easycomplete_menuflag_dict = ""
-let g:easycomplete_kindflag_tabnine = ""
+let g:easycomplete_menu_skin = {
+      \   "buf": {
+      \      "kind":"⚯",
+      \      "menu":"[B]",
+      \    },
+      \   "snip": {
+      \      "kind":"<>",
+      \      "menu":"[S]",
+      \    },
+      \   "dict": {
+      \      "kind":"d",
+      \      "menu":"[D]",
+      \    },
+      \   "tabnine": {
+      \      "kind":"",
+      \    },
+      \ }
 let g:easycomplete_lsp_type_font = {
       \ 'text' : '⚯',         'method':'m',    'function': 'f',
       \ 'constructor' : '≡',  'field': 'f',    'default':'d',
