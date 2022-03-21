@@ -121,7 +121,7 @@ augroup easycomplete#CustomAutocmd
 augroup END
 
 if g:env_is_nvim && has("nvim-0.5.0")
-  au User easycomplete_custom_plugin lua require('easycomplete').lsp_handler()
+  au User easycomplete_after_constructor lua require('easycomplete').lsp_handler()
 endif
 
 " Buildin Plugins
@@ -335,7 +335,6 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
       \ 'command': 'sumneko-lua-language-server',
-      \ 'lsp_name':'sumneko_lua',
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
       " \ 'command': 'emmylua-ls',

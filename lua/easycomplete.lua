@@ -1,4 +1,4 @@
--- local debug = true
+local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
 local console = vim.fn['easycomplete#log#log']
@@ -13,20 +13,32 @@ local function main()
   local filetype = vim.o.filetype
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
   local nvim_lsp_installer_root = vim.fn["easycomplete#util#NVimLspInstallRoot"]()
-  local current_lsp_context =vim.fn["easycomplete#GetCurrentLspContext"]()
-  local current_lsp_name = Util.get(current_lsp_context, "lsp_name")
+  local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
+  local current_lsp_name = Util.get(current_lsp_ctx, "lsp", "name")
   local nvim_lsp_ready = Util.nvim_lsp_installed(current_lsp_name)
   local easy_lsp_ready = Util.easy_lsp_installed(plugin_name)
-  console(easy_lsp_ready, nvim_lsp_ready, current_lsp_name)
+  console(easy_lsp_ready, nvim_lsp_ready, current_lsp_name, Util.get(current_lsp_ctx, "lsp", "cmd"))
+
+  vim.cmd([[
+    let g:easycomplete_source.lua.lsp.cmd = ["/Users/bachi/.local/share/nvim/lsp_servers/sumneko_lua/extension/server/bin/lua-language-server -E -e LANG=en /Users/bachi/.local/share/nvim/lsp_servers/sumneko_lua/extension/server/bin/main.lua"]
+    let g:easycomplete_source.lua.lsp.ready = v:true
+    call easycomplete#lsp#register_server(g:easycomplete_source.lua.lsp)
+  ]])
+
+  console(vim.g.easycomplete_source.lua.lsp)
+
+  do
+    return
+  end
 
   if not easy_lsp_ready and nvim_lsp_ready then
     vim.cmd([[InstallLspServer]])
   end
 
   console('-------------')
-  console(Util.get(current_lsp_context,'lsp'))
+  console(Util.get(current_lsp_ctx,'lsp'))
   console('-------------')
-  console(Util.get(current_lsp_context, "lsp_name"))
+  console(Util.get(current_lsp_ctx, "lsp_name"))
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
 

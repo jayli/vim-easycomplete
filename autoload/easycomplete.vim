@@ -83,6 +83,7 @@ function! easycomplete#Enable()
   call s:BindingTypingCommandOnce()
   call easycomplete#log#init()
   call s:ConstructorCalling()
+  doautocmd <nomodeline> User easycomplete_after_constructor
   call s:SetupCompleteCache()
   call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
@@ -758,6 +759,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     endif
     return
   endif
+  let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
   if !easycomplete#installer#executable(cmd)
     let l:lsp_installing_msg = "'". cmd ."' is not avilable. Do ':InstallLspServer'"
     if g:easycomplete_lsp_checking
@@ -767,9 +769,10 @@ function! easycomplete#RegisterLspServer(opt, config)
         call easycomplete#util#info(l:lsp_installing_msg)
       endif
     endif
+    let g:easycomplete_source[a:opt["name"]].lsp.ready = v:false
     return
   endif
-  let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
+  let g:easycomplete_source[a:opt["name"]].lsp.ready = v:true
   call easycomplete#lsp#register_server(a:config)
 endfunction
 
