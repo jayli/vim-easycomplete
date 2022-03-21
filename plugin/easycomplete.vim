@@ -114,15 +114,15 @@ else
   call easycomplete#Enable()
 endif
 
-if g:env_is_nvim && has("nvim-0.5.0")
-  autocmd VimEnter * lua require('easycomplete').init()
-endif
-
 augroup easycomplete#CustomAutocmd
   autocmd!
   autocmd User easycomplete_default_plugin silent
   autocmd User easycomplete_custom_plugin silent
 augroup END
+
+if g:env_is_nvim && has("nvim-0.5.0")
+  au User easycomplete_custom_plugin lua require('easycomplete').lsp_handler()
+endif
 
 " Buildin Plugins
 augroup easycomplete#PluginRegister

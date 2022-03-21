@@ -1,4 +1,4 @@
--- local debug = true
+local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
 local console = vim.fn['easycomplete#log#log']
@@ -78,7 +78,7 @@ function foo()
   console('>>---------------')
 end
 
-function EasyComplete.init()
+function EasyComplete.lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
     main()
   else
