@@ -1,7 +1,8 @@
--- local debug = true
+local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
-local console = vim.fn['easycomplete#log#log']
+local AutoLoad = require "easycomplete_lsp_autoload"
+local console = Util.console
 local log = vim.fn["easycomplete#util#info"]
 
 -- all in all 入口
@@ -11,19 +12,16 @@ local function main()
   end
 
   local filetype = vim.o.filetype
-  local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
-  local nvim_lsp_installer_root = vim.fn["easycomplete#util#NVimLspInstallRoot"]()
-  local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
-  local current_lsp_name = Util.get(current_lsp_ctx, "lsp", "name")
-  local nvim_lsp_ready = Util.nvim_lsp_installed(current_lsp_name)
-  local easy_lsp_ready = Util.easy_lsp_installed(plugin_name)
-  console(easy_lsp_ready, nvim_lsp_ready, current_lsp_name, Util.get(current_lsp_ctx, "lsp", "cmd"))
+  local plugin_name = Util.current_plugin_name()
+  local nvim_lsp_ready = Util.nvim_lsp_installed()
+  local easy_lsp_ready = Util.easy_lsp_installed()
 
-  vim.cmd([[
-    let g:easycomplete_source.lua.lsp.cmd = ["/Users/bachi/.local/share/nvim/lsp_servers/sumneko_lua/extension/server/bin/lua-language-server -E -e LANG=en /Users/bachi/.local/share/nvim/lsp_servers/sumneko_lua/extension/server/bin/main.lua"]
-    let g:easycomplete_source.lua.lsp.ready = v:true
-    call easycomplete#lsp#register_server(g:easycomplete_source.lua.lsp)
-  ]])
+  if not easy_lsp_ready and nvim_lsp_ready then
+    console('Do re-regiester')
+    console(vim.g.easycomplete_source.lua.lsp)
+    AutoLoad.get(plugin_name):setup()
+  end
+
 
   console(vim.g.easycomplete_source.lua.lsp)
 
@@ -31,9 +29,6 @@ local function main()
     return
   end
 
-  if not easy_lsp_ready and nvim_lsp_ready then
-    vim.cmd([[InstallLspServer]])
-  end
 
   console('-------------')
   console(Util.get(current_lsp_ctx,'lsp'))
@@ -55,7 +50,6 @@ local function main()
   --   autocmd CompleteChanged * lua require("easycomplete").complete_changed()
   -- ]])
 end
-
 
 
 function EasyComplete.complete_changed()

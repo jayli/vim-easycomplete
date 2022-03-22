@@ -76,7 +76,7 @@ endfunction
 " content, hl, direction: 0, 向下，1，向上
 " ft, 文件类型
 " offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
-" float_type: signature lint
+" float_type: signature/lint
 function! easycomplete#popup#float(content, hl, direction, ft, offset, float_type)
   if type(a:content) == type('')
     let content = [a:content]
@@ -364,13 +364,11 @@ function! s:VimShow(opt, windowtype, float_type)
   endif
   if winid != 0
     call setwinvar(winid, '&wincolor', opt.highlight)
-    call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
     call popup_setoptions(winid, opt)
     call popup_show(winid)
   else
     noa let winid = popup_create(s:buf[a:windowtype], opt)
     noa let g:easycomplete_popup_win[a:windowtype] = winid
-    call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
     " ano silent call setwinvar(winid, '&scrolloff', 1)
     " ano silent call setwinvar(winid, 'float', 1)
     " ano silent call setwinvar(winid, '&number', 0)
@@ -381,8 +379,13 @@ function! s:VimShow(opt, windowtype, float_type)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
-  if a:windowtype == "float" && a:float_type == "signature"
+  " Popup and Signature
+  if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
+    call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  else
+    " Lint
+    call setbufvar(winbufnr(winid), '&filetype', 'txt')
   endif
 endfunction
 
@@ -407,14 +410,17 @@ function! s:NVimShow(opt, windowtype, float_type)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
-  call setbufvar(winbufnr(winid), '&filetype', filetype)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
-  if a:windowtype == "float" && a:float_type == "signature"
+  " Popup and Signature
+  if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
+    call setbufvar(winbufnr(winid), '&filetype', filetype)
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  else
+    " Lint
+    call setbufvar(winbufnr(winid), '&filetype', 'txt')
   endif
-  silent doautocmd <nomodeline> User FloatPreviewWinOpen
 endfunction
 
 function! easycomplete#popup#reopen()

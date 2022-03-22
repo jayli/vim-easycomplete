@@ -127,6 +127,9 @@ function! s:HandleLspCallback(server, data) abort
       if has_key(l:signature, 'documentation')
         let l:full_doc = get(l:signature, 'documentation', "")
       else
+        if !exists('l:parameter')
+          let l:parameter = {}
+        endif
         let l:full_doc = get(l:parameter, "documentation", {})
       endif
 
