@@ -1,4 +1,4 @@
-local debug = true
+-- local debug = true
 local EasyComplete = {}
 local Util = require "easycomplete_util"
 local AutoLoad = require "easycomplete_lsp_autoload"
@@ -15,15 +15,19 @@ local function main()
   local plugin_name = Util.current_plugin_name()
   local nvim_lsp_ready = Util.nvim_lsp_installed()
   local easy_lsp_ready = Util.easy_lsp_installed()
+  local nvim_lsp_root_path = require("nvim-lsp-installer.server").get_server_root_path()
 
   if not easy_lsp_ready and nvim_lsp_ready then
-    console('Do re-regiester')
-    console(vim.g.easycomplete_source.lua.lsp)
-    AutoLoad.get(plugin_name):setup()
+    local AutoLoad_script = AutoLoad.get(plugin_name)
+    if type(Autoload_script) == nil then
+      return
+    else
+      AutoLoad_script:setup()
+    end
   end
 
 
-  console(vim.g.easycomplete_source.lua.lsp)
+  -- console(vim.g.easycomplete_source.lua.lsp)
 
   do
     return

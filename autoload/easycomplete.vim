@@ -853,6 +853,13 @@ function! s:CompletorCallingAtFirstComplete(...)
   endtry
 endfunction
 
+function easycomplete#ConstructorCallingByName(plugin_name)
+  let l:ctx = easycomplete#context()
+  if s:CompleteSourceReady(a:plugin_name)
+    call s:CallConstructorByName(a:plugin_name, l:ctx)
+  endif
+endfunction
+
 function! s:ConstructorCalling(...)
   let l:ctx = easycomplete#context()
   for item in keys(g:easycomplete_source)
