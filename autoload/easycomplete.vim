@@ -1376,7 +1376,9 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
-  noa silent! call complete(a:start, a:context)
+  if mode() =~# 'i' && &paste != 1
+    noa silent! call complete(a:start, a:context)
+  endif
   noa call easycomplete#popup#overlay()
 endfunction
 
