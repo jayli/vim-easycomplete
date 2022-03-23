@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -237,7 +237,11 @@ function! s:CompleteTypingMatch(...)
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
-    call s:CloseCompletionMenu()
+    if has('nvim')
+      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 40)
+    else
+      call s:CloseCompletionMenu()
+    endif
     let g:easycomplete_stunt_menuitems = []
     return
   endif
@@ -1881,6 +1885,7 @@ function! easycomplete#TextChangedP()
     call s:StopAsyncRun()
     " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
     " 不能杜绝，但能大大缓解
+
     call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
     let b:old_changedtick = b:changedtick
   endif
