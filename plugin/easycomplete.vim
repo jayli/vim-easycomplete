@@ -90,11 +90,14 @@ let g:easycomplete_config = {
 " VIM 最低版本 8.2
 " Neo 最低版本 0.4.0
 " TODO：不支持 Windows，Gvim 中未完整测试
-if (g:env_is_vim && v:version < 802) ||
-      \ (g:env_is_nvim && !has('nvim-0.4.0')) ||
-      \ (has('win32') || has('win64'))
+if (g:env_is_vim && v:version < 802) || (g:env_is_nvim && !has('nvim-0.4.0'))
   echom "EasyComplete requires vim version upper than 802".
         \ " or nvim version upper than 0.4.0"
+  finish
+endif
+
+if has('win32') || has('win64')
+  echom "EasyComplete does not support windows."
   finish
 endif
 
@@ -450,6 +453,7 @@ command! EasyCompleteDisable : call easycomplete#disable()
 command! EasyCompleteEnable : call easycomplete#StartUp()
 command! EasyCompleteReference : call easycomplete#reference()
 command! EasyCompleteRename : call easycomplete#rename()
+command! BackToOriginalBuffer : call easycomplete#BackToOriginalBuffer()
 
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()

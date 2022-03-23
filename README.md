@@ -62,6 +62,7 @@ By default it use Tab to trigger the completion suggestions. Alse use Tab and Sh
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
+noremap gb :BackToOriginalBuffer<CR>
 ```
 
 If you don't want use `Tab` to trigger completion suggestions. You can change this setting by:
@@ -98,24 +99,25 @@ Typing `:h easycomplete` for help.
 
 All commands:
 
-| Command                           | Description                              |
-|-----------------------------------|------------------------------------------|
-| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe  |
-| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`      |
-| `:EasyCompleteDisable`            | Disable EasyComplete                     |
-| `:EasyCompleteEnable`             | Enable EasyComplete                      |
-| `:EasyCompleteGotoDefinition`     | Goto definition position                 |
-| `:EasyCompleteReference`          | Find references                          |
-| `:EasyCompleteRename`             | Rename                                   |
-| `:EasyCompleteCheck`              | Checking LSP server                      |
-| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                 |
-| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                     |
-| `:EasyCompleteProfileStart`       | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`        | Stop record diagnostics  message         |
-| `:EasyCompleteLint`               | Do diagnostic                            |
-| `:LintEasyComplete`               | Do diagnostic                            |
-| `:DenoCache`                      | Do Deno Cache for downloading modules    |
-| `:CleanLog`                       | close quickfix window                    |
+| Command                           | Description                                         |
+|-----------------------------------|-----------------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe             |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`                 |
+| `:EasyCompleteDisable`            | Disable EasyComplete                                |
+| `:EasyCompleteEnable`             | Enable EasyComplete                                 |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                            |
+| `:EasyCompleteReference`          | Find references                                     |
+| `:EasyCompleteRename`             | Rename                                              |
+| `:EasyCompleteCheck`              | Checking LSP server                                 |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                            |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                                |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message                    |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message                    |
+| `:EasyCompleteLint`               | Do diagnostic                                       |
+| `:LintEasyComplete`               | Do diagnostic                                       |
+| `:BackToOriginalBuffer`           | Return to the position before the reference jump    |
+| `:DenoCache`                      | Do Deno Cache for downloading modules               |
+| `:CleanLog`                       | close quickfix window                               |
 
 ### Language Support
 

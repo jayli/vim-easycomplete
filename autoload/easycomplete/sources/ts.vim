@@ -455,6 +455,8 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
   let refs = get(body, 'refs', [])
   if empty(refs)
     call s:log("[TS]: No references found")
+    call setqflist([], 'r')
+    call easycomplete#action#reference#flush()
     return
   endif
 
@@ -472,6 +474,7 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
           \ })
   endfor
   call setqflist(quick_window_list, 'r')
+  call easycomplete#action#reference#RecordCurrentBuf()
   copen
   call easycomplete#action#reference#hi()
 endfunction

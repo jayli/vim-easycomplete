@@ -1,6 +1,17 @@
 
 function! easycomplete#action#reference#CloseQF()
   cclose
+  call s:flush()
+endfunction
+
+function! easycomplete#action#reference#back()
+  if !exists("s:easycomplete_original_buffer")
+    call s:flush()
+  endif
+  if empty(s:easycomplete_original_buffer)
+    return
+  endif
+  exec "b" . string(s:easycomplete_original_buffer)
 endfunction
 
 function! easycomplete#action#reference#do()
@@ -31,7 +42,22 @@ function! s:do()
         \ },
         \ 'on_notification': function('s:HandleLspCallback', [l:server_name]),
         \ })
+endfunction
 
+function! s:flush()
+  let s:easycomplete_original_buffer = 0
+endfunction
+
+function s:RecordCurrentBuf()
+  let s:easycomplete_original_buffer = bufnr()
+endfunction
+
+function! easycomplete#action#reference#RecordCurrentBuf()
+  call s:RecordCurrentBuf()
+endfunction
+
+function! easycomplete#action#reference#flush()
+  call s:flush()
 endfunction
 
 function! s:DoTSReference()
@@ -56,6 +82,8 @@ function! s:HandleLspCallback(server_name, data)
   let reference_list = get(a:data['response'], 'result', [])
   let quick_window_list = []
   if empty(reference_list)
+    call setqflist([], 'r')
+    call s:flush()
     call s:log("No references found")
     return
   endif
@@ -77,6 +105,7 @@ function! s:HandleLspCallback(server_name, data)
     call add(quick_window_list, new_item)
   endfor
   call setqflist(quick_window_list, 'r')
+  call s:RecordCurrentBuf()
   copen
   call s:hi()
 endfunction
@@ -114,7 +143,7 @@ function! s:console(...)
 endfunction
 
 function! s:log(...)
-  return call('easycomplete#util#log', a:000)
+  return call('easycomplete#util#info', a:000)
 endfunction
 
 function! s:get(...)

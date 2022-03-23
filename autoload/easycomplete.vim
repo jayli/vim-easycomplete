@@ -1891,6 +1891,10 @@ function! easycomplete#TextChangedP()
   endif
 endfunction
 
+function! easycomplete#BackToOriginalBuffer()
+  call easycomplete#action#reference#back()
+endfunction
+
 function! easycomplete#CmdlineEnter()
 endfunction
 
