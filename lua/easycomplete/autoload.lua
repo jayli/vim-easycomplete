@@ -50,9 +50,9 @@ AutoLoad.lua = {
     })
 
     vim.fn['easycomplete#ConstructorCallingByName'](plugin_name)
-    vim.fn.timer_start(100, function()
+    vim.defer_fn(function()
       log("LSP is initalized successfully!")
-    end)
+    end, 100)
   end
 }
 

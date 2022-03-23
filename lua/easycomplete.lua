@@ -11,7 +11,6 @@ local function main()
 
 
 
-
   if not Util.nvim_installer_installed() then
     return
   end
@@ -31,7 +30,7 @@ local function main()
     end
   end
 
-  -- console(vim.version())
+  console(vim.version())
 
   do
     return
