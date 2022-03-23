@@ -9,8 +9,6 @@ local log = Util.log
 local function main()
 
 
-
-
   if not Util.nvim_installer_installed() then
     return
   end
@@ -19,7 +17,6 @@ local function main()
   local plugin_name = Util.current_plugin_name()
   local nvim_lsp_ready = Util.nvim_lsp_installed()
   local easy_lsp_ready = Util.easy_lsp_installed()
-  local nvim_lsp_root_path = require("nvim-lsp-installer.server").get_server_root_path()
 
   if not easy_lsp_ready and nvim_lsp_ready then
     local AutoLoad_script = AutoLoad.get(plugin_name)

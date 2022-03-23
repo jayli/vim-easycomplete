@@ -1,5 +1,6 @@
 local Util = {}
 
+-- TODO 需要再测试一下这个函数
 function Util.get(a, ...)
   local args = {...}
   if type(a) ~= "table" then
@@ -35,6 +36,9 @@ end
 
 function Util.current_lsp_name()
   local curr_plugin_ctx = Util.current_plugin_ctx()
+  if curr_plugin_ctx.name == "ts" then
+    return "tsserver"
+  end
   local lsp_name = Util.get(curr_plugin_ctx, "lsp", "name")
   return lsp_name
 end
@@ -90,7 +94,8 @@ end
 
 function Util.nvim_lsp_installed()
   local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
-  local lsp_name = Util.get(current_lsp_ctx, "lsp", "name")
+  Util.console(current_lsp_ctx)
+  local lsp_name = Util.current_lsp_name()
   if not Util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
   end
@@ -109,6 +114,7 @@ function Util.easy_lsp_installed()
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
   local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
   local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name) 
+  -- TODO here,jayli 如果是 ts 的话，easycomplete_sources.ts.lsp 是不存在的
   local easy_lsp_ready = Util.get(current_lsp_ctx, "lsp", "ready")
   if easy_available_command ~= "" and easy_lsp_ready == true then
     return true

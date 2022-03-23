@@ -238,7 +238,7 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
     if has('nvim')
-      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 40)
+      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 50)
     else
       call s:CloseCompletionMenu()
     endif
@@ -1870,7 +1870,13 @@ function! easycomplete#TextChangedP()
   elseif pumvisible() && !s:zizzing()
     " tabnine, 空格 trigger 出的 tabnine menu 敲入字母后的逻辑
     if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
-      call s:CloseCompletionMenu()
+      " nvim 中的 paste text 行为异常，空格弹出 pum 后直接 paste 时，c-y 会把
+      " 菜单关掉的同时也把 pasted text 清空，应该是nvim的bug，这里用c-x,c-z 代替
+      if has('nvim') && empty(g:easycomplete_insert_char)
+        call timer_start(50, { -> s:SendKeys("\<C-X>\<C-Z>")})
+      else
+        call s:CloseCompletionMenu()
+      endif
       call s:flush()
       call s:StopZizz()
       call easycomplete#TextChangedI()
