@@ -47,7 +47,7 @@ function Util.get_default_lsp_root_path()
     all_root,
     plugin_name,
   }, "/")
-  return root_path 
+  return root_path
 end
 
 function Util.get_default_config_path()
@@ -79,8 +79,8 @@ function Util.create_command(file_path, content)
     vim.fn.delete(file_path, "rf")
   end
   vim.fn.writefile(content, file_path, "a")
-  -- vim.fn.setfperm(file_path, "-rwxr-xr-x")
-  vim.fn.system("chmod +x " .. file_path)
+  vim.fn.setfperm(file_path, "rwxr-xr-x")
+  -- vim.fn.system("chmod +x " .. file_path)
 end
 
 function Util.create_config(file_path, content)
