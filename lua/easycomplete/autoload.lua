@@ -1,4 +1,4 @@
-local Util = require "easycomplete_util"
+local Util = require "easycomplete.util"
 local Servers = require("nvim-lsp-installer.servers")
 local console = Util.console
 local log = Util.log

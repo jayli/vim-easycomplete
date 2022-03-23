@@ -1,12 +1,17 @@
 -- local debug = true
 local EasyComplete = {}
-local Util = require "easycomplete_util"
-local AutoLoad = require "easycomplete_lsp_autoload"
+local Util = require "easycomplete.util"
+local AutoLoad = require "easycomplete.autoload"
 local console = Util.console
-local log = vim.fn["easycomplete#util#info"]
+local log = Util.log
 
 -- all in all 入口
 local function main()
+
+
+
+
+
   if not Util.nvim_installer_installed() then
     return
   end
@@ -26,8 +31,7 @@ local function main()
     end
   end
 
-
-  -- console(vim.g.easycomplete_source.lua.lsp)
+  -- console(vim.version())
 
   do
     return

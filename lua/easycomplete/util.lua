@@ -1,4 +1,3 @@
-
 local Util = {}
 
 function Util.get(a, ...)
@@ -80,7 +79,6 @@ function Util.create_command(file_path, content)
   end
   vim.fn.writefile(content, file_path, "a")
   vim.fn.setfperm(file_path, "rwxr-xr-x")
-  -- vim.fn.system("chmod +x " .. file_path)
 end
 
 function Util.create_config(file_path, content)

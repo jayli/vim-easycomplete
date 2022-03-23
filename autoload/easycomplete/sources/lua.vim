@@ -75,11 +75,61 @@ endfunction
 function! easycomplete#sources#lua#filter(matches)
   let ctx = easycomplete#context()
   let matches = a:matches
+  if ctx['typed'] =~ '\(\w\+\.\)\{-1,}$' " LoaDotTyping bugfix for #196
+    call filter(matches, function("s:LuaHack_S_DotFilter"))
+  endif
+  let matches = map(copy(matches), function("s:LuaHack_A_DotMap"))
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches
-  " return a:matches
+endfunction
+
+function! s:LuaHack_A_DotMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let ctx = easycomplete#context()
+    let lua_typing_word = s:GetLuaTypingWordWithDot()
+    if ctx["char"] == "."
+      let a:val.word = substitute(get(a:val, "word"), "^" . lua_typing_word, "", "g")
+    else
+      let word = easycomplete#util#GetTypingWord()
+      let a:val.word = substitute(get(a:val, "word"), "^" . lua_typing_word[:-1 * ( 1 + strlen(word))], "", "g")
+    endif
+    let lua_typing_word = s:GetLuaTypingWordWithDot()
+  endif
+  return a:val
+endfunction
+
+function! s:LuaHack_S_DotFilter(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let lua_typing_word = s:GetLuaTypingWordWithDot()
+    return stridx(get(a:val, "word"), lua_typing_word) == 0
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:GetLuaTypingWordWithDot()
+  let start = col('.') - 1
+  let line = getline('.')
+  let width = 0
+  let regx = '[a-zA-Z0-9_.:]'
+  while start > 0 && line[start - 1] =~ regx
+    let start = start - 1
+    let width = width + 1
+  endwhile
+  let word = strpart(line, start, width)
+  return word
 endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
