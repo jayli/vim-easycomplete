@@ -23,11 +23,13 @@ end
 
 AutoLoad.ts = {
   setup = function(self) 
+    -- TODO here 开始调试tsserver未安装时的逻辑
+    console(1111111)
     local configuration = get_configuration()
     if not configuration.ok then
       return
     end
-    console(configuration)
+    console('xxxxx',configuration)
   end
 }
 

@@ -9,7 +9,7 @@ function Util.get(a, ...)
   local tmp_obj = a
   for i = 1, #args do
     tmp_obj = tmp_obj[args[i]]
-    if type(tmp_obj) == nil then
+    if tmp_obj == nil or type(tmp_obj) == nil then
       break
     end
   end
@@ -94,7 +94,6 @@ end
 
 function Util.nvim_lsp_installed()
   local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
-  Util.console(current_lsp_ctx)
   local lsp_name = Util.current_lsp_name()
   if not Util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
@@ -114,7 +113,9 @@ function Util.easy_lsp_installed()
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
   local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
   local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name) 
-  -- TODO here,jayli 如果是 ts 的话，easycomplete_sources.ts.lsp 是不存在的
+  if plugin_name == "ts" and string.find(easy_available_command, "tsserver$") then
+    return true
+  end
   local easy_lsp_ready = Util.get(current_lsp_ctx, "lsp", "ready")
   if easy_available_command ~= "" and easy_lsp_ready == true then
     return true
