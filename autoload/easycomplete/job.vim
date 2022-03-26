@@ -104,7 +104,6 @@ endfunction
 function! s:job_start(cmd, opts) abort
   let l:jobtypes = s:job_supported_types()
   let l:jobtype = ''
-  
   if type(a:cmd) == type([])
     let cmd_str = join(a:cmd, ' ')
   else

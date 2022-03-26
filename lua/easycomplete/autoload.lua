@@ -16,20 +16,35 @@ local function get_configuration()
     easy_cmd_full_path = Util.get_default_command_full_path(),
     nvim_lsp_root = Util.get(server, "root_dir"),
     nvim_lsp_root_path = Server.get_server_root_path(),
-    ok = ok,
+    nvim_lsp_ok = ok,
   }
 end
 
+local function show_success_message()
+  vim.defer_fn(function()
+    log("LSP is initalized successfully!")
+  end, 100)
+end
 
 AutoLoad.ts = {
   setup = function(self) 
-    -- TODO here 开始调试tsserver未安装时的逻辑
-    console(1111111)
     local configuration = get_configuration()
-    if not configuration.ok then
+    if not configuration.nvim_lsp_ok then
       return
     end
-    console('xxxxx',configuration)
+    local tsserver_js_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      'typescript',
+      'lib',
+      'tsserver.js'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env node",
+      "require('" .. tsserver_js_path .. "')",
+    })
+    Util.constructor_calling_by_name(configuration.easy_plugin_name)
+    show_success_message()
   end
 }
 
@@ -78,10 +93,8 @@ AutoLoad.lua = {
       '}',
     })
 
-    vim.fn['easycomplete#ConstructorCallingByName'](plugin_name)
-    vim.defer_fn(function()
-      log("LSP is initalized successfully!")
-    end, 100)
+    Util.constructor_calling_by_name(plugin_name)
+    show_success_message()
   end
 }
 

@@ -1,4 +1,3 @@
-
 " 兼容非 python3 场景，确保不报错
 function! s:PreparePythonEnvironment()
   if get(g:, 'easycomplete_python3_ready') == 2

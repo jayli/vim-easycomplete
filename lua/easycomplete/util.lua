@@ -16,6 +16,10 @@ function Util.get(a, ...)
   return tmp_obj
 end
 
+function Util.constructor_calling_by_name(plugin_name)
+  vim.fn['easycomplete#ConstructorCallingByName'](plugin_name)
+end
+
 function Util.console(...)
   return vim.fn['easycomplete#log#log'](...)
 end

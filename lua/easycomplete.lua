@@ -26,8 +26,6 @@ local function main()
     end
   end
 
-  -- console(vim.version())
-
   do
     return
   end

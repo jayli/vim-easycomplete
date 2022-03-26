@@ -227,7 +227,6 @@ function! s:ConfirmCallback(error, res)
       endif
     endfor
   endfor
-  call s:log(getqflist())
   if len(getqflist()) > 0
     call easycomplete#util#info("Changed", changed_count, "locations!","Use `:wa` to save all changes,",
           \ "`:cclose` or `:CleanLog` to close changelist, `:copen` to open changelist")
@@ -478,7 +477,6 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
   copen
   call easycomplete#action#reference#hi()
 endfunction
-
 
 function! easycomplete#sources#ts#signature()
   if !easycomplete#ok('g:easycomplete_signature_enable') | return | endif
