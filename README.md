@@ -28,7 +28,7 @@ The reason I decided to use pure vim script instead of lua or python is that I w
 
 ### Installation
 
-Easycomplete requires Vim 8.2 and higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 and higher is required.
+Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 or higher is required.
 
 For vim-plug:
 
@@ -52,9 +52,9 @@ use { 'jayli/vim-easycomplete' }
 
 ### Configuration
 
-The plugin is out of box and config noghting. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
+The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
 
-### Useage
+### Usage
 
 By default it use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can map `:EasyCompleteGotoDefinition`, `:EasyCompleteReference` (find references) and `:EasyCompleteRename` (Rename).
 
