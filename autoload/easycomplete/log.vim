@@ -107,6 +107,9 @@ function! s:InitLogWindow()
   if s:LogRunning()
     return
   endif
+  if g:debugger.original_winid != bufwinid(bufnr(""))
+    return
+  endif
   " 不加这一句进入新 buf 时会开一个新的 log 窗口
   call easycomplete#util#info("Log Window Checking...")
   let g:debugger.original_bufinfo = getbufinfo(bufnr(''))

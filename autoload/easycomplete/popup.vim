@@ -181,9 +181,15 @@ endfunction
 " 在completedone之后调用
 " 这里简化一下，只判断Y轴上是否有重叠
 function! easycomplete#popup#overlay()
+  if s:IsOverlay()
+    call easycomplete#popup#close("float")
+  endif
+endfunction
+
+function! s:IsOverlay()
   let float_winid = g:easycomplete_popup_win['float']
-  if empty(float_winid) | return | endif
-  if empty(pum_getpos()) | return | endif
+  if empty(float_winid) | return v:false | endif
+  if empty(pum_getpos()) | return v:false | endif
   let float_config = getwininfo(float_winid)[0]
   let pum_config = pum_getpos()
   let overlay = v:false
@@ -196,17 +202,14 @@ function! easycomplete#popup#overlay()
           \ && pum_config.row + pum_config.height - 1 >= float_config.winrow + float_config.height - 1
       let overlay = v:true
     endif
-  else
-    let screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
-    if (pum_config.row > screen_line && float_config.winrow > screen_line)
-          \ || (pum_config.row < screen_line && float_config.winrow < screen_line)
-          \ || (pum_config.row == screen_line && float_config.winrow > screen_line)
-      let overlay = v:true
-    endif
   endif
-  if overlay
-    call easycomplete#popup#close("float")
+  let screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
+  if (pum_config.row > screen_line && float_config.winrow > screen_line)
+        \ || (pum_config.row < screen_line && float_config.winrow < screen_line)
+        \ || (pum_config.row == screen_line && float_config.winrow > screen_line)
+    let overlay = v:true
   endif
+  return overlay
 endfunction
 
 function! easycomplete#popup#DoPopup(info)
@@ -456,12 +459,24 @@ function! easycomplete#popup#close(...)
       let id = win_id2win(g:easycomplete_popup_win[windowtype])
       if id > 0
         let winid = g:easycomplete_popup_win[windowtype]
-        if nvim_win_is_valid(winid)
-          call timer_start(50, { ->nvim_win_close(winid, 1) })
-        endif
+        call timer_start(50, { -> s:NvimCloseFloatWithPum(winid) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []
+    endif
+  endif
+endfunction
+
+function! s:NvimCloseFloatWithPum(winid)
+  if nvim_win_is_valid(a:winid)
+    call nvim_win_close(a:winid, 1)
+  endif
+  if pumvisible() && s:IsOverlay()
+    let winid = g:easycomplete_popup_win['float']
+    if winid != 0
+      if nvim_win_is_valid(winid)
+        call nvim_win_close(winid, 1)
+      endif
     endif
   endif
 endfunction
@@ -502,6 +517,10 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
 endfunction
 
 function! s:AsyncRun(...)

@@ -1383,7 +1383,7 @@ function! s:complete(start, context) abort
   if mode() =~# 'i' && &paste != 1
     noa silent! call complete(a:start, a:context)
   endif
-  noa call easycomplete#popup#overlay()
+  noa silent! call easycomplete#popup#overlay()
 endfunction
 
 " Alias of complete()
