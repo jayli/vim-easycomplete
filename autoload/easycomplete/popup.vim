@@ -153,7 +153,6 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   let opt.row -= 1
 
   let screen_col_enc = win_screenpos(win_getid())[1] - 1
-  call s:log(screen_col_enc)
   let opt.col = screen_col_enc + wincol() - 1
   let opt.col += a:offset[1]
   " TODO col 方向的offset的处理ok，line方向的offset未做处理
