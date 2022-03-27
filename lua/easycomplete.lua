@@ -6,7 +6,7 @@ local console = Util.console
 local log = Util.log
 
 -- all in all 入口
-local function main()
+local function nvim_lsp_handler()
 
   if not Util.nvim_installer_installed() then
     return
@@ -19,17 +19,18 @@ local function main()
 
   if not easy_lsp_ready and nvim_lsp_ready then
     local AutoLoad_script = AutoLoad.get(plugin_name)
-    if type(Autoload_script) == nil then
+    if type(AutoLoad_script) == nil or AutoLoad_script == nil then
       return
     else
       AutoLoad_script:setup()
     end
   end
+end
 
+local function test()
   do
     return
   end
-
 
   console('-------------')
   console(Util.get(current_lsp_ctx,'lsp'))
@@ -86,8 +87,9 @@ function foo()
 end
 
 function EasyComplete.lsp_handler()
+  nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
-    main()
+    test()
   else
     return
   end

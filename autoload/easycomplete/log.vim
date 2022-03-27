@@ -97,10 +97,23 @@ function! s:flush()
   let g:debugger.log_bufnr = 0
   let g:debugger.log_term_winid = 0
   let g:debugger.status = 'stop'
+  let g:debugger.job_id = 0
 endfunction
 
 function! s:LogRunning()
-  return g:debugger.log_winid == 0 ? v:false : v:true
+  let window_status = g:debugger.log_winid == 0 ? v:false : v:true
+  let job_status = v:false
+  if has('nvim')
+    try
+      let job_pid = jobpid(g:debugger.job_id)
+    catch /E900/
+      let job_pid = 0
+    endtry
+    let job_status = (job_pid != 0)
+  else
+    let job_status = (term_getstatus(g:debugger.log_bufnr) == "running")
+  endif
+  return job_status && window_status == v:true
 endfunction
 
 function! s:InitLogWindow()
@@ -121,7 +134,7 @@ function! s:InitLogWindow()
   setlocal nonu
   let g:debugger.status = "running"
   if g:env_is_vim
-    call term_start("tail -f " . get(g:debugger, 'logfile'),{
+    let g:debugger.job_id = term_start("tail -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
@@ -129,7 +142,7 @@ function! s:InitLogWindow()
         \ 'exit_cb': function('s:LogCallback')
         \ })
   else
-    call termopen("tail -f " . get(g:debugger, 'logfile'),{
+    let g:debugger.job_id = termopen("tail -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
@@ -192,8 +205,9 @@ endfunction
 
 function! s:CloseLogWindow()
   if s:LogRunning()
-    call s:GotoLogWindow()
-    call execute(':q!', 'silent!')
+    call easycomplete#util#execute(g:debugger.log_winid, ["q!"])
+    " call s:GotoLogWindow()
+    " call execute(':q!', 'silent!')
     call s:flush()
   endif
 endfunction

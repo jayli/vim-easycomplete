@@ -20,11 +20,34 @@ local function get_configuration()
   }
 end
 
+local function curr_lsp_constructor_calling()
+  Util.constructor_calling_by_name(Util.current_plugin_name())
+end
+
 local function show_success_message()
   vim.defer_fn(function()
     log("LSP is initalized successfully!")
   end, 100)
 end
+
+AutoLoad.deno = {
+  setup = function(self)
+    local configuration = get_configuration()
+    if not configuration.nvim_lsp_ok then
+      return
+    end
+    local deno_cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'deno'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      deno_cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
 
 AutoLoad.ts = {
   setup = function(self) 
@@ -43,7 +66,7 @@ AutoLoad.ts = {
       "#!/usr/bin/env node",
       "require('" .. tsserver_js_path .. "')",
     })
-    Util.constructor_calling_by_name(configuration.easy_plugin_name)
+    curr_lsp_constructor_calling()
     show_success_message()
   end
 }
@@ -75,7 +98,7 @@ AutoLoad.lua = {
 
     Util.create_command(lua_cmd_full_path, {
       "#!/usr/bin/env bash",
-      full_cmd_str .. " \\$*",
+      full_cmd_str .. " $*",
     })
     Util.create_config(lua_config_path, {
       '{',
@@ -93,7 +116,7 @@ AutoLoad.lua = {
       '}',
     })
 
-    Util.constructor_calling_by_name(plugin_name)
+    curr_lsp_constructor_calling()
     show_success_message()
   end
 }

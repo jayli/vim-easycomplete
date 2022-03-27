@@ -97,7 +97,7 @@ function Util.create_config(file_path, content)
 end
 
 function Util.nvim_lsp_installed()
-  local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
+  local current_lsp_ctx = Util.current_plugin_ctx()
   local lsp_name = Util.current_lsp_name()
   if not Util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
@@ -115,7 +115,7 @@ end
 
 function Util.easy_lsp_installed()
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
-  local current_lsp_ctx =vim.fn["easycomplete#GetCurrentLspContext"]()
+  local current_lsp_ctx = Util.current_plugin_ctx()
   local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name) 
   if plugin_name == "ts" and string.find(easy_available_command, "tsserver$") then
     return true

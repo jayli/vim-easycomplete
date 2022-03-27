@@ -7,7 +7,7 @@ let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
 function! easycomplete#sources#deno#constructor(opt, ctx)
   if easycomplete#sources#deno#ok()
     call easycomplete#RegisterLspServer(a:opt, {
-          \ 'name': 'deno',
+          \ 'name': 'denols',
           \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), 'lsp', '--unstable']},
           \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
           \ 'initialization_options' : {
