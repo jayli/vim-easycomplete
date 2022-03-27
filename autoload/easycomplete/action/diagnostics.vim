@@ -13,7 +13,9 @@ function! easycomplete#action#diagnostics#do()
 endfunction
 
 function! easycomplete#action#diagnostics#HandleCallback(server, response)
-  call easycomplete#sign#flush()
+  if getbufinfo(bufnr())[0].changed == 1
+    call easycomplete#sign#flush()
+  endif
   call easycomplete#sign#cache(a:response)
   let s:response_ready = 1
 endfunction

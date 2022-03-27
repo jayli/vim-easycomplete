@@ -840,7 +840,7 @@ function! s:MessageHandler(msg)
   let l:event_name = s:GetTsserverEventType(l:item)
   let l:response_name = s:GetTsserverResponseType(l:item)
 
-  if easycomplete#util#NotInsertMode() " Normal mod
+  if easycomplete#util#NotInsertMode() && !empty(l:response_name) && empty(l:event_name) " Normal mod
     if index(['definition', 'references', 'rename'], l:response_name) < 0
       return
     endif
