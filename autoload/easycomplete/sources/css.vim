@@ -5,7 +5,7 @@ let g:easycomplete_css = 1
 
 function! easycomplete#sources#css#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-    \ 'name': 'css-languageserver',
+    \ 'name': 'cssls',
     \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), '--stdio'],
     \ 'allowlist': a:opt['whitelist'],
     \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\)$'},

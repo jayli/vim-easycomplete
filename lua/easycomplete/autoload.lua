@@ -30,6 +30,24 @@ local function show_success_message()
   end, 100)
 end
 
+AutoLoad.css = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      '.bin',
+      'vscode-css-language-server'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 -- Not tested
 AutoLoad.cpp = {
   setup = function(self)
