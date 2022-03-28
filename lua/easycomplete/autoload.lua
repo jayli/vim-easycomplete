@@ -30,6 +30,24 @@ local function show_success_message()
   end, 100)
 end
 
+AutoLoad.html = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      '.bin',
+      'vscode-html-language-server'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.css = {
   setup = function(self)
     local configuration = get_configuration()
@@ -69,7 +87,7 @@ AutoLoad.cpp = {
 AutoLoad.vim = {
   setup = function(self)
     local configuration = get_configuration()
-    local vim_cmd_path = vim.fn.join({
+    local cmd_path = vim.fn.join({
       configuration.nvim_lsp_root,
       'node_modules',
       '.bin',
@@ -77,7 +95,7 @@ AutoLoad.vim = {
     }, "/")
     Util.create_command(configuration.easy_cmd_full_path, {
       "#!/usr/bin/env sh",
-      vim_cmd_path .. " $*",
+      cmd_path .. " $*",
     })
     curr_lsp_constructor_calling()
     show_success_message()
@@ -90,13 +108,13 @@ AutoLoad.deno = {
     if not configuration.nvim_lsp_ok then
       return
     end
-    local deno_cmd_path = vim.fn.join({
+    local cmd_path = vim.fn.join({
       configuration.nvim_lsp_root,
       'deno'
     }, "/")
     Util.create_command(configuration.easy_cmd_full_path, {
       "#!/usr/bin/env sh",
-      deno_cmd_path .. " $*",
+      cmd_path .. " $*",
     })
     curr_lsp_constructor_calling()
     show_success_message()

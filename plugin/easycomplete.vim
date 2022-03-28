@@ -242,7 +242,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'html',
-      \ 'whitelist': easycomplete#FileTypes("html", ["html"]),
+      \ 'whitelist': easycomplete#FileTypes("html", ["html", "htm", "xhtml"]),
       \ 'completor': 'easycomplete#sources#html#completor',
       \ 'constructor' :'easycomplete#sources#html#constructor',
       \ 'gotodefinition': 'easycomplete#sources#html#GotoDefinition',

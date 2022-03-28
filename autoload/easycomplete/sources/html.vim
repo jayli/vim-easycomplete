@@ -5,7 +5,7 @@ let g:easycomplete_sources_html= 1
 
 function! easycomplete#sources#html#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'html-languageserver',
+      \ 'name': 'html',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']), '--stdio']},
       \ 'initialization_options':{'embeddedLanguages': {'css': v:true, 'javascript': v:true}},
       \ 'allowlist': a:opt["whitelist"],
