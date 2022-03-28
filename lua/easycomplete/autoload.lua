@@ -30,6 +30,24 @@ local function show_success_message()
   end, 100)
 end
 
+-- Not tested
+AutoLoad.cpp = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'bin',
+      'clangd',
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.vim = {
   setup = function(self)
     local configuration = get_configuration()
