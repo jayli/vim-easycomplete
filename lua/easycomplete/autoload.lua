@@ -30,6 +30,24 @@ local function show_success_message()
   end, 100)
 end
 
+AutoLoad.vim = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local vim_cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      '.bin',
+      'vim-language-server'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      vim_cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.deno = {
   setup = function(self)
     local configuration = get_configuration()
