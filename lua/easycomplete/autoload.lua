@@ -6,6 +6,58 @@ local get_configuration = Util.get_configuration
 local show_success_message = Util.show_success_message
 local curr_lsp_constructor_calling = Util.curr_lsp_constructor_calling
 
+-- JSON not ready
+AutoLoad.json = {
+  -- setup = function(self)
+  --   local configuration = get_configuration()
+  --   local cmd_path = vim.fn.join({
+  --     configuration.nvim_lsp_root,
+  --     'node_modules/vscode-langservers-extracted/lib/json-language-server/node',
+  --     'jsonServerMain.js'
+  --   }, "/")
+  --   Util.create_command(configuration.easy_cmd_full_path, {
+  --     "#!/usr/bin/env node",
+  --     "require('" .. cmd_path  .. "')",
+  --   })
+  --   curr_lsp_constructor_calling()
+  --   show_success_message()
+  -- end
+}
+
+AutoLoad.sh = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      '.bin',
+      'bash-language-server'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
+AutoLoad.xml = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'lemminx',
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.yml = {
   setup = function(self)
     local configuration = get_configuration()

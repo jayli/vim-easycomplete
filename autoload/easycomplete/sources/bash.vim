@@ -5,9 +5,9 @@ let g:easycomplete_bash = 1
 
 function! easycomplete#sources#bash#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'bash-languageserver',
+      \ 'name': 'bashls',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), 'start'],
-      \ 'root_uri':{server_info->fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{ server_info -> easycomplete#util#GetDefaultRootUri() },
       \ 'allowlist': a:opt['whitelist'],
       \ 'config': {'refresh_pattern': '\([a-zA-Z0-9_-]\+\|\k\+\)$'},
       \ })

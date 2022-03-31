@@ -5,7 +5,7 @@ let g:easycomplete_json = 1
 
 function! easycomplete#sources#json#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'json-languageserver',
+      \ 'name': 'jsonls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name']),'--stdio']},
       \ 'root_uri':{server_info->fnamemodify(expand('%'), ':p:h')},
       \ 'initialization_options': {'provideFormatter': v:true},

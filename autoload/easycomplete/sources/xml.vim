@@ -7,7 +7,7 @@ function! easycomplete#sources#xml#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'lemminx',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
-      \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'initialization_options': {},
       \ 'allowlist': a:opt["whitelist"],
       \ })
