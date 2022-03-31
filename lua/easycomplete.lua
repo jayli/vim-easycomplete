@@ -7,7 +7,6 @@ local log = Util.log
 
 -- all in all 入口
 local function nvim_lsp_handler()
-
   if not Util.nvim_installer_installed() then
     return
   end
@@ -28,6 +27,7 @@ local function nvim_lsp_handler()
 end
 
 local function test()
+  console(vim.inspect(Util))
   do
     return
   end

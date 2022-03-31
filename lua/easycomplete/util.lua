@@ -119,7 +119,7 @@ function Util.nvim_lsp_installed()
   if not Util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
   end
-  local install_list = require'nvim-lsp-installer.servers'.get_installed_server_names()
+  local install_list = Servers.get_installed_server_names()
   local flag = false
   for i = 1, #install_list do
     if lsp_name == install_list[i] then

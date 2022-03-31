@@ -37,6 +37,7 @@ function! s:InitCommand()
   let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
   let g:debugger.original_winid = bufwinid(bufnr(""))
   let g:debugger.init_msg = [
+        \ "  ⋆⋆⋆⋆⋆⋆⋆ Log Window ⋆⋆⋆⋆⋆⋆⋆", 
         \ "┌────────────────────────────────────┐",
         \ "│   Use <C-C> to close log window.   │",
         \ "│ Authored by Jayli bachi@taobao.com │",
@@ -134,7 +135,7 @@ function! s:InitLogWindow()
   setlocal nonu
   let g:debugger.status = "running"
   if g:env_is_vim
-    let g:debugger.job_id = term_start("tail -f " . get(g:debugger, 'logfile'),{
+    let g:debugger.job_id = term_start("tail -n 100 -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
@@ -142,7 +143,7 @@ function! s:InitLogWindow()
         \ 'exit_cb': function('s:LogCallback')
         \ })
   else
-    let g:debugger.job_id = termopen("tail -f " . get(g:debugger, 'logfile'),{
+    let g:debugger.job_id = termopen("tail -n 100 -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
         \ 'vertical':'1',
@@ -206,8 +207,6 @@ endfunction
 function! s:CloseLogWindow()
   if s:LogRunning()
     call easycomplete#util#execute(g:debugger.log_winid, ["q!"])
-    " call s:GotoLogWindow()
-    " call execute(':q!', 'silent!')
     call s:flush()
   endif
 endfunction
@@ -222,7 +221,9 @@ function! s:AppendLog(content)
   else
     let l:content = [a:content]
   endif
-  call map(l:content, { key, val -> '>>> ' . val})
+  let t_content = s:SplitContent(l:content)
+  let l:content = t_content
+  call map(l:content, { key, val -> key == 0 ? '>>> ' . val : val})
   if s:LogRunning()
     let l:logfile = get(g:debugger, "logfile")
     call writefile(l:content, l:logfile, "a")
@@ -237,6 +238,22 @@ function! s:InitLogFile()
   let g:debugger.logfile = tempname()
   call writefile([""], g:debugger.logfile, "a")
   return g:debugger.logfile
+endfunction
+
+function! s:SplitContent(content)
+  let res_arr = []
+  if type(a:content) == type("")
+    let res_arr = split(a:content, "\n")
+    return res_arr
+  endif
+  if type(a:content) == type([])
+    let res_arr = []
+    for item in a:content
+      let res_arr += s:SplitContent(item)
+    endfor
+    return res_arr
+  endif
+  return a:content
 endfunction
 
 function! s:DelLogFile()
