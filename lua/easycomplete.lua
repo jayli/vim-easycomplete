@@ -27,7 +27,7 @@ local function nvim_lsp_handler()
 end
 
 local function test()
-  console(vim.inspect(Util))
+  -- console(vim.inspect(Util))
   do
     return
   end

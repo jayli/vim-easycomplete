@@ -18,6 +18,16 @@ function Util.get(a, ...)
   return tmp_obj
 end
 
+function Util.curr_lsp_constructor_calling()
+  Util.constructor_calling_by_name(Util.current_plugin_name())
+end
+
+function Util.show_success_message()
+  vim.defer_fn(function()
+    Util.log("LSP is initalized successfully!")
+  end, 100)
+end
+
 function Util.get_configuration()
   local curr_lsp_name = Util.current_lsp_name()
   local ok, server = Servers.get_server(curr_lsp_name)

@@ -252,7 +252,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'yml',
-      \ 'whitelist': easycomplete#FileTypes("yml", ["yaml"]),
+      \ 'whitelist': easycomplete#FileTypes("yml", ["yaml", "yml"]),
       \ 'completor': 'easycomplete#sources#yaml#completor',
       \ 'constructor' :'easycomplete#sources#yaml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#yaml#GotoDefinition',

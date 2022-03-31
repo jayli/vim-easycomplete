@@ -3,16 +3,26 @@ local console = Util.console
 local log = Util.log
 local AutoLoad = {}
 local get_configuration = Util.get_configuration
+local show_success_message = Util.show_success_message
+local curr_lsp_constructor_calling = Util.curr_lsp_constructor_calling
 
-local function curr_lsp_constructor_calling()
-  Util.constructor_calling_by_name(Util.current_plugin_name())
-end
-
-local function show_success_message()
-  vim.defer_fn(function()
-    log("LSP is initalized successfully!")
-  end, 100)
-end
+AutoLoad.yml = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'node_modules',
+      '.bin',
+      'yaml-language-server'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
 
 AutoLoad.html = {
   setup = function(self)

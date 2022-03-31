@@ -37,7 +37,7 @@ function! s:InitCommand()
   let g:debugger.original_bufinfo = getbufinfo(bufnr(''))
   let g:debugger.original_winid = bufwinid(bufnr(""))
   let g:debugger.init_msg = [
-        \ "  ⋆⋆⋆⋆⋆⋆⋆ Log Window ⋆⋆⋆⋆⋆⋆⋆", 
+        \ "  ┄┄┄┄┄┄┄  Log Window ┄┄┄┄┄┄┄", 
         \ "┌────────────────────────────────────┐",
         \ "│   Use <C-C> to close log window.   │",
         \ "│ Authored by Jayli bachi@taobao.com │",
