@@ -1,6 +1,20 @@
-local Servers = require("nvim-lsp-installer.servers")
-local Server  = require("nvim-lsp-installer.server")
 local Util = {}
+
+function Util.get_servers()
+  if not Util.nvim_installer_installed() then
+    return nil
+  end
+  local Servers = require("nvim-lsp-installer.servers")
+  return Servers
+end
+
+function Util.get_server()
+  if not Util.nvim_installer_installed() then
+    return nil
+  end
+  local Server = require("nvim-lsp-installer.server")
+  return Server
+end
 
 -- TODO 需要再测试一下这个函数
 function Util.get(a, ...)
@@ -30,7 +44,7 @@ end
 
 function Util.get_configuration()
   local curr_lsp_name = Util.current_lsp_name()
-  local ok, server = Servers.get_server(curr_lsp_name)
+  local ok, server = Util.get_servers().get_server(curr_lsp_name)
   return {
     easy_plugin_ctx = Util.current_plugin_ctx(),
     easy_plugin_name = Util.current_plugin_name(),
@@ -38,7 +52,7 @@ function Util.get_configuration()
     easy_lsp_config_path = Util.get_default_config_path(),
     easy_cmd_full_path = Util.get_default_command_full_path(),
     nvim_lsp_root = Util.get(server, "root_dir"),
-    nvim_lsp_root_path = Server.get_server_root_path(),
+    nvim_lsp_root_path = Util.get_server().get_server_root_path(),
     nvim_lsp_ok = ok,
   }
 end
