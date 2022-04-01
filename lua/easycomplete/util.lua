@@ -44,7 +44,9 @@ end
 
 function Util.get_configuration()
   local curr_lsp_name = Util.current_lsp_name()
-  local ok, server = Util.get_servers().get_server(curr_lsp_name)
+  local Servers = Util.get_servers()
+  local Server = Util.get_server()
+  local ok, server = Servers.get_server(curr_lsp_name)
   return {
     easy_plugin_ctx = Util.current_plugin_ctx(),
     easy_plugin_name = Util.current_plugin_name(),
@@ -52,7 +54,7 @@ function Util.get_configuration()
     easy_lsp_config_path = Util.get_default_config_path(),
     easy_cmd_full_path = Util.get_default_command_full_path(),
     nvim_lsp_root = Util.get(server, "root_dir"),
-    nvim_lsp_root_path = Util.get_server().get_server_root_path(),
+    nvim_lsp_root_path = Server.get_server_root_path(),
     nvim_lsp_ok = ok,
   }
 end
@@ -143,6 +145,7 @@ function Util.nvim_lsp_installed()
   if not Util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
   end
+  local Servers = Util.get_servers()
   local install_list = Servers.get_installed_server_names()
   local flag = false
   for i = 1, #install_list do
