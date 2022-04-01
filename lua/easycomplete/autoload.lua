@@ -6,6 +6,33 @@ local get_configuration = Util.get_configuration
 local show_success_message = Util.show_success_message
 local curr_lsp_constructor_calling = Util.curr_lsp_constructor_calling
 
+AutoLoad.dart = {
+  setup = function(self)
+    if not vim.fn.executable('dart') then
+      return
+    end
+    local configuration = get_configuration()
+    local dart_bin = vim.fn.resolve(vim.fn.exepath('dart'))
+    local dart_bin_dir = vim.fn.fnamemodify(dart_bin, ':h')
+    local snapshots = vim.fn.join({
+      dart_bin_dir,
+      "snapshots",
+      "analysis_server.dart.snapshot"
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      vim.fn.join({
+        dart_bin,
+        snapshots,
+        "--lsp",
+        "$*",
+      }, " ")
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.php = {
   setup = function(self)
     local configuration = get_configuration()
@@ -26,20 +53,8 @@ AutoLoad.php = {
 
 -- JSON: nvim-lsp-installer 只支持 vscode-langservers-extracted, 不支持 json-languageserver
 -- AutoLoad.json = {
-  -- setup = function(self)
-  --   local configuration = get_configuration()
-  --   local cmd_path = vim.fn.join({
-  --     configuration.nvim_lsp_root,
-  --     'node_modules/vscode-langservers-extracted/lib/json-language-server/node',
-  --     'jsonServerMain.js'
-  --   }, "/")
-  --   Util.create_command(configuration.easy_cmd_full_path, {
-  --     "#!/usr/bin/env node",
-  --     "require('" .. cmd_path  .. "')",
-  --   })
-  --   curr_lsp_constructor_calling()
-  --   show_success_message()
-  -- end
+--    setup = function(self)
+--    end
 -- }
 
 AutoLoad.sh = {
