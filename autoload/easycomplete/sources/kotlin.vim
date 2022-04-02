@@ -5,9 +5,9 @@ let g:easycomplete_kotlin = 1
 
 function! easycomplete#sources#kotlin#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'kotlin-language-server',
+      \ 'name': 'kotlin_language_server',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
-      \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{ server_info -> easycomplete#util#GetDefaultRootUri() },
       \ 'initialization_options': v:null,
       \ 'config': {},
       \ 'allowlist': ['kotlin']

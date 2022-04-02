@@ -6,6 +6,28 @@ local get_configuration = Util.get_configuration
 local show_success_message = Util.show_success_message
 local curr_lsp_constructor_calling = Util.curr_lsp_constructor_calling
 
+AutoLoad.kt = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local command = 'kotlin-language-server'
+    if vim.fn.has('win32') or vim.fn.has('win64') then
+      local command = command .. '.bat'
+    end
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'server',
+      'bin',
+      command
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.rust = {
   setup = function(self)
     local configuration = get_configuration()
