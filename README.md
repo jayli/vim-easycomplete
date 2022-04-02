@@ -12,7 +12,7 @@ There are many excellent vim auto-completion plugins such as [nvim-cmp](https://
 
 Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don’t need to configure anything. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a javascript/typescript programmer.
 
-<img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=650 />
+<img src="https://gw.alicdn.com/imgextra/i3/O1CN01XpSCzr288IWBklcdC_!!6000000007887-1-tps-917-474.gif" width=650 />
 
 It is easy to install and use. It contains these features:
 
@@ -120,12 +120,14 @@ It support keywords/dictionary/directory completion by default.
 
 #### Semantic Completion for Other Languages
 
-There tow ways to install lsp server.
+There are tow ways to install lsp server.
 
-1. For vim/nvim: via integrated installer by `:InstallLspServer` for current filetype.
-2. For nvim only: via [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer)
+1. For vim/nvim: via integrated installer by `:InstallLspServer`.
+2. For nvim only: via [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer) by `:LspInstall`
 
-LSP Server will all be installed in `~/.config/vim-easycomplete/servers`. You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are ok:
+LSP Server will all be installed in `~/.config/vim-easycomplete/servers`.
+
+You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are avilable:
 
 - `:InstallLspServer`
 - `:InstallLspServer lua`
