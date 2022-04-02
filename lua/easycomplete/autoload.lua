@@ -6,6 +6,24 @@ local get_configuration = Util.get_configuration
 local show_success_message = Util.show_success_message
 local curr_lsp_constructor_calling = Util.curr_lsp_constructor_calling
 
+AutoLoad.grvy = {
+  setup = function(self)
+    local configuration = get_configuration()
+    local cmd_path = vim.fn.join({
+      configuration.nvim_lsp_root,
+      'build',
+      'libs',
+      'groovyls-all.jar'
+    }, "/")
+    Util.create_command(configuration.easy_cmd_full_path, {
+      "#!/usr/bin/env sh",
+      'java -jar ' .. cmd_path .. " $*",
+    })
+    curr_lsp_constructor_calling()
+    show_success_message()
+  end
+}
+
 AutoLoad.kt = {
   setup = function(self)
     local configuration = get_configuration()
