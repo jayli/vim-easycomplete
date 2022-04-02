@@ -34,6 +34,8 @@ For vim-plug:
 
 ```vim
 Plug 'jayli/vim-easycomplete'
+Plug 'SirVer/ultisnips'
+Plug 'williamboman/nvim-lsp-installer'
 ```
 
 Run `:PlugInstall`.
@@ -42,60 +44,19 @@ For dein.vim
 
 ```vim
 call dein#add('jayli/vim-easycomplete')
+call dein#add('SirVer/ultisnips')
+call dein#add('williamboman/nvim-lsp-installer')
 ```
 
 For Packer.nvim
 
 ```lua
 use { 'jayli/vim-easycomplete' }
+use { 'SirVer/ultisnips' }
+use { 'williamboman/nvim-lsp-installer' }
 ```
 
-### Configuration
-
-The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
-
-### Usage
-
-By default it use Tab to trigger the completion suggestions. Alse use Tab and Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping). Or you can map `:EasyCompleteGotoDefinition`, `:EasyCompleteReference` (find references) and `:EasyCompleteRename` (Rename).
-
-```vim
-noremap gr :EasyCompleteReference<CR>
-noremap gd :EasyCompleteGotoDefinition<CR>
-noremap rn :EasyCompleteRename<CR>
-noremap gb :BackToOriginalBuffer<CR>
-```
-
-If you don't want use `Tab` to trigger completion suggestions. You can change this setting by:
-
-```vim
-let g:easycomplete_tab_trigger="<c-space>"
-```
-
-Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for diagnostics jumping. The plugin has already map diagnostic jumping to `<C-j>` and `<C-k>`. You can change these mapping via:
-
-```vim
-nnoremap <silent> <C-n> :EasyCompleteNextDiagnostic<CR>
-nnoremap <silent> <C-p> :EasyCompletePreviousDiagnostic<CR>
-```
-
-You only have to set custom diagnostic HOTKEYs manually in case of there was a conflict. By default press `<C-j>` or `<C-k>` for diagnostics jumping like this:
-
-<img src="https://img.alicdn.com/imgextra/i1/O1CN01g7PWjZ1q7EVKVpxno_!!6000000005448-1-tps-902-188.gif" width=650 />
-
-- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
-- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
-
-Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP Server is not ready, Use `:EasyCompleteInstallServer` to install.
-
-Typing `./` or `../` to trigger directory completion suggestion.
-
-Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if you need.
-
-Vim-Easycomplete also support signature popup (Use `let g:easycomplete_signature_enable = 0` to disable):
-
-<img src="https://img.alicdn.com/imgextra/i4/O1CN01kNd19n1k7nINy4SQT_!!6000000004637-1-tps-862-228.gif" width=650 />
-
-Typing `:h easycomplete` for help.
+### All Supported Commands
 
 All commands:
 
@@ -119,82 +80,113 @@ All commands:
 | `:DenoCache`                      | Do Deno Cache for downloading modules               |
 | `:CleanLog`                       | close quickfix window                               |
 
+### Configuration
+
+The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
+
+### Usage
+
+Use Tab to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
+
+```vim
+noremap gr :EasyCompleteReference<CR>
+noremap gd :EasyCompleteGotoDefinition<CR>
+noremap rn :EasyCompleteRename<CR>
+noremap gb :BackToOriginalBuffer<CR>
+```
+
+Set trigger completion mapping:
+
+```vim
+let g:easycomplete_tab_trigger="<c-space>"
+```
+
+The plugin has already map diagnostic jumping to `<C-j>` and `<C-k>`. You can change these mapping via:
+
+```vim
+nnoremap <silent> <C-k> :EasyCompleteNextDiagnostic<CR>
+nnoremap <silent> <C-j> :EasyCompletePreviousDiagnostic<CR>
+```
+
+- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
+- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
+- Set `let g:easycomplete_signature_enable = 0` to disable lsp signature checking.
+
+Typing `:h easycomplete` for help.
+
 ### Language Support
 
-EasyComplete support keywords/dictionary/directory completion by default.
+It support keywords/dictionary/directory completion by default.
 
 #### Semantic Completion for Other Languages
 
-Most Language require LSP Server. Install missing LSP Server with `:InstallLspServer` for current filetype (recommended). LSP Server will be installed in `~/.config/vim-easycomplete/servers`.
+There tow ways to install lsp server.
 
-```vim
-:InstallLspServer
-```
+1. For vim/nvim: via integrated installer by `:InstallLspServer` for current filetype.
+2. For nvim only: via [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer)
 
-Or you can install a lsp server with specified plugin name (not recommended). Take typescript/javascript for example:
+LSP Server will all be installed in `~/.config/vim-easycomplete/servers`. You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are ok:
 
-```vim
-:InstallLspServer ts
-```
+- `:InstallLspServer`
+- `:InstallLspServer lua`
 
 All supported languages:
 
-
-| Plugin Name      | Languages             | Language Server               | Installer          | Env requirements|
-|------------------|-----------------------|:-----------------------------:|:------------------:|:---------------:|
-| directory        | directory suggestion  | No Need                       | Integrated         | None            |
-| buf              | keywords & dictionary | No Need                       | Integrated         | None            |
-| snips            | Snippets Support      | ultisnips                     | Manually           | python3         |
-| ts               | JavaScript/TypeScript | tsserver                      | Yes                | node/npm        |
-| deno             | JavaScript/TypeScript | deno                          | Yes                | deno            |
-| tn               | TabNine               | TabNine                       | Yes                | None            |
-| vim              | Vim                   | vim-language-server           | Yes                | node/npm        |
-| cpp              | C/C++/OC              | clangd                        | Yes                | None            |
-| css              | CSS                   | css-languageserver            | Yes                | node/npm        |
-| html             | HTML                  | html-languageserver           | Yes                | node/npm        |
-| yml              | YAML                  | yaml-language-server          | Yes                | node/npm        |
-| xml              | Xml                   | lemminx                       | Yes                | java/jdk        |
-| sh               | Bash                  | bash-language-server          | Yes                | node/npm        |
-| json             | JSON                  | json-languageserver           | Yes                | node/npm        |
-| php              | php                   | intelephense                  | Yes                | node/npm        |
-| dart             | dart                  | analysis-server-dart-snapshot | Yes                | None            |
-| py               | Python                | pyls                          | Yes                | python3/pip3    |
-| java             | Java                  | eclipse-jdt-ls                | Yes                | java11/jdk      |
-| go               | Go                    | gopls                         | Yes                | go              |
-| r                | R                     | r-languageserver              | Yes                | R               |
-| rb               | Ruby                  | solargraph                    | Yes                | ruby/bundle     |
-| lua              | Lua                   | sumneko-lua-language-server   | Yes                | Lua             |
-| nim              | Nim                   | nimlsp                        | Yes                | nim/nimble      |
-| rust             | Rust                  | rust-analyzer                 | Yes                | None            |
-| kt               | Kotlin                | kotlin-language-server        | Yes                | java/jdk        |
-| grvy             | Groovy                | groovy-language-server        | Yes                | java/jdk        |
-| cmake            | cmake                 | cmake-language-server         | Yes                | python3/pip3    |
-| c#               | C#                    | omnisharp-lsp                 | Yes                | None            |
+| Plugin Name | Languages | Language Server          | Installer          | Requirements | nvim-lsp-installer support|
+|-------------|-----------|:------------------------:|:------------------:|:------------:|:-------------------------:|
+| directory   | directory | No Need                  | Integrated         | None         | -                         |
+| buf         | buf & dict| No Need                  | Integrated         | None         | -                         |
+| snips       | Snippets  | ultisnips                | Integrated         | python3      | -                         |
+| ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
+| deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
+| tn          | TabNine   | TabNine                  | Yes                | None         | No                        |
+| vim         | Vim       | vimls                    | Yes                | node/npm     | Yes                       |
+| cpp         | C/C++/OC  | clangd                   | Yes                | None         | Yes                       |
+| css         | CSS       | cssls                    | Yes                | node/npm     | Yes                       |
+| html        | HTML      | html                     | Yes                | node/npm     | Yes                       |
+| yml         | YAML      | yamlls                   | Yes                | node/npm     | Yes                       |
+| xml         | Xml       | lemminx                  | Yes                | java/jdk     | Yes                       |
+| sh          | Bash      | bashls                   | Yes                | node/npm     | Yes                       |
+| json        | JSON      | json-languageserver      | Yes                | node/npm     | No                        |
+| php         | php       | intelephense             | Yes                | node/npm     | Yes                       |
+| dart        | dart      | dartls                   | Yes                | None         | Yes                       |
+| py          | Python    | pylsp                    | Yes                | python3/pip3 | Yes                       |
+| java        | Java      | jdtls                    | Yes                | java11/jdk   | No                        |
+| go          | Go        | gopls                    | Yes                | go           | Yes                       |
+| r           | R         | r-languageserver         | Yes                | R            | No                        |
+| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  | No                        |
+| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          | Yes                       |
+| nim         | Nim       | nimls                    | Yes                | nim/nimble   | Yes                       |
+| rust        | Rust      | `rust_analyzer`          | Yes                | None         | Yes                       |
+| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     | Yes                       |
+| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     | Yes                       |
+| cmake       | cmake     | cmake                    | Yes                | python3/pip3 | Yes                       |
+| c#          | C#        | omnisharp-lsp            | Yes                | None         | No                        |
 
 More info about semantic completion for each supported language:
 
 - JavaScript & TypeScript: [tsserver](https://github.com/microsoft/TypeScript) required.
-- Python: [pyls](https://github.com/palantir/python-language-server) required. (`pip install python-language-server`)
+- Python: [pylsp](https://github.com/palantir/python-language-server) required. (`pip install python-language-server`)
 - Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (`go get golang.org/x/tools/gopls`)
-- Vim Script: [vim-language-server](https://github.com/iamcco/vim-language-server) required.
+- Vim Script: [vimls](https://github.com/iamcco/vim-language-server) required.
 - C++/C/OC：[Clangd](https://github.com/clangd/clangd) required.
-- CSS: [vscode-css-languageserver-bin](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets)，You must install it manually.
+- CSS: [cssls](https://github.com/vscode-langservers/vscode-css-languageserver-bin) required. (css-languageserver)，Css-languageserver dose not support CompletionProvider by default as it requires [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets)，You must install it manually.
 - JSON: [json-languageserver](https://github.com/vscode-langservers/vscode-json-languageserver-bin) required.
 - PHP: [intelephense](https://www.npmjs.com/package/intelephense)
-- Dart: [analysis-server-dart-snapshot](https://storage.googleapis.com/dart-archive/)
-- HTML: [html-languageserver](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets) manually.
-- Shell: [bash-language-server](https://github.com/bash-lsp/bash-language-server) required.
-- Java: [eclipse-jdt-ls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
-- Cmake: [cmake-language-server](https://github.com/regen100/cmake-language-server) required.
-- Kotlin: [kotlin-language-server](https://github.com/fwcd/kotlin-language-server) required.
+- Dart: [dartls](https://storage.googleapis.com/dart-archive/)
+- HTML: [html](https://github.com/vscode-langservers/vscode-html-languageserver-bin) required. html-languageserver dose not support CompletionProvider by default. You must install [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets) manually.
+- Shell: [bashls](https://github.com/bash-lsp/bash-language-server) required.
+- Java: [jdtls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
+- Cmake: [cmake](https://github.com/regen100/cmake-language-server) required.
+- Kotlin: [kotlin_language_server](https://github.com/fwcd/kotlin-language-server) required.
 - Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
-- Lua: [sumneko-lua-language-server](https://github.com/sumneko/lua-language-server) required. Local configuration file path is `~/.config/vim-easycomplete/servers/lua/config.json`. Get more information [here](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
+- Lua: [sumneko_lua](https://github.com/sumneko/lua-language-server) required. Local configuration file path is `~/.config/vim-easycomplete/servers/lua/config.json`. Get more information [here](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
 - Xml: [lemminx](https://github.com/eclipse/lemminx) required.
-- Groovy: [groovy-language-server](https://github.com/prominic/groovy-language-server) required.
-- Yaml: [yaml-language-server](https://github.com/redhat-developer/yaml-language-server) required.
+- Groovy: [groovyls](https://github.com/prominic/groovy-language-server) required.
+- Yaml: [yamlls](https://github.com/redhat-developer/yaml-language-server) required.
 - Ruby: [solargraph](https://github.com/castwide/solargraph) required.
 - Nim: [nimlsp](https://github.com/PMunch/nimlsp) required. [packages.json](https://github.com/nim-lang/packages/blob/master/packages.json) downloading is very slow, You'd better intall minlsp manually via `choosenim` follow [this guide](https://github.com/jayli/vim-easycomplete/issues/155#issuecomment-1041581629).
-- Deno: [Deno](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
+- Deno: [denols](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
 - C# : [omnisharp](http://www.omnisharp.net/) required.
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
@@ -214,17 +206,7 @@ let g:easycomplete_filetypes = {
 
 #### Snippet Support
 
-Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed. Install with vim-plug:
-
-```vim
-Plug 'SirVer/ultisnips'
-```
-
-for Packer.nvim
-
-```vim
-use { 'SirVer/ultisnips' }
-```
+Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed.
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
 
@@ -303,8 +285,6 @@ function! g:Tss_GotoDefinition(...)
 endfunction
 ```
 
-So you should implement at least three functions `completor`/`constructor`/`gotodefinition`.
-
 ### Beautify the vim completion menu
 
 There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`. (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
@@ -358,10 +338,6 @@ let g:easycomplete_sign_text = {
 ```
 
 You can define icon alias via giving fullnames and shortname.
-
-screenshots:
-
-<img src="https://gw.alicdn.com/imgextra/i3/O1CN013D8ONB1lf3gOkkYI4_!!6000000004845-2-tps-1246-618.png?t=1" width=650 />
 
 ### Issues
 
