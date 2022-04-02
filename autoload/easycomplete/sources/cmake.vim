@@ -7,9 +7,9 @@ let g:easycomplete_sources_cmake = 1
 " 参考：https://github.com/regen100/cmake-language-server/issues/9
 function! easycomplete#sources#cmake#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'cmake-language-server',
+      \ 'name': 'cmake',
       \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
-      \ 'root_uri':{server_info -> "file://" . fnamemodify(expand('%'), ':p:h')},
+      \ 'root_uri':{ server_info -> easycomplete#util#GetDefaultRootUri() },
       \ 'initialization_options': {'buildDirectory': 'build'},
       \ 'allowlist': a:opt['whitelist'],
       \ })
@@ -20,7 +20,7 @@ function! easycomplete#sources#cmake#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cmake#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cmake", "make"])
+  return easycomplete#DoLspDefinition(["cmake", "make", "txt"])
 endfunction
 
 
