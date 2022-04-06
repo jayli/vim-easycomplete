@@ -35,7 +35,6 @@ For vim-plug:
 ```vim
 Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
-Plug 'williamboman/nvim-lsp-installer'
 ```
 
 Run `:PlugInstall`.
@@ -45,7 +44,6 @@ For dein.vim
 ```vim
 call dein#add('jayli/vim-easycomplete')
 call dein#add('SirVer/ultisnips')
-call dein#add('williamboman/nvim-lsp-installer')
 ```
 
 For Packer.nvim
@@ -53,7 +51,6 @@ For Packer.nvim
 ```lua
 use { 'jayli/vim-easycomplete' }
 use { 'SirVer/ultisnips' }
-use { 'williamboman/nvim-lsp-installer' }
 ```
 
 ### All Supported Commands
@@ -124,6 +121,10 @@ There are tow ways to install lsp server.
 
 1. For vim/nvim: via integrated installer by `:InstallLspServer`.
 2. For nvim only: via [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer) by `:LspInstall`
+
+```vim
+Plug 'williamboman/nvim-lsp-installer'
+```
 
 LSP Server will all be installed in `~/.config/vim-easycomplete/servers`.
 
