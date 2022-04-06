@@ -419,10 +419,12 @@ function! s:NVimShow(opt, windowtype, float_type)
   " Popup and Signature
   if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
     call setbufvar(winbufnr(winid), '&filetype', filetype)
-    call easycomplete#ui#ApplyMarkdownSyntax(winid)
   else
     " Lint
     call setbufvar(winbufnr(winid), '&filetype', 'txt')
+  endif
+  if a:windowtype == "float" && a:float_type == "signature"
+    call easycomplete#ui#ApplyMarkdownSyntax(winid)
   endif
 endfunction
 
