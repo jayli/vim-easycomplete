@@ -360,6 +360,7 @@ Handle backsapce typing
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01obuQnJ1tIAoUNv8Up_!!6000000005878-1-tps-880-689.gif" width=600 />
 
 Snip Support
+
 <img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=600 />
 
 Diagnostics jumping
