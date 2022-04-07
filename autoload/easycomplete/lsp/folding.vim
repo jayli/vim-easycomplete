@@ -61,12 +61,12 @@ function! easycomplete#lsp#folding#send_request(server_name, buf, sync) abort
   call easycomplete#lsp#send_request(a:server_name, {
         \ 'method': 'textDocument/foldingRange',
         \ 'params': {
-          \   'textDocument': easycomplete#lsp#get_text_document_identifier(a:buf)
-          \ },
-          \ 'on_notification': function('s:handle_fold_request', [a:server_name]),
-          \ 'sync': a:sync,
-          \ 'bufnr': a:buf
-          \ })
+        \   'textDocument': easycomplete#lsp#get_text_document_identifier(a:buf)
+        \ },
+        \ 'on_notification': function('s:handle_fold_request', [a:server_name]),
+        \ 'sync': a:sync,
+        \ 'bufnr': a:buf
+        \ })
 endfunction
 
 function! s:handle_fold_request(server, data) abort
