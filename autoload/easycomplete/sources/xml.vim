@@ -29,7 +29,31 @@ function! easycomplete#sources#xml#filter(matches)
   elseif ctx['typed'] =~ "</$" " </> 的处理
     let matches = map(copy(matches), function("s:XmlHack_S_ColonMap"))
   endif
+  try
+    let matches = map(copy(matches), function('s:XmlSnip'))
+  catch
+    echom v:exception
+  endtry
   return matches
+endfunction
+
+function! s:XmlSnip(key, val)
+  if !easycomplete#util#expandable(a:val)
+    return a:val
+  endif
+  let user_data = easycomplete#util#GetUserData(a:val)
+  let lsp_item = s:get(user_data, "lsp_item")
+  let new_text = s:get(lsp_item, "textEdit", "newText")
+  let a:val['word'] = split(new_text, "\n")[0]
+  let lsp_item["insertText"] = new_text
+
+  let new_user_data = json_encode(extend(user_data, {
+        \   'lsp_item': lsp_item
+        \ }))
+  let a:val['user_data'] = new_user_data
+  " call s:log(a:val)
+  " call s:console(easycomplete#util#expandable(a:val), new_text)
+  return a:val
 endfunction
 
 function! s:XmlHack_S_ColonMap(key, val)
@@ -47,3 +71,14 @@ function! s:XmlHack_S_ColonMap(key, val)
   return a:val
 endfunction
 
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:get(...)
+  return call('easycomplete#util#get', a:000)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction

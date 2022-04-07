@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -1099,11 +1099,14 @@ function! easycomplete#TypeEnterWithPUM()
       let insert_text = get(oitems, 'insertText', '')
       let user_data = easycomplete#util#GetUserData(l:item)
       let custom_expand = get(user_data, 'custom_expand', 0)
+      call s:console(oitems)
       if custom_expand
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
         call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
       elseif !empty(insert_text) && s:SnipSupports()
+        call s:console(111)
         let word = get(l:item, "word")
+        " TODO here jayli 把光标 cursor 到正确的位置
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
       else
         " do nothing
@@ -1117,9 +1120,12 @@ function! easycomplete#TypeEnterWithPUM()
   return "\<CR>"
 endfunction
 
-
 function! s:CursorExpandableSnipPosition(back)
   call cursor(getcurpos()[1], getcurpos()[2] - a:back)
+endfunction
+
+function! s:cursor(line, row)
+  call cursor(line, row)
 endfunction
 
 function! s:ExpandSnipManually(word)

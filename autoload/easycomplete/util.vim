@@ -1439,10 +1439,14 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
       let l:cursor_backing_steps = strlen(l:vim_complete_item['word'][l:placeholder_position:])
       let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
       if strlen(l:origin_word) > strlen(l:vim_complete_item['word'])
-        let l:vim_complete_item['user_data'] = json_encode({'expandable':1,
+        let l:vim_complete_item['user_data'] = json_encode({
+              \ 'expandable':1,
               \ 'placeholder_position': l:placeholder_position,
               \ 'cursor_backing_steps': l:cursor_backing_steps})
       endif
+      let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
+            \ 'expandable': 1,
+            \ }))
     elseif l:completion_item['label'] =~ ".(.*)$"
       let l:vim_complete_item['abbr'] = l:completion_item['label']
       let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
