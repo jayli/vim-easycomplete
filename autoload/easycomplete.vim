@@ -1099,15 +1099,15 @@ function! easycomplete#TypeEnterWithPUM()
       let insert_text = get(oitems, 'insertText', '')
       let user_data = easycomplete#util#GetUserData(l:item)
       let custom_expand = get(user_data, 'custom_expand', 0)
-      call s:console(oitems)
       if custom_expand
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-        call s:AsyncRun(function('s:CursorExpandableSnipPosition'), [l:back], 15)
+        call s:AsyncRun(function('s:CursorExpandableSnipBackword'), [l:back], 15)
       elseif !empty(insert_text) && s:SnipSupports()
-        call s:console(111)
         let word = get(l:item, "word")
-        " TODO here jayli 把光标 cursor 到正确的位置
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
+        call timer_start(30, { -> call(function("UltiSnips#Anon"), [insert_text, word])})
+        " TODO here jayli 把光标 cursor 到正确的位置
+        " call timer_start(170, { -> s:HandleLspSnipPosition(oitems)})
       else
         " do nothing
       endif
@@ -1120,7 +1120,26 @@ function! easycomplete#TypeEnterWithPUM()
   return "\<CR>"
 endfunction
 
-function! s:CursorExpandableSnipPosition(back)
+function! s:HandleLspSnipPosition(lsp_item)
+  let start = s:get(a:lsp_item, "textEdit", "range", "start")
+  if empty(start)
+    return
+  endif
+  call s:CursorExpandableSnipPosition(s:get(start, "line"), s:get(start, "character"), s:get(a:lsp_item, "textEdit", "newText"))
+endfunction
+
+function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)
+  " TODO here jayli
+  let lines = split(a:insertText, "\n")
+  let lines_no = len(lines)
+  let backline = lines_no - a:start_line
+  let cursor_line = getcurpos()[1] - backline
+  let cursor_row = a:start_row
+  " call cursor(cursor_line, cursor_row)
+  call s:console(backline, cursor_line, cursor_row)
+endfunction
+
+function! s:CursorExpandableSnipBackword(back)
   call cursor(getcurpos()[1], getcurpos()[2] - a:back)
 endfunction
 
