@@ -645,7 +645,7 @@ function! s:NormalizeLogMsg(...)
   elseif len(a:000) == 1
     if type(a:1) == type("")
       let l:res = a:1
-    elseif index([2,7], type(a:000))
+    elseif index([2,7,0], type(a:000))
       let l:res = string(a:1)
     else
       let l:res = a:1
@@ -654,6 +654,8 @@ function! s:NormalizeLogMsg(...)
     for item in l:args
       if type(item) == type("")
         let l:res = l:res . " " . item
+      elseif type(item) == type(1)
+        let l:res = l:res . " " . string(item)
       else
         let l:res = l:res . " " . json_encode(item)
       endif
@@ -1792,4 +1794,23 @@ function! easycomplete#util#GetConfigPath(plugin_name) " {{{
   let config_root = easycomplete#util#ConfigRoot()
   let config_path = config_root . '/servers/' . plugin_name . '/config.json'
   return config_path
+endfunction " }}}
+
+function! easycomplete#util#errlog(...) " {{{
+  let max_line = 2000
+  let logfile = easycomplete#util#ConfigRoot() . "/errlog"
+  if !exists("g:easy_log_file_exists") && !easycomplete#util#FileExists(logfile)
+    call writefile(["----- Easycomplete Errlog ------"], logfile, "a")
+  endif
+  let g:easy_log_file_exists = 1
+  let l:res = call('s:NormalizeLogMsg', a:000)
+  if type(l:res) != type([])
+    let l:res = [l:res]
+  endif
+  let time_stamp = strftime("%Y %b %d %X")
+  let buf_name = fnamemodify(expand('%'), ':f:h')
+  call map(l:res, 'time_stamp . " " . buf_name . v:val')
+  let old_content = readfile(logfile, "", -1 * max_line)
+  let new_content = old_content + l:res
+  call writefile(new_content, logfile, "S")
 endfunction " }}}

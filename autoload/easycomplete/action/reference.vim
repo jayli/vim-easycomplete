@@ -28,6 +28,7 @@ function! s:do()
   let l:server_name = l:server_names[0]
   if !easycomplete#lsp#HasProvider(l:server_name, 'referencesProvider')
     call s:log('[LSP References]: referencesProvider is not supported')
+    call s:errlog('[LOG]', 'LSP References: referencesProvider is not supported')
     return
   endif
 
@@ -42,6 +43,7 @@ function! s:do()
         \ },
         \ 'on_notification': function('s:HandleLspCallback', [l:server_name]),
         \ })
+  call s:errlog('[LOG]', 'reference request', easycomplete#lsp#get_text_document_identifier(), easycomplete#lsp#get_position())
 endfunction
 
 function! s:flush()
@@ -73,10 +75,12 @@ endfunction
 function! s:HandleLspCallback(server_name, data)
   if easycomplete#lsp#client#is_error(a:data['response'])
     call easycomplete#lsp#utils#error('Failed ' . a:server_name)
+    call s:errlog('[ERR]', 'Failed ' . a:server_name, a:data['response'])
     return
   endif
 
   if !has_key(a:data['response'], 'result')
+    call s:errlog('[ERR]', 'response.result is not exists')
     return
   endif
   let reference_list = get(a:data['response'], 'result', [])
@@ -85,13 +89,14 @@ function! s:HandleLspCallback(server_name, data)
     call setqflist([], 'r')
     call s:flush()
     call s:log("No references found")
+    call s:errlog('[ERR]', 'No references found', s:get(a:data,'response'))
     return
   endif
   for item in reference_list
     let filename = easycomplete#util#TrimFileName(get(item, "uri", ""))
     let lnum = str2nr(get(item, "range", "")['start']['line']) + 1
     let col = str2nr(get(item, "range", "")['start']['character']) + 1
-    let new_item = 
+    let new_item =
           \ {
           \  'filename': filename,
           \  'lnum':     lnum,
@@ -106,6 +111,7 @@ function! s:HandleLspCallback(server_name, data)
   endfor
   call setqflist(quick_window_list, 'r')
   call s:RecordCurrentBuf()
+  call s:errlog('[LOG]', 'references: success')
   copen
   call s:hi()
 endfunction
@@ -148,4 +154,8 @@ endfunction
 
 function! s:get(...)
   return call('easycomplete#util#get', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction

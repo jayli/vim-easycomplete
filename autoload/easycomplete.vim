@@ -74,6 +74,7 @@ function! easycomplete#Enable()
     return
   endif
   let b:easycomplete_loaded_done = 1
+  call s:errlog("[LOG]", "Easycomplete Startup", easycomplete#util#GetCurrentFullName())
   let b:typing_ctx = easycomplete#context()
   doautocmd <nomodeline> User easycomplete_default_plugin
   doautocmd <nomodeline> User easycomplete_custom_plugin
@@ -139,6 +140,7 @@ function! s:BindingTypingCommandOnce()
             \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
             \ )
     endif
+    call s:errlog("[ERR]", 'You should set Diagnostic jumping map-key manully', v:exception)
   endtry
 
   " TODO 不生效
@@ -853,6 +855,7 @@ function! s:CompletorCallingAtFirstComplete(...)
       endif
     endwhile
   catch
+    call s:errlog("[ERR]", v:exception)
     call s:flush()
   endtry
 endfunction
@@ -936,6 +939,7 @@ function! s:CompleteMatchAction()
     let b:typing_ctx = easycomplete#context()
   catch
     call s:log('[CompleteMatchAction]', v:exception)
+    call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
   endtry
 endfunction
 
@@ -1165,7 +1169,7 @@ function! s:ExpandSnipManually(word)
     endif
   catch
     " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
-    call s:log('[ExpandSnipManually]', v:exception)
+    call s:errlog("[ERR]", 'ExpandSnipManually', v:exception)
   endtry
 endfunction
 
@@ -1393,7 +1397,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
     call s:LetCompleteTaskQueueAllDone()
   catch
-    call s:log('[FirstCompleteRendering]', v:exception)
+    call s:errlog('[ERR]', 'FirstCompleteRendering', v:exception)
   endtry
 endfunction
 
@@ -1747,6 +1751,7 @@ function! s:SameBeginning(ctx1, ctx2)
       return v:false
     endif
   catch
+    call s:errlog("[ERR]", 'SameBeginning', v:exception)
     " for E715
     return v:false
   endtry
@@ -1985,6 +1990,10 @@ endfunction
 
 function! s:trace(...)
   return call('easycomplete#util#trace', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction
 
 function! Console(...)
