@@ -154,7 +154,7 @@ All supported languages:
 | php         | php       | intelephense             | Yes                | node/npm     | Yes                       |
 | dart        | dart      | dartls                   | Yes                | None         | Yes                       |
 | py          | Python    | pylsp                    | Yes                | python3/pip3 | Yes                       |
-| java        | Java      | jdtls                    | Yes                | java11/jdk   | No                        |
+| java        | Java      | jdtls                    | Yes                | java11/jdk   | Yes                       |
 | go          | Go        | gopls                    | Yes                | go           | Yes                       |
 | r           | R         | r-languageserver         | Yes                | R            | No                        |
 | rb          | Ruby      | solargraph               | Yes                | ruby/bundle  | No                        |

@@ -6,7 +6,7 @@ let g:easycomplete_sources_java = 1
 function! easycomplete#sources#java#constructor(opt, ctx)
   " 注册 lsp
   call easycomplete#RegisterLspServer(a:opt, {
-      \ 'name': 'vim-lsp-java.eclipse-jdtls',
+      \ 'name': 'jdtls',
       \ 'cmd': {server_info->[easycomplete#installer#GetCommand(a:opt['name'])]},
       \ 'root_uri':{server_info -> easycomplete#util#GetDefaultRootUri()},
       \ 'allowlist': a:opt["whitelist"],
