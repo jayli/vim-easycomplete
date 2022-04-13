@@ -30,11 +30,17 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   call easycomplete#complete(a:name, a:ctx, a:startcol, result)
 endfunction
 
-" 关闭补全浮窗
-function! s:CloseCompletionMenu()
-  if pumvisible()
-    call feedkeys("\<ESC>a", 'in')
+function! easycomplete#sources#directory#pum()
+  if !pumvisible() || !exists('g:easycomplete_stunt_menuitems')
+    return v:valse
   endif
+  if empty(g:easycomplete_stunt_menuitems)
+    return v:false
+  endif
+  if get(g:easycomplete_stunt_menuitems[-1], 'plugin_name', "") == "directory"
+    return v:true
+  endif
+  return v:false
 endfunction
 
 " 根据输入的 path 匹配出结果，返回的是一个List ['f1','f2','d1','d2']
@@ -161,4 +167,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction

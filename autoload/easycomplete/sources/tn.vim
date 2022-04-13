@@ -76,7 +76,7 @@ function! easycomplete#sources#tn#FireCondition()
     if l:typed[strlen(l:typed) - 2] != " " && l:typed[strlen(l:typed) - 1] == " "
       return v:true
     endif
-    let charset = [":","=",",",";",")", "]", "}", ">", "'", '"']
+    let charset = [":","=",",",";",">", "'", '"']
     if index(charset, l:char) >= 0 &&
           \ index(charset, l:typed[strlen(l:typed) - 2]) < 0
       return v:true
@@ -248,6 +248,9 @@ function! s:StdOutCallback(job_id, data, event)
 endfunction
 
 function! s:UpdateRendering(result)
+  if easycomplete#sources#directory#pum()
+    return
+  endif
   call easycomplete#StoreCompleteSourceItems(s:name, a:result)
   call easycomplete#TabNineCompleteRendering()
 endfunction
