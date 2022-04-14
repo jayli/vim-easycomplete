@@ -823,7 +823,7 @@ function! s:ensure_conf(buf, server_name, cb) abort
           \ })
   endif
   let l:msg = s:new_rpc_success('configuration sent', { 'server_name': a:server_name })
-  " call s:errlog("[LOG]", l:msg)
+  call s:errlog("[LOG]", l:msg)
   call a:cb(l:msg)
 endfunction
 

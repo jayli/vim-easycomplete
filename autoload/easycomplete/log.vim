@@ -226,7 +226,7 @@ function! s:AppendLog(content)
   call map(l:content, { key, val -> key == 0 ? '>>> ' . val : val})
   if s:LogRunning()
     let l:logfile = get(g:debugger, "logfile")
-    call writefile(l:content, l:logfile, "a")
+    call writefile(l:content, l:logfile, "Sa")
   endif
 endfunction
 

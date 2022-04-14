@@ -11,7 +11,8 @@ function! easycomplete#sources#dart#constructor(opt, ctx)
       \ 'initialization_options': v:null,
       \ 'allowlist': a:opt['whitelist'],
       \ 'config': {},
-      \ 'semantic_highlight': {}
+      \ 'semantic_highlight': {},
+      \ 'workspace_config': {"analysisExcludedFolders":v:true},
       \ })
 endfunction
 
