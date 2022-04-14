@@ -133,3 +133,7 @@ function! easycomplete#lsp#utils#location#_lsp_to_vim_list(loc) abort
   endif
   return l:result
 endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
+endfunction

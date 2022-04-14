@@ -103,3 +103,6 @@ function! s:handle_fold_request(server, data) abort
   endfor
 endfunction
 
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
+endfunction

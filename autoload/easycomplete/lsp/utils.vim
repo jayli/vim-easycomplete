@@ -262,3 +262,7 @@ else
     endtry
   endfunction
 endif
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
+endfunction

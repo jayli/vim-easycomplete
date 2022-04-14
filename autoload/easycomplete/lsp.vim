@@ -122,7 +122,7 @@ endfunction
 function! s:on_text_document_did_close() abort
   let l:buf = bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
-  call s:log('s:on_text_document_did_close()', l:buf)
+  call s:errlog('[LOG]','s:on_text_document_did_close()', l:buf)
 endfunction
 
 function! s:on_text_document_did_save() abort
@@ -132,7 +132,7 @@ function! s:on_text_document_did_open(...) abort
   let l:buf = a:0 > 0 ? a:1 : bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
   if getcmdwintype() !=# '' | return | endif
-  call s:log('s:on_text_document_did_open()', l:buf, &filetype, getcwd(), easycomplete#lsp#utils#get_buffer_uri(l:buf))
+  call s:errlog('[LOG]', 's:on_text_document_did_open()', l:buf, &filetype, getcwd(), easycomplete#lsp#utils#get_buffer_uri(l:buf))
 
   " Some language server notify diagnostics to the buffer that has not been loaded yet.
   " This diagnostics was stored `autoload/lsp/internal/diagnostics/state.vim` but not highlighted.
@@ -165,14 +165,14 @@ endfunction
 function! easycomplete#lsp#register_server(server_info) abort
   let l:server_name = a:server_info['name']
   if has_key(s:servers, l:server_name)
-    call s:log('lsp#register_server', 'server already registered', l:server_name)
+    call s:errlog("[LOG]", 'lsp#register_server', 'server already registered', l:server_name)
   endif
   let s:servers[l:server_name] = {
         \ 'server_info': a:server_info,
         \ 'lsp_id': 0,
         \ 'buffers': {},
         \ }
-  " call s:log('easycomplete#lsp#register_server', 'server registered', l:server_name)
+  call s:errlog('[LOG]', 'easycomplete#lsp#register_server', 'server registered', l:server_name)
   " doautocmd <nomodeline> User lsp_register_server
 endfunction
 
@@ -437,7 +437,7 @@ function! s:ensure_init(buf, server_name, cb) abort
 
   if has_key(l:server, 'init_result')
     let l:msg = s:new_rpc_success('lsp server already initialized', { 'server_name': a:server_name, 'init_result': l:server['init_result'] })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -446,7 +446,7 @@ function! s:ensure_init(buf, server_name, cb) abort
     " waiting for initialize response
     call add(l:server['init_callbacks'], a:cb)
     let l:msg = s:new_rpc_success('waiting for lsp server to initialize', { 'server_name': a:server_name })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     return
   endif
 
@@ -456,7 +456,7 @@ function! s:ensure_init(buf, server_name, cb) abort
   let l:root_uri = has_key(l:server_info, 'root_uri') ?  l:server_info['root_uri'](l:server_info) : ''
   if empty(l:root_uri)
     let l:msg = s:new_rpc_error('ignore initialization lsp server due to empty root_uri', { 'server_name': a:server_name, 'lsp_id': l:server['lsp_id'] })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     let l:root_uri = easycomplete#lsp#utils#get_default_root_uri()
   endif
   let l:server['server_info']['_root_uri_resolved'] = l:root_uri
@@ -494,8 +494,8 @@ function! s:send_request(server_name, data) abort
   if has_key(l:data, 'on_notification')
     let l:data['on_notification'] = '---funcref---'
   endif
-  call s:log('--->', l:lsp_id, a:server_name, l:data)
   return easycomplete#lsp#client#send_request(l:lsp_id, a:data)
+  call s:errlog('[LOG]', 'lsp request --->', l:lsp_id, a:server_name, l:data)
 endfunction
 
 function! s:throw_step_error(s) abort
@@ -520,7 +520,7 @@ function! s:ensure_changed(buf, server_name, cb) abort
   let l:buffers = l:server['buffers']
   if !has_key(l:buffers, l:path)
     let l:msg = s:new_rpc_success('file is not managed', { 'server_name': a:server_name, 'path': l:path })
-    call s:log(l:msg)
+    call s:errlog("[ERR]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -530,7 +530,7 @@ function! s:ensure_changed(buf, server_name, cb) abort
 
   if l:buffer_info['changed_tick'] == l:changed_tick
     let l:msg = s:new_rpc_success('not dirty', { 'server_name': a:server_name, 'path': l:path })
-    call s:log(l:msg)
+    call s:errlog("[ERR]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -549,7 +549,7 @@ function! s:ensure_changed(buf, server_name, cb) abort
   call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
 
   let l:msg = s:new_rpc_success('textDocument/didChange sent', { 'server_name': a:server_name, 'path': l:path })
-  call s:log(l:msg)
+  " call s:errlog("[LOG]", l:msg)
   call a:cb(l:msg)
 endfunction
 
@@ -646,7 +646,7 @@ function! s:ensure_open(buf, server_name, cb) abort
 
   if empty(l:path)
     let l:msg = s:new_rpc_success('ignore open since not a valid uri', { 'server_name': a:server_name, 'path': l:path })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -655,7 +655,7 @@ function! s:ensure_open(buf, server_name, cb) abort
 
   if has_key(l:buffers, l:path)
     let l:msg = s:new_rpc_success('already opened', { 'server_name': a:server_name, 'path': l:path })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -674,7 +674,7 @@ function! s:ensure_open(buf, server_name, cb) abort
   call easycomplete#lsp#folding#send_request(a:server_name, a:buf, 0)
 
   let l:msg = s:new_rpc_success('textDocument/open sent', { 'server_name': a:server_name, 'path': l:path, 'filetype': getbufvar(a:buf, '&filetype') })
-  call s:log(l:msg)
+  " call s:errlog("[LOG]", l:msg)
   call a:cb(l:msg)
 endfunction
 
@@ -682,7 +682,7 @@ function! s:update_file_content(buf, server_name, new) abort
   if !has_key(s:file_content, a:buf)
     let s:file_content[a:buf] = {}
   endif
-  call s:log('s:update_file_content()', a:buf)
+  call s:errlog("[LOG]", 's:update_file_content()', a:buf)
   let s:file_content[a:buf][a:server_name] = a:new
 endfunction
 
@@ -767,9 +767,7 @@ function! s:set_textprops(buf) abort
 
   " Create text property, if not already defined
   silent! call prop_type_add(s:textprop_name, {'bufnr': a:buf})
-
   let l:line_count = s:get_line_count_buf(a:buf)
-
   " First, clear all markers from the previous run
   call prop_remove({'type': s:textprop_name, 'bufnr': a:buf}, 1, l:line_count)
 
@@ -825,7 +823,7 @@ function! s:ensure_conf(buf, server_name, cb) abort
           \ })
   endif
   let l:msg = s:new_rpc_success('configuration sent', { 'server_name': a:server_name })
-  call s:log(l:msg)
+  " call s:errlog("[LOG]", l:msg)
   call a:cb(l:msg)
 endfunction
 
@@ -834,7 +832,7 @@ function! s:ensure_start(buf, server_name, cb) abort
 
   if easycomplete#lsp#utils#is_remote_uri(l:path)
     let l:msg = s:new_rpc_error('ignoring start server due to remote uri', { 'server_name': a:server_name, 'uri': l:path})
-    call s:log(l:msg)
+    call s:errlog("[ERR]", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -843,11 +841,10 @@ function! s:ensure_start(buf, server_name, cb) abort
   let l:server_info = l:server['server_info']
   if l:server['lsp_id'] > 0
     let l:msg = s:new_rpc_success('server already started', { 'server_name': a:server_name })
-    call s:log(l:msg)
+    " call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
     return
   endif
-
 
   if has_key(l:server_info, 'tcp')
     let l:tcp = l:server_info['tcp'](l:server_info)
@@ -868,13 +865,11 @@ function! s:ensure_start(buf, server_name, cb) abort
 
     if empty(l:cmd)
       let l:msg = s:new_rpc_error('ignore server start since cmd is empty', { 'server_name': a:server_name })
-      call s:log(l:msg)
+      call s:errlog("[ERR]", l:msg)
       call a:cb(l:msg)
       return
     endif
-
-    call s:log('Starting server', a:server_name, l:cmd)
-
+    call s:errlog("[LOG]", 'Starting server', a:server_name, l:cmd)
     let l:lsp_id = easycomplete#lsp#client#start({
           \ 'cmd': l:cmd,
           \ 'on_stderr': function('s:on_stderr', [a:server_name]),
@@ -887,11 +882,11 @@ function! s:ensure_start(buf, server_name, cb) abort
   if l:lsp_id > 0
     let l:server['lsp_id'] = l:lsp_id
     let l:msg = s:new_rpc_success('started lsp server successfully', { 'server_name': a:server_name, 'lsp_id': l:lsp_id })
-    call s:log(l:msg)
+    call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
   else
     let l:msg = s:new_rpc_error('failed to start server', { 'server_name': a:server_name, 'cmd': l:cmd })
-    call s:log(l:msg)
+    call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
   endif
 endfunction
@@ -920,7 +915,7 @@ endfunction
 function! s:send_response(server_name, data) abort
   let l:lsp_id = s:servers[a:server_name]['lsp_id']
   let l:data = copy(a:data)
-  call s:log('--->', l:lsp_id, a:server_name, l:data)
+  call s:errlog("[LOG]", 'sendrequest --->', l:lsp_id, a:server_name, l:data)
   call easycomplete#lsp#client#send_response(l:lsp_id, a:data)
 endfunction
 
@@ -973,7 +968,7 @@ endfunction
 
 function! s:on_notification(server_name, id, data, event) abort
   " echom '>>>> on_notification ' . string(a:data)
-  " call s:log('<---', a:id, a:server_name, a:data)
+  call s:errlog("[LOG]", 'lsp response <---', a:id, a:server_name)
   let l:response = a:data['response']
   let l:server = s:servers[a:server_name]
   let l:server_info = l:server['server_info']
@@ -1025,13 +1020,10 @@ function! s:handle_initialize(server_name, data) abort
     call easycomplete#lsp#utils#error('Failed to initialize ' . a:server_name .
           \ ' with error ' . l:response['error']['code'] . ': ' . l:response['error']['message'])
   endif
-
   call s:send_notification(a:server_name, { 'method': 'initialized', 'params': {} })
-
   for l:Init_callback in l:init_callbacks
     call l:Init_callback(a:data)
   endfor
-
   " doautocmd <nomodeline> User lsp_server_init
 endfunction
 
@@ -1041,12 +1033,12 @@ function! s:send_notification(server_name, data) abort
   if has_key(l:data, 'on_notification')
     let l:data['on_notification'] = '---funcref---'
   endif
-  call s:log('--->', l:lsp_id, a:server_name, l:data)
+  call s:errlog("[LOG]", 'notification --->', l:lsp_id, a:server_name)
   call easycomplete#lsp#client#send_notification(l:lsp_id, a:data)
 endfunction
 
 function! s:on_stderr(server_name, id, data, event) abort
-  call s:log('<---(stderr)', a:id, a:server_name, a:data)
+  call s:errlog("[ERR]", 'notification <---(stderr)', a:id, a:server_name, a:data)
 endfunction
 
 function! s:on_exit(...) abort
@@ -1079,14 +1071,11 @@ endfunction
 function! s:shareFactory(data, start, sink) abort
   if a:start != 0 | return | endif
   call add(a:data['sinks'], a:sink)
-
   let a:data['talkback'] = function('s:shareTalkbackCallback', [a:data, a:sink])
-
   if len(a:data['sinks']) == 1
     call a:data['source'](0, function('s:shareSourceCallback', [a:data, a:sink]))
     return
   endif
-
   call a:sink(0, a:data['talkback'])
 endfunction
 
@@ -1154,28 +1143,6 @@ function! s:request_on_notification(ctx, id, data, event) abort
   let a:ctx['done'] = 1
   call a:ctx['next'](extend({ 'server_name': a:ctx['server_name'] }, a:data))
   call a:ctx['complete']()
-endfunction
-
-function! s:log(...)
-  return
-  let l:args = a:000
-  let l:res = ""
-  if empty(a:000)
-    let l:res = ""
-  elseif len(a:000) == 1
-    if index([2,7], type(a:000))
-      let l:res = string(a:1)
-    else
-      let l:res = a:1
-    endif
-  else
-    for item in l:args
-      let l:res = l:res . " " . json_encode(item)
-    endfor
-  endif
-  echohl MoreMsg
-  echom '>>> '. l:res
-  echohl NONE
 endfunction
 
 function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
@@ -1393,3 +1360,12 @@ endfunction
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
 endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
+endfunction
+
+function! s:log(...)
+  return
+endfunction
+

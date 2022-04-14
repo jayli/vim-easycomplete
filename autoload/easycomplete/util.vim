@@ -1797,7 +1797,12 @@ function! easycomplete#util#GetConfigPath(plugin_name) " {{{
 endfunction " }}}
 
 function! easycomplete#util#errlog(...) " {{{
-  let max_line = 2000
+  let args = a:000
+  call timer_start(1, { -> easycomplete#util#call("s:errlog", args)})
+endfunction " }}}
+
+function! s:errlog(...)
+  let max_line = 1000
   let logfile = easycomplete#util#ConfigRoot() . "/errlog"
   if !exists("g:easy_log_file_exists") && !easycomplete#util#FileExists(logfile)
     call writefile(["----- Easycomplete Errlog ------"], logfile, "a")
@@ -1813,4 +1818,4 @@ function! easycomplete#util#errlog(...) " {{{
   let old_content = readfile(logfile, "", -1 * max_line)
   let new_content = old_content + l:res
   call writefile(new_content, logfile, "S")
-endfunction " }}}
+endfunction

@@ -16,6 +16,7 @@ function! s:do()
   let l:server_name = l:server_names[0]
   if !easycomplete#lsp#HasProvider(l:server_name, 'renameProvider')
     call s:log('[LSP References]: renameProvider is not supported')
+    call s:errlog("[ERR]", '[LSP References]: renameProvider is not supported')
     return
   endif
 
@@ -43,6 +44,7 @@ function! s:HandleLspCallback(server_name, data)
   let changes = s:get(a:data, "response", "result", "changes")
   if empty(changes)
     call s:log("Nothing to be changed")
+    call s:errlog("[LOG]", "[rename], Nothing to be changed")
     return
   endif
 
@@ -132,4 +134,8 @@ endfunction
 
 function! s:get(...)
   return call('easycomplete#util#get', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction
