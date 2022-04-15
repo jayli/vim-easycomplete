@@ -12,7 +12,14 @@ function! easycomplete#sources#dart#constructor(opt, ctx)
       \ 'allowlist': a:opt['whitelist'],
       \ 'config': {},
       \ 'semantic_highlight': {},
-      \ 'workspace_config': {"analysisExcludedFolders":v:true},
+      \ 'workspace_config': {
+      \    "dart": {
+      \      "enableSdkFormatter": v:false,
+      \      "analysisExcludedFolders": v:false,
+      \      "showTodos": v:false,
+      \      "enableSnippets": v:false,
+      \    },
+      \  },
       \ })
 endfunction
 

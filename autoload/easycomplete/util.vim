@@ -1388,7 +1388,34 @@ function! s:BadBoy.Vim(item, typing_word)
   if empty(word) | return v:true | endif
   let pos = stridx(word, a:typing_word)
   if len(a:typing_word) == 1
-    if pos >= 0 && pos <= 9
+    if pos >= 0 && pos <= 7
+      return v:false
+    else
+      return v:true
+    endif
+  else
+    if s:FuzzySearchRegx(a:typing_word, word)
+      return v:false
+    else
+      return v:true
+    endif
+  endif
+endfunction
+
+function! s:BadBoy.Dart(item, typing_word)
+  if &filetype != "dart" | return v:false | endif
+  let word = get(a:item, "label", "")
+  if empty(word) | return v:true | endif
+  let pos = stridx(word, a:typing_word)
+  " dart e suggestion is very slow
+  if a:typing_word == "e"
+    if word[0] == a:typing_word
+      return v:false
+    else
+      return v:true
+    endif
+  elseif len(a:typing_word) == 1
+    if pos >= 0 && pos <= 3 
       return v:false
     else
       return v:true
@@ -1423,6 +1450,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   for l:completion_item in l:items
     if s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
     if s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
+    if s:BadBoy.Dart(l:completion_item, typing_word) | continue | endif
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
     let l:vim_complete_item = {
           \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
