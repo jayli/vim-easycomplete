@@ -59,9 +59,7 @@ function EasyComplete.complete_changed()
 end
 
 function EasyComplete.typing(...)
-
   local ctx = vim.fn['easycomplete#context']()
-
   print({
     console(vim.v.event)
   })
@@ -72,7 +70,6 @@ function EasyComplete.typing(...)
       local aaa = vim.api.nvim_command("echo g:easycomplete_default_plugin_init")
     end)
   })
-
 end
 
 function foo()
