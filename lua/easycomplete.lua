@@ -95,4 +95,21 @@ function EasyComplete.lsp_handler()
   end
 end
 
+function EasyComplete.normalize_sort(items)
+  table.sort(items, function(a1, a2)
+    local k1 = Util.get_word(a1)
+    local l1 = #k1
+    local k2 = Util.get_word(a2)
+    local l2 = #k2
+    return l1 > l2
+  end)
+
+  table.sort(items, function(a1, a2)
+    local k1 = Util.get_word(a1)
+    local k2 = Util.get_word(a2)
+    return k1 > k2
+  end)
+  return items
+end
+
 return EasyComplete

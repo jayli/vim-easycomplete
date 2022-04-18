@@ -32,6 +32,15 @@ function Util.get(a, ...)
   return tmp_obj
 end
 
+-- get word or abbr
+function Util.get_word(a)
+  local k = a.abbr
+  if type(k) == nil or k == nil or k ~= "" then
+    local k = a.word
+  end
+  return k
+end
+
 function Util.curr_lsp_constructor_calling()
   Util.constructor_calling_by_name(Util.current_plugin_name())
 end
