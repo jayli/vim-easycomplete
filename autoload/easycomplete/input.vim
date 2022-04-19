@@ -38,8 +38,9 @@ function! s:CreateNvimInputWindow(old_text, callback) abort
     let bdr_row_offset = -2
     let txt_row_offset = 0
   elseif winline() == winheight(win_getid())
-    let bdr_row_offset = -1
-    let txt_row_offset = -1
+    let bdr_row_offset = 0
+    let txt_row_offset = -0
+    let screen_pos_row -= 2
   else
     let bdr_row_offset = 0
     let txt_row_offset = 0
