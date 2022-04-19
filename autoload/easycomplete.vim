@@ -193,7 +193,9 @@ function! easycomplete#GetAllPlugins()
 endfunction
 
 function! easycomplete#GetCurrentLspContext()
-  let l:ctx = easycomplete#context()
+  if exists("b:easycomplete_current_lsp_context")
+    return b:easycomplete_current_lsp_context
+  endif
   let l:ctx_name = ''
   if empty(g:easycomplete_source)
     return {}
@@ -206,7 +208,8 @@ function! easycomplete#GetCurrentLspContext()
       endif
     endif
   endfor
-  return get(g:easycomplete_source, l:ctx_name, {})
+  let b:easycomplete_current_lsp_context = get(g:easycomplete_source, l:ctx_name, {})
+  return b:easycomplete_current_lsp_context
 endfunction
 
 " Second Complete Entry

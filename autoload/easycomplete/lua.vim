@@ -8,3 +8,4 @@ endfunction
 function! easycomplete#lua#api()
   echom "api"
 endfunction
+
