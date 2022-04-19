@@ -433,6 +433,13 @@ function! easycomplete#popup#reopen()
   call easycomplete#popup#DoPopup(s:info)
 endfunction
 
+function! easycomplete#popup#visiable()
+  if g:easycomplete_popup_win["popup"] || g:easycomplete_popup_win["float"]
+    return v:true
+  endif
+  return v:false
+endfunction
+
 function! easycomplete#popup#close(...)
   if empty(a:000)
     if g:easycomplete_popup_win["popup"]

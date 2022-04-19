@@ -3,7 +3,12 @@ let s:server_name = ""
 let s:changes = v:null
 
 function! easycomplete#action#rename#do()
-  call s:do()
+  if easycomplete#popup#visiable()
+    call easycomplete#popup#close()
+    call timer_start(90, { -> s:do() })
+  else
+    call s:do()
+  endif
 endfunction
 
 function! s:do()
