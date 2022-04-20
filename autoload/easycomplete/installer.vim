@@ -25,7 +25,7 @@ endfunction
 function! easycomplete#installer#GetCommand(name)
   let opt = easycomplete#GetOptions(a:name)
   if empty(opt)
-    call easycomplete#util#info('[error]', 'GetCommand(): plugin options is null')
+    call easycomplete#util#info('[error]', 'GetCommand("' . a:name . '"): plugin options is null')
     return ''
   endif
   let cmd = opt['command']

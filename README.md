@@ -287,6 +287,12 @@ let g:easycomplete_sign_text = {
 
 You can define icon alias via giving fullnames and shortname.
 
+Enable colorful styled menu (experimental):
+
+```
+let g:easycomplete_colorful = 1
+```
+
 ### Add custom completion plugin
 
 → [add custom completion plugin](add-custom-plugin.md)

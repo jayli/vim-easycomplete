@@ -1413,7 +1413,11 @@ endfunction
 
 function! s:complete(start, context) abort
   if mode() =~# 'i' && &paste != 1
-    noa silent! call complete(a:start, a:context)
+    if g:easycomplete_colorful
+      noa silent! call easycomplete#colorful#complete(a:start, a:content)
+    else
+      noa silent! call complete(a:start, a:context)
+    endif
   endif
   noa silent! call easycomplete#popup#overlay()
 endfunction
@@ -1654,7 +1658,11 @@ function! s:flush()
   let g:easycomplete_completedone_insert_mode = mode()
   if easycomplete#util#InsertMode() && complete_check()
     call s:StopAsyncRun()
-    call s:AsyncRun(function("complete"),[col("."),[]],50)
+    if g:easycomplete_colorful
+      call s:AsyncRun(function("easycomplete#colorful#complete"),[col("."),[]], 50)
+    else
+      call s:AsyncRun(function("complete"),[col("."),[]], 50)
+    endif
   endif
   let s:easycomplete_start_pos = 0
 endfunction

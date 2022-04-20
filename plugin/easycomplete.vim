@@ -68,6 +68,9 @@ endif
 if !exists("g:easycomplete_cursor_word_hl")
   let g:easycomplete_cursor_word_hl = 0
 endif
+if !exists("g:easycomplete_colorful")
+  let g:easycomplete_colorful= 0
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
