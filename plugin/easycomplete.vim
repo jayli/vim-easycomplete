@@ -34,7 +34,7 @@ let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete
 let g:easycomplete_kindflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")) ?
                                   \ "s" :   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")
 let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
-                                  \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
+                                  \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 
@@ -85,6 +85,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_menuflag_snip':      g:easycomplete_menuflag_snip,
       \ 'g:easycomplete_kindflag_snip':      g:easycomplete_kindflag_snip,
       \ 'g:easycomplete_kindflag_tabnine':   g:easycomplete_kindflag_tabnine,
+      \ 'g:easycomplete_menuflag_tabnine':   g:easycomplete_menuflag_tabnine,
       \ 'g:easycomplete_lsp_type_font':      g:easycomplete_lsp_type_font,
       \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,

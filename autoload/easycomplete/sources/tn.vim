@@ -295,9 +295,13 @@ function! s:NormalizeCompleteResult(data)
       let l:word['user_data'] = json_encode(l:user_data)
     endif
 
-    let l:word['menu'] = '[TN]'
     if !empty(g:easycomplete_kindflag_tabnine)
       let l:word["kind"] = g:easycomplete_kindflag_tabnine
+    endif
+    if !empty(g:easycomplete_menuflag_tabnine)
+      let l:word["menu"] = g:easycomplete_menuflag_tabnine
+    else
+      let l:word['menu'] = '[TN]'
     endif
     if get(l:result, 'detail')
       let l:word['menu'] .= ' ' . l:result['detail']
