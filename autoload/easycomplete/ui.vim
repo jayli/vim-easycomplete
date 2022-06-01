@@ -10,10 +10,10 @@ function! easycomplete#ui#SetScheme()
   " hi PmenuSbar              ctermbg=235
   " hi PmenuThumb             ctermbg=234
   let l:scheme_config = {
-        \   'light':[[234, 251],[255, 26],[-1,  251],[-1,  247]],
-        \   'rider':[[251, 237],[231, 25],[-1,  237],[-1,  239]],
-        \   'sharp':[[255, 237],[235, 255],[-1, 245],[-1,  255]],
-        \   'blue': [['White', 'DarkBlue'],['Red', 'White'],[-1, 245],[-1,  255]]
+        \   'light': [[234, 251], [255, 26], [-1,  251], [-1,  247]],
+        \   'rider': [[251, 237], [231, 25], [-1,  237], [-1,  239]],
+        \   'sharp': [[255, 237], [235, 255], [-1, 245], [-1,  255]],
+        \   'blue':  [['White', 'DarkBlue'], ['Red', 'White'], [-1, 245],[-1,  255]]
         \ }
   if has_key(l:scheme_config, g:easycomplete_scheme)
     let sch = l:scheme_config[g:easycomplete_scheme]

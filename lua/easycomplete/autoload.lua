@@ -398,7 +398,7 @@ AutoLoad.deno = {
 }
 
 AutoLoad.ts = {
-  setup = function(self) 
+  setup = function(self)
     local configuration = get_configuration()
     if not configuration.nvim_lsp_ok then
       return
