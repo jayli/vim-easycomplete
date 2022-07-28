@@ -53,18 +53,18 @@ end
 
 function Util.get_configuration()
   local curr_lsp_name = Util.current_lsp_name()
-  local Servers = Util.get_servers()
-  local Server = Util.get_server()
-  local ok, server = Servers.get_server(curr_lsp_name)
+  local Servers       = Util.get_servers()
+  local Server        = Util.get_server()
+  local ok, server    = Servers.get_server(curr_lsp_name)
   return {
-    easy_plugin_ctx = Util.current_plugin_ctx(),
-    easy_plugin_name = Util.current_plugin_name(),
-    easy_lsp_name = curr_lsp_name,
+    easy_plugin_ctx      = Util.current_plugin_ctx(),
+    easy_plugin_name     = Util.current_plugin_name(),
+    easy_lsp_name        = curr_lsp_name,
     easy_lsp_config_path = Util.get_default_config_path(),
-    easy_cmd_full_path = Util.get_default_command_full_path(),
-    nvim_lsp_root = Util.get(server, "root_dir"),
-    nvim_lsp_root_path = Server.get_server_root_path(),
-    nvim_lsp_ok = ok,
+    easy_cmd_full_path   = Util.get_default_command_full_path(),
+    nvim_lsp_root        = Util.get(server, "root_dir"),
+    nvim_lsp_root_path   = Server.get_server_root_path(),
+    nvim_lsp_ok          = ok,
   }
 end
 
@@ -119,8 +119,8 @@ function Util.get_default_config_path()
 end
 
 function Util.get_default_command_full_path()
-  local curr_plugin_ctx = Util.current_plugin_ctx()
-  local command_name = Util.get(curr_plugin_ctx, "command")
+  local curr_plugin_ctx   = Util.current_plugin_ctx()
+  local command_name      = Util.get(curr_plugin_ctx, "command")
   local command_full_path = vim.fn.join({
     Util.get_default_lsp_root_path(),
     command_name
