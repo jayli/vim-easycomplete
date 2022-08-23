@@ -190,7 +190,6 @@ function! easycomplete#sources#ts#RenameCallback(data)
   else
     call s:ConfirmCallback(v:null, 0)
   endif
-
 endfunction
 
 function! s:ConfirmCallback(error, res)
