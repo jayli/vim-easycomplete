@@ -666,7 +666,7 @@ function! easycomplete#sources#ts#lint()
     return
   endif
   let l:files = [easycomplete#util#GetCurrentFullName()]
-  call s:TsserverReload()
+  call s:AsyncRun(function("s:TsserverReload"), [], 80)
   call s:AsyncRun(function("s:Geterr"), [l:files, 100], 100)
 endfunction
 
