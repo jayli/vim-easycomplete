@@ -1961,6 +1961,9 @@ endfunction
 function! easycomplete#Textchanged()
 endfunction
 
+function! easycomplete#BufLeave()
+endfunction
+
 function! easycomplete#InsertEnter()
   call easycomplete#sign#DiagHoverFlush()
 endfunction

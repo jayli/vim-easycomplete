@@ -440,6 +440,7 @@ augroup easycomplete#NormalBinding
   autocmd CursorMovedI * call easycomplete#CursorMovedI()
   autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
+  autocmd BufLeave * noa call easycomplete#BufLeave()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
