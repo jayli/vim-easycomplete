@@ -13,9 +13,9 @@ function! easycomplete#ui#SetScheme()
         \   'light': [[234, 251], [255, 26], [-1,  251], [-1,  247]],
         \   'rider': [[251, 237], [231, 25], [-1,  237], [-1,  239]],
         \   'sharp': [[255, 237], [235, 255], [-1, 245], [-1,  255]],
-        \   'blue':  [['White', 'DarkBlue'], ['Red', 'White'], [-1, 245],[-1,  255]]
+        \   'blue':  [['White', 'DarkBlue'], ['Red', 'White'], [-1, 245],[-1,  255]],
         \ }
-  if has_key(l:scheme_config, g:easycomplete_scheme)
+  if has_key(l:scheme_config, g:easycomplete_scheme) && g:env_is_iterm == v:false
     let sch = l:scheme_config[g:easycomplete_scheme]
     let hiPmenu =      ['hi','Pmenu',      'ctermfg='.sch[0][0], 'ctermbg='.sch[0][1]]
     let hiPmenuSel =   ['hi','PmenuSel',   'ctermfg='.sch[1][0], 'ctermbg='.sch[1][1]]
@@ -25,6 +25,20 @@ function! easycomplete#ui#SetScheme()
     execute join(hiPmenuSel, ' ')
     execute join(hiPmenuSbar, ' ')
     execute join(hiPmenuThumb, ' ')
+  endif
+
+  if g:env_is_iterm == v:true
+    if g:easycomplete_scheme == 'sharp'
+      " hi! PMenu guibg=#3a3a3a guifg=#dddddd gui=NONE
+      " hi! PMenuSel guibg=#eeeeee guifg=#313131 gui=NONE
+      " hi! PmenuSbar guibg=#eeeeee
+      " hi! PmenuThumb guibg=#8a8a8a
+      hi! PMenu guibg=#1e4574 guifg=#dddddd gui=NONE
+      hi! PMenuSel guibg=#eeeeee guifg=#313131 gui=NONE
+      hi! PmenuSbar guibg=#2d507a
+      hi! PmenuThumb guibg=#5980af
+    endif
+
   endif
 endfunction " }}}
 
