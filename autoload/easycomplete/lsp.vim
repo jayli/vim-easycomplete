@@ -9,6 +9,7 @@ let s:undefined_token = '__callbag_undefined__'
 let s:str_type = type('')
 let s:diagnostics_state = {}
 let b:easycomplete_lsp_plugin = {}
+let b:lsp_job_id = 0
 
 let s:default_symbol_kinds = {
       \ '1': 'file',
@@ -123,6 +124,7 @@ function! s:on_text_document_did_close() abort
   let l:buf = bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
   call s:errlog('[LOG]','s:on_text_document_did_close()', l:buf)
+  call easycomplete#lsp#client#stop(0)
 endfunction
 
 function! s:on_text_document_did_save() abort
@@ -881,12 +883,14 @@ function! s:ensure_start(buf, server_name, cb) abort
 
   if l:lsp_id > 0
     let l:server['lsp_id'] = l:lsp_id
+    let b:lsp_job_id = l:lsp_id
     let l:msg = s:new_rpc_success('started lsp server successfully', { 'server_name': a:server_name, 'lsp_id': l:lsp_id })
     call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
   else
     let l:msg = s:new_rpc_error('failed to start server', { 'server_name': a:server_name, 'cmd': l:cmd })
     call s:errlog("[LOG]", l:msg)
+    let b:lsp_job_id = 0
     call a:cb(l:msg)
   endif
 endfunction

@@ -290,8 +290,21 @@ function! easycomplete#lsp#client#start(opts) abort
   return s:lsp_start(a:opts)
 endfunction
 
+" #222
 function! easycomplete#lsp#client#stop(client_id) abort
-  return s:lsp_stop(a:client_id)
+  let l:client_job = 0
+  if exists("b:lsp_job_id") && b:lsp_job_id != 0 && a:client_id == 0
+    let l:client_job = b:lsp_job_id
+  else
+    let l:client_job = a:client_id
+  endif
+
+  if l:client_job > 0
+    call s:errlog('[LOG]','lsp job stop, job id is', string(b:lsp_job_id))
+    return s:lsp_stop(l:client_job)
+  else
+    return 0
+  endif
 endfunction
 
 function! easycomplete#lsp#client#send_request(client_id, opts) abort
@@ -328,6 +341,10 @@ endfunction
 
 function! easycomplete#lsp#client#is_server_instantiated_notification(notification) abort
   return s:is_server_instantiated_notification(a:notification)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
 
 " }}}
