@@ -287,7 +287,9 @@ endfunction
 " public apis {{{
 
 function! easycomplete#lsp#client#start(opts) abort
-  return s:lsp_start(a:opts)
+  let job_id = s:lsp_start(a:opts)
+  call s:errlog(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", job_id)
+  return job_id
 endfunction
 
 " #222

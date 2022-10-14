@@ -124,7 +124,10 @@ function! s:on_text_document_did_close() abort
   let l:buf = bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
   call s:errlog('[LOG]','s:on_text_document_did_close()', l:buf)
-  call easycomplete#lsp#client#stop(0)
+  " TODO #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
+  if get(easycomplete#GetCurrentLspContext(), "name", "") == "cpp"
+    call easycomplete#lsp#client#stop(0)
+  endif
 endfunction
 
 function! s:on_text_document_did_save() abort
