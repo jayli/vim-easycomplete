@@ -896,6 +896,8 @@ function! s:ensure_start(buf, server_name, cb) abort
     let b:lsp_job_id = 0
     call a:cb(l:msg)
   endif
+  " TODO Jayli
+  " l:lsp_id 需要被记录到全局变量中，以便buf关闭时一起关闭
 endfunction
 
 function! s:on_request(server_name, id, request) abort
