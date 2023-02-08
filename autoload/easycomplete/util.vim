@@ -874,6 +874,49 @@ function! easycomplete#util#HasKey(obj,keyname)
 endfunction
 " }}}
 
+""" {{{ BufJob Handler
+function! easycomplete#util#GetCurrentPluginName(...)
+  return call('easycomplete#util#GetLspPluginName', a:000)
+endfunction
+
+" g:easycomplete_jobs.vim = {
+"   1:  100,
+"   2:  101,
+"   3:  102
+"   ...
+" }
+function! easycomplete#util#SetBufJob(buf_nr, job_id)
+  if !exists('g:easycomplete_jobs')
+    let g:easycomplete_jobs = {}
+  endif
+  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
+    let g:easycomplete_jobs[easycomplete#util#GetLspPluginName()] = {}
+  endif
+  let l:jobs_holder = g:easycomplete_jobs[easycomplete#util#GetLspPluginName()]
+  let l:jobs_holder[a:buf_nr] = a:job_id
+endfunction
+
+function! easycomplete#util#SetCurrentBufJob(job_id)
+  call easycomplete#util#SetBufJob(bufnr(), a:job_id)
+endfunction
+
+function! easycomplete#util#GetBufJob(buf_nr)
+  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
+    return 0
+  endif
+  let l:jobs_holder = g:easycomplete_jobs[easycomplete#util#GetLspPluginName()]
+  return get(l:jobs_holder, a:buf_nr, 0)
+endfunction
+
+function! easycomplete#util#GetCurrentBufJob()
+  return easycomplete#util#GetBufJob(bufnr())
+endfunction
+
+function! easycomplete#util#GetAllJobs()
+  return g:easycomplete_jobs
+endfunction
+""" }}}
+
 " AutoLoadDict {{{
 function! easycomplete#util#AutoLoadDict()
   let plug_name = get(easycomplete#GetCurrentLspContext(), "name", "")
@@ -1829,7 +1872,7 @@ function! easycomplete#util#errlog(...) " {{{
   call timer_start(1, { -> easycomplete#util#call("s:errlog", args)})
 endfunction " }}}
 
-function! s:errlog(...)
+function! s:errlog(...) " {{{
   let max_line = 1000
   let logfile = easycomplete#util#ConfigRoot() . "/errlog"
   if !exists("g:easy_log_file_exists") && !easycomplete#util#FileExists(logfile)
@@ -1846,4 +1889,4 @@ function! s:errlog(...)
   let old_content = readfile(logfile, "", -1 * max_line)
   let new_content = old_content + l:res
   call writefile(new_content, logfile, "S")
-endfunction
+endfunction " }}}

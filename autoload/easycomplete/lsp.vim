@@ -898,6 +898,7 @@ function! s:ensure_start(buf, server_name, cb) abort
   endif
   " TODO Jayli
   " l:lsp_id 需要被记录到全局变量中，以便buf关闭时一起关闭
+  call easycomplete#util#SetCurrentBufJob(l:lsp_id)
 endfunction
 
 function! s:on_request(server_name, id, request) abort
@@ -1129,21 +1130,21 @@ endfunction
 function! s:new_rpc_success(message, data) abort
   return {
         \ 'response': {
-        \   'message': a:message,
-        \   'data': extend({ '__data__': 'vim-lsp'}, a:data),
-        \ }
+        \     'message': a:message,
+        \     'data': extend({ '__data__': 'vim-lsp'}, a:data),
+        \   }
         \ }
 endfunction
 
 function! s:new_rpc_error(message, data) abort
   return {
         \ 'response': {
-        \   'error': {
+        \     'error': {
         \       'code': 0,
         \       'message': a:message,
         \       'data': extend({ '__error__': 'vim-lsp'}, a:data),
-        \   },
-        \ }
+        \     },
+        \   }
         \ }
 endfunction
 

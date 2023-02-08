@@ -17,6 +17,8 @@ endfunction
 let g:easycomplete_source  = {}
 " 匹配过程中的缓存，主要处理 <BS> 和 <CR> 后显示 Complete 历史
 let g:easycomplete_menucache = {}
+" runtime 中的 lsp jobs 和 buf 的对应关系
+let g:easycomplete_jobs = {}
 " 匹配过程中的全量匹配数据，CompleteDone 后置空
 let g:easycomplete_menuitems = []
 " 显示 complete menu 所需的临时 items，根据 maxlength 截断
