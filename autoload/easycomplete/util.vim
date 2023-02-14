@@ -900,6 +900,22 @@ function! easycomplete#util#SetCurrentBufJob(job_id)
   call easycomplete#util#SetBufJob(bufnr(), a:job_id)
 endfunction
 
+function! easycomplete#util#DeleteBufJob(buf_nr)
+  let buf_nr = a:buf_nr
+  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
+    return
+  endif
+  " TODO 这里有隐患，如果被删除的 buf 不是当前 window 中的文件类型，就会出错，
+  " 这里get pluginname 应当判断被删除的 Buf 的文件类型
+  if has_key(g:easycomplete_jobs[easycomplete#util#GetLspPluginName()], buf_nr)
+    unlet g:easycomplete_jobs[easycomplete#util#GetLspPluginName()][buf_nr]
+  endif
+endfunction
+
+function! easycomplete#util#DelCurrentBufJob()
+  call easycomplete#util#DeleteBufJob(bufnr('%'))
+endfunction
+
 function! easycomplete#util#GetBufJob(buf_nr)
   if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
     return 0
@@ -1367,6 +1383,11 @@ function! easycomplete#util#GetLspPluginName()
   let plugin_name = get(plugin, 'name', "")
   return plugin_name
 endfunction " }}}
+
+" TODO jayli
+function! easycomplete#util#GetLspPluginViaBuf(buf_nr)
+
+endfunction
 
 " easycomplete#util#GetKindNumber(item) {{{
 function! easycomplete#util#GetKindNumber(item)

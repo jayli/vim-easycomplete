@@ -112,6 +112,7 @@ function! s:register_events() abort
     autocmd BufReadPost * call s:on_text_document_did_open()
     autocmd BufWritePost * call s:on_text_document_did_save()
     autocmd BufWinLeave * call s:on_text_document_did_close()
+    autocmd BufUnload * call s:on_text_document_did_unload()
   augroup END
   for l:bufnr in range(1, bufnr('$'))
     if bufexists(l:bufnr) && bufloaded(l:bufnr)
@@ -120,16 +121,31 @@ function! s:register_events() abort
   endfor
 endfunction
 
+function! s:on_text_document_did_unload()
+  let l:buf = expand('<abuf>')
+  let l:job = easycomplete#util#GetBufJob(l:buf)
+  " if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
+  call s:errlog('[LOG]','s:on_text_document_did_unload()', l:buf)
+  " TODO jayli
+  " #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
+  " BufUnload 是一个特殊操作，被 unload 的 buf 不一定是当前 win 里的 buf，不能
+  " 用 getcurrent... 来获得
+  " easycomplete#util#GetLspPluginViaBuf(buf_nr)
+  if easycomplete#util#GetCurrentPluginName() == "cpp"
+    call easycomplete#lsp#client#stop(l:job)
+    call easycomplete#util#DeleteBufJob(l:buf)
+  endif
+  if easycomplete#util#GetCurrentPluginName() == "php"
+    call easycomplete#lsp#client#stop(l:job)
+    call easycomplete#util#DeleteBufJob(l:buf)
+  endif
+  " call s:console('close ' . expand('<abuf>') . ': ' . fnamemodify(expand('%'), ':p') . ', delete job ' . l:job . ' ' . v:dying)
+
+endfunction
+
 function! s:on_text_document_did_close() abort
   let l:buf = bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
-  call s:errlog('[LOG]','s:on_text_document_did_close()', l:buf)
-  " TODO jayli
-  " #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
-  if get(easycomplete#GetCurrentLspContext(), "name", "") == "cpp"
-    call easycomplete#lsp#client#stop(0)
-  endif
-  call s:console('close ' . fnamemodify(expand('%'), ':p'))
 endfunction
 
 function! s:on_text_document_did_save() abort

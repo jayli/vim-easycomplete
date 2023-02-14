@@ -288,7 +288,7 @@ endfunction
 
 function! easycomplete#lsp#client#start(opts) abort
   let job_id = s:lsp_start(a:opts)
-  call s:errlog(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", job_id)
+  call s:errlog("LSP job start", job_id)
   return job_id
 endfunction
 
