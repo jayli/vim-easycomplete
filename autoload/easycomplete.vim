@@ -39,6 +39,8 @@ let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
 let g:easycomplete_diagnostics_render_delay = 200
+" lsp server 是独占还是共享
+let g:easycomplete_shared_lsp_server = 1
 " 用来判断是否是 c-v 粘贴
 let g:easycomplete_insert_char = ''
 " First complete 过程中的任务队列，所有队列任务都完成后才显示匹配菜单

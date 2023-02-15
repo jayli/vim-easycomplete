@@ -123,7 +123,9 @@ endfunction
 
 function! s:on_text_document_did_unload()
   " #227 TODO jayli 继续验证多文件共享lsp server 还是独占 lsp server
-  return
+  if g:easycomplete_shared_lsp_server
+    return
+  endif
   let l:buf = expand('<abuf>')
   let l:job = easycomplete#util#GetBufJob(l:buf)
   call s:errlog('[LOG]','s:on_text_document_did_unload()', l:buf)
@@ -173,11 +175,10 @@ function! easycomplete#lsp#register_server(server_info) abort
   let l:server_name = a:server_info['name']
   if has_key(s:servers, l:server_name)
     call s:errlog("[LOG]", 'lsp#register_server', 'server already registered', l:server_name)
-    " # 227 TODO jayli
-    " 是否要新建 lsp server ?
-    "  return 共享 lsp
-    "  不 return 每个都新建 lsp
-    return
+    " #227 TODO jayli
+    if g:easycomplete_shared_lsp_server
+      return
+    endif
   endif
   let s:servers[l:server_name] = {
         \ 'server_info': a:server_info,
