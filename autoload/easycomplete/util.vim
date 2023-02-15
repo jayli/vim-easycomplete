@@ -8,9 +8,11 @@ function! easycomplete#util#extention()
 endfunction " }}}
 
 " get all plugins {{{
-function! easycomplete#util#GetAttachedPlugins()
+" buffer number
+function! easycomplete#util#GetAttachedPlugins(...)
   let all_plugins = easycomplete#GetAllPlugins()
-  let ft = &filetype
+  let buf_nr = empty(a:000) ? bufnr('%') : str2nr(a:1)
+  let ft = getbufvar(buf_nr, "&filetype")
   let attached_plugins = []
   for name in keys(all_plugins)
     let plugin = get(all_plugins, name)
@@ -889,10 +891,11 @@ function! easycomplete#util#SetBufJob(buf_nr, job_id)
   if !exists('g:easycomplete_jobs')
     let g:easycomplete_jobs = {}
   endif
-  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
-    let g:easycomplete_jobs[easycomplete#util#GetLspPluginName()] = {}
+  let plugin_name = easycomplete#util#GetLspPluginName(a:buf_nr)
+  if !has_key(g:easycomplete_jobs, plugin_name)
+    let g:easycomplete_jobs[plugin_name] = {}
   endif
-  let l:jobs_holder = g:easycomplete_jobs[easycomplete#util#GetLspPluginName()]
+  let l:jobs_holder = g:easycomplete_jobs[plugin_name]
   let l:jobs_holder[a:buf_nr] = a:job_id
 endfunction
 
@@ -902,13 +905,15 @@ endfunction
 
 function! easycomplete#util#DeleteBufJob(buf_nr)
   let buf_nr = a:buf_nr
-  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
+  let plugin_name = easycomplete#util#GetLspPluginName(buf_nr)
+  if empty(plugin_name)
     return
   endif
-  " TODO 这里有隐患，如果被删除的 buf 不是当前 window 中的文件类型，就会出错，
-  " 这里get pluginname 应当判断被删除的 Buf 的文件类型
-  if has_key(g:easycomplete_jobs[easycomplete#util#GetLspPluginName()], buf_nr)
-    unlet g:easycomplete_jobs[easycomplete#util#GetLspPluginName()][buf_nr]
+  if !has_key(g:easycomplete_jobs, plugin_name)
+    return
+  endif
+  if has_key(g:easycomplete_jobs[plugin_name], buf_nr)
+    unlet g:easycomplete_jobs[plugin_name][buf_nr]
   endif
 endfunction
 
@@ -917,10 +922,11 @@ function! easycomplete#util#DelCurrentBufJob()
 endfunction
 
 function! easycomplete#util#GetBufJob(buf_nr)
-  if !has_key(g:easycomplete_jobs, easycomplete#util#GetLspPluginName())
+  let plugin_name = easycomplete#util#GetLspPluginName(a:buf_nr)
+  if !has_key(g:easycomplete_jobs, plugin_name)
     return 0
   endif
-  let l:jobs_holder = g:easycomplete_jobs[easycomplete#util#GetLspPluginName()]
+  let l:jobs_holder = g:easycomplete_jobs[plugin_name]
   return get(l:jobs_holder, a:buf_nr, 0)
 endfunction
 
@@ -1256,8 +1262,8 @@ endfunction " }}}
 " tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
 " 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
 " Server 的补全 Plugin 对象，而不返回一个数组
-function! easycomplete#util#GetLspPlugin()
-  let attached_plugins = easycomplete#util#GetAttachedPlugins()
+function! easycomplete#util#GetLspPlugin(...)
+  let attached_plugins = call("easycomplete#util#GetAttachedPlugins", a:000)
   let ret_plugin = {}
   for plugin in attached_plugins
     if has_key(plugin, 'gotodefinition') && has_key(plugin, 'command')
@@ -1378,16 +1384,11 @@ function easycomplete#util#ItemIsFromLS(item)
 endfunction " }}}
 
 " easycomplete#util#GetLspPluginName {{{
-function! easycomplete#util#GetLspPluginName()
-  let plugin = easycomplete#util#GetLspPlugin()
+function! easycomplete#util#GetLspPluginName(...)
+  let plugin = call("easycomplete#util#GetLspPlugin", a:000)
   let plugin_name = get(plugin, 'name', "")
   return plugin_name
 endfunction " }}}
-
-" TODO jayli
-function! easycomplete#util#GetLspPluginViaBuf(buf_nr)
-
-endfunction
 
 " easycomplete#util#GetKindNumber(item) {{{
 function! easycomplete#util#GetKindNumber(item)

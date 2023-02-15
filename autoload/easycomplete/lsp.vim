@@ -128,19 +128,11 @@ function! s:on_text_document_did_unload()
   call s:errlog('[LOG]','s:on_text_document_did_unload()', l:buf)
   " TODO jayli
   " #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
-  " BufUnload 是一个特殊操作，被 unload 的 buf 不一定是当前 win 里的 buf，不能
-  " 用 getcurrent... 来获得
-  " easycomplete#util#GetLspPluginViaBuf(buf_nr)
-  if easycomplete#util#GetCurrentPluginName() == "cpp"
+  let plugin_name = easycomplete#util#GetLspPluginName(l:buf)
+  " if index(['cpp', 'php'], plugin_name) >= 0
     call easycomplete#lsp#client#stop(l:job)
     call easycomplete#util#DeleteBufJob(l:buf)
-  endif
-  if easycomplete#util#GetCurrentPluginName() == "php"
-    call easycomplete#lsp#client#stop(l:job)
-    call easycomplete#util#DeleteBufJob(l:buf)
-  endif
-  " call s:console('close ' . expand('<abuf>') . ': ' . fnamemodify(expand('%'), ':p') . ', delete job ' . l:job . ' ' . v:dying)
-
+  " endif
 endfunction
 
 function! s:on_text_document_did_close() abort
@@ -915,7 +907,7 @@ function! s:ensure_start(buf, server_name, cb) abort
   " 关闭的时候需要考虑多个 window 绑定一个 bufnr 的情况，要判断一下是否还存在
   " 别的 bufnr 是当前 window的 buf
   call easycomplete#util#SetCurrentBufJob(l:lsp_id)
-  call s:console('add new job ' . fnamemodify(expand('%'), ':p'))
+  " call s:console('add new job ' . fnamemodify(expand('%'), ':p'))
 endfunction
 
 function! s:on_request(server_name, id, request) abort
