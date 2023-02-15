@@ -112,6 +112,7 @@ function! s:register_events() abort
     autocmd BufReadPost * call s:on_text_document_did_open()
     autocmd BufWritePost * call s:on_text_document_did_save()
     autocmd BufWinLeave * call s:on_text_document_did_close()
+    autocmd BufUnload * call s:on_text_document_did_unload()
   augroup END
   for l:bufnr in range(1, bufnr('$'))
     if bufexists(l:bufnr) && bufloaded(l:bufnr)
@@ -120,14 +121,23 @@ function! s:register_events() abort
   endfor
 endfunction
 
+function! s:on_text_document_did_unload()
+  let l:buf = expand('<abuf>')
+  let l:job = easycomplete#util#GetBufJob(l:buf)
+  " if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
+  call s:errlog('[LOG]','s:on_text_document_did_unload()', l:buf)
+  " TODO jayli
+  " #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
+  let plugin_name = easycomplete#util#GetLspPluginName(l:buf)
+  " if index(['cpp', 'php'], plugin_name) >= 0
+    call easycomplete#lsp#client#stop(l:job)
+    call easycomplete#util#DeleteBufJob(l:buf)
+  " endif
+endfunction
+
 function! s:on_text_document_did_close() abort
   let l:buf = bufnr('%')
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
-  call s:errlog('[LOG]','s:on_text_document_did_close()', l:buf)
-  " TODO #222, node 进程如果跟随 buf 关掉的话会和attach的文件发生错乱，待跟进
-  if get(easycomplete#GetCurrentLspContext(), "name", "") == "cpp"
-    call easycomplete#lsp#client#stop(0)
-  endif
 endfunction
 
 function! s:on_text_document_did_save() abort
@@ -138,11 +148,6 @@ function! s:on_text_document_did_open(...) abort
   if getbufvar(l:buf, '&buftype') ==# 'terminal' | return | endif
   if getcmdwintype() !=# '' | return | endif
   call s:errlog('[LOG]', 's:on_text_document_did_open()', l:buf, &filetype, getcwd(), easycomplete#lsp#utils#get_buffer_uri(l:buf))
-
-  " Some language server notify diagnostics to the buffer that has not been loaded yet.
-  " This diagnostics was stored `autoload/lsp/internal/diagnostics/state.vim` but not highlighted.
-  " So we should refresh highlights when buffer opened.
-  " call lsp#internal#diagnostics#state#_force_notify_buffer(l:buf)
 
   for l:server_name in easycomplete#lsp#get_allowed_servers(l:buf)
     call s:ensure_flush(l:buf, l:server_name, function('s:fire_lsp_buffer_enabled', [l:server_name, l:buf]))
@@ -898,6 +903,11 @@ function! s:ensure_start(buf, server_name, cb) abort
   endif
   " TODO Jayli
   " l:lsp_id 需要被记录到全局变量中，以便buf关闭时一起关闭
+  " lsp server 跟 buf 是一一绑定的关系，跟window没关系
+  " 关闭的时候需要考虑多个 window 绑定一个 bufnr 的情况，要判断一下是否还存在
+  " 别的 bufnr 是当前 window的 buf
+  call easycomplete#util#SetCurrentBufJob(l:lsp_id)
+  " call s:console('add new job ' . fnamemodify(expand('%'), ':p'))
 endfunction
 
 function! s:on_request(server_name, id, request) abort
@@ -1129,21 +1139,21 @@ endfunction
 function! s:new_rpc_success(message, data) abort
   return {
         \ 'response': {
-        \   'message': a:message,
-        \   'data': extend({ '__data__': 'vim-lsp'}, a:data),
-        \ }
+        \     'message': a:message,
+        \     'data': extend({ '__data__': 'vim-lsp'}, a:data),
+        \   }
         \ }
 endfunction
 
 function! s:new_rpc_error(message, data) abort
   return {
         \ 'response': {
-        \   'error': {
+        \     'error': {
         \       'code': 0,
         \       'message': a:message,
         \       'data': extend({ '__error__': 'vim-lsp'}, a:data),
-        \   },
-        \ }
+        \     },
+        \   }
         \ }
 endfunction
 

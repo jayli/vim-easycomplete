@@ -8,9 +8,11 @@ function! easycomplete#util#extention()
 endfunction " }}}
 
 " get all plugins {{{
-function! easycomplete#util#GetAttachedPlugins()
+" buffer number
+function! easycomplete#util#GetAttachedPlugins(...)
   let all_plugins = easycomplete#GetAllPlugins()
-  let ft = &filetype
+  let buf_nr = empty(a:000) ? bufnr('%') : str2nr(a:1)
+  let ft = getbufvar(buf_nr, "&filetype")
   let attached_plugins = []
   for name in keys(all_plugins)
     let plugin = get(all_plugins, name)
@@ -874,6 +876,69 @@ function! easycomplete#util#HasKey(obj,keyname)
 endfunction
 " }}}
 
+""" {{{ BufJob Handler
+function! easycomplete#util#GetCurrentPluginName(...)
+  return call('easycomplete#util#GetLspPluginName', a:000)
+endfunction
+
+" g:easycomplete_jobs.vim = {
+"   1:  100,
+"   2:  101,
+"   3:  102
+"   ...
+" }
+function! easycomplete#util#SetBufJob(buf_nr, job_id)
+  if !exists('g:easycomplete_jobs')
+    let g:easycomplete_jobs = {}
+  endif
+  let plugin_name = easycomplete#util#GetLspPluginName(a:buf_nr)
+  if !has_key(g:easycomplete_jobs, plugin_name)
+    let g:easycomplete_jobs[plugin_name] = {}
+  endif
+  let l:jobs_holder = g:easycomplete_jobs[plugin_name]
+  let l:jobs_holder[a:buf_nr] = a:job_id
+endfunction
+
+function! easycomplete#util#SetCurrentBufJob(job_id)
+  call easycomplete#util#SetBufJob(bufnr(), a:job_id)
+endfunction
+
+function! easycomplete#util#DeleteBufJob(buf_nr)
+  let buf_nr = a:buf_nr
+  let plugin_name = easycomplete#util#GetLspPluginName(buf_nr)
+  if empty(plugin_name)
+    return
+  endif
+  if !has_key(g:easycomplete_jobs, plugin_name)
+    return
+  endif
+  if has_key(g:easycomplete_jobs[plugin_name], buf_nr)
+    unlet g:easycomplete_jobs[plugin_name][buf_nr]
+  endif
+endfunction
+
+function! easycomplete#util#DelCurrentBufJob()
+  call easycomplete#util#DeleteBufJob(bufnr('%'))
+endfunction
+
+function! easycomplete#util#GetBufJob(buf_nr)
+  let plugin_name = easycomplete#util#GetLspPluginName(a:buf_nr)
+  if !has_key(g:easycomplete_jobs, plugin_name)
+    return 0
+  endif
+  let l:jobs_holder = g:easycomplete_jobs[plugin_name]
+  return get(l:jobs_holder, a:buf_nr, 0)
+endfunction
+
+function! easycomplete#util#GetCurrentBufJob()
+  return easycomplete#util#GetBufJob(bufnr())
+endfunction
+
+function! easycomplete#util#GetAllJobs()
+  return g:easycomplete_jobs
+endfunction
+""" }}}
+
 " AutoLoadDict {{{
 function! easycomplete#util#AutoLoadDict()
   let plug_name = get(easycomplete#GetCurrentLspContext(), "name", "")
@@ -1197,8 +1262,8 @@ endfunction " }}}
 " tss 两个 LSP 实现，而且可以同时生效。但实际应用中要杜绝这种情况，所以我们约
 " 定一个语言当前只注册一个 LSP Server，GetLspPlugin() 即返回当前携带 LSP
 " Server 的补全 Plugin 对象，而不返回一个数组
-function! easycomplete#util#GetLspPlugin()
-  let attached_plugins = easycomplete#util#GetAttachedPlugins()
+function! easycomplete#util#GetLspPlugin(...)
+  let attached_plugins = call("easycomplete#util#GetAttachedPlugins", a:000)
   let ret_plugin = {}
   for plugin in attached_plugins
     if has_key(plugin, 'gotodefinition') && has_key(plugin, 'command')
@@ -1319,8 +1384,8 @@ function easycomplete#util#ItemIsFromLS(item)
 endfunction " }}}
 
 " easycomplete#util#GetLspPluginName {{{
-function! easycomplete#util#GetLspPluginName()
-  let plugin = easycomplete#util#GetLspPlugin()
+function! easycomplete#util#GetLspPluginName(...)
+  let plugin = call("easycomplete#util#GetLspPlugin", a:000)
   let plugin_name = get(plugin, 'name', "")
   return plugin_name
 endfunction " }}}
@@ -1829,7 +1894,7 @@ function! easycomplete#util#errlog(...) " {{{
   call timer_start(1, { -> easycomplete#util#call("s:errlog", args)})
 endfunction " }}}
 
-function! s:errlog(...)
+function! s:errlog(...) " {{{
   let max_line = 1000
   let logfile = easycomplete#util#ConfigRoot() . "/errlog"
   if !exists("g:easy_log_file_exists") && !easycomplete#util#FileExists(logfile)
@@ -1846,4 +1911,4 @@ function! s:errlog(...)
   let old_content = readfile(logfile, "", -1 * max_line)
   let new_content = old_content + l:res
   call writefile(new_content, logfile, "S")
-endfunction
+endfunction " }}}
