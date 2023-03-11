@@ -21,7 +21,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 - LSP support
 - Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
-- Snippet support with ultisnips.
+- Snippet support with ultisnips or vim-vsnip.
 - Brand New UI Design.
 
 ==============================================================================
@@ -130,6 +130,7 @@ All supported languages:
 | directory   | directory suggestion  | No Need                | No Need   |
 | buf         | keywords & dictionary | No Need                | No Need   |
 | snips       | Snippets Support      | ultisnips/vim-snippets | No        |
+| vsnip       | Snippets Support      | vim-vsnip              | No        |
 | ts          | JavaScript/TypeScript | tsserver               | Yes       |
 | deno        | JavaScript/TypeScript | deno                   | Yes       |
 | tn          | TabNine               | TabNine                | Yes       |
@@ -155,11 +156,14 @@ All supported languages:
 | php         | php                   | intelephense           | Yes       |
 | cs          | C#                    | omnisharp-lsp          | Yes       |
 
-EasyComplete needs ultisnips for snippets support if you want.
-This plugin is compatible with Vim-EasyComplete out of the box. Install with
+EasyComplete needs ultisnips or vim-vsnip for snippets support if you want.
+These plugins are compatible with Vim-EasyComplete out of the box. Install with
 vim-plug: >
 
   Plug 'SirVer/ultisnips'
+  " or
+  Plug 'hrsh7th/vim-vsnip'
+  Plug 'hrsh7th/vim-vsnip-integ'
 <
 
 Install TabNine language server: `InstallLspServer tabnine` or `InstallLspServer tn`
@@ -196,6 +200,8 @@ via these configurations:
 - Set `let g:easycomplete_kindflag_dict = ''` for dictionary kind flag.
 - Set `let g:easycomplete_menuflag_snip = '[S]'` for snippets menu flag.
 - Set `let g:easycomplete_kindflag_snip = 's'` for snippets kind flag.
+- Set `let g:easycomplete_menuflag_vsnip = '[VS]'` for snippets menu flag.
+- Set `let g:easycomplete_kindflag_vsnip = 's'` for snippets kind flag.
 - Set `let g:easycomplete_kindflag_tabnine = ''` for TabNine kind flag.
 - Set `let g:easycomplete_lsp_type_font = {...}` for custom fonts.
 
@@ -205,6 +211,8 @@ Example configuration with <https://nerdfonts.com>: >
   let g:easycomplete_kindflag_buf = "⚯"
   let g:easycomplete_menuflag_snip = ""
   let g:easycomplete_kindflag_snip = "ട"
+  let g:easycomplete_menuflag_vsnip = ""
+  let g:easycomplete_kindflag_vsnip = "ട"
   let g:easycomplete_kindflag_dict = "≡"
   let g:easycomplete_menuflag_dict = ""
   let g:easycomplete_kindflag_tabnine = ""

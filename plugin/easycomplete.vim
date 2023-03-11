@@ -33,6 +33,10 @@ let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete
                                   \ "[S]" : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
 let g:easycomplete_kindflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")) ?
                                   \ "s" :   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")
+let g:easycomplete_menuflag_vsnip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "vsnip", "menu")) ?
+                                  \ "[VS]" : easycomplete#util#get(g:easycomplete_menu_skin, "vsnip", "menu")
+let g:easycomplete_kindflag_vsnip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "vsnip", "kind")) ?
+                                  \ "s" :   easycomplete#util#get(g:easycomplete_menu_skin, "vsnip", "kind")
 let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
                                   \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
@@ -419,6 +423,12 @@ augroup easycomplete#PluginRegister
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
       \ })
+
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'vsnip',
+      \ 'whitelist': ['*'],
+      \ 'completor': 'easycomplete#sources#vsnip#completor',
+      \ })
 augroup END
 
 augroup easycomplete#NormalBinding
@@ -464,8 +474,8 @@ inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
 " inoremap <expr> <BS> easycomplete#BackSpace()
-inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=seasycomplete#CleverTab()<cr>
-inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=seasycomplete#CleverShiftTab()<cr>
+inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
+inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>
 inoremap <silent> <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 inoremap <silent> <Plug>EasycompleteNill <C-r>=easycomplete#nill()<CR>
 inoremap <silent> <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>

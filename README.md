@@ -21,7 +21,7 @@ It is easy to install and use. It contains these features:
 - [TabNine support](#TabNine-Support). (Highly Recommend!)
 - Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
-- Snippet support with ultisnips.
+- Snippet support with ultisnips or vim-vsnip.
 - Fast performance
 
 The reason I decided to use pure vim script instead of lua or python is that I want a wider range of compatibility. And I made a lot of async handling with vim script to avoid the block of vim.
@@ -35,6 +35,9 @@ For vim-plug:
 ```vim
 Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
+" or use vim-vsnip
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
 ```
 
 Run `:PlugInstall`.
@@ -44,6 +47,9 @@ For dein.vim
 ```vim
 call dein#add('jayli/vim-easycomplete')
 call dein#add('SirVer/ultisnips')
+" or use vim-vsnip
+call dein#add('hrsh7th/vim-vsnip')
+call dein#add('hrsh7th/vim-vsnip-integ')
 ```
 
 For Packer.nvim
@@ -51,6 +57,9 @@ For Packer.nvim
 ```lua
 use { 'jayli/vim-easycomplete' }
 use { 'SirVer/ultisnips' }
+-- or use vim-vsnip
+use { 'hrsh7th/vim-vsnip' }
+use { 'hrsh7th/vim-vsnip-integ' }
 ```
 
 ### All Supported Commands
@@ -140,6 +149,7 @@ All supported languages:
 | directory   | directory | No Need                  | Integrated         | None         | -                         |
 | buf         | buf & dict| No Need                  | Integrated         | None         | -                         |
 | snips       | Snippets  | ultisnips                | Integrated         | python3      | -                         |
+| vsnip       | Snippets  | vim-vsnip                | Integrated         | None         | -                         |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
 | deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
 | tn          | TabNine   | TabNine                  | Yes                | None         | No                        |
@@ -209,7 +219,7 @@ let g:easycomplete_filetypes = {
 
 #### Snippet Support
 
-Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed.
+Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips` or `vim-vsnip`. UltiSnips and Vsnip are compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed.
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
 
