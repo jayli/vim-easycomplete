@@ -147,7 +147,11 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
     let prefix_key = easycomplete#util#IsGui() ? "guibg" : "ctermbg"
     let append_str = s:IsSearchWord() ? join([prefix_key, bgcolor], "=") : join([prefix_key, "NONE"], "=")
     exec "hi MatchWord cterm=underline gui=underline " . append_str
-    exec '2match' 'MatchWord' '/\V\<'.expand('<cword>').'\>/'
+    try
+      exec '2match' 'MatchWord' '/\V\<'.expand('<cword>').'\>/'
+    catch
+      " do nothing
+    endtry
   else
     2match none
   endif
