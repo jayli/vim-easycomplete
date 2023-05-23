@@ -517,7 +517,8 @@ function! easycomplete#sources#ts#SignatureCallback(response)
   let offset_col = strlen(offset_str)
 
   let info = easycomplete#util#NormalizeSignatureDetail(item, hl_index)
-  call easycomplete#popup#float(info, 'Pmenu', 1, "", [0, 0 - offset_col], 'signature')
+  " Signature 显示方向，原本是 1 向上，我觉得有点干扰，改成了向下0
+  call easycomplete#popup#float(info, 'Pmenu', 0, "", [0, 0 - offset_col], 'signature')
 endfunction
 
 " job complete 回调
