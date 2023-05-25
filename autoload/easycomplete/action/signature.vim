@@ -164,8 +164,9 @@ function! s:SignatureCallback(title, param, doc)
   if offset == -1
     let offset = stridx(title, "(")
   endif
+  " signature 原来是 1 向上，我觉得有点干扰，改成了向下 0
   call easycomplete#popup#float([title . param, '----'] + content,
-                             \ 'Pmenu', 1, "", [0, 0 - offset], 'signature')
+                             \ 'Pmenu', 0, "", [0, 0 - offset], 'signature')
 endfunction
 
 function! s:GetParameterLabel(signature, parameter) abort
