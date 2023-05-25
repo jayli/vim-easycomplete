@@ -1206,7 +1206,7 @@ function! s:CompleteHandler()
   if &filetype == "json"
     call extend(l:checking, ['"'])
   endif
-  if strwidth(l:ctx['typing']) == 0 && index(l:checking, l:ctx['char']) < 0
+  if strwidth(l:ctx['typing']) < g:easycomplete_behaviorKeywordLength && index(l:checking, l:ctx['char']) < 0
     return
   endif
   " 以上所有步骤都是特殊情况的拦截，后续逻辑应当完全交给 LSP 插件来做标准处

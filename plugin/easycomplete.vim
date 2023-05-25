@@ -71,6 +71,12 @@ endif
 if !exists("g:easycomplete_colorful")
   let g:easycomplete_colorful= 0
 endif
+
+" 输入n个字才开始提示,可以避免字符输入的顿卡
+if !exists("g:easycomplete_behaviorKeywordLength")
+  let g:easycomplete_behaviorKeywordLength = 2
+endif
+
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
