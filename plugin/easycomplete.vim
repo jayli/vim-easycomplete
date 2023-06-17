@@ -71,6 +71,9 @@ endif
 if !exists("g:easycomplete_colorful")
   let g:easycomplete_colorful= 0
 endif
+if !exists("g:easycomplete_signature_offset")
+  let g:easycomplete_signature_offset = 0
+endif
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,
       \ 'g:easycomplete_diagnostics_enable': 1,
@@ -89,6 +92,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_lsp_type_font':      g:easycomplete_lsp_type_font,
       \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
+      \ 'g:easycomplete_signature_offset':   g:easycomplete_signature_offset,
       \ }
 
 " VIM 最低版本 8.2
