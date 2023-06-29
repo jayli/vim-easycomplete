@@ -608,6 +608,9 @@ endfunction
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   let g:easycomplete_start = reltime()
   if s:BackChecking()
     let g:easycomplete_backing = 1
@@ -1024,6 +1027,9 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
 endfunction
 
 function! easycomplete#CleverTab()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   if pumvisible()
     call s:zizz()
     return "\<C-N>"
@@ -1055,6 +1061,9 @@ function! easycomplete#CleverTab()
     call s:zizz()
     return "\<Tab>"
   else
+    if &filetype == "none" && &buftype == "nofile"
+      return ""
+    endif
     call s:DoTabCompleteAction()
     return ""
   endif
@@ -1073,6 +1082,9 @@ endfunction
 
 " CleverShiftTab
 function! easycomplete#CleverShiftTab()
+  if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
   call s:zizz()
   return pumvisible() ? "\<C-P>" : "\<Tab>"
 endfunction
@@ -1901,6 +1913,10 @@ endfunction
 
 function! easycomplete#TextChangedP()
   if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
+
+  if g:easycomplete_enable == 0 || !exists('b:old_changedtick')
     return
   endif
 
