@@ -23,7 +23,13 @@ function! easycomplete#installer#LspServerDir() abort
 endfunction
 
 function! easycomplete#installer#GetCommand(name)
+  if !easycomplete#ok('g:easycomplete_enable')
+    return ''
+  endif
   let opt = easycomplete#GetOptions(a:name)
+  if a:name == ""
+    return ''
+  endif
   if empty(opt)
     call easycomplete#util#info('[error]', 'GetCommand("' . a:name . '"): plugin options is null')
     return ''
