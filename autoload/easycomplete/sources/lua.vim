@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_lua')
-  finish
-endif
-let g:easycomplete_sources_lua = 1
-
 let g:sumneko_lua_language_server_workspace_config = {
         \  'Lua': {
         \    'color': {

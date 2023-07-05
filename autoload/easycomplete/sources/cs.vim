@@ -1,8 +1,3 @@
-if exists('g:easycomplete_cs')
-  finish
-endif
-let g:easycomplete_cs = 1
-
 function! easycomplete#sources#cs#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'omnisharp-lsp',

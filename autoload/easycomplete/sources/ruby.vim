@@ -1,8 +1,3 @@
-if exists('g:easycomplete_rb')
-  finish
-endif
-let g:easycomplete_rb = 1
-
 function! easycomplete#sources#ruby#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'solargraph',

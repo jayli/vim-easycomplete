@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_grvy')
-  finish
-endif
-let g:easycomplete_sources_grvy = 1
-
 function! easycomplete#sources#grvy#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'groovyls',

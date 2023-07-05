@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_py')
-  finish
-endif
-let g:easycomplete_sources_py = 1
-
 function! easycomplete#sources#py#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'pylsp',

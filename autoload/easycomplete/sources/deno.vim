@@ -1,7 +1,3 @@
-if get(g:, 'easycomplete_sources_deno')
-  finish
-endif
-let g:easycomplete_sources_deno = 1
 let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
 
 function! easycomplete#sources#deno#constructor(opt, ctx)

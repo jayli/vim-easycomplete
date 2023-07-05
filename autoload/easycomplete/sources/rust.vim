@@ -1,9 +1,3 @@
-
-if exists('g:easycomplete_rust')
-  finish
-endif
-let g:easycomplete_rust = 1
-
 function! easycomplete#sources#rust#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'rust_analyzer',

@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_java')
-  finish
-endif
-let g:easycomplete_sources_java = 1
-
 function! easycomplete#sources#java#constructor(opt, ctx)
   " 注册 lsp
   call easycomplete#RegisterLspServer(a:opt, {

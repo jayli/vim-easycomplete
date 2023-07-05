@@ -1,8 +1,3 @@
-if exists('g:easycomplete_dart')
-  finish
-endif
-let g:easycomplete_dart = 1
-
 function! easycomplete#sources#dart#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'dartls',

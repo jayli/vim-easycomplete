@@ -1,8 +1,3 @@
-if exists('g:easycomplete_gopls')
-  finish
-endif
-let g:easycomplete_gopls = 1
-
 function! easycomplete#sources#go#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'gopls',

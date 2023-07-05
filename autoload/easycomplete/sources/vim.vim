@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_vim')
-  finish
-endif
-let g:easycomplete_sources_vim = 1
-
 function! easycomplete#sources#vim#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'vimls',

@@ -1,8 +1,3 @@
-if exists('g:easycomplete_css')
-  finish
-endif
-let g:easycomplete_css = 1
-
 function! easycomplete#sources#css#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
     \ 'name': 'cssls',
