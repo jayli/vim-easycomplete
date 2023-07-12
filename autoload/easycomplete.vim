@@ -66,8 +66,12 @@ let s:first_render_timer = 0
 " FirstCompleteRendering 中 LSP 的超时时间
 let g:easycomplete_first_render_delay = 1500
 
-" EasyComplete 入口函数
 function! easycomplete#Enable()
+  call timer_start(800, { -> easycomplete#_enable() })
+endfunction
+
+" EasyComplete 入口函数
+function! easycomplete#_enable()
   if !easycomplete#util#EnvReady() | return | endif
   if !easycomplete#ok('g:easycomplete_enable')
     return
