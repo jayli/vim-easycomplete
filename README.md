@@ -237,7 +237,13 @@ By default, an API key is not required to use TabNine in vim-easycomplete. If yo
 
 There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`(for iterm). (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
 
-Example configuration with <https://nerdfonts.com>:
+If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font`
+
+```vim
+let g:easycomplete_nerd_font = 1
+```
+
+You can define your custom menu skin with nerdfonts. Here is an example configuration with <https://nerdfonts.com>:
 
 ```vim
 let g:easycomplete_menu_skin = {
