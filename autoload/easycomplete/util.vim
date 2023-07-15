@@ -950,14 +950,9 @@ function! easycomplete#util#AutoLoadDict()
 endfunction " }}}
 
 function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
-  let ret_path = ""
-  for es_path in split(&rtp, ",")
-    if stridx(es_path, "vim-easycomplete") >= 0
-      let ret_path = es_path
-      break
-    endif
-  endfor
-  return ret_path
+  let plugin_root = substitute(expand('<script>'), "^\\(.\\+vim-easycomplete\\)\\(.\\{\-}\\)$","\\1","g")
+  let plugin_root = substitute(plugin_root, "^\\(.\\+script\\s\\)\\(.\\{\-}\\)$", "\\2", "g")
+  return plugin_root
 endfunction "}}}
 
 " SnipMap {{{
