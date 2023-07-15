@@ -105,12 +105,12 @@ if g:easycomplete_nerd_font == 1
         \   'hint':        ''
         \ }
   let g:easycomplete_lsp_type_font = {
-        \ 'class': "",     'color': "",
+        \ 'class': "",     'color': "",
         \ 'constant': "",  'constructor': "",
         \ 'enum': "",      'enummember': "",
         \ 'field': "料",    'file': '♮',
         \ 'folder': "",    'function': "ƒ",
-        \ 'interface': "", 'keyword': "",
+        \ 'interface': "", 'keyword': "",
         \ 'snippet': "",   'struct': "פּ",
         \ 'text': "",      'typeparameter': "§",
         \ 'variable': "",  'module':'',
