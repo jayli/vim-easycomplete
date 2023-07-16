@@ -17,6 +17,56 @@ let g:env_is_iterm = !empty($ITERM_PROFILE) ? v:true : v:false
 " 用 easycomplete#util#IsGui() 代替
 let g:env_is_gui = (has("termguicolors") && &termguicolors == 1) ? v:true : v:false
 
+if !exists("g:easycomplete_nerd_font")
+  let g:easycomplete_nerd_font = 0
+endif
+
+if g:easycomplete_nerd_font == 1
+  let g:easycomplete_menu_skin = {
+        \   "buf": {
+        \      "kind":"羅",
+        \      "menu":"[B]",
+        \    },
+        \   "snip": {
+        \      "kind":"",
+        \      "menu":"[S]",
+        \    },
+        \   "dict": {
+        \      "kind":"",
+        \      "menu":"[D]",
+        \    },
+        \   "tabnine": {
+        \      "kind":"",
+        \    },
+        \ }
+  let g:easycomplete_sign_text = {
+        \   'error':       "",
+        \   'warning':     "",
+        \   'information': '',
+        \   'hint':        ''
+        \ }
+  let g:easycomplete_lsp_type_font = {
+        \ 'class': "",     'color': "",
+        \ 'constant': "",  'constructor': "",
+        \ 'enum': "",      'enummember': "",
+        \ 'field': "料",    'file': '♮',
+        \ 'folder': "",    'function': "ƒ",
+        \ 'interface': "", 'keyword': "",
+        \ 'snippet': "",   'struct': "פּ",
+        \ 'text': "",      'typeparameter': "§",
+        \ 'variable': "",  'module':'',
+        \ 'event': '',
+        \ 'r':'', 't':'',
+        \ 'f':'f', 'c':'',
+        \ 'u':'𝘶', 'e':'𝘦',
+        \ 's':'פּ', 'v':'',
+        \ 'i':'𝘪', 'm':'m',
+        \ 'p':'p', 'k':'𝘬',
+        \ 'o':"𝘰", 'd':'𝘥',
+        \ 'l':"𝘭", 'a':"𝘢",
+        \ }
+endif
+
 if !exists("g:easycomplete_menu_skin")
   let g:easycomplete_menu_skin = {}
 endif
@@ -75,55 +125,6 @@ if !exists("g:easycomplete_colorful")
 endif
 if !exists("g:easycomplete_signature_offset")
   let g:easycomplete_signature_offset = 0
-endif
-if !exists("g:easycomplete_nerd_font")
-  let g:easycomplete_nerd_font = 0
-endif
-
-if g:easycomplete_nerd_font == 1
-  let g:easycomplete_menu_skin = {
-        \   "buf": {
-        \      "kind":"羅",
-        \      "menu":"[B]",
-        \    },
-        \   "snip": {
-        \      "kind":"",
-        \      "menu":"[S]",
-        \    },
-        \   "dict": {
-        \      "kind":"",
-        \      "menu":"[D]",
-        \    },
-        \   "tabnine": {
-        \      "kind":"",
-        \    },
-        \ }
-  let g:easycomplete_sign_text = {
-        \   'error':       "",
-        \   'warning':     "",
-        \   'information': '',
-        \   'hint':        ''
-        \ }
-  let g:easycomplete_lsp_type_font = {
-        \ 'class': "",     'color': "",
-        \ 'constant': "",  'constructor': "",
-        \ 'enum': "",      'enummember': "",
-        \ 'field': "料",    'file': '♮',
-        \ 'folder': "",    'function': "ƒ",
-        \ 'interface': "", 'keyword': "",
-        \ 'snippet': "",   'struct': "פּ",
-        \ 'text': "",      'typeparameter': "§",
-        \ 'variable': "",  'module':'',
-        \ 'event': '',
-        \ 'r':'', 't':'',
-        \ 'f':'f', 'c':'',
-        \ 'u':'𝘶', 'e':'𝘦',
-        \ 's':'פּ', 'v':'',
-        \ 'i':'𝘪', 'm':'m',
-        \ 'p':'p', 'k':'𝘬',
-        \ 'o':"𝘰", 'd':'𝘥',
-        \ 'l':"𝘭", 'a':"𝘢",
-        \ }
 endif
 
 let g:easycomplete_config = {
