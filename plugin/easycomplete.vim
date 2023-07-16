@@ -24,12 +24,12 @@ endif
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"羅",
-        \      "menu":"[B]",
+        \      "kind":"󰦨",
+        \      "menu":"𝘛𝘦𝘹𝘵",
         \    },
         \   "snip": {
         \      "kind":"",
-        \      "menu":"[S]",
+        \      "menu":"𝘤𝘰𝘥𝘦",
         \    },
         \   "dict": {
         \      "kind":"",
@@ -37,7 +37,8 @@ if g:easycomplete_nerd_font == 1
         \    },
         \   "tabnine": {
         \      "kind":"",
-        \    },
+        \      "menu":"𝘛𝘕"
+        \    }
         \ }
   let g:easycomplete_sign_text = {
         \   'error':       "",
@@ -46,15 +47,15 @@ if g:easycomplete_nerd_font == 1
         \   'hint':        ''
         \ }
   let g:easycomplete_lsp_type_font = {
-        \ 'class': "",     'color': "",
-        \ 'constant': "",  'constructor': "",
-        \ 'enum': "",      'enummember': "",
-        \ 'field': "料",    'file': '♮',
-        \ 'folder': "",    'function': "ƒ",
-        \ 'interface': "", 'keyword': "",
-        \ 'snippet': "",   'struct': "פּ",
-        \ 'text': "",      'typeparameter': "§",
-        \ 'variable': "",  'module':'',
+        \ 'class':     "",  'color':         "",
+        \ 'constant':  "",  'constructor':   "",
+        \ 'enum':      "",  'enummember':    "",
+        \ 'field':     "料", 'file':          '♮',
+        \ 'folder':    "",  'function':      "ƒ",
+        \ 'interface': "",  'keyword':       "",
+        \ 'snippet':   "",  'struct':        "פּ",
+        \ 'text':      "",  'typeparameter': "§",
+        \ 'variable':  "",  'module':        '',
         \ 'event': '',
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
