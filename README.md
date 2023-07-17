@@ -53,6 +53,10 @@ use { 'jayli/vim-easycomplete' }
 use { 'SirVer/ultisnips' }
 ```
 
+Run `:PackerInstall`
+
+You can use my default configuration [here](my-custom-config.md) with lua.
+
 ### All Supported Commands
 
 All commands:
