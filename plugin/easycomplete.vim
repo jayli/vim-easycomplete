@@ -24,7 +24,7 @@ endif
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"󰦨",
+        \      "kind":"",
         \      "menu":"𝘛𝘦𝘹𝘵",
         \    },
         \   "snip": {
@@ -32,8 +32,8 @@ if g:easycomplete_nerd_font == 1
         \      "menu":"𝘤𝘰𝘥𝘦",
         \    },
         \   "dict": {
-        \      "kind":"",
-        \      "menu":"[D]",
+        \      "kind":"",
+        \      "menu":"𝚍𝚒𝚌𝚝",
         \    },
         \   "tabnine": {
         \      "kind":"",
@@ -50,7 +50,7 @@ if g:easycomplete_nerd_font == 1
         \ 'class':     "",  'color':         "",
         \ 'constant':  "",  'constructor':   "",
         \ 'enum':      "",  'enummember':    "",
-        \ 'field':     "料", 'file':          '♮',
+        \ 'field':     "料", 'file':          '',
         \ 'folder':    "",  'function':      "ƒ",
         \ 'interface': "",  'keyword':       "",
         \ 'snippet':   "",  'struct':        "פּ",

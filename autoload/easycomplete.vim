@@ -1099,7 +1099,7 @@ function! easycomplete#TypeEnterWithPUM()
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   " 选中目录
-  if (pumvisible() && !empty(l:item) && get(l:item, "menu") ==# "[Dir]")
+  if (pumvisible() && !empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
     call s:CloseCompletionMenu()
     call s:flush()
     call s:AsyncRun(function('s:DoComplete'), [v:true], 60)

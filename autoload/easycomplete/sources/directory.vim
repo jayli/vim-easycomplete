@@ -86,9 +86,21 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath)
   for item in a:rlist
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
-      call add(result_with_kind, {"word": item . "/", "menu" : "[Dir]"})
+      if g:easycomplete_nerd_font == 0
+        call add(result_with_kind, {"word": item . "/", "menu" : "[Dir]"})
+      else
+        call add(result_with_kind, {"word": item . "/",
+              \ "menu" : "folder", "kind": "" })
+      endif
     else
-      call add(result_with_kind, {"word": item , "menu" : "[File]"})
+      if g:easycomplete_nerd_font == 0
+        call add(result_with_kind, {"word": item, "menu" : "[File]"})
+      else
+        call add(result_with_kind, {"word": item,
+              \ "menu" : "file",
+              \ "kind": ""
+              \ })
+      endif
     endif
   endfor
 
