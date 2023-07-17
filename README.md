@@ -85,11 +85,22 @@ The plugin is out of box and config nothing. (If you want full features, please 
 
 Use Tab to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
+With vim script:
+
 ```vim
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
+```
+
+or with lua:
+
+```lua
+vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 ```
 
 Set trigger completion mapping:
@@ -243,7 +254,7 @@ If you just want to use default nerdfonts configuration, you can simplily config
 let g:easycomplete_nerd_font = 1
 ```
 
-You can define your custom menu skin with nerdfonts. Here is an example configuration with <https://nerdfonts.com>:
+In most cases, the configuration "`g:easycomplete_nerd_font = 1`" is already enough, but if you want to customize the kind icon, you can modify the configuration like this with <https://nerdfonts.com> installed:
 
 ```vim
 let g:easycomplete_menu_skin = {
