@@ -32,7 +32,7 @@ if g:easycomplete_nerd_font == 1
         \      "menu":"𝘤𝘰𝘥𝘦",
         \    },
         \   "dict": {
-        \      "kind":"",
+        \      "kind":" ",
         \      "menu":"𝚍𝚒𝚌𝚝",
         \    },
         \   "tabnine": {
