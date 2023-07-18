@@ -320,7 +320,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
     let result = easycomplete#util#uniq(result)
   endif
   " 防止抖动
-  let result_all = easycomplete#sources#tn#GetGlboalSoucresItems() + result
+  let result_all = (g:easycomplete_tabnine_enable ? easycomplete#sources#tn#GetGlboalSoucresItems() : []) + result
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
@@ -796,7 +796,7 @@ function! easycomplete#typing()
 
   if !easycomplete#FireCondition()
     " tabnine
-    if easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
+    if g:easycomplete_tabnine_enable && easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
       call s:flush()
       call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
     endif
@@ -1108,7 +1108,7 @@ function! s:CompleteMatchAction()
     call s:StopZizz()
     let ctx = easycomplete#context()
     " tabnine
-    if easycomplete#sources#tn#available()
+    if g:easycomplete_tabnine_enable && easycomplete#sources#tn#available()
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
@@ -1736,7 +1736,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       endif
 
       " tabnine
-      if easycomplete#sources#tn#available()
+      if g:easycomplete_tabnine_enable && easycomplete#sources#tn#available()
         let tabnine_result = easycomplete#sources#tn#GetGlboalSoucresItems()
         let result = tabnine_result + copy(result)
       endif
@@ -2411,7 +2411,7 @@ function! easycomplete#TextChangedP()
     let b:old_changedtick = b:changedtick
   elseif g:env_is_vim && pumvisible() && !s:zizzing()
     " tabnine, 空格 trigger 出的 tabnine menu 敲入字母后的逻辑
-    if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
+    if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_tabnine_enable && easycomplete#sources#tn#available()
       " nvim 中的 paste text 行为异常，空格弹出 pum 后直接 paste 时，c-y 会把
       " 菜单关掉的同时也把 pasted text 清空，应该是nvim的bug，这里用c-x,c-z 代替
       if has('nvim') && empty(g:easycomplete_insert_char)
