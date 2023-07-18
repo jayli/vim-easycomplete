@@ -1614,17 +1614,23 @@ function! s:NormalizeLspInfo(info)
   let l:li = split(info, "\n")
   let l:str = []
 
+  " for item in l:li
+  "   if item ==# ''
+  "     call add(l:str, item)
+  "   else
+  "     if len(l:str) == 0
+  "       call add(l:str, item)
+  "     else
+  "       let l:old = l:str[len(l:str) - 1]
+  "       let l:str[len(l:str) - 1] = l:old . " " . item
+  "     endif
+  "   endif
+  " endfor
   for item in l:li
-    if item ==# ''
-      call add(l:str, item)
-    else
-      if len(l:str) == 0
-        call add(l:str, item)
-      else
-        let l:old = l:str[len(l:str) - 1]
-        let l:str[len(l:str) - 1] = l:old . " " . item
-      endif
+    if item ==# '```' || item =~ "^```\[a-zA-Z0-9]\\{-}$"
+      continue
     endif
+    call add(l:str, item)
   endfor
   return l:str
 endfunction

@@ -46,7 +46,7 @@ function! s:HandleLspCallback(server_name, data) abort
     if empty(info)
       call s:ClosePopup()
     elseif oringal_name == get(g:easycomplete_completed_item, "word", "")
-      let info = substitute(info, '```', '', 'g')
+      " let info = substitute(info, '```', '', 'g')
       let info = easycomplete#util#NormalizeLspInfo(info)
       if type(info) == type("")
         let info = [info]
