@@ -484,7 +484,7 @@ endfunction
 
 " ModifyInfoByMaxwidth {{{
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
-  let border = " "
+  let border = "#"
   let maxwidth = a:maxwidth - 2
 
   if type(a:info) == type("")
@@ -506,7 +506,7 @@ function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
     " 字符串长度大于 maxwidth
     while cursor <= (strlen(a:info) - 1)
       let t_line = t_line . a:info[cursor]
-      if (cursor + 1) % (span) == 0 && cursor != 0
+      if (cursor) % (span) == 0 && cursor != 0
         call add(t_info, border . t_line . border)
         let t_line = ""
       endif
