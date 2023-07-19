@@ -484,7 +484,7 @@ endfunction
 
 " ModifyInfoByMaxwidth {{{
 function! easycomplete#util#ModifyInfoByMaxwidth(info, maxwidth)
-  let border = "#"
+  let border = " "
   let maxwidth = a:maxwidth - 2
 
   if type(a:info) == type("")
