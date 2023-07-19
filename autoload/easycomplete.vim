@@ -53,7 +53,9 @@ let g:easycomplete_insert_char = ''
 "   }
 " ]
 let g:easycomplete_complete_taskqueue = []
-let g:easycomplete_popup_width = 85
+" 一些主流语言的 document 的返回会自定断行，最常见的是 70 宽度来断行，比如
+" python，这里留一个小的富裕，设置 80 比较合适
+let g:easycomplete_popup_width = 80
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let b:typing_ctx = {}
 let b:old_changedtick = 0
