@@ -400,7 +400,11 @@ function! s:NVimShow(opt, windowtype, float_type)
   else
     let hl = 'Pmenu'
   endif
-  let filetype = &filetype == "lua" ? "help" : &filetype
+  if easycomplete#util#ItemIsFromLS(g:easycomplete_completed_item)
+    let filetype = &filetype == "lua" ? "help" : &filetype
+  else
+    let filetype = &filetype
+  endif
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
   unlet winargs[2].filetype
