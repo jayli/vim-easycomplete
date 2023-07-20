@@ -20,7 +20,10 @@ function! s:ResetBuf(buf)
   call setbufvar(buf, '&signcolumn', 'no')
   call setbufvar(buf, '&filetype', 'none')
   call setbufvar(buf, '&buftype', "nofile")
-  call setbufvar(buf, '&bufhidden', 1)
+  try
+    call setbufvar(buf, '&bufhidden', 1)
+  catch /474/
+  endtry
   call setbufvar(buf, '&modifiable', 1)
   call setbufvar(buf, '&buflisted', 0)
   call setbufvar(buf, '&swapfile', 0)
