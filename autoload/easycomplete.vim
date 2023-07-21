@@ -135,10 +135,14 @@ function! s:BindingTypingCommandOnce()
     return
   endif
   let g:easycomplete_typing_binding_done = 1
-  if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
-    " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
-    exec "iunmap " . g:easycomplete_tab_trigger
-  endif
+  try
+    if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
+      " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
+      exec "iunmap " . g:easycomplete_tab_trigger
+    endif
+  catch
+    " do nothing
+  endtry
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   try
@@ -1637,18 +1641,22 @@ function! s:SnipSupports()
 endfunction
 
 function! s:SnippetsInit()
-  if s:SnipSupports()
-    let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
-    let g:UltiSnipsSnippetDirectories = [
-          \ easycomplete_root . "/snippets/ultisnips"
-          \ ]
-    " Enable looking for SnipMate snippets in
-    " &runtimepath. UltiSnips will search only for
-    " directories named 'snippets' while looking for
-    " SnipMate snippets. Defaults to "1", so UltiSnips
-    " will look for SnipMate snippets.
-    let g:UltiSnipsEnableSnipMate = 1
-  endif
+  try
+    if s:SnipSupports()
+      let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
+      let g:UltiSnipsSnippetDirectories = [
+            \ easycomplete_root . "/snippets/ultisnips"
+            \ ]
+      " Enable looking for SnipMate snippets in
+      " &runtimepath. UltiSnips will search only for
+      " directories named 'snippets' while looking for
+      " SnipMate snippets. Defaults to "1", so UltiSnips
+      " will look for SnipMate snippets.
+      let g:UltiSnipsEnableSnipMate = 1
+    endif
+  catch
+    " do nothing
+  endtry
 endfunction
 
 function! easycomplete#nill() abort
