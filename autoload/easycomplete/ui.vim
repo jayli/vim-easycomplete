@@ -29,14 +29,10 @@ function! easycomplete#ui#SetScheme()
 
   if g:env_is_iterm == v:true
     if g:easycomplete_scheme == 'sharp'
-      " hi! PMenu guibg=#3a3a3a guifg=#dddddd gui=NONE
-      " hi! PMenuSel guibg=#eeeeee guifg=#313131 gui=NONE
-      " hi! PmenuSbar guibg=#eeeeee
-      " hi! PmenuThumb guibg=#8a8a8a
-      hi! PMenu guibg=#1e4574 guifg=#dddddd gui=NONE
-      hi! PMenuSel guibg=#eeeeee guifg=#313131 gui=NONE
-      hi! PmenuSbar guibg=#2d507a
-      hi! PmenuThumb guibg=#5980af
+      hi! PMenu guifg=#d4d4d4 guibg=#252526 gui=NONE
+      hi! PmenuSel guifg=#ffffff guibg=#04395e gui=NONE
+      hi! PmenuSbar guibg=#252526
+      hi! PmenuThumb guibg=#474747
     endif
 
   endif
