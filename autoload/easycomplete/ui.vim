@@ -140,9 +140,12 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
   endif
   if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
     let bgcolor = easycomplete#ui#GetBgColor("Search")
-    let prefix_key = easycomplete#util#IsGui() ? "guibg" : "ctermbg"
-    let append_str = s:IsSearchWord() ? join([prefix_key, bgcolor], "=") : join([prefix_key, "NONE"], "=")
-    exec "hi MatchWord cterm=underline gui=underline " . append_str
+    let fgcolor = easycomplete#ui#GetFgColor("Search")
+    let prefix_bg_key = easycomplete#util#IsGui() ? "guibg" : "ctermbg"
+    let append_bg_str = s:IsSearchWord() ? join([prefix_bg_key, bgcolor], "=") : join([prefix_bg_key, "NONE"], "=")
+    let prefix_fg_key = easycomplete#util#IsGui() ? "guifg" : "ctermfg"
+    let append_fg_str = s:IsSearchWord() ? join([prefix_fg_key, fgcolor], "=") : join([prefix_fg_key, "NONE"], "=")
+    exec "hi MatchWord cterm=underline gui=underline " . append_bg_str . " " . append_fg_str
     try
       exec '2match' 'MatchWord' '/\V\<'.expand('<cword>').'\>/'
     catch
