@@ -67,6 +67,8 @@ let g:easycomplete_backing_or_cr = 0
 let s:first_render_timer = 0
 " FirstCompleteRendering 中 LSP 的超时时间
 let g:easycomplete_first_render_delay = 1500
+" Diagnostics 中 FloatWidth
+let g:easycomplete_diagnostics_float_width = 180
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -2015,6 +2017,10 @@ endfunction
 
 function! easycomplete#BufEnter()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
+    if easycomplete#sources#deno#IsTSOrJSFiletype() && !easycomplete#sources#deno#IsDenoProject()
+      call easycomplete#sources#ts#bufEnter()
+      return
+    endif
     call timer_start(1600, { -> easycomplete#lint() })
   endif
 endfunction

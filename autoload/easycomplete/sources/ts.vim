@@ -117,7 +117,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     " Diagnostics Event
     autocmd InsertLeave *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
     autocmd BufWritePost *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
-    autocmd BufEnter *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#lint()
+    " autocmd FileType *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#bufEnter()
     " hack for #56
     autocmd CompleteChanged *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
@@ -135,6 +135,10 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistResponseCallback('easycomplete#sources#ts#EntryDetailsCallback', 'completionEntryDetails')
   call easycomplete#util#AsyncRun('easycomplete#sources#ts#init', [], 5)
   let s:opt = a:opt
+endfunction
+
+function! easycomplete#sources#ts#bufEnter()
+  call timer_start(1600, { -> easycomplete#sources#ts#lint()})
 endfunction
 
 function! easycomplete#sources#ts#init()

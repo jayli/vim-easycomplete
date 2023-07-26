@@ -85,7 +85,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   else
     return
   endif
-  let float_maxwidth = 80
+  let float_maxwidth = g:easycomplete_diagnostics_float_width
   let content = easycomplete#util#ModifyInfoByMaxwidth(content, float_maxwidth)
   if len(content) == 1 && strlen(content[0]) == 0
     return

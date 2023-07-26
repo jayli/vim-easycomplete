@@ -12,10 +12,14 @@ let s:infermation_text = get(g:easycomplete_sign_text, "information", "M")
 let s:hint_text        = get(g:easycomplete_sign_text, "hint", "H")
 
 let g:easycomplete_diagnostics_config = {
-      \ 'error':       {'type': 1, 'prompt_text': s:error_text,      'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
-      \ 'warning':     {'type': 2, 'prompt_text': s:waring_text,     'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow', "hl": 'WarningMsg'},
-      \ 'information': {'type': 3, 'prompt_text': s:infermation_text,'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
-      \ 'hint':        {'type': 4, 'prompt_text': s:hint_text,       'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
+      \ 'error':
+      \ {'type': 1, 'prompt_text': s:error_text,      'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
+      \ 'warning':
+      \ {'type': 2, 'prompt_text': s:waring_text,     'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow', "hl": 'WarningMsg'},
+      \ 'information':
+      \ {'type': 3, 'prompt_text': s:infermation_text,'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
+      \ 'hint':
+      \ {'type': 4, 'prompt_text': s:hint_text,       'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
       \ }
 
 function! easycomplete#sign#test()
