@@ -77,6 +77,8 @@ endfunction
 " ft, 文件类型
 " offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
 " float_type: signature/lint
+"   signature: 函数参数提示
+"   lint:      错误提示
 function! easycomplete#popup#float(content, hl, direction, ft, offset, float_type)
   if type(a:content) == type('')
     let content = [a:content]
@@ -85,7 +87,12 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   else
     return
   endif
-  let float_maxwidth = g:easycomplete_diagnostics_float_width
+  if a:float_type == "lint"
+    let float_maxwidth = g:easycomplete_lint_float_width
+  endif
+  if a:float_type == "signature"
+    let float_maxwidth = g:easycomplete_popup_width
+  endif
   let content = easycomplete#util#ModifyInfoByMaxwidth(content, float_maxwidth)
   if len(content) == 1 && strlen(content[0]) == 0
     return

@@ -67,8 +67,8 @@ let g:easycomplete_backing_or_cr = 0
 let s:first_render_timer = 0
 " FirstCompleteRendering 中 LSP 的超时时间
 let g:easycomplete_first_render_delay = 1500
-" Diagnostics 中 FloatWidth
-let g:easycomplete_diagnostics_float_width = 180
+" lint 中 FloatWidth
+let g:easycomplete_lint_float_width = 180
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
