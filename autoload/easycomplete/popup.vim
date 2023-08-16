@@ -281,9 +281,26 @@ function! s:popup(info)
   elseif left_avail >= prevw_width
     let opt.col = left_avail_col - prevw_width + 1
   else
+    " 如果左右空间都小于 20
+    call s:log(right_avail, left_avail)
+    if right_avail <= 20 && left_avail <= 20
+      call easycomplete#popup#close("popup")
+      return
+    endif
+
+    if right_avail >= left_avail
+      " 右侧空间大
+      let opt.col = float2nr(right_avail_col)
+      let opt.width = float2nr(right_avail)
+    else
+      " 左侧空间大
+      let opt.col = 0
+      let opt.width = float2nr(left_avail)
+    endif
+
     " 无更多空间，直接关闭
-    call easycomplete#popup#close("popup")
-    return
+    " call easycomplete#popup#close("popup")
+    " return
   endif
 
   let l:screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
@@ -390,6 +407,9 @@ function! s:VimShow(opt, windowtype, float_type)
     " call setwinvar(winid, '&conceallevel', 2)
   endif
   " Popup and Signature
+  if a:windowtype == 'popup'
+    call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "set nowrap")
+  endif
   if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
     call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
@@ -417,6 +437,9 @@ function! s:NVimShow(opt, windowtype, float_type)
   unlet winargs[2].filetype
   noa let winid = nvim_open_win(s:buf[a:windowtype], 0, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
+  if a:windowtype == 'popup'
+    call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "set nowrap")
+  endif
   call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'on')
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'number', v:false)
