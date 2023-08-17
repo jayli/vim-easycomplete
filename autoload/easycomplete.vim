@@ -1635,8 +1635,8 @@ function! s:SnipSupports()
     return v:false
   endif
   try
-    call UltiSnips#SnippetsInCurrentScope()
-  catch /117/
+    call funcref("UltiSnips#SnippetsInCurrentScope")
+  catch /700/
     return v:false
   endtry
   return v:true
