@@ -675,10 +675,13 @@ function! easycomplete#sources#ts#lint()
   endif
   let l:files = [easycomplete#util#GetCurrentFullName()]
   call s:AsyncRun(function("s:TsserverReload"), [], 80)
-  call s:AsyncRun(function("s:Geterr"), [l:files, 100], 100)
+  call s:AsyncRun(function("s:Geterr"), [l:files, 100], 90)
 endfunction
 
 function! s:Geterr(files, delay)
+  if !s:TsServerIsRunning()
+    return
+  endif
   let l:args = {'files': a:files, 'delay': a:delay}
   call s:SendCommandAsyncResponse('geterr', l:args)
 endfunction
@@ -932,6 +935,9 @@ function! s:TsServerOpenedFileAlready()
 endfunction
 
 function! s:TsserverReload()
+  if !s:TsServerIsRunning()
+    return
+  endif
   let l:file = expand('%:p')
   call s:SaveTmp(l:file)
   let l:args = {'file': l:file, 'tmpfile': s:GetTmpFile(l:file)}
