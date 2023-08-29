@@ -113,11 +113,11 @@ Set trigger completion mapping:
 let g:easycomplete_tab_trigger="<c-space>"
 ```
 
-The plugin has already map diagnostic jumping to `<C-j>` and `<C-k>`. You can change these mapping via:
+The plugin has already map diagnostic jumping to `<C-n>` and `<S-C-n>`. You can change these mapping via:
 
 ```vim
-nnoremap <silent> <C-k> :EasyCompleteNextDiagnostic<CR>
-nnoremap <silent> <C-j> :EasyCompletePreviousDiagnostic<CR>
+let g:easycomplete_diagnostics_next = "<C-J>"
+let g:easycomplete_diagnostics_prev = "<C-k>"
 ```
 
 - Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.

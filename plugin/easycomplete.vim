@@ -127,6 +127,12 @@ endif
 if !exists("g:easycomplete_signature_offset")
   let g:easycomplete_signature_offset = 0
 endif
+if !exists("g:easycomplete_diagnostics_next")
+  let g:easycomplete_diagnostics_next = "<C-n>"
+endif
+if !exists("g:easycomplete_diagnostics_prev")
+  let g:easycomplete_diagnostics_prev= "<S-C-n>"
+endif
 
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  1,

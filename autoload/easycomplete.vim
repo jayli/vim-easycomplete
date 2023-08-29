@@ -148,8 +148,8 @@ function! s:BindingTypingCommandOnce()
   exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   try
-    nnoremap <silent><unique> <C-j> :EasyCompleteNextDiagnostic<CR>
-    nnoremap <silent><unique> <C-k> :EasyCompletePreviousDiagnostic<CR>
+    exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_next . " :EasyCompleteNextDiagnostic<CR>"
+    exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_prev . " :EasyCompletePreviousDiagnostic<CR>"
   catch /^Vim\%((\a\+)\)\=:E227/
     if g:easycomplete_lsp_checking != 0
       call easycomplete#util#log(
