@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_yaml')
-  finish
-endif
-let g:easycomplete_sources_yaml = 1
-
 function! easycomplete#sources#yaml#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'yamlls',

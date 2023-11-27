@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_cpp')
-  finish
-endif
-let g:easycomplete_sources_cpp = 1
-
 function! easycomplete#sources#cpp#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'clangd',

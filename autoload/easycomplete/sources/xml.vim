@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_xml')
-  finish
-endif
-let g:easycomplete_sources_xml = 1
-
 function! easycomplete#sources#xml#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'lemminx',

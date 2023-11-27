@@ -1,8 +1,3 @@
-if exists('g:easycomplete_json')
-  finish
-endif
-let g:easycomplete_json = 1
-
 function! easycomplete#sources#json#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'jsonls',

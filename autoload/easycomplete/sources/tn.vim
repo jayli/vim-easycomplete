@@ -1,8 +1,3 @@
-if exists('g:easycomplete_tn')
-  finish
-endif
-let g:easycomplete_tn = 1
-
 let s:tn_job = v:null
 let s:ctx = v:null
 let s:opt = v:null

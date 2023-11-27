@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_ts')
-  finish
-endif
-let g:easycomplete_sources_ts = 1
-
 augroup easycomplete#sources#ts#InitLocalVars
   " 正在运行中的 job 指针
   " {

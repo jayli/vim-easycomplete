@@ -1,8 +1,3 @@
-if get(g:, 'easycomplete_sources_cmake')
-  finish
-endif
-let g:easycomplete_sources_cmake = 1
-
 " TODO 仍未调通，应该是 cmake-languageserver 本身的 bug
 " 参考：https://github.com/regen100/cmake-language-server/issues/9
 function! easycomplete#sources#cmake#constructor(opt, ctx)

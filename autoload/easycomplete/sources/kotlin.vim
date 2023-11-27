@@ -1,8 +1,3 @@
-if exists('g:easycomplete_kotlin')
-  finish
-endif
-let g:easycomplete_kotlin = 1
-
 function! easycomplete#sources#kotlin#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'kotlin_language_server',

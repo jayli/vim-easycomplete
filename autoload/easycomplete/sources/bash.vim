@@ -1,8 +1,3 @@
-if exists('g:easycomplete_bash')
-  finish
-endif
-let g:easycomplete_bash = 1
-
 function! easycomplete#sources#bash#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'bashls',

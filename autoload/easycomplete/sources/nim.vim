@@ -1,8 +1,3 @@
-if exists('g:easycomplete_nim')
-  finish
-endif
-let g:easycomplete_nim = 1
-
 function! easycomplete#sources#nim#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'nimls',
