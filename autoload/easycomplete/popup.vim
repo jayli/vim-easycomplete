@@ -403,6 +403,7 @@ function! s:VimShow(opt, windowtype, float_type)
     " call setwinvar(winid, '&wrap', 1)
     " call setwinvar(winid, '&linebreak', 1)
     " call setwinvar(winid, '&conceallevel', 2)
+    call setwinvar(winid, '&foldenable', 0)
   endif
   " Popup and Signature
   if a:windowtype == 'popup'
@@ -445,6 +446,7 @@ function! s:NVimShow(opt, windowtype, float_type)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
   call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
+  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'foldenable', v:false)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
   endif
