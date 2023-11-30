@@ -96,8 +96,9 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     " 防止 tabnine 初始模型构建时的 UI 阻塞
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
-  let l:params = s:GetTabNineParams(a:opt, a:ctx)
-  call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
+  " let l:params = s:GetTabNineParams(a:opt, a:ctx)
+  " call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
+  call easycomplete#sources#tn#SimpleTabNineRequest()
   return v:true
 endfunction
 
@@ -127,7 +128,8 @@ function! s:GetTabNineParams(opt, ctx)
     let l:region_includes_end = v:true
   endif
 
-  " TODO here 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
+  " TODO jayli here 加了"\n"，突然什么也出不来了？
+  " 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
      \   'filename': a:ctx['filepath'],
@@ -157,9 +159,21 @@ function! easycomplete#sources#tn#GetTabNineVersion()
 endfunction
 
 " 返回 complete_kind: snippet 或者 classic
+" 返回 nothing 说明匹配内容是空的
 " 根据这里的返回来决定处理方式，是 suggest 还是 complete
-function! s:TabNineCompleteKind(res)
-  return "classic"
+function! s:TabNineCompleteKind(res_array)
+  " echom a:res_array
+  let results = get(a:res_array, "results", [])
+  if empty(results)
+    return 'nothing'
+  endif
+  let first_item = results[0]
+  let metadata = get(first_item, 'completion_metadata', {})
+  if empty(metadata)
+    return 'nothing'
+  endif
+  let completion_kind = get(metadata, 'completion_kind', '')
+  return tolower(completion_kind)
 endfunction
 
 function! s:TabNineRequest(name, param, opt, ctx) abort
@@ -179,6 +193,12 @@ function! s:TabNineRequest(name, param, opt, ctx) abort
   endtry
   let s:ctx = a:ctx
   call easycomplete#job#send(s:tn_job, l:buffer) " }}}
+endfunction
+
+function! easycomplete#sources#tn#SimpleTabNineRequest()
+  let l:ctx = easycomplete#context()
+  let l:params = s:GetTabNineParams({}, l:ctx)
+  call s:TabNineRequest("Autocomplete", l:params, {}, l:ctx)
 endfunction
 
 function! s:StartTabNine()
@@ -217,21 +237,24 @@ function! s:StdOutCallback(job_id, data, event)
     return
   endif
   echom "--------------"
-  " echom a:data
+  echom a:data
   " a:data is a list
-  let result = s:NormalizeCompleteResult(a:data)
-  echom result
-  " TODO jayli here a:data 需要转换为对象, 参照 286 行
-  if s:TabNineCompleteKind(a:data) == "snippet"
-
-  else
-    call s:CompleteHandler(result)
+  let res_array = s:ArrayParse(a:data)
+  let t9_cmp_kind = s:TabNineCompleteKind(res_array)
+  if t9_cmp_kind == 'nothing'
+    " do nothing
+    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+  elseif t9_cmp_kind == "snippet"
+    call s:SuggestHandler(res_array)
+  elseif t9_cmp_kind == "classic"
+    let result_items = s:NormalizeCompleteResult(a:data)
+    call s:CompleteHandler(result_items)
   endif
 endfunction
 
-function! s:SuggestHandler(res)
-
-
+function! s:SuggestHandler(res_array)
+  if pumvisible() | return | endif
+  call easycomplete#tabnine#Callback(a:res_array)
 endfunction
 
 function! s:CompleteHandler(res)
@@ -275,14 +298,7 @@ function! s:UpdateRendering(result)
   call easycomplete#TabNineCompleteRendering()
 endfunction
 
-function! s:NormalizeCompleteResult(data)
-  let l:col = s:ctx['col']
-  let l:typed = s:ctx['typed']
-
-  let l:kw = matchstr(l:typed, '\w\+$')
-  let l:lwlen = len(l:kw)
-
-  let l:startcol = l:col - l:lwlen
+function! s:ArrayParse(data)
   if type(a:data) == type([]) && len(a:data) >= 1
     let l:data = a:data[0]
     let l:response = json_decode(l:data)
@@ -291,6 +307,18 @@ function! s:NormalizeCompleteResult(data)
   else
     let l:response = json_decode(a:data)
   endif
+  return l:response
+endfunction
+
+function! s:NormalizeCompleteResult(data)
+  let l:col = s:ctx['col']
+  let l:typed = s:ctx['typed']
+
+  let l:kw = matchstr(l:typed, '\w\+$')
+  let l:lwlen = len(l:kw)
+
+  let l:startcol = l:col - l:lwlen
+  let l:response = s:ArrayParse(a:data)
   let old_prefix = get(l:response, 'old_prefix', "")
   if old_prefix !=# s:ctx["typing"]
     let tn_prefix = substitute(s:ctx['typing'], old_prefix . "$","","g")

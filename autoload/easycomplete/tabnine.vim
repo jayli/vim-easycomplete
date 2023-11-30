@@ -15,3 +15,8 @@ function easycomplete#tabnine#ready()
   endif
   return v:true
 endfunction
+
+function! easycomplete#tabnine#Callback(res_array)
+
+
+endfunction
