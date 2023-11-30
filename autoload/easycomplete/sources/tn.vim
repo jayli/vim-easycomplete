@@ -127,6 +127,16 @@ function! s:GetTabNineParams(opt, ctx)
     let l:region_includes_end = v:true
   endif
 
+
+
+
+
+  " let l:region_includes_beginning = v:true
+  " let l:region_includes_end = v:true
+  let l:max_num_result = 10
+
+  " TODO here 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
+  " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
      \   'filename': a:ctx['filepath'],
      \   'before': join(l:before_lines, "\n"),
@@ -209,6 +219,8 @@ function! s:StdOutCallback(job_id, data, event)
     " call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
     return
   endif
+  echom "--------------"
+  echom a:data
   " a:data is a list
   try
     let result = s:NormalizeCompleteResult(a:data)
