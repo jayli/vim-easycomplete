@@ -89,6 +89,9 @@ let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 
+if !exists("g:easycomplete_tabnine_suggestion")
+  let g:easycomplete_tabnine_suggestion = 1
+endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
 endif
@@ -139,6 +142,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_enable': 1,
       \ 'g:easycomplete_signature_enable':   1,
       \ 'g:easycomplete_tabnine_enable':     g:easycomplete_tabnine_enable,
+      \ 'g:easycomplete_tabnine_suggestion': g:easycomplete_tabnine_suggestion,
       \ 'g:easycomplete_enable':             g:easycomplete_enable,
       \ 'g:easycomplete_lsp_checking':       g:easycomplete_lsp_checking,
       \ 'g:easycomplete_menuflag_buf':       g:easycomplete_menuflag_buf,

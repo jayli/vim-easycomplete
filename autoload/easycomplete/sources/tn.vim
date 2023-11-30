@@ -127,14 +127,6 @@ function! s:GetTabNineParams(opt, ctx)
     let l:region_includes_end = v:true
   endif
 
-
-
-
-
-  " let l:region_includes_beginning = v:true
-  " let l:region_includes_end = v:true
-  let l:max_num_result = 10
-
   " TODO here 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
@@ -162,6 +154,12 @@ function! easycomplete#sources#tn#GetTabNineVersion()
     endfor
   endif
   return s:version " }}}
+endfunction
+
+" 返回 complete_kind: snippet 或者 classic
+" 根据这里的返回来决定处理方式，是 suggest 还是 complete
+function! s:TabNineCompleteKind(res)
+  return "classic"
 endfunction
 
 function! s:TabNineRequest(name, param, opt, ctx) abort
@@ -216,17 +214,32 @@ function! s:StdOutCallback(job_id, data, event)
   let b:module_building = v:true
   if !easycomplete#CheckContextSequence(s:ctx)
     call easycomplete#sources#tn#refresh()
-    " call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
     return
   endif
   echom "--------------"
-  echom a:data
+  " echom a:data
   " a:data is a list
+  let result = s:NormalizeCompleteResult(a:data)
+  echom result
+  " TODO jayli here a:data 需要转换为对象, 参照 286 行
+  if s:TabNineCompleteKind(a:data) == "snippet"
+
+  else
+    call s:CompleteHandler(result)
+  endif
+endfunction
+
+function! s:SuggestHandler(res)
+
+
+endfunction
+
+function! s:CompleteHandler(res)
+  let result = a:res
+  if empty(result)
+    call s:flush()
+  endif
   try
-    let result = s:NormalizeCompleteResult(a:data)
-    if empty(result)
-      call s:flush()
-    endif
     if s:force_complete
       call easycomplete#util#call(function("s:UpdateRendering"), [result])
     else
@@ -248,7 +261,7 @@ function! s:StdOutCallback(job_id, data, event)
       endif
     endif
   catch
-    call s:log("[TabNine Error]:", "StdOutCallback", v:exception)
+    call s:log("[TabNine Error]:", "CompleteHandler", v:exception)
     let l:ctx = easycomplete#context()
     call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
   endtry
