@@ -14,6 +14,7 @@ let s:version = ''
 let s:force_complete = 0
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
+  call s:console('.')
   let s:opt = a:opt
   let name = get(a:opt, "name", "")
   let s:name = name
@@ -96,9 +97,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     " 防止 tabnine 初始模型构建时的 UI 阻塞
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
-  " let l:params = s:GetTabNineParams(a:opt, a:ctx)
-  " call s:TabNineRequest('Autocomplete', l:params, a:opt, a:ctx)
-  call easycomplete#sources#tn#SimpleTabNineRequest()
+  call easycomplete#sources#tn#SimpleTabNineRequest(a:ctx)
   return v:true
 endfunction
 
@@ -179,7 +178,7 @@ function! s:TabNineCompleteKind(res_array)
   return tolower(completion_kind)
 endfunction
 
-function! s:TabNineRequest(name, param) abort
+function! s:TabNineRequest(name, param, ctx) abort
   if s:tn_job == v:null || !s:tn_ready " {{{
     return
   endif
@@ -194,15 +193,14 @@ function! s:TabNineRequest(name, param) abort
   catch /474/
     return
   endtry
-  let s:ctx = easycomplete#context()
+  let s:ctx = a:ctx
   call easycomplete#job#send(s:tn_job, l:buffer) " }}}
 endfunction
 
-function! easycomplete#sources#tn#SimpleTabNineRequest()
-  let l:ctx = easycomplete#context()
+function! easycomplete#sources#tn#SimpleTabNineRequest(ctx)
   let l:params = s:GetTabNineParams()
   " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
-  call s:TabNineRequest("AutocompleteV4471", l:params)
+  call s:TabNineRequest("Autocomplete", l:params, a:ctx)
 endfunction
 
 function! s:StartTabNine()
@@ -230,6 +228,7 @@ function! s:StartTabNine()
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
+  let l:ctx = easycomplete#context()
   if a:event != 'stdout'
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
     return
@@ -237,20 +236,21 @@ function! s:StdOutCallback(job_id, data, event)
   if !exists('b:module_building') | let b:module_building = v:false | endif
   let b:module_building = v:true
   if !easycomplete#CheckContextSequence(s:ctx)
+    call s:console(s:ctx)
     call easycomplete#sources#tn#refresh()
     return
   endif
+
   echom "--------------"
   echom a:data
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
-  if t9_cmp_kind == 'nothing'
-    " do nothing
-    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
-  elseif t9_cmp_kind == "snippet"
+  if t9_cmp_kind == 'snippet'
     call s:SuggestHandler(res_array)
-  elseif t9_cmp_kind == "classic"
+  elseif t9_cmp_kind == "nothing"
+    call s:CompleteHandler([])
+  else
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)
   endif
