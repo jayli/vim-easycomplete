@@ -505,6 +505,7 @@ augroup easycomplete#NormalBinding
   autocmd CompleteDone * call easycomplete#CompleteDone()
   autocmd InsertLeave * call easycomplete#InsertLeave()
   autocmd CursorHold * call easycomplete#CursorHold()
+  autocmd CursorHoldI * call easycomplete#CursorHoldI()
   autocmd CursorMovedI * call easycomplete#CursorMovedI()
   autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()

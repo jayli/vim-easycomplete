@@ -138,9 +138,6 @@ function! s:GetTabNineParams()
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
-  echom l:region_includes_beginning
-  echom l:region_includes_end
-  echom l:max_num_result
   return l:params "}}}
 endfunction
 
@@ -164,7 +161,6 @@ endfunction
 " 返回 nothing 说明匹配内容是空的
 " 根据这里的返回来决定处理方式，是 suggest 还是 complete
 function! s:TabNineCompleteKind(res_array)
-  " echom a:res_array
   let results = get(a:res_array, "results", [])
   if empty(results)
     return 'nothing'
@@ -179,7 +175,7 @@ function! s:TabNineCompleteKind(res_array)
 endfunction
 
 function! s:TabNineRequest(name, param, ctx) abort
-  if s:tn_job == v:null || !s:tn_ready " {{{
+  if s:tn_job == v:null || !s:tn_ready
     return
   endif
   let l:req = {
@@ -194,7 +190,7 @@ function! s:TabNineRequest(name, param, ctx) abort
     return
   endtry
   let s:ctx = a:ctx
-  call easycomplete#job#send(s:tn_job, l:buffer) " }}}
+  call easycomplete#job#send(s:tn_job, l:buffer)
 endfunction
 
 " 可以传参 ctx, 也可以留空
@@ -202,11 +198,12 @@ function! easycomplete#sources#tn#SimpleTabNineRequest(...)
   let l:ctx = exists('a:1') ? a:1 : easycomplete#context()
   let l:params = s:GetTabNineParams()
   " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
+  " TODO jayli here 从 insert mode 中触发调用到这里，继续跟踪
   call s:TabNineRequest("Autocomplete", l:params, l:ctx)
 endfunction
 
 function! s:StartTabNine()
-  if empty(s:name) " {{{
+  if empty(s:name)
     return
   endif
   let name = s:name
@@ -226,7 +223,7 @@ function! s:StartTabNine()
   else
     let s:tn_ready = v:true
   endif
-  call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()}) " }}}
+  call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
 endfunction
 
 function! s:StdOutCallback(job_id, data, event)
@@ -242,8 +239,8 @@ function! s:StdOutCallback(job_id, data, event)
     return
   endif
 
-  echom "--------------"
-  echom a:data
+  " echom "--------------"
+  " echom a:data
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
