@@ -14,7 +14,7 @@ let s:version = ''
 let s:force_complete = 0
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
-  call s:console('.')
+  " call s:console('.')
   let s:opt = a:opt
   let name = get(a:opt, "name", "")
   let s:name = name
@@ -127,7 +127,7 @@ function! s:GetTabNineParams()
     let l:region_includes_end = v:true
   endif
 
-  " TODO jayli here 加了"\n"，突然什么也出不来了？
+  " TODO jayli here 加了"\n"，突然什么也出不来了？，现在好像出来了!
   " 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
@@ -197,10 +197,12 @@ function! s:TabNineRequest(name, param, ctx) abort
   call easycomplete#job#send(s:tn_job, l:buffer) " }}}
 endfunction
 
-function! easycomplete#sources#tn#SimpleTabNineRequest(ctx)
+" 可以传参 ctx, 也可以留空
+function! easycomplete#sources#tn#SimpleTabNineRequest(...)
+  let l:ctx = exists('a:1') ? a:1 : easycomplete#context()
   let l:params = s:GetTabNineParams()
   " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
-  call s:TabNineRequest("Autocomplete", l:params, a:ctx)
+  call s:TabNineRequest("Autocomplete", l:params, l:ctx)
 endfunction
 
 function! s:StartTabNine()
@@ -236,7 +238,6 @@ function! s:StdOutCallback(job_id, data, event)
   if !exists('b:module_building') | let b:module_building = v:false | endif
   let b:module_building = v:true
   if !easycomplete#CheckContextSequence(s:ctx)
-    call s:console(s:ctx)
     call easycomplete#sources#tn#refresh()
     return
   endif
