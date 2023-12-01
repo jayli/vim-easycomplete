@@ -16,6 +16,27 @@ function easycomplete#tabnine#ready()
   return v:true
 endfunction
 
+" function! easycomplete#tabnine#init()
+"   if !easycomplete#tabnine#ready()
+"     return
+"   endif
+" endfunction
+
+function! easycomplete#tabnine#fire()
+  if pumvisible()
+    return
+  endif
+  if !easycomplete#tabnine#ready()
+    return
+  endif
+
+
+endfunction
+
+function! s:flush()
+
+endfunction
+
 function! easycomplete#tabnine#Callback(res_array)
 
 

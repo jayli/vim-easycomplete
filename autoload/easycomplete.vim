@@ -1910,6 +1910,7 @@ function! easycomplete#CursorHold()
         \ && easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#LintPopup()
   endif
+  call easycomplete#tabnine#fire()
 endfunction
 
 function! easycomplete#TextChangedI()
