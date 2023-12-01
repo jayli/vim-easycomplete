@@ -102,9 +102,9 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
   return v:true
 endfunction
 
-function! s:GetTabNineParams(opt, ctx)
+function! s:GetTabNineParams()
   let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000) "{{{
-  let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 10)
+  let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 3)
   let l:pos = getpos('.')
   let l:last_line = line('$')
   let l:before_line = max([1, l:pos[1] - l:line_limit])
@@ -132,13 +132,16 @@ function! s:GetTabNineParams(opt, ctx)
   " 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
-     \   'filename': a:ctx['filepath'],
+     \   'filename': expand('%:p'),
      \   'before': join(l:before_lines, "\n"),
      \   'after': join(l:after_lines, "\n"),
      \   'region_includes_beginning': l:region_includes_beginning,
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
+  echom l:region_includes_beginning
+  echom l:region_includes_end
+  echom l:max_num_result
   return l:params "}}}
 endfunction
 
@@ -176,7 +179,7 @@ function! s:TabNineCompleteKind(res_array)
   return tolower(completion_kind)
 endfunction
 
-function! s:TabNineRequest(name, param, opt, ctx) abort
+function! s:TabNineRequest(name, param) abort
   if s:tn_job == v:null || !s:tn_ready " {{{
     return
   endif
@@ -191,14 +194,15 @@ function! s:TabNineRequest(name, param, opt, ctx) abort
   catch /474/
     return
   endtry
-  let s:ctx = a:ctx
+  let s:ctx = easycomplete#context()
   call easycomplete#job#send(s:tn_job, l:buffer) " }}}
 endfunction
 
 function! easycomplete#sources#tn#SimpleTabNineRequest()
   let l:ctx = easycomplete#context()
-  let l:params = s:GetTabNineParams({}, l:ctx)
-  call s:TabNineRequest("Autocomplete", l:params, {}, l:ctx)
+  let l:params = s:GetTabNineParams()
+  " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
+  call s:TabNineRequest("AutocompleteV4471", l:params)
 endfunction
 
 function! s:StartTabNine()
