@@ -128,6 +128,7 @@ function! s:GetTabNineParams()
   endif
 
   " TODO jayli here 加了"\n"，突然什么也出不来了？，现在好像出来了!
+  " 又突然不好使了？
   " 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
@@ -198,7 +199,6 @@ function! easycomplete#sources#tn#SimpleTabNineRequest(...)
   let l:ctx = exists('a:1') ? a:1 : easycomplete#context()
   let l:params = s:GetTabNineParams()
   " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
-  " TODO jayli here 从 insert mode 中触发调用到这里，继续跟踪
   call s:TabNineRequest("Autocomplete", l:params, l:ctx)
 endfunction
 
@@ -217,7 +217,7 @@ function! s:StartTabNine()
         \   l:log_file,
         \ ]
   let s:tn_job = easycomplete#job#start(l:cmd,
-        \ {'on_stdout': function('s:StdOutCallback')})
+        \ {'on_stdout': function('s:TabnineJobCallback')})
   if s:tn_job <= 0
     call s:log("[TabNine Error]:", "TabNine job start failed")
   else
@@ -226,7 +226,7 @@ function! s:StartTabNine()
   call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
 endfunction
 
-function! s:StdOutCallback(job_id, data, event)
+function! s:TabnineJobCallback(job_id, data, event)
   let l:ctx = easycomplete#context()
   if a:event != 'stdout'
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
@@ -239,11 +239,12 @@ function! s:StdOutCallback(job_id, data, event)
     return
   endif
 
-  " echom "--------------"
-  " echom a:data
+  echom "--------------"
+  echom a:data
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
+  call s:console(res_array)
   if t9_cmp_kind == 'snippet'
     call s:SuggestHandler(res_array)
   elseif t9_cmp_kind == "nothing"
