@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -339,6 +339,7 @@ function! easycomplete#InsertLeave()
     call easycomplete#lint()
     call easycomplete#sign#LintCurrentLine()
   endif
+  call easycomplete#tabnine#flush()
   if s:zizzing()
     return
   endif
@@ -1045,7 +1046,13 @@ function! easycomplete#CleverTab()
   if pumvisible()
     call s:zizz()
     return "\<C-N>"
-  elseif &filetype == "sh" && easycomplete#context()['typed'] == "#!"
+  else
+    if easycomplete#tabnine#SnippetReady()
+      call easycomplete#tabnine#insert()
+      return ""
+    endif
+  endif
+  if &filetype == "sh" && easycomplete#context()['typed'] == "#!"
     " sh #!<tab> hack, bugfix #12
     call s:ExpandSnipManually("#!")
     return ""

@@ -162,6 +162,9 @@ endfunction
 " 返回 nothing 说明匹配内容是空的
 " 根据这里的返回来决定处理方式，是 suggest 还是 complete
 function! s:TabNineCompleteKind(res_array)
+  if empty(a:res_array)
+    return "nothing"
+  endif
   let results = get(a:res_array, "results", [])
   if empty(results)
     return 'nothing'
@@ -238,19 +241,32 @@ function! s:TabnineJobCallback(job_id, data, event)
     call easycomplete#sources#tn#refresh()
     return
   endif
-
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
   " call s:console(res_array)
-  if t9_cmp_kind == 'snippet'
-    call s:SuggestHandler(res_array)
-  elseif t9_cmp_kind == "nothing"
+  " TODO 这里没有测试 t9_cmp_kind == 'snippet' 的情况，tabnine basic
+  " 版本不支持 snippet
+  if t9_cmp_kind == "nothing"
     call s:CompleteHandler([])
-  else
+    return
+  endif
+  " 如果有标志位，等同认为是 suggest
+  if !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
+    call s:SuggestHandler(res_array)
+  else " 配合pum显示tabnine提示词s
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)
   endif
+
+  " if t9_cmp_kind == 'snippet'
+  "   call s:SuggestHandler(res_array)
+  " elseif t9_cmp_kind == "nothing"
+  "   call s:CompleteHandler([])
+  " else
+  "   let result_items = s:NormalizeCompleteResult(a:data)
+  "   call s:CompleteHandler(result_items)
+  " endif
 endfunction
 
 function! s:SuggestHandler(res_array)
@@ -302,6 +318,9 @@ endfunction
 function! s:ArrayParse(data)
   if type(a:data) == type([]) && len(a:data) >= 1
     let l:data = a:data[0]
+    if l:data == ""
+      return []
+    endif
     let l:response = json_decode(l:data)
   elseif type(a:data) == type({})
     let l:response = a:data

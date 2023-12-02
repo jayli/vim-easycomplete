@@ -1,16 +1,16 @@
 local Export = {}
 local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 
-local code_block = [[
-for line in code_block:gmatch("[^\r\n]+") do
-  table.insert(lines, {{line, "Comment"}})
-end
-]]
+-- local code_block = [[
+-- for line in code_block:gmatch("[^\r\n]+") do
+--   table.insert(lines, {{line, "Comment"}})
+-- end
+-- ]]
 
 
 -- code_block 是一个字符串，有可能包含回车符
 -- call v:lua.require("easycomplete.tabnine").show_hint()
-function Export.show_hint()
+function Export.show_hint(code_block)
   local lines = {}
   for line in code_block:gmatch("[^\r\n]+") do
     table.insert(lines, {{line, "Comment"}})

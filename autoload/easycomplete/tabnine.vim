@@ -2,6 +2,9 @@
 " tabnine suggestion 和 tabnine complete 共享一个 job
 
 let s:tabnine_toolkit = v:lua.require("easycomplete.tabnine")
+" 临时存放 suggest 或者 complete
+let b:tabnine_typing_type = ""
+let s:tabnine_hint_snippet = ""
 
 function easycomplete#tabnine#ready()
   if !easycomplete#ok('g:easycomplete_tabnine_enable')
@@ -26,32 +29,115 @@ endfunction
 " endfunction
 
 function! easycomplete#tabnine#fire()
-  return
   if pumvisible()
     return
   endif
   if !easycomplete#tabnine#ready()
     return
   endif
-  " 非空行
-  if !len(trim(getline("."))) == 0
+  " 不是空格除外的最后一个字符
+  if !s:is_last_char()
     return
   endif
 
   call s:flush()
-  " call s:console('cursor hold fire >>>')
+  call easycomplete#tabnine#SuggestFlagSet()
   call easycomplete#sources#tn#SimpleTabNineRequest()
+endfunction
+
+function! easycomplete#tabnine#SuggestFlagSet()
+  let b:tabnine_typing_type = "suggest"
+  call timer_start(800, { -> easycomplete#tabnine#SuggestFlagClear()})
+endfunction
+
+function! easycomplete#tabnine#SuggestFlagClear()
+  let b:tabnine_typing_type = ""
+endfunction
+
+function! easycomplete#tabnine#SuggestFlagCheck()
+  if b:tabnine_typing_type == "suggest"
+    call easycomplete#tabnine#SuggestFlagClear()
+    return v:true
+  endif
+  return v:false
 endfunction
 
 function! s:flush()
   call s:tabnine_toolkit.delete_hint()
+  call easycomplete#tabnine#SuggestFlagClear()
+  let s:tabnine_hint_snippet = ""
+endfunction
+
+function! easycomplete#tabnine#flush()
+  call s:flush()
 endfunction
 
 function! easycomplete#tabnine#Callback(res_array)
-  call s:console(a:res_array)
-  if easycomplete#util#NotInsertMode() || pumvisible()
+  if easycomplete#util#NotInsertMode()
     call s:flush()
     return
+  endif
+  " doing here
+  call s:console(a:res_array)
+  let snippet = s:get_snippet(a:res_array)
+  call s:tabnine_toolkit.show_hint(snippet)
+  let s:tabnine_hint_snippet = snippet
+endfunction
+
+function! easycomplete#tabnine#SnippetReady()
+  return s:tabnine_hint_snippet != ""
+endfunction
+
+" TODO jayli here 这里 setbufline 在插入模式下报错
+" Vim(call):E565: Not allowed to change text or change window
+function! easycomplete#tabnine#insert()
+  try
+    let curr_line = getline(line("."))
+    let curr_line = curr_line . s:tabnine_hint_snippet
+    " TODO here 这一句不起作用
+    call feedkeys('\<C-X>\<ESC>', 'i')
+    call setbufline(bufnr(""), line("."), curr_line)
+    call feedkeys('a', 'n')
+  catch
+    echom v:exception
+  endtry
+  redraw
+  call s:flush()
+endfunction
+
+function! s:get_snippet(res_array)
+  let res = get(a:res_array, "results", [])
+  if empty(res) | return [] | endif
+  let new_prefix = ""
+  let percent = 0
+  for item in res
+    let item_new_prefix = get(item, "new_prefix", "")
+    let item_percent = str2nr(matchstr(easycomplete#util#get(item, 'completion_metadata', 'detail'), "\\d\\+"))
+    if item_percent == percent
+      if len(new_prefix) <= len(item_new_prefix)
+        let new_prefix = item_new_prefix
+      endif
+    elseif item_percent > percent
+      let new_prefix = item_new_prefix
+      let percent = item_percent
+    endif
+  endfor
+  " remove old prefix
+  let old_prefix = get(a:res_array, "old_prefix", "")
+  return new_prefix[len(old_prefix):]
+endfunction
+
+function! s:is_last_char()
+  let current_col = col('.')
+  let current_line = getline('.')
+  if current_col - 1 == len(current_line)
+    return v:true
+  endif
+  let rest_of_line = current_line[current_col - 1:]
+  if rest_of_line =~ "^\\s\\+$"
+    return v:true
+  else
+    return v:false
   endif
 endfunction
 
