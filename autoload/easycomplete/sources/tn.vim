@@ -239,8 +239,6 @@ function! s:TabnineJobCallback(job_id, data, event)
     return
   endif
 
-  echom "--------------"
-  echom a:data
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
