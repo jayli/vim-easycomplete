@@ -244,7 +244,7 @@ function! s:TabnineJobCallback(job_id, data, event)
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
-  call s:console(res_array)
+  " call s:console(res_array)
   if t9_cmp_kind == 'snippet'
     call s:SuggestHandler(res_array)
   elseif t9_cmp_kind == "nothing"

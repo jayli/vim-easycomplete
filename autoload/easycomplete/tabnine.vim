@@ -26,6 +26,7 @@ endfunction
 " endfunction
 
 function! easycomplete#tabnine#fire()
+  return
   if pumvisible()
     return
   endif
@@ -38,7 +39,7 @@ function! easycomplete#tabnine#fire()
   endif
 
   call s:flush()
-  call s:console('cursor hold fire >>>')
+  " call s:console('cursor hold fire >>>')
   call easycomplete#sources#tn#SimpleTabNineRequest()
 endfunction
 
