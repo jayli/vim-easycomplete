@@ -13,7 +13,7 @@ local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 function Export.show_hint(code_block)
   local lines = {}
   for line in code_block:gmatch("[^\r\n]+") do
-    table.insert(lines, {{line, "Comment"}})
+    table.insert(lines, {{line, "Conceal"}})
   end
 
   local virt_text = lines[1]
