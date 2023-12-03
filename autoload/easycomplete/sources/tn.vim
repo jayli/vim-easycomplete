@@ -138,6 +138,7 @@ function! s:GetTabNineParams()
      \   'region_includes_beginning': l:region_includes_beginning,
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
+     \   'net_length':1000
      \ }
   return l:params
 endfunction
@@ -170,12 +171,16 @@ function! s:TabNineCompleteKind(res_array)
     return 'nothing'
   endif
   let first_item = results[0]
-  let metadata = get(first_item, 'completion_metadata', {})
-  if empty(metadata)
-    return 'nothing'
+  if has_key(first_item, 'completion_metadata')
+    let metadata = get(first_item, 'completion_metadata', {})
+    if empty(metadata)
+      return 'nothing'
+    endif
+    let completion_kind = get(metadata, 'completion_kind', '')
+    return tolower(completion_kind)
+  else
+    return "classic"
   endif
-  let completion_kind = get(metadata, 'completion_kind', '')
-  return tolower(completion_kind)
 endfunction
 
 function! s:TabNineRequest(name, param, ctx) abort
@@ -215,7 +220,7 @@ function! s:StartTabNine()
   let l:cmd = [
         \   l:tabnine_path,
         \   '--client',
-        \   'vim-easycomplete',
+        \   'vscode',
         \   '--log-file-path',
         \   l:log_file,
         \ ]
@@ -241,8 +246,10 @@ function! s:TabnineJobCallback(job_id, data, event)
     call easycomplete#sources#tn#refresh()
     return
   endif
+  " call s:console( "---")
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
+  " call s:console(res_array)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
   " call s:console(res_array)
   " TODO 这里没有测试 t9_cmp_kind == 'snippet' 的情况，tabnine basic
