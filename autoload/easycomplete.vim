@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -1920,7 +1920,11 @@ function! easycomplete#CursorHold()
 endfunction
 
 function! easycomplete#CursorHoldI()
-  call easycomplete#tabnine#fire()
+  if easycomplete#IsBacking()
+    " do nothting
+  else
+    call easycomplete#tabnine#fire()
+  endif
 endfunction
 
 function! easycomplete#TextChangedI()
@@ -1930,6 +1934,7 @@ function! easycomplete#TextChangedI()
   if exists('b:easycomplete_enable') && empty(b:easycomplete_enable)
     return
   endif
+  call easycomplete#tabnine#flush()
   call easycomplete#typing()
   if easycomplete#ok('g:easycomplete_signature_enable')
     call easycomplete#action#signature#handle()

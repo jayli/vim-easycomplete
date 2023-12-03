@@ -63,6 +63,9 @@ function! easycomplete#tabnine#SuggestFlagCheck()
 endfunction
 
 function! s:flush()
+  if exists("s:tabnine_hint_snippet") && s:tabnine_hint_snippet == ""
+    return
+  endif
   call s:tabnine_toolkit.delete_hint()
   call easycomplete#tabnine#SuggestFlagClear()
   let s:tabnine_hint_snippet = ""
@@ -77,8 +80,7 @@ function! easycomplete#tabnine#Callback(res_array)
     call s:flush()
     return
   endif
-  " doing here
-  call s:console(a:res_array)
+  " call s:console(a:res_array)
   let snippet = s:get_snippet(a:res_array)
   call s:tabnine_toolkit.show_hint(snippet)
   let s:tabnine_hint_snippet = snippet
@@ -88,16 +90,11 @@ function! easycomplete#tabnine#SnippetReady()
   return s:tabnine_hint_snippet != ""
 endfunction
 
-" TODO jayli here 这里 setbufline 在插入模式下报错
-" Vim(call):E565: Not allowed to change text or change window
 function! easycomplete#tabnine#insert()
   try
     let curr_line = getline(line("."))
     let curr_line = curr_line . s:tabnine_hint_snippet
-    " TODO here 这一句不起作用
-    call feedkeys('\<C-X>\<ESC>', 'i')
-    call setbufline(bufnr(""), line("."), curr_line)
-    call feedkeys('a', 'n')
+    call feedkeys(s:tabnine_hint_snippet, 'i')
   catch
     echom v:exception
   endtry

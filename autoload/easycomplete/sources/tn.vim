@@ -102,7 +102,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
 endfunction
 
 function! s:GetTabNineParams()
-  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000) "{{{
+  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000)
   let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 3)
   let l:pos = getpos('.')
   let l:last_line = line('$')
@@ -139,11 +139,11 @@ function! s:GetTabNineParams()
      \   'region_includes_end': l:region_includes_end,
      \   'max_num_result': l:max_num_result,
      \ }
-  return l:params "}}}
+  return l:params
 endfunction
 
 function! easycomplete#sources#tn#GetTabNineVersion()
-  if empty(s:version) " {{{
+  if empty(s:version)
     let l:tabnine_cmd = easycomplete#installer#GetCommand(s:name)
     let l:tabnine_dir = fnameescape(fnamemodify(l:tabnine_cmd, ':p:h'))
     let l:version_file = l:tabnine_dir . '/version'
@@ -155,7 +155,7 @@ function! easycomplete#sources#tn#GetTabNineVersion()
       endif
     endfor
   endif
-  return s:version " }}}
+  return s:version
 endfunction
 
 " 返回 complete_kind: snippet 或者 classic
