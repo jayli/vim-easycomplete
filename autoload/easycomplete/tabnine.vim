@@ -109,7 +109,12 @@ function! s:get_snippet(res_array)
   let percent = 0
   for item in res
     let item_new_prefix = get(item, "new_prefix", "")
-    let item_percent = str2nr(matchstr(easycomplete#util#get(item, 'completion_metadata', 'detail'), "\\d\\+"))
+    if has_key(item, 'completion_metadata')
+      let item_percent_str = easycomplete#util#get(item, 'completion_metadata', 'detail')
+    else
+      let item_percent_str = get(item, 'detail', "   ")
+    endif
+    let item_percent = str2nr(matchstr(item_percent_str, "\\d\\+"))
     if item_percent == percent
       if len(new_prefix) <= len(item_new_prefix)
         let new_prefix = item_new_prefix
