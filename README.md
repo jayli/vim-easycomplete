@@ -228,7 +228,7 @@ Vim-EasyComplete does not support snippets by default. If you want snippet integ
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
 
-#### TabNine Support
+#### AI Coding via TabNine Support
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
@@ -244,9 +244,9 @@ let g:easycomplete_tabnine_config = {
     \ }
 ```
 
-By default, an API key is not required to use TabNine in vim-easycomplete. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
+TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
 
-Inline suggestion is supported by TabNine in nvim via `let g:easycomplete_tabnine_suggestion = 1`.
+Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 
 ---------------------
 

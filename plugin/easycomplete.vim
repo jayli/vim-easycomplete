@@ -90,7 +90,7 @@ let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 
 if !exists("g:easycomplete_tabnine_suggestion")
-  let g:easycomplete_tabnine_suggestion = 0
+  let g:easycomplete_tabnine_suggestion = 1
 endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
