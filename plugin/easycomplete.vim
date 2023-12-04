@@ -101,6 +101,9 @@ endif
 if !exists("g:easycomplete_tabnine_enable")
   let g:easycomplete_tabnine_enable = 1
 endif
+if !exists("g:easycomplete_directory_enable")
+  let g:easycomplete_directory_enable = 1
+endif
 if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
 endif
@@ -157,6 +160,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
       \ 'g:easycomplete_signature_offset':   g:easycomplete_signature_offset,
+      \ 'g:easycomplete_directory_enable':   g:easycomplete_directory_enable,
       \ }
 
 " VIM 最低版本 8.2

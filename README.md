@@ -130,6 +130,8 @@ Typing `:h easycomplete` for help.
 
 It support keywords/dictionary/directory completion by default.
 
+Disable directory completion via `let g:easycomplete_directory_enable = 0`.
+
 #### Semantic Completion for Other Languages
 
 There are tow ways to install lsp server.

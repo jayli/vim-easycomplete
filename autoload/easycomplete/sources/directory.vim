@@ -16,6 +16,10 @@ function! easycomplete#sources#directory#completor(opt, ctx)
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
+  if g:easycomplete_directory_enable == 0
+    call easycomplete#complete(a:name, a:ctx, a:startcol, [])
+    return
+  endif
   let spath_start = a:typing_path.short_path_start
   try
     let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
