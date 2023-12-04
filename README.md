@@ -246,6 +246,8 @@ let g:easycomplete_tabnine_config = {
 
 By default, an API key is not required to use TabNine in vim-easycomplete. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
 
+Inline suggestion is supported by TabNine in nvim via `let g:easycomplete_tabnine_suggestion = 1`.
+
 ---------------------
 
 ### Beautify the vim completion menu

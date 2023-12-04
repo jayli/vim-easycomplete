@@ -7,6 +7,9 @@ let b:tabnine_typing_type = ""
 let s:tabnine_hint_snippet = ""
 
 function easycomplete#tabnine#ready()
+  if g:env_is_vim
+    return v:false
+  endif
   if !easycomplete#ok('g:easycomplete_tabnine_enable')
     return v:false
   endif
@@ -14,9 +17,6 @@ function easycomplete#tabnine#ready()
     return v:false
   endif
   if !easycomplete#installer#LspServerInstalled("tn")
-    return v:false
-  endif
-  if g:env_is_vim
     return v:false
   endif
   return v:true
