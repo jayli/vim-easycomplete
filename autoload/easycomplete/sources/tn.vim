@@ -230,7 +230,7 @@ function! s:StartTabNine()
   let l:cmd = [
         \   l:tabnine_path,
         \   '--client',
-        \   'vscode',
+        \   'vim-easycomplete',
         \   '--log-file-path',
         \   l:log_file,
         \ ]
