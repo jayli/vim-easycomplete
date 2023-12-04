@@ -1329,7 +1329,11 @@ endfunction
 
 function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
   let norm_menu_list = s:NormalizeMenulist(a:result, a:plugin_name)
-  let sort_menu_list = s:NormalizeSort(norm_menu_list)
+  if a:plugin_name == "tn"
+    let sort_menu_list = norm_menu_list
+  else
+    let sort_menu_list = s:NormalizeSort(norm_menu_list)
+  endif
   let g:easycomplete_source[a:plugin_name].complete_result = deepcopy(sort_menu_list)
 endfunction
 

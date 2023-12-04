@@ -1,22 +1,22 @@
 # Vim-EasyComplete
 
-> A Fast & Minimalism Style Code Completion Plugin for vim/nvim.
+> A Fast and Minimalism Style Completion Plugin for vim/nvim.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
 ### Why
 
-There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I want a more conncise style plugin without any uneccessary configurations. What's more, it would be a good idea to incorporate the capabilities of an AI coding assistant as well.
+There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate the capabilities of an AI coding assistant as well.
 
 ### What
 
-Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don’t need to configure anything uneccessary. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a javascript/typescript programmer.
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box. It requires pure VimScript. It's also super simple to configure. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a js/ts programmer.
 
 <img src="https://gw.alicdn.com/imgextra/i2/O1CN01OA1VV41QHbd7Y2WKu_!!6000000001951-1-tps-1209-693.gif" width=650 />
 
-It is easy to install and use. It contains these features:
+It contains these features:
 
-- AI coding assistant via tabnine(#TabNine-Support). (Highly Recommend!)
+- AI coding assistant via [tabnine](#TabNine-Support). (Highly Recommend!)
 - Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
 - Easy to install LSP Server with one command
@@ -24,7 +24,7 @@ It is easy to install and use. It contains these features:
 - Snippet support with ultisnips.
 - Fast performance
 
-The reason I decided to use pure vim script instead of lua or python is that I want a wider range of compatibility. And I made a lot of async handling with vim script to avoid the block of vim.
+The reason I decided to use pure vim script instead of lua or python is that I want a wider range of compatibility. And I made a lot of async handling with vim script to avoid the block of rendering.
 
 ### Installation
 
@@ -123,6 +123,8 @@ let g:easycomplete_diagnostics_prev = "<C-k>"
 - Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
 - Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
 - Set `let g:easycomplete_signature_enable = 0` to disable lsp signature checking.
+- Set `let g:easycomplete_tabnine_suggestion = 0` to disable tabnine inline suggestions.
+- Set `let g:easycomplete_directory_enable = 0` to disable directory complete.
 
 Typing `:h easycomplete` for help.
 
@@ -321,7 +323,6 @@ let g:easycomplete_colorful = 1
 ### Add custom completion plugin
 
 → [add custom completion plugin](add-custom-plugin.md)
-
 
 ### Issues
 

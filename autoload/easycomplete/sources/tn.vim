@@ -387,14 +387,32 @@ function! s:NormalizeCompleteResult(data)
     else
       let l:word['menu'] = '[TN]'
     endif
+    let percent_str = ""
     if get(l:result, 'detail')
-      let l:word['menu'] .= ' ' . l:result['detail']
+      let percent_str = s:fullfill(l:result['detail'])
     endif
+    let tmp_detail = easycomplete#util#get(l:result, 'completion_metadata', 'detail')
+    if !empty(tmp_detail)
+      let percent_str = s:fullfill(tmp_detail)
+    endif
+    let l:word["menu"] .= percent_str
+    let l:word["sort_number"] = matchstr(percent_str, "\\d\\+","g")
     let l:word['abbr'] = l:word['word']
     let l:word['word'] = tn_prefix . l:word['word']
     call add(l:words, l:word)
   endfor
+  call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})
   return l:words
+endfunction
+
+" ' 4%' -> ' 4%'
+" '22%' -> ' 22%'
+function! s:fullfill(percent)
+  if a:percent[0] == " "
+    return a:percent
+  else
+    return " " . a:percent
+  endif
 endfunction
 
 function! s:log(...)
