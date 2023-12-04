@@ -6,19 +6,19 @@
 
 ### Why
 
-There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. I used coc.nvim for a long time. It’s experience is good. But there are a few things I don’t like. These plugins tend to have too much dependencies and do not have minimal configuration. For example, I don't want to install Node when programming c++ or golang. In my opinion vim is more lightweight than vscode so I don’t need the fully integrated features of it. Besides other completion plugins neither have good experiences enough nor compatible with vim and nvim at the same time. Therefor I created [vim-easycomplete](https://github.com/jayli/vim-easycomplete) according to my personal habits.
+There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I want a more conncise style plugin without any uneccessary configurations. What's more, it would be a good idea to incorporate the capabilities of an AI coding assistant as well.
 
 ### What
 
-Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don’t need to configure anything. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a javascript/typescript programmer.
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box with high-speed performance. It requires pure vim script. You don’t need to configure anything uneccessary. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a javascript/typescript programmer.
 
-<img src="https://gw.alicdn.com/imgextra/i3/O1CN01XpSCzr288IWBklcdC_!!6000000007887-1-tps-917-474.gif" width=650 />
+<img src="https://gw.alicdn.com/imgextra/i2/O1CN01OA1VV41QHbd7Y2WKu_!!6000000001951-1-tps-1209-693.gif" width=650 />
 
 It is easy to install and use. It contains these features:
 
+- AI coding assistant via tabnine(#TabNine-Support). (Highly Recommend!)
 - Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
-- [TabNine support](#TabNine-Support). (Highly Recommend!)
 - Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
 - Snippet support with ultisnips.
