@@ -127,9 +127,7 @@ function! s:GetTabNineParams()
     let l:region_includes_end = v:true
   endif
 
-  " TODO jayli here 加了"\n"，突然什么也出不来了？，现在好像出来了!
-  " 又突然不好使了？
-  " 如果结尾是一个"\n"，返回的结果里面会是一个代码片段"completion_kind":"Snippet"
+  " 有可能返回的结果里面会是一个代码片段"completion_kind":"Snippet"
   " 如果是complete的话，代码片段类型应该为"completion_kind":"Classic"
   let l:params = {
      \   'filename': expand('%:p'),
