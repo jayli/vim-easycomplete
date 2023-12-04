@@ -80,7 +80,6 @@ function! easycomplete#tabnine#Callback(res_array)
     call s:flush()
     return
   endif
-  " call s:console(a:res_array)
   let snippet = s:get_snippet(a:res_array)
   call s:tabnine_toolkit.show_hint(snippet)
   let s:tabnine_hint_snippet = snippet
@@ -90,16 +89,40 @@ function! easycomplete#tabnine#SnippetReady()
   return s:tabnine_hint_snippet != ""
 endfunction
 
+function! s:nr()
+  call appendbufline(bufnr(""), line("."), "")
+  call cursor(line(".") + 1, 1)
+endfunction
+
 function! easycomplete#tabnine#insert()
+  let l:tabnine_hint_snippet = s:tabnine_hint_snippet
+  call s:flush()
   try
-    let curr_line = getline(line("."))
-    let curr_line = curr_line . s:tabnine_hint_snippet
-    call feedkeys(s:tabnine_hint_snippet, 'i')
+    let lines = split(l:tabnine_hint_snippet, "\n")
+    if len(lines) == 1 " 单行插入
+      call feedkeys(l:tabnine_hint_snippet, 'i')
+    elseif len(lines) > 1 " 多行插入
+      call execute("normal! \<Esc>")
+      let curr_line_nr = line('.')
+      let curr_line_str = getline(".")
+      call setbufline(bufnr(""), line("."), curr_line_str . lines[0])
+      for line in lines[1:]
+        call s:nr()
+        call setbufline(bufnr(""), line("."), line)
+      endfor
+
+      let end_line_nr = curr_line_nr + len(lines) - 1
+      call cursor(end_line_nr, len(getline(end_line_nr)))
+      if mode() == "i"
+        call feedkeys("\<Esc>A", 'in')
+      else
+        call execute("normal! A")
+      endif
+      redraw
+    endif
   catch
     echom v:exception
   endtry
-  redraw
-  call s:flush()
 endfunction
 
 function! s:get_snippet(res_array)

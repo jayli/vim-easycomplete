@@ -1048,7 +1048,8 @@ function! easycomplete#CleverTab()
     return "\<C-N>"
   else
     if easycomplete#tabnine#SnippetReady()
-      call easycomplete#tabnine#insert()
+      " call easycomplete#tabnine#insert()
+      call s:AsyncRun(function('easycomplete#tabnine#insert'), [], 5)
       return ""
     endif
   endif

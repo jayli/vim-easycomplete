@@ -206,7 +206,17 @@ endfunction
 function! easycomplete#sources#tn#SimpleTabNineRequest(...)
   let l:ctx = exists('a:1') ? a:1 : easycomplete#context()
   let l:params = s:GetTabNineParams()
-  " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`, `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`, `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`, `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`, `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`, `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`, `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
+  " ['{"error":"Worker error: unknown variant `AutocompleteArgs`, expected one of
+  " `Autocomplete`, `AutocompleteV4471`, `AutocompleteV4451`, `AutocompleteV4448`, 
+  " `AutocompleteV4121`, `AutocompleteV4057`, `AutocompleteV3534`, `AutocompleteV3271`,
+  " `AutocompleteV3253`, `AutocompleteV21`, `AutocompleteV20`, `AutocompleteV10`, `AutocompleteV6`,
+  " `AutocompleteV4`, `AutocompleteV3`, `AutocompleteV2`, `Inform`, `ListIndexedFiles`, 
+  " `Metadata`, `State`, `SetState`, `SetStateV20`, `Features`, `Prefetch`, `GetIdentifierRegex`, 
+  " `Configuration`, `Deactivate`, `Uninstalling`, `Restart`, `Notifications`, `NotificationAction`,
+  " `StatusBar`, `StatusBarAction`, `Hover`, `HoverAction`, `StartupActions`, `Event`, `HubStructure`,
+  " `Login`, `LoginWithCustomToken`, `LoginWithCustomTokenUrl`, `Logout`, `NotifyWorkspaceChanged`,
+  " `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`,"
+  " `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
   call s:TabNineRequest("Autocomplete", l:params, l:ctx)
 endfunction
 
@@ -246,16 +256,15 @@ function! s:TabnineJobCallback(job_id, data, event)
     call easycomplete#sources#tn#refresh()
     return
   endif
-  " call s:console( "---")
   " a:data is a list
   let res_array = s:ArrayParse(a:data)
-  " call s:console(res_array)
   let t9_cmp_kind = s:TabNineCompleteKind(res_array)
-  " call s:console(res_array)
-  " TODO 这里没有测试 t9_cmp_kind == 'snippet' 的情况，tabnine basic
-  " 版本不支持 snippet
   if t9_cmp_kind == "nothing"
     call s:CompleteHandler([])
+    return
+  endif
+  if !pumvisible() && t9_cmp_kind == "snippet"
+    call s:SuggestHandler(res_array)
     return
   endif
   " 如果有标志位，等同认为是 suggest
