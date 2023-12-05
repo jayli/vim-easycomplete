@@ -4,11 +4,11 @@
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg) ![](https://img.shields.io/badge/license-MIT-blue.svg) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI)
 
-### Why
+## Why
 
 There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate the capabilities of an AI coding assistant as well.
 
-### What
+## What
 
 Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box. It requires pure VimScript. It's also super simple to configure. Especially, You don’t have to install Node and a bunch of Node modules unless you’re a js/ts programmer.
 
@@ -18,15 +18,12 @@ It contains these features:
 
 - AI coding assistant via [tabnine](#TabNine-Support). (Highly Recommend!)
 - Buffer Keywords/Directory support
-- LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support
-- Easy to install LSP Server with one command
+- LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
-- Snippet support with ultisnips.
+- Snippet support
 - Fast performance
 
-The reason I decided to use pure vim script instead of lua or python is that I want a wider range of compatibility. And I made a lot of async handling with vim script to avoid the block of rendering.
-
-### Installation
+## Installation
 
 Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 or higher is required.
 
@@ -49,15 +46,15 @@ call dein#add('SirVer/ultisnips')
 For Packer.nvim
 
 ```lua
-use { 'jayli/vim-easycomplete' }
 use { 'SirVer/ultisnips' }
+use { 'jayli/vim-easycomplete' }
 ```
 
 Run `:PackerInstall`
 
 You can use my default configuration [here](my-custom-config.md) with lua.
 
-### All Supported Commands
+## Commands
 
 All commands:
 
@@ -81,60 +78,69 @@ All commands:
 | `:DenoCache`                      | Do Deno Cache for downloading modules               |
 | `:CleanLog`                       | close quickfix window                               |
 
-### Configuration
+## Configuration
 
-The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085))
+The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085)). Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
-### Usage
-
-Use Tab to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
-
-With vim script:
-
-```vim
-noremap gr :EasyCompleteReference<CR>
-noremap gd :EasyCompleteGotoDefinition<CR>
-noremap rn :EasyCompleteRename<CR>
-noremap gb :BackToOriginalBuffer<CR>
-```
-
-or with lua:
+Example configuration with lua:
 
 ```lua
+-- Highlight the symbol when holding the cursor if you need it
+vim.g.easycomplete_cursor_word_hl = 1
+-- Using nerdfont is highly recommended
+vim.g.easycomplete_nerd_font = 1
+
+-- GoTo code navigation
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
 vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 ```
 
-Set trigger completion mapping:
+Example configuration with vim script:
 
 ```vim
-let g:easycomplete_tab_trigger="<c-space>"
+" Highlight the symbol when holding the cursor
+let g:easycomplete_cursor_word_hl = 1
+" Using nerdfont is highly recommended
+let g:easycomplete_nerd_font = 1
+
+" GoTo code navigation
+noremap gr :EasyCompleteReference<CR>
+noremap gd :EasyCompleteGotoDefinition<CR>
+noremap rn :EasyCompleteRename<CR>
+noremap gb :BackToOriginalBuffer<CR>
 ```
 
-The plugin has already map diagnostic jumping to `<C-n>` and `<S-C-n>`. You can change these mapping via:
+*All configurations*
 
-```vim
-let g:easycomplete_diagnostics_next = "<C-J>"
-let g:easycomplete_diagnostics_prev = "<C-k>"
-```
-
-- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
-- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
-- Set `let g:easycomplete_signature_enable = 0` to disable lsp signature checking.
-- Set `let g:easycomplete_tabnine_suggestion = 0` to disable tabnine inline suggestions.
-- Set `let g:easycomplete_directory_enable = 0` to disable directory complete.
+| Global Configure                     | Default value | Description                                                   |
+|--------------------------------------|---------------|---------------------------------------------------------------|
+| `g:easycomplete_nerd_font`           | 0             | Using nerdfont for lsp icons                                  |
+| `g:easycomplete_menu_skin`           | `{}`          | Menu skin. [Examples](beautify-menu-items.md)                 |
+| `g:easycomplete_sign_text`           | `{}`          | Sign icons. [Examples](beautify-menu-items.md)                |
+| `g:easycomplete_lsp_type_font`       | ...           | lsp icons configuration                                       |
+| `g:easycomplete_tabnine_suggestion`  | 1             | Tabnine inline suggestion(for nvim only)                      |
+| `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
+| `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
+| `g:easycomplete_directory_enable`    | 1             | Directory complete                                            |
+| `g:easycomplete_tabnine_config`      | `{}`          | [TabNine Configuration](#ai-coding-via-tabnine-support)       |
+| `g:easycomplete_filetypes`           | `{}`          | [Custom filetyps configuration](#language-support)            |
+| `g:easycomplete_enable`              | 1             | Enable this plugin                                            |
+| `g:easycomplete_tab_trigger`         | `<Tab>`       | Use tab to trigger completion and select next item            |
+| `g:easycomplete_shift_tab_trigger`   | `<S-Tab>`     | Use s-tab to select previous item                             |
+| `g:easycomplete_cursor_word_hl`      | 0             | Highlight the symbol when holding the cursor                  |
+| `g:easycomplete_signature_offset`    | 0             | Signature offset                                              |
+| `g:easycomplete_diagnostics_next`    | `<C-N>`       | Goto next diagnostic position                                 |
+| `g:easycomplete_diagnostics_prev`    | `<S-C-n>`     | Goto previous diagnostic position                             |
+| `g:easycomplete_diagnostics_enable`  | 1             | Enable diagnostics                                            |
+| `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
+| `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
+| `g:easycomplete_scheme`              | `""`          | Popup menu colorscheme                                        |
 
 Typing `:h easycomplete` for help.
 
-### Language Support
-
-It support keywords/dictionary/directory completion by default.
-
-Disable directory completion via `let g:easycomplete_directory_enable = 0`.
-
-#### Semantic Completion for Other Languages
+## Language Support
 
 There are tow ways to install lsp server.
 
@@ -200,9 +206,9 @@ More info about semantic completion for each supported language:
 - Shell: [bashls](https://github.com/bash-lsp/bash-language-server) required.
 - Java: [jdtls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
 - Cmake: [cmake](https://github.com/regen100/cmake-language-server) required.
-- Kotlin: [kotlin_language_server](https://github.com/fwcd/kotlin-language-server) required.
+- Kotlin: [kotlin language server](https://github.com/fwcd/kotlin-language-server) required.
 - Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
-- Lua: [sumneko_lua](https://github.com/sumneko/lua-language-server) required. Local configuration file path is `~/.config/vim-easycomplete/servers/lua/config.json`. Get more information [here](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
+- Lua: [sumneko lua](https://github.com/sumneko/lua-language-server) required. Local configuration file path is `~/.config/vim-easycomplete/servers/lua/config.json`. Get more information [here](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
 - Xml: [lemminx](https://github.com/eclipse/lemminx) required.
 - Groovy: [groovyls](https://github.com/prominic/groovy-language-server) required.
 - Yaml: [yamlls](https://github.com/redhat-developer/yaml-language-server) required.
@@ -226,13 +232,13 @@ let g:easycomplete_filetypes = {
       \ }
 ```
 
-#### Snippet Support
+### Snippet Support
 
 Vim-EasyComplete does not support snippets by default. If you want snippet integration, you will first have to install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete out of the box. UltiSnips required python3 installed.
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
 
-#### AI Coding via TabNine Support
+## AI Coding via TabNine Support
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
@@ -254,28 +260,27 @@ Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 
 ---------------------
 
-### Beautify the vim completion menu
+## Beautify the vim completion menu
 
-There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`(for iterm). (`let g:easycomplete_scheme="sharp"`). Customise vim completion menu via these configurations:
+There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`(for iterm). (`let g:easycomplete_scheme="sharp"`).
 
-If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font`
+If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font = 1`
 
-```vim
-let g:easycomplete_nerd_font = 1
-```
+If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](beautify-menu-items.md).
 
-In most cases, the configuration "`g:easycomplete_nerd_font = 1`" is already enough, but if you want to customize the kind icon, you can modify the configuration like this with <https://nerdfonts.com> installed. [Some examples](beautify-menu-items.md).
-
-
-### Add custom completion plugin
+## Add custom completion plugin
 
 → [add custom completion plugin](add-custom-plugin.md)
 
-### Issues
+## Issues
 
 [WIP] If you have bug reports or feature suggestions, please use the [issue tracker](https://github.com/jayli/vim-easycomplete/issues/new). In the meantime feel free to read some of my thoughts at <https://zhuanlan.zhihu.com/p/366496399>, <https://zhuanlan.zhihu.com/p/425555993>, [https://medium.com/@lijing00333/vim-easycomplete](https://dev.to/jayli/how-to-improve-your-vimnvim-coding-experience-with-vim-easycomplete-29o0)
 
-### More Examples:
+## More Examples:
+
+TabNine snippets inline suggestion
+
+<img src="https://gw.alicdn.com/imgextra/i2/O1CN01vESZ6G1h3j5u4hmN4_!!6000000004222-1-tps-1189-606.gif" width="600" />
 
 Update Deno Cache via `:DenoCache`
 

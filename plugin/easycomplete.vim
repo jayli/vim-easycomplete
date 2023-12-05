@@ -139,11 +139,20 @@ endif
 if !exists("g:easycomplete_diagnostics_prev")
   let g:easycomplete_diagnostics_prev= "<S-C-n>"
 endif
+if !exists("g:easycomplete_diagnostics_enable")
+  let g:easycomplete_diagnostics_enable = 1
+endif
+if !exists("g:easycomplete_signature_enable")
+  let g:easycomplete_signature_enable = 1
+endif
+if !exists("g:easycomplete_diagnostics_hover")
+  let g:easycomplete_diagnostics_hover = 1
+endif
 
 let g:easycomplete_config = {
-      \ 'g:easycomplete_diagnostics_hover':  1,
-      \ 'g:easycomplete_diagnostics_enable': 1,
-      \ 'g:easycomplete_signature_enable':   1,
+      \ 'g:easycomplete_diagnostics_hover':  g:easycomplete_diagnostics_hover,
+      \ 'g:easycomplete_signature_enable':   g:easycomplete_signature_enable,
+      \ 'g:easycomplete_diagnostics_enable': g:easycomplete_diagnostics_enable,
       \ 'g:easycomplete_tabnine_enable':     g:easycomplete_tabnine_enable,
       \ 'g:easycomplete_tabnine_suggestion': g:easycomplete_tabnine_suggestion,
       \ 'g:easycomplete_enable':             g:easycomplete_enable,
