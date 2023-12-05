@@ -114,7 +114,7 @@ noremap gb :BackToOriginalBuffer<CR>
 
 *All configurations*
 
-| Global Configure                     | Default value | Description                                                   |
+| Global Configure                     | Default       | Description                                                   |
 |--------------------------------------|---------------|---------------------------------------------------------------|
 | `g:easycomplete_nerd_font`           | 0             | Using nerdfont for lsp icons                                  |
 | `g:easycomplete_menu_skin`           | `{}`          | Menu skin. [Examples](beautify-menu-items.md)                 |
