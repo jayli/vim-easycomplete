@@ -14,7 +14,6 @@ let s:version = ''
 let s:force_complete = 0
 
 function! easycomplete#sources#tn#constructor(opt, ctx)
-  " call s:console('.')
   let s:opt = a:opt
   let name = get(a:opt, "name", "")
   let s:name = name
@@ -272,15 +271,6 @@ function! s:TabnineJobCallback(job_id, data, event)
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)
   endif
-
-  " if t9_cmp_kind == 'snippet'
-  "   call s:SuggestHandler(res_array)
-  " elseif t9_cmp_kind == "nothing"
-  "   call s:CompleteHandler([])
-  " else
-  "   let result_items = s:NormalizeCompleteResult(a:data)
-  "   call s:CompleteHandler(result_items)
-  " endif
 endfunction
 
 function! s:SuggestHandler(res_array)

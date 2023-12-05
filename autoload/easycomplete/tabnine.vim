@@ -22,12 +22,6 @@ function easycomplete#tabnine#ready()
   return v:true
 endfunction
 
-" function! easycomplete#tabnine#init()
-"   if !easycomplete#tabnine#ready()
-"     return
-"   endif
-" endfunction
-
 function! easycomplete#tabnine#fire()
   if pumvisible()
     return
@@ -37,6 +31,10 @@ function! easycomplete#tabnine#fire()
   endif
   " 不是空格除外的最后一个字符
   if !s:is_last_char()
+    return
+  endif
+  " 不是魔术指令
+  if getline('.')[0:col('.')] =~ "\\s\\{-}TabNine::\\(config\\|sem\\)$"
     return
   endif
 
