@@ -144,11 +144,7 @@ function! s:GetGlobalDictKeyword()
     endif
 
     for line in lines
-      if &filetype == "css"
-        call extend(localdicts, split(line,'[^A-Za-z0-9_#-]'))
-      else
-        call extend(localdicts, split(line,'[^A-Za-z0-9_#]'))
-      endif
+      call extend(localdicts, split(line, s:KeywordsRegx()))
     endfor
 
     call s:ArrayDistinct(localdicts)
@@ -156,6 +152,23 @@ function! s:GetGlobalDictKeyword()
   endfor
   let b:easycomplete_global_dict = dictkeywords
   return dictkeywords
+endfunction
+
+function! s:KeywordsRegx()
+  if exists("s:easycomplete_temp_keywords")
+    return s:easycomplete_temp_keywords
+  endif
+  let key_word_list = split(&iskeyword, ",")
+  let tmp_letters = ["@","_","-"]
+  let res_letters = ["#"]
+  for char in tmp_letters
+    if index(key_word_list, char) >= 0
+      call add(res_letters, char)
+    endif
+  endfor
+  let reg_str = "[^A-Za-z0-9" . join(res_letters, "") . "]"
+  let s:easycomplete_temp_keywords = reg_str
+  return reg_str
 endfunction
 
 " List 去重，类似 uniq，纯数字要去掉
