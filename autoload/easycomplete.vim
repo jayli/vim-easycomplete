@@ -1197,12 +1197,15 @@ function! s:ExpandSnipManually(word)
   try
     if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
       " 可直接展开
-      call s:CloseCompletionMenu()
+      " bugfix for #231，加上 CloseCompletionMenu
+      " 会导致如果上一行有内容，且当前列字符不为空时，关闭menu后会把不为空的字符带到当前行的光标处
+      " 原因未知，先注释掉这一行 在 nvim 中是 ok 的 vim 未测试
+      " call s:CloseCompletionMenu()
       call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
       return ""
     elseif empty(UltiSnips#SnippetsInCurrentScope())
       " 需要展开选项
-      call s:CloseCompletionMenu()
+      " call s:CloseCompletionMenu()
       call feedkeys("\<Plug>EasycompleteExpandSnippet")
       return ""
     endif
