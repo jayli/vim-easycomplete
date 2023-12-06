@@ -264,6 +264,11 @@ function! s:TabnineJobCallback(job_id, data, event)
     call s:SuggestHandler(res_array)
     return
   endif
+  " 当snippet结果返回时，已经存在匹配菜单了，则丢弃
+  if pumvisible() && t9_cmp_kind == "snippet"
+    call s:CompleteHandler([])
+    return
+  endif
   " 如果有标志位，等同认为是 suggest
   if !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
     call s:SuggestHandler(res_array)
