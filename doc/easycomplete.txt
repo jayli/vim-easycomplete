@@ -1,6 +1,6 @@
 *easycomplete.txt*		Vim-EasyComplete Plugin
 
-			Copyright (c) 2020-2022 @Jayli
+			Copyright (c) 2020-2024 @Jayli
 	More Info: https://github.com/jayli/vim-easycomplete
 
 EasyComplete                                                     *easycomplete*
@@ -9,11 +9,10 @@ EasyComplete                                                     *easycomplete*
 
 Introduction
 
-Vim-Easycomplete is a fast completion plugin for vim/nvim. The goal is to work
-everywhere out of the box with high-speed performance. It requires pure Vim Script.
-You don't need to configure anything. Especially, You don't have to install Node
-and a bunch of Node Modules unless you're a js/ts developer. It's definitely a
-minimalism style plugin.
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim.
+The goal is to work everywhere out of the box. It requires pure VimScript. It's
+also super simple to configure. Especially, You don’t have to install Node and
+a bunch of Node modules unless you’re a js/ts programmer.
 
 Vim-Easycomplete is easy to install and use. It contains these features:
 
@@ -28,8 +27,7 @@ Vim-Easycomplete is easy to install and use. It contains these features:
 
 Requirements
 
-Neovim >= 0.4.0 or Vim >= 8.0, for best experience, use neovim >= 0.5.0
-or vim >= 8.2.
+Neovim >= 0.7.0 or Vim >= 8.2
 
 ===============================================================================
 
@@ -50,60 +48,48 @@ can be ignored in most cases.
 
 ===============================================================================
 
-Useage
+Configuration
 
-You can use Tab to trigger the completion suggestions anywhere. Alse use Tab and
-Shift-Tab to select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t`
-for jumping back (Same as tags jumping).
+The plugin is out of box and config nothing. Use `Tab` to trigger the completion
+suggestions and select matched items. By default use `Ctrl-]` for definition
+jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
-Or you can use `:EasyCompleteGotoDefinition` and `:EasyCompleteReference` command. >
+Example configuration with lua: >
 
-  nmap gr :EasyCompleteReference<CR>
-  nmap gd :EasyCompleteGotoDefinition<CR>
+  -- Highlight the symbol when holding the cursor if you need it
+  vim.g.easycomplete_cursor_word_hl = 1
+  -- Using nerdfont is highly recommended
+  vim.g.easycomplete_nerd_font = 1
+
+  -- GoTo code navigation
+  vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+  vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+  vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+  vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 <
-
-Use `:EasyCompleteNextDiagnostic` and `:EasyCompletePreviousDiagnostic` for
-diagnostics jumping. For example, map diagnostic jumping to `<C-j>` and `<C-k>` >
-
-  nnoremap <silent> <C-j> :EasyCompleteNextDiagnostic<CR>
-  nnoremap <silent> <C-k> :EasyCompletePreviousDiagnostic<CR>
-<
-In most cases, the plugin already map these tow HOTKEYs for you successfully. You
-only have to set custom diagnostic HOTKEYs manually in case of there was a conflict.
-
-Checking if LSP server is installed via `:EasyCompleteCheck`. If current LSP
-Server is not ready, Use `:EasyCompleteInstallServer` to install.
-
-Typing `./` or `../` to trigger directory completion suggestion.
-
-Dictionary suggestion support via `set dictionary=${Your_Dictionary_File}` if
-you need.
-
-- Set `let g:easycomplete_diagnostics_enable = 0` to disable lsp diagnostics.
-- Set `let g:easycomplete_lsp_checking = 0` to disable lsp checking for installation.
-
 Typing `:h easycomplete` for help.
 
 All commands:
 
-| Command                           | Description                              |
-| --------------------------------- | ---------------------------------------- |
-| `:EasyCompleteInstallServer`        | Install LSP server for current fileytpe  |
-| `:InstallLspServer`                 | Same as `EasyCompleteInstallServer`        |
-| `:EasyCompleteDisable`              | Disable EasyComplete                     |
-| `:EasyCompleteEnable`               | Enable EasyComplete                      |
-| `:EasyCompleteGotoDefinition`       | Goto definition position                 |
-| `:EasyCompleteReference`            | find references                          |
-| `:EasyCompleteRename`               | rename                                   |
-| `:EasyCompleteCheck`                | Checking LSP server                      |
-| `:EasyCompletePreviousDiagnostic`   | Goto Previous diagnostic                 |
-| `:EasyCompleteNextDiagnostic`       | Goto Next diagnostic                     |
-| `:EasyCompleteProfileStart`         | Start record diagnostics message         |
-| `:EasyCompleteProfileStop`          | Stop record diagnostics  message         |
-| `:EasyCompleteLint`                 | Do diagnostic                            |
-| `:LintEasyComplete`                 | Do diagnostic                            |
-| `:DenoCache`                        | Do Deno Cache for downloading modules    |
-| `:CleanLog`                         | close quickfix window                    |
+| Command                           | Description                                     |
+|-----------------------------------|-------------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe         |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`             |
+| `:EasyCompleteDisable`            | Disable EasyComplete                            |
+| `:EasyCompleteEnable`             | Enable EasyComplete                             |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                        |
+| `:EasyCompleteReference`          | Find references                                 |
+| `:EasyCompleteRename`             | Rename                                          |
+| `:EasyCompleteCheck`              | Checking LSP server                             |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                        |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                            |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message                |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message                |
+| `:EasyCompleteLint`               | Do diagnostic                                   |
+| `:LintEasyComplete`               | Do diagnostic                                   |
+| `:BackToOriginalBuffer`           | Return to the position before the reference jump|
+| `:DenoCache`                      | Do Deno Cache for downloading modules           |
+| `:CleanLog`                       | close quickfix window                           |
 
 ===============================================================================
 
