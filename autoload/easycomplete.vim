@@ -1935,7 +1935,9 @@ function! easycomplete#CursorHoldI()
   " hi! ABC guifg=red gui=underline
   " hi! DEF guifg=green gui=underline
   " hi! def link Pmenu ABC
-  " call complete(col('.'), ['`a`bc','x[d]ef','xyz','asdfa #sdf','asdjick','asjicxvj issdf'])
+  " call complete(col('.'), ['"\033[31m"\\\`a`_)""''','x[d]ef','xyz','asdfa #sdf','asdjick','asjicxvj issdf'])
+  " call v:lua.vim.current.buffer.add_highlight("Pmenu",1,0,-1,v:lua.vim.new_highlight_source())
+  " call nvim_buf_add_highlight(0, 0, "Pmenu", 1, 0, 4)
   " return
   if easycomplete#IsBacking()
     " do nothting
