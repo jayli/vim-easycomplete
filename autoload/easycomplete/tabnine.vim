@@ -98,7 +98,14 @@ function! easycomplete#tabnine#insert()
   try
     let lines = split(l:tabnine_hint_snippet, "\n")
     if len(lines) == 1 " 单行插入
-      call feedkeys(l:tabnine_hint_snippet, 'i')
+      if getline('.') == ""
+        call execute("normal! \<Esc>")
+        call setbufline(bufnr(""), line("."), lines[0])
+        call cursor(line('.'), len(lines[0]) - 1)
+        call s:RemainInsertMode()
+      else
+        call feedkeys(l:tabnine_hint_snippet, 'i')
+      endif
     elseif len(lines) > 1 " 多行插入
       call execute("normal! \<Esc>")
       let curr_line_nr = line('.')
@@ -111,16 +118,20 @@ function! easycomplete#tabnine#insert()
 
       let end_line_nr = curr_line_nr + len(lines) - 1
       call cursor(end_line_nr, len(getline(end_line_nr)))
-      if mode() == "i"
-        call feedkeys("\<Esc>A", 'in')
-      else
-        call execute("normal! A")
-      endif
+      call s:RemainInsertMode()
       redraw
     endif
   catch
     echom v:exception
   endtry
+endfunction
+
+function! s:RemainInsertMode()
+  if mode() == "i"
+    call feedkeys("\<Esc>A", 'in')
+  else
+    call execute("normal! A")
+  endif
 endfunction
 
 function! s:GetSnippets(res_array)
