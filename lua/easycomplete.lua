@@ -2,23 +2,13 @@
 local EasyComplete = {}
 local Util = require "easycomplete.util"
 local AutoLoad = require "easycomplete.autoload"
+local TabNine = require "easycomplete.tabnine"
 local console = Util.console
 local log = Util.log
 
-local function nvim_init_hl()
-  vim.api.nvim_set_hl(0, "TabNineSuggestion", {
-    link = "LineNr",
-    bg = "none",
-  })
-  vim.api.nvim_set_hl(0, "TabNineSuggestion", {
-    link = "CursorLine",
-    fg = "none",
-  })
-end
-
 -- all in all 入口
 local function nvim_lsp_handler()
-  -- nvim_init_hl()
+  TabNine.init()
 
   if not Util.nvim_installer_installed() then
     return
