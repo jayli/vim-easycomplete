@@ -242,7 +242,7 @@ Vim-EasyComplete does not support snippets by default. If you want snippet integ
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
-<src img="https://gw.alicdn.com/imgextra/i2/O1CN01Qjk2tV2A20Ss9jtcq_!!6000000008144-0-tps-792-470.jpg" width="500px" />
+<img src="https://gw.alicdn.com/imgextra/i2/O1CN01Qjk2tV2A20Ss9jtcq_!!6000000008144-0-tps-792-470.jpg" width="500px" />
 
 Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
 
