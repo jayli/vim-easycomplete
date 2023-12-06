@@ -112,7 +112,7 @@ noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
 ```
 
-*All configurations*
+Global configurations
 
 | Global Configure                     | Default       | Description                                                   |
 |--------------------------------------|---------------|---------------------------------------------------------------|
@@ -241,6 +241,8 @@ Vim-EasyComplete does not support snippets by default. If you want snippet integ
 ## AI Coding via TabNine Support
 
 Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
+
+<src img="https://github.com/jayli/vim-easycomplete/assets/188244/c6688d37-604f-456b-a030-13c21e9df1f3" width="500px" />
 
 Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
 

@@ -1,3 +1,5 @@
+local Util = require "easycomplete.util"
+local log = Util.log
 local Export = {}
 local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 
@@ -24,10 +26,12 @@ end
 
 -- code_block 是一个字符串，有可能包含回车符
 -- call v:lua.require("easycomplete.tabnine").show_hint()
+-- code_block 是数组类型
 function Export.show_hint(code_block)
   local lines = {}
   local count = 1
-  for line in code_block:gmatch("[^\r\n]+") do
+  local code_lines = code_block
+  for key, line in pairs(code_lines) do
     local highlight_group = ""
     if count == 1 then
       highlight_group = "TabNineSuggestionFirstLine"
@@ -41,7 +45,6 @@ function Export.show_hint(code_block)
   local virt_text = lines[1]
   local virt_lines
 
-  -- print(#lines)
   if #lines >= 2 then
     table.remove(lines, 1)
     virt_lines = lines

@@ -4,7 +4,7 @@
 let s:tabnine_toolkit = v:lua.require("easycomplete.tabnine")
 " 临时存放 suggest 或者 complete
 let b:tabnine_typing_type = ""
-let s:tabnine_hint_snippet = ""
+let s:tabnine_hint_snippet = []
 
 function easycomplete#tabnine#ready()
   if g:env_is_vim
@@ -61,12 +61,12 @@ function! easycomplete#tabnine#SuggestFlagCheck()
 endfunction
 
 function! s:flush()
-  if exists("s:tabnine_hint_snippet") && s:tabnine_hint_snippet == ""
+  if exists("s:tabnine_hint_snippet") && empty(s:tabnine_hint_snippet)
     return
   endif
   call s:tabnine_toolkit.delete_hint()
   call easycomplete#tabnine#SuggestFlagClear()
-  let s:tabnine_hint_snippet = ""
+  let s:tabnine_hint_snippet = []
 endfunction
 
 function! easycomplete#tabnine#flush()
@@ -78,13 +78,20 @@ function! easycomplete#tabnine#Callback(res_array)
     call s:flush()
     return
   endif
-  let snippet = s:GetSnippets(a:res_array)
-  call s:tabnine_toolkit.show_hint(snippet)
-  let s:tabnine_hint_snippet = snippet
+  let l:snippet = s:GetSnippets(a:res_array)
+  let l:snippet_array = easycomplete#tabnine#ParseSnippets2Array(l:snippet)
+  call s:tabnine_toolkit.show_hint(l:snippet_array)
+  let s:tabnine_hint_snippet = deepcopy(l:snippet_array)
 endfunction
 
 function! easycomplete#tabnine#SnippetReady()
-  return s:tabnine_hint_snippet != ""
+  return exists("s:tabnine_hint_snippet") && !empty(s:tabnine_hint_snippet)
+endfunction
+
+" 返回一个标准数组，提示和显示都用这一份数据
+function! easycomplete#tabnine#ParseSnippets2Array(code_block)
+  let l:lines = split(a:code_block, "\n")
+  return l:lines
 endfunction
 
 function! s:nr()
@@ -96,27 +103,27 @@ function! easycomplete#tabnine#insert()
   let l:tabnine_hint_snippet = s:tabnine_hint_snippet
   call s:flush()
   try
-    let lines = split(l:tabnine_hint_snippet, "\n")
-    if len(lines) == 1 " 单行插入
+    let l:lines = l:tabnine_hint_snippet
+    if len(l:lines) == 1 " 单行插入
       if getline('.') == ""
         call execute("normal! \<Esc>")
-        call setbufline(bufnr(""), line("."), lines[0])
-        call cursor(line('.'), len(lines[0]))
+        call setbufline(bufnr(""), line("."), l:lines[0])
+        call cursor(line('.'), len(l:lines[0]))
         call s:RemainInsertMode()
       else
-        call feedkeys(l:tabnine_hint_snippet, 'i')
+        call feedkeys(l:lines[0], 'i')
       endif
-    elseif len(lines) > 1 " 多行插入
+    elseif len(l:lines) > 1 " 多行插入
       call execute("normal! \<Esc>")
       let curr_line_nr = line('.')
       let curr_line_str = getline(".")
-      call setbufline(bufnr(""), line("."), curr_line_str . lines[0])
-      for line in lines[1:]
+      call setbufline(bufnr(""), line("."), curr_line_str . l:lines[0])
+      for line in l:lines[1:]
         call s:nr()
         call setbufline(bufnr(""), line("."), line)
       endfor
 
-      let end_line_nr = curr_line_nr + len(lines) - 1
+      let end_line_nr = curr_line_nr + len(l:lines) - 1
       call cursor(end_line_nr, len(getline(end_line_nr)))
       call s:RemainInsertMode()
       redraw
