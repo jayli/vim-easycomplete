@@ -19,9 +19,12 @@ end
 
 function Export.init()
   Export.nvim_init_tabnine_hl()
-  vim.cmd [[
-    autocmd ColorScheme * call v:lua.require("easycomplete.tabnine").nvim_init_tabnine_hl()
-  ]]
+  vim.api.nvim_create_autocmd({"ColorScheme"}, {
+    pattern = {"*"},
+    callback = function()
+      Export.nvim_init_tabnine_hl()
+    end
+  })
 end
 
 -- code_block 是一个字符串，有可能包含回车符
