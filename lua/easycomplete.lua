@@ -86,6 +86,7 @@ function foo()
   console('>>---------------')
 end
 
+-- for nvim only
 function EasyComplete.lsp_handler()
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
