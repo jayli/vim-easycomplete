@@ -30,7 +30,7 @@ function! easycomplete#tabnine#fire()
     return
   endif
   " 不是空格除外的最后一个字符
-  if !s:is_last_char()
+  if !s:IsLastChar()
     return
   endif
   " 不是魔术指令
@@ -78,7 +78,7 @@ function! easycomplete#tabnine#Callback(res_array)
     call s:flush()
     return
   endif
-  let snippet = s:get_snippet(a:res_array)
+  let snippet = s:GetSnippets(a:res_array)
   call s:tabnine_toolkit.show_hint(snippet)
   let s:tabnine_hint_snippet = snippet
 endfunction
@@ -123,7 +123,7 @@ function! easycomplete#tabnine#insert()
   endtry
 endfunction
 
-function! s:get_snippet(res_array)
+function! s:GetSnippets(res_array)
   let res = get(a:res_array, "results", [])
   if empty(res) | return [] | endif
   let new_prefix = ""
@@ -150,7 +150,7 @@ function! s:get_snippet(res_array)
   return new_prefix[len(old_prefix):]
 endfunction
 
-function! s:is_last_char()
+function! s:IsLastChar()
   let current_col = col('.')
   let current_line = getline('.')
   if current_col - 1 == len(current_line)
