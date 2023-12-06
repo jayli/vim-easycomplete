@@ -101,7 +101,7 @@ function! easycomplete#tabnine#insert()
       if getline('.') == ""
         call execute("normal! \<Esc>")
         call setbufline(bufnr(""), line("."), lines[0])
-        call cursor(line('.'), len(lines[0]) - 1)
+        call cursor(line('.'), len(lines[0]))
         call s:RemainInsertMode()
       else
         call feedkeys(l:tabnine_hint_snippet, 'i')
