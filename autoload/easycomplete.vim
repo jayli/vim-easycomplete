@@ -1929,6 +1929,14 @@ function! easycomplete#CursorHold()
 endfunction
 
 function! easycomplete#CursorHoldI()
+  " hi! PmenuKind guifg=red
+  " syntax region ABC start=/\[/ end=/\]/ contains=All
+  " syntax match DEF /#.*/
+  " hi! ABC guifg=red gui=underline
+  " hi! DEF guifg=green gui=underline
+  " hi! def link Pmenu ABC
+  " call complete(col('.'), ['`a`bc','x[d]ef','xyz','asdfa #sdf','asdjick','asjicxvj issdf'])
+  " return
   if easycomplete#IsBacking()
     " do nothting
   else
