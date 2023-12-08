@@ -78,20 +78,20 @@ endfunction "}}}
 function! easycomplete#ui#GetHiColor(hiName, sufix)
   let sufix = empty(a:sufix) ? "bg" : a:sufix
   let hlString = easycomplete#ui#HighlightArgs(a:hiName)
-  if empty(hlString) | return "NONE" | endif
+  let my_color = "NONE"
+  if empty(hlString) | return my_color | endif
   if easycomplete#util#IsGui()
     " Gui color name
     let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\w\\+")
-    if my_color != ''
-      return my_color
-    endif
   else
     let my_color= matchstr(hlString,"\\(\\scterm" .sufix. "=\\)\\@<=\\w\\+")
-    if my_color!= ''
-      return my_color
-    endif
   endif
-  return 'NONE'
+
+  if my_color =~ '^\d\+$'
+      return str2nr(my_color)
+  endif
+
+  return my_color
 endfunction " }}}
 
 " Hilight {{{
