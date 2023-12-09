@@ -117,7 +117,7 @@ function! s:SetCompleteOption()
   setlocal completeopt-=menu
   setlocal completeopt+=noinsert
   setlocal completeopt+=menuone
-  setlocal completeopt+=noselect
+  " setlocal completeopt+=noselect
   setlocal completeopt-=popup
   setlocal completeopt-=preview
   setlocal completeopt-=longest
@@ -1226,7 +1226,11 @@ endfunction
 " close pum
 function! s:CloseCompletionMenu()
   if pumvisible()
-    silent! noa call s:SendKeys("\<C-Y>")
+    if !(&completeopt =~ "noselect")
+      silent! noa call s:SendKeys("\<ESC>a")
+    else
+      silent! noa call s:SendKeys("\<C-Y>")
+    endif
     call s:zizz()
   endif
   call s:ResetCompletedItem()
