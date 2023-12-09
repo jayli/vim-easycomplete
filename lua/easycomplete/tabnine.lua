@@ -9,7 +9,7 @@ function Export.nvim_init_tabnine_hl()
   local linenr_fg = vim.fn["easycomplete#ui#GetFgColor"]("LineNr")
   vim.api.nvim_set_hl(0, "TabNineSuggestionFirstLine", {
     bg = cursorline_bg,
-    fg = linenr_fg,
+    fg = linenr_fg
   })
   vim.api.nvim_set_hl(0, "TabNineSuggestionNoneFirstLine", {
     fg = linenr_fg,
