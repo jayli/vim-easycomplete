@@ -1684,6 +1684,14 @@ function! easycomplete#util#FindNearestParentFile(path, filename) abort
   endif
 endfunction
 
+function! easycomplete#util#HasLua()
+  if g:env_is_nvim && has("nvim-0.5.0")
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#util#GetDefaultRootUri()
   let current_lsp_ctx = easycomplete#GetCurrentLspContext()
   let current_file_path = fnamemodify(expand('%'), ':p:h')

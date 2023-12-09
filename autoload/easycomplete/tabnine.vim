@@ -1,13 +1,16 @@
 " ./sources/tn.vim 负责pum匹配，这里只负责做代码联想提示
 " tabnine suggestion 和 tabnine complete 共享一个 job
 
-let s:tabnine_toolkit = v:lua.require("easycomplete.tabnine")
+let s:tabnine_toolkit = easycomplete#util#HasLua() ? v:lua.require("easycomplete.tabnine") : v:null
 " 临时存放 suggest 或者 complete
 let b:tabnine_typing_type = ""
 let s:tabnine_hint_snippet = []
 
 function easycomplete#tabnine#ready()
   if g:env_is_vim
+    return v:false
+  endif
+  if !easycomplete#util#HasLua()
     return v:false
   endif
   if !easycomplete#ok('g:easycomplete_tabnine_enable')

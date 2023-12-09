@@ -7,6 +7,16 @@ function Export.nvim_init_tabnine_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
   local normal_bg = vim.fn["easycomplete#ui#GetBgColor"]("Normal")
   local linenr_fg = vim.fn["easycomplete#ui#GetFgColor"]("LineNr")
+  if vim.fn.matchstr(cursorline_bg, "^\\d\\+") ~= "" then
+    cursorline_bg = vim.fn.str2nr(cursorline_bg)
+  end
+  if vim.fn.matchstr(normal_bg, "^\\d\\+") ~= "" then
+    normal_bg = vim.fn.str2nr(normal_bg)
+  end
+  if vim.fn.matchstr(linenr_fg, "^\\d\\+") ~= "" then
+    linenr_fg = vim.fn.str2nr(linenr_fg)
+  end
+
   vim.api.nvim_set_hl(0, "TabNineSuggestionFirstLine", {
     bg = cursorline_bg,
     fg = linenr_fg

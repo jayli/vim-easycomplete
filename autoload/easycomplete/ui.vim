@@ -87,9 +87,13 @@ function! easycomplete#ui#GetHiColor(hiName, sufix)
     let my_color= matchstr(hlString,"\\(\\scterm" .sufix. "=\\)\\@<=\\w\\+")
   endif
 
-  if my_color =~ '^\d\+$'
-      return str2nr(my_color)
+  if my_color == ""
+    return "NONE"
   endif
+
+  " if my_color =~ '^\d\+$'
+  "   return str2nr(my_color)
+  " endif
 
   return my_color
 endfunction " }}}
