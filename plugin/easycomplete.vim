@@ -24,19 +24,19 @@ endif
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"",
-        \      "menu":"𝘛𝘦𝘹𝘵",
+        \      "kind":"󰀬",
+        \      "menu":"Text",
         \    },
         \   "snip": {
         \      "kind":"",
-        \      "menu":"𝘤𝘰𝘥𝘦",
+        \      "menu":"code"
         \    },
         \   "dict": {
-        \      "kind":"𝘥",
-        \      "menu":"𝚍𝚒𝚌𝚝",
+        \      "kind":"󰈍",
+        \      "menu":"[Dic]",
         \    },
         \   "tabnine": {
-        \      "kind":"",
+        \      "kind":"󱙺",
         \      "menu":"𝘛𝘕"
         \    }
         \ }
