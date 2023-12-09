@@ -289,6 +289,22 @@ function! s:CompleteHandler(res)
     call s:flush()
   endif
   try
+    " echom result
+    " echom '---------'
+    for item in result
+      let l:word = get(item, "word")
+      let l:info = get(item, "info")
+      let l:menu = get(item, "menu")
+      let l:new_user_data = json_encode(extend(easycomplete#util#GetUserData(item), {
+            \   'plugin_name': "tn",
+            \   'sha256': easycomplete#util#Sha256(l:word)
+            \ }))
+      let item["user_data"] = l:new_user_data
+      " TODO Here jayli，这里set menu
+      " 后好像没有效果，不知道为什么，需要跟踪一下l:info存到哪里去了
+      call easycomplete#SetMenuInfo(l:word, l:info, l:menu)
+    endfor
+    " echom result
     if s:force_complete
       call easycomplete#util#call(function("s:UpdateRendering"), [result])
     else
@@ -392,6 +408,11 @@ function! s:NormalizeCompleteResult(data)
     let l:word["sort_number"] = matchstr(percent_str, "\\d\\+","g")
     let l:word['abbr'] = l:word['word']
     let l:word['word'] = tn_prefix . l:word['word']
+    let complete_kind = easycomplete#util#get(l:result, 'completion_metadata', 'completion_kind')
+    let complete_origin = easycomplete#util#get(l:result, 'completion_metadata', 'origin')
+    let l:word['info'] = ["tabnine completion:",
+          \ "----",
+          \ "Type: " . complete_kind . " Percent: " . percent_str ]
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})

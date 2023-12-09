@@ -56,6 +56,8 @@ function! easycomplete#popup#MenuPopupChanged(info)
   let s:item = has_key(v:event, 'completed_item') ?
         \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
 
+  " echom ">>>"
+  " echom a:info
   call easycomplete#popup#DoPopup(a:info)
   let s:info = a:info
 endfunction

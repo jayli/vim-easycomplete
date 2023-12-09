@@ -998,6 +998,8 @@ function! easycomplete#ShowCompleteInfoByItem(item)
     if type(info) == type("")
       let info = [info]
     endif
+    " echom 444
+    " echom info
     " hack from documentation.vim
     if exists('b:easycomplete_documentation_popup') && b:easycomplete_documentation_popup > 0
       call timer_stop(b:easycomplete_documentation_popup)
