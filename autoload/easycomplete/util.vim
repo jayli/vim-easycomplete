@@ -203,9 +203,14 @@ endfunction " }}}
 
 " GetInfoByCompleteItem {{{
 function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
+  let t_plugin_name = s:GetPluginNameFromUserData(a:item)
+  if t_plugin_name == "tn"
+    let l:info = s:GetTabNineItemInfo(a:item)
+    return l:info
+  endif
+
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
   let t_name = s:TrimWavyLine(t_name)
-  let t_plugin_name = s:GetPluginNameFromUserData(a:item)
   let t_sha = easycomplete#util#GetSha256(a:item)
   let info = ""
   for item in a:all_menu
@@ -229,6 +234,15 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     let info = info[0:50] + ["..."]
   endif
   return info
+endfunction
+
+function! s:GetTabNineItemInfo(item)
+  " 这里的 info 是一个字符串，不是数组
+  let l:info = get(a:item, "info", "")
+  if empty(l:info)
+    return []
+  endif
+  return split(l:info, "\n")
 endfunction
 
 function! s:TrimWavyLine(str)

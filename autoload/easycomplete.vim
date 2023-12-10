@@ -998,9 +998,6 @@ function! easycomplete#ShowCompleteInfoByItem(item)
     if type(info) == type("")
       let info = [info]
     endif
-    " echom 444
-    " echom info
-    " hack from documentation.vim
     if exists('b:easycomplete_documentation_popup') && b:easycomplete_documentation_popup > 0
       call timer_stop(b:easycomplete_documentation_popup)
     endif
@@ -1170,7 +1167,8 @@ function! s:HandleLspSnipPosition(lsp_item)
   if empty(start)
     return
   endif
-  call s:CursorExpandableSnipPosition(s:get(start, "line"), s:get(start, "character"), s:get(a:lsp_item, "textEdit", "newText"))
+  call s:CursorExpandableSnipPosition(s:get(start, "line"),
+        \ s:get(start, "character"), s:get(a:lsp_item, "textEdit", "newText"))
 endfunction
 
 function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)

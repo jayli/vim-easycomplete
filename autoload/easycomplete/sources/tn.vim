@@ -300,11 +300,7 @@ function! s:CompleteHandler(res)
             \   'sha256': easycomplete#util#Sha256(l:word)
             \ }))
       let item["user_data"] = l:new_user_data
-      " TODO Here jayli，这里set menu
-      " 后好像没有效果，不知道为什么，需要跟踪一下l:info存到哪里去了
-      call easycomplete#SetMenuInfo(l:word, l:info, l:menu)
     endfor
-    " echom result
     if s:force_complete
       call easycomplete#util#call(function("s:UpdateRendering"), [result])
     else
@@ -313,7 +309,10 @@ function! s:CompleteHandler(res)
         call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
       else
         " Second Complete
-        if !easycomplete#CompleteCursored()
+        if !easycomplete#CompleteCursored() && &completeopt =~ "noselect"
+          call easycomplete#util#call(function("s:UpdateRendering"), [result])
+        endif
+        if easycomplete#CompleteCursored() && !(&completeopt =~ "noselect")
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
         endif
         " if s:tn_render_timer > 0
@@ -410,9 +409,9 @@ function! s:NormalizeCompleteResult(data)
     let l:word['word'] = tn_prefix . l:word['word']
     let complete_kind = easycomplete#util#get(l:result, 'completion_metadata', 'completion_kind')
     let complete_origin = easycomplete#util#get(l:result, 'completion_metadata', 'origin')
-    let l:word['info'] = ["tabnine completion:",
+    let l:word['info'] = join(["tabnine completion:",
           \ "----",
-          \ "Type: " . complete_kind . " Percent: " . percent_str ]
+          \ "Type: " . complete_kind . " Percent: " . percent_str ], "\n")
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})
