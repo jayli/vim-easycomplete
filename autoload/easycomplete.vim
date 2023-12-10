@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -322,6 +322,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
+  call s:console('complete done')
   call easycomplete#popup#CompleteDone()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
@@ -980,6 +981,14 @@ function! easycomplete#CompleteChanged()
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
+" TODO here jayli complete show 事件需要处理
+function! easycomplete#CompleteShow()
+  if !(&completeopt =~ "noselect")
+    " let item = deepcopy(v:event.completed_item)
+    " call easycomplete#ShowCompleteInfoByItem(item)
+  endif
+endfunction
+
 function! s:CloseCompleteInfo()
   if g:env_is_nvim
     call easycomplete#popup#MenuPopupChanged([])
@@ -1464,7 +1473,14 @@ function! s:complete(start, context) abort
     if g:easycomplete_colorful
       noa silent! call easycomplete#colorful#complete(a:start, a:content)
     else
+      let should_fire_pum_show = v:false
+      if !pumvisible() && !empty(a:context)
+        let should_fire_pum_show = v:true
+      endif
       noa silent! call complete(a:start, a:context)
+      if should_fire_pum_show
+        doautocmd <nomodeline> User easycomplete_pum_show
+      endif
     endif
   endif
   noa silent! call easycomplete#popup#overlay()
