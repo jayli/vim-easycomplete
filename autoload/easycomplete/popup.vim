@@ -51,14 +51,18 @@ let s:buf = {
       \ }
 
 function! easycomplete#popup#MenuPopupChanged(info)
-  if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
-  let s:event = empty(v:event) ? copy(g:easycomplete_completechanged_event) : copy(v:event)
-  let s:item = has_key(v:event, 'completed_item') ?
-        \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
+  if empty(v:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
+    " 如果默认选中第一项
+    let s:item = easycomplete#GetCursordItem()
+    call easycomplete#popup#DoPopup(a:info, 1)
+  else
+    if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
+    let s:event = empty(v:event) ? copy(g:easycomplete_completechanged_event) : copy(v:event)
+    let s:item = has_key(v:event, 'completed_item') ?
+          \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
 
-  " echom ">>>"
-  " echom a:info
-  call easycomplete#popup#DoPopup(a:info)
+    call easycomplete#popup#DoPopup(a:info, g:easycomplete_popup_delay)
+  endif
   let s:info = a:info
 endfunction
 
@@ -221,9 +225,9 @@ function! s:IsOverlay()
   return overlay
 endfunction
 
-function! easycomplete#popup#DoPopup(info)
+function! easycomplete#popup#DoPopup(info, delay)
   call s:StopVisualAsyncRun()
-  call s:StartPopupAsyncRun("s:popup", [a:info], 170)
+  call s:StartPopupAsyncRun("s:popup", [a:info], a:delay)
 endfunction
 
 " s:popup 代替 popup_info 方法，只给 completion 使用
@@ -241,10 +245,15 @@ function! s:popup(info)
     endif
     return
   endif
-  if s:is_nvim && g:easycomplete_popup_win["popup"] && s:event == s:last_event
-    return
+  if easycomplete#FirstSelectedWithOptDefaultSelected()
+    " do nothing
+    call easycomplete#popup#close("popup")
+  else
+    if s:is_nvim && g:easycomplete_popup_win["popup"] && s:event == s:last_event
+      return
+    endif
+    let s:last_event = s:event
   endif
-  let s:last_event = s:event
 
   let info = type(a:info) == type("") ? [a:info] : a:info
   let info = easycomplete#util#ModifyInfoByMaxwidth(info, g:easycomplete_popup_width)
@@ -268,12 +277,13 @@ function! s:popup(info)
         \ 'style':'minimal',
         \ 'filetype': &filetype
         \ }
-  if get(s:event, 'scrollbar')
-    let right_avail_col  = s:event.col + s:event.width + 1
+  let pum_pos = pum_getpos()
+  if get(pum_pos, 'scrollbar')
+    let right_avail_col  = pum_pos.col + pum_pos.width + 1
   else
-    let right_avail_col  = s:event.col + s:event.width
+    let right_avail_col  = pum_pos.col + pum_pos.width
   endif
-  let left_avail_col = s:event.col - 2
+  let left_avail_col = pum_pos.col - 2
 
   let right_avail = &co - right_avail_col
   let left_avail = left_avail_col + 1
@@ -305,9 +315,9 @@ function! s:popup(info)
 
   let l:screen_line = winline() + (win_screenpos(win_getid())[0] - 1)
   let screen_enc = (win_screenpos(win_getid())[0] - 1)
-  if l:screen_line <= s:event.row
+  if l:screen_line <= pum_pos.row
     " 菜单向下展开
-    let opt.row = s:event.row
+    let opt.row = pum_pos.row
     let opt.row = winline() + screen_enc
   else
     " 菜单向上展开
@@ -466,7 +476,7 @@ endfunction
 
 function! easycomplete#popup#reopen()
   call easycomplete#popup#close("popup")
-  call easycomplete#popup#DoPopup(s:info)
+  call easycomplete#popup#DoPopup(s:info, g:easycomplete_popup_delay)
 endfunction
 
 function! easycomplete#popup#visiable()

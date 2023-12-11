@@ -39,6 +39,7 @@ let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
 let g:easycomplete_diagnostics_render_delay = 200
+let g:easycomplete_popup_delay = 170
 " lsp server 是独占还是共享
 let g:easycomplete_shared_lsp_server = 1
 " 用来判断是否是 c-v 粘贴
@@ -303,6 +304,12 @@ function! s:SecondCompleteRendering(start_pos, result)
     call s:StopAsyncRun()
     call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
   endif
+  if !(&completeopt =~ "noselect")
+    call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
+    if easycomplete#util#GetCurrentPluginName() == "ts"
+      call timer_start(2, { -> easycomplete#sources#ts#CompleteChanged() })
+    endif
+  endif
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
@@ -322,7 +329,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
-  call s:console('complete done')
   call easycomplete#popup#CompleteDone()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
@@ -359,10 +365,39 @@ function! easycomplete#CompleteCursored()
   return complete_info()['selected'] == -1 ? v:false : v:true
 endfunction
 
+function! easycomplete#GetCursordItem()
+  if easycomplete#CompleteCursored()
+    let l:item = complete_info()["items"][complete_info()['selected']]
+    return l:item
+  endif
+  return {}
+endfunction
+
+function! easycomplete#FirstSelectedWithOptDefaultSelected()
+  if &completeopt =~ "noselect"
+    return v:false
+  endif
+  if !pumvisible()
+    return v:false
+  endif
+  if !easycomplete#CompleteCursored()
+    return v:false
+  endif
+  if complete_info()['selected'] == 0
+    return v:true
+  endif
+  return v:false
+endfunction
+
 function! easycomplete#SetCompletedItem(item)
   let g:easycomplete_completed_item = a:item
 endfunction
 
+" easycomplete#GetCompletedItem 和 easycomplete#GetCursordItem 的不同：
+"  GetCompletedItem: completeopt 包含 noselect
+"  时使用，选中动作可能不会补全原单词
+"  GetCursordItem:   completeopt 不包含 noselect
+"  时使用，每次选中动作会补全原单词
 function! easycomplete#GetCompletedItem()
   return g:easycomplete_completed_item
 endfunction
@@ -968,7 +1003,12 @@ function! s:CompleteMatchAction()
 endfunction
 
 function! easycomplete#CompleteChanged()
-  let item = deepcopy(v:event.completed_item)
+  " 在 SecondMatchAction 时，这里获得的是changed之前的item
+  " 因此这里起作用的逻辑主要是菜单不变的情况下，只移动cursor，CompleteShow
+  " 是不会触发 showinfo 的动作的
+  " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
+  " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
+  let item = deepcopy(easycomplete#GetCursordItem())
   call easycomplete#SetCompletedItem(item)
   if empty(item)
     call s:CloseCompleteInfo()
@@ -983,10 +1023,11 @@ endfunction
 
 " TODO here jayli complete show 事件需要处理
 function! easycomplete#CompleteShow()
-  if !(&completeopt =~ "noselect")
-    call s:console('complete show')
-    call s:console(easycomplete#CompleteCursored())
+  if easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
+    if easycomplete#util#GetCurrentPluginName() == "ts"
+      call timer_start(2, { -> easycomplete#sources#ts#CompleteChanged() })
+    endif
   endif
 endfunction
 
@@ -1030,7 +1071,6 @@ function! s:ShowCompleteInfoWithoutTimer()
     if type(info) == type("")
       let info = [info]
     endif
-    call s:console(info)
     " call s:StopAsyncRun()
     call s:ShowCompleteInfo(info)
     " call s:AsyncRun(function('s:ShowCompleteInfo'), [info], 100)

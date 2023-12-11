@@ -400,8 +400,13 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
   endfor
 
   if easycomplete#CompleteCursored()
-    let l:item = easycomplete#GetCompletedItem()
+    if easycomplete#FirstSelectedWithOptDefaultSelected()
+      let l:item = easycomplete#GetCursordItem()
+    else
+      let l:item = easycomplete#GetCompletedItem()
+    endif
     if !empty(l:item)
+      call s:console('ts get details done')
       call easycomplete#ShowCompleteInfoByItem(l:item)
     endif
   endif
@@ -417,7 +422,11 @@ function! easycomplete#sources#ts#CompleteChanged()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
-  let l:item = v:event.completed_item
+  call s:console('ts changed')
+  " if !(&completeopt =~ "noselect")
+  "   call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
+  " endif
+  let l:item = easycomplete#GetCursordItem()
   if !easycomplete#CompleteCursored() | return | endif
   if empty(s:request_queue_ctx)       | return | endif
   if s:EntryDetailsIsFetching()       | return | endif
@@ -429,13 +438,18 @@ function! easycomplete#sources#ts#CompleteChanged()
         \ )
     return
   endif
-  " 异步执行，避免快速移动光标的闪烁
-  call easycomplete#util#StopAsyncRun()
-  call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'),
-        \ [s:request_queue_ctx, [l:item]],
-        \ 50)
-  " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构
-  let g:easycomplete_completechanged_event = deepcopy(v:event)
+  if empty(v:event)
+    call s:console('....', s:request_queue_ctx, l:item)
+    call s:DoFetchEntryDetails(s:request_queue_ctx, [l:item])
+  else
+    " 异步执行，避免快速移动光标的闪烁
+    call easycomplete#util#StopAsyncRun()
+    call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'),
+          \ [s:request_queue_ctx, [l:item]],
+          \ 50)
+    " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构
+    let g:easycomplete_completechanged_event = deepcopy(v:event)
+  endif
 endfunction
 
 function! easycomplete#sources#ts#reference()
