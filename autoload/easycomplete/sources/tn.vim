@@ -409,9 +409,7 @@ function! s:NormalizeCompleteResult(data)
     let l:word['word'] = tn_prefix . l:word['word']
     let complete_kind = easycomplete#util#get(l:result, 'completion_metadata', 'completion_kind')
     let complete_origin = easycomplete#util#get(l:result, 'completion_metadata', 'origin')
-    let l:word['info'] = join(["tabnine completion:",
-          \ "----",
-          \ "Type: " . complete_kind . " Percent: " . percent_str ], "\n")
+    let l:word['info'] = join(["TabNine Snippet:", l:word['abbr']], "\n")
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})

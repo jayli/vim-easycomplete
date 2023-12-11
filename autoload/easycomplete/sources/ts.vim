@@ -406,7 +406,6 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
       let l:item = easycomplete#GetCompletedItem()
     endif
     if !empty(l:item)
-      call s:console('ts get details done')
       call easycomplete#ShowCompleteInfoByItem(l:item)
     endif
   endif
@@ -422,10 +421,6 @@ function! easycomplete#sources#ts#CompleteChanged()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
-  call s:console('ts changed')
-  " if !(&completeopt =~ "noselect")
-  "   call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
-  " endif
   let l:item = easycomplete#GetCursordItem()
   if !easycomplete#CompleteCursored() | return | endif
   if empty(s:request_queue_ctx)       | return | endif
@@ -439,7 +434,6 @@ function! easycomplete#sources#ts#CompleteChanged()
     return
   endif
   if empty(v:event)
-    call s:console('....', s:request_queue_ctx, l:item)
     call s:DoFetchEntryDetails(s:request_queue_ctx, [l:item])
   else
     " 异步执行，避免快速移动光标的闪烁
