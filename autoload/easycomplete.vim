@@ -1021,7 +1021,6 @@ function! easycomplete#CompleteChanged()
   let g:easycomplete_completechanged_event = deepcopy(v:event)
 endfunction
 
-" TODO here jayli complete show 事件需要处理
 function! easycomplete#CompleteShow()
   if easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
@@ -1244,7 +1243,6 @@ function! s:HandleLspSnipPosition(lsp_item)
 endfunction
 
 function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)
-  " TODO here jayli
   let lines = split(a:insertText, "\n")
   let lines_no = len(lines)
   let backline = lines_no - a:start_line
