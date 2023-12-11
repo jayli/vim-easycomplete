@@ -984,8 +984,9 @@ endfunction
 " TODO here jayli complete show 事件需要处理
 function! easycomplete#CompleteShow()
   if !(&completeopt =~ "noselect")
-    " let item = deepcopy(v:event.completed_item)
-    " call easycomplete#ShowCompleteInfoByItem(item)
+    call s:console('complete show')
+    call s:console(easycomplete#CompleteCursored())
+    call s:ShowCompleteInfoWithoutTimer()
   endif
 endfunction
 
@@ -1011,6 +1012,28 @@ function! easycomplete#ShowCompleteInfoByItem(item)
       call timer_stop(b:easycomplete_documentation_popup)
     endif
     call s:ShowCompleteInfo(info)
+  endif
+endfunction
+
+function! s:ShowCompleteInfoWithoutTimer()
+  if !easycomplete#CompleteCursored()
+    call s:CloseCompleteInfo()
+    return
+  endif
+  let item = complete_info()["items"][complete_info()['selected']]
+  let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
+  let async = empty(info) ? v:true : v:false
+  if easycomplete#util#ItemIsFromLS(item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [item], 1)
+  else
+    if type(info) == type("")
+      let info = [info]
+    endif
+    call s:console(info)
+    " call s:StopAsyncRun()
+    call s:ShowCompleteInfo(info)
+    " call s:AsyncRun(function('s:ShowCompleteInfo'), [info], 100)
   endif
 endfunction
 
