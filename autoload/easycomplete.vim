@@ -261,6 +261,7 @@ function! s:CompleteTypingMatch(...)
   if len(filtered_menu) == 0
     if has('nvim')
       call s:AsyncRun(function('s:CloseCompletionMenu'),[], 50)
+      call s:CloseCompleteInfo()
     else
       call s:CloseCompletionMenu()
     endif
@@ -674,6 +675,9 @@ function! easycomplete#typing()
   if empty(g:easycomplete_insert_char)
     return ""
   endif
+
+  " TODO here，为了防止tab补全 tabnine后自动触发complete动作，这里需要更多测试兼容性
+  if s:zizzing() | return "" | endif
 
   if !easycomplete#FireCondition()
     " tabnine
@@ -1787,11 +1791,7 @@ function! s:flush()
   let g:easycomplete_completedone_insert_mode = mode()
   if easycomplete#util#InsertMode() && complete_check()
     call s:StopAsyncRun()
-    if g:easycomplete_colorful
-      call s:AsyncRun(function("easycomplete#colorful#complete"),[col("."),[]], 50)
-    else
-      call s:AsyncRun(function("complete"),[col("."),[]], 50)
-    endif
+    call s:AsyncRun(function("complete"),[col("."),[]], 50)
   endif
   let s:easycomplete_start_pos = 0
 endfunction
@@ -1860,6 +1860,10 @@ function! s:zizz()
   endif
   let s:zizz_timmer = timer_start(delay, function('s:ResetBacking'))
   return "\<BS>"
+endfunction
+
+function! easycomplete#zizz()
+  call s:zizz()
 endfunction
 
 function! s:StopZizz()

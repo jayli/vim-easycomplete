@@ -61,7 +61,10 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
           \ "let &filetype='" . original_filetype . "'",
           \ ]
   endif
-  call easycomplete#util#execute(a:winid, exec_cmd)
+  try
+    call easycomplete#util#execute(a:winid, exec_cmd)
+  catch
+  endtry
 endfunction " }}}
 
 " Get back ground color form a GroupName {{{

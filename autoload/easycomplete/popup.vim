@@ -438,33 +438,37 @@ function! s:NVimShow(opt, windowtype, float_type)
   else
     let hl = 'Pmenu'
   endif
-  if easycomplete#util#ItemIsFromLS(g:easycomplete_completed_item)
-    let filetype = &filetype == "lua" ? "help" : &filetype
-  else
-    let filetype = &filetype
-  endif
+  let l:filetype = &filetype == "lua" ? "help" : &filetype
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
   unlet winargs[2].filetype
-  noa let winid = nvim_open_win(s:buf[a:windowtype], 0, winargs[2])
+  silent let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
+  call nvim_set_option_value('winhl', hl_str, {'win': winid})
   let g:easycomplete_popup_win[a:windowtype] = winid
-  if a:windowtype == 'popup'
-    call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "set nowrap")
+  if exists('*nvim_win_set_config')
+    call nvim_win_set_config(g:easycomplete_popup_win[a:windowtype], {
+          \ 'relativenumber': v:false,
+          \ 'cursorline': v:false,
+          \ 'cursorcolumn': v:false,
+          \ 'colorcolumn': '',
+          \ })
+  else
+    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
+    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
+    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
+    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
   endif
-  call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'on')
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'winhl', hl_str)
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'number', v:false)
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
-  call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'foldenable', v:false)
+  call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'off')
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
+    call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)
+    if a:windowtype == 'popup'
+      call setwinvar(g:easycomplete_popup_win[a:windowtype], '&wrap', 0)
+    endif
   endif
   " Popup and Signature
   if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
-    call setbufvar(winbufnr(winid), '&filetype', filetype)
+    call setbufvar(winbufnr(winid), '&filetype', l:filetype)
   else
     " Lint
     call setbufvar(winbufnr(winid), '&filetype', 'txt')
@@ -514,7 +518,12 @@ function! easycomplete#popup#close(...)
       let id = win_id2win(g:easycomplete_popup_win[windowtype])
       if id > 0
         let winid = g:easycomplete_popup_win[windowtype]
-        call timer_start(50, { -> s:NvimCloseFloatWithPum(winid) })
+        if !(&completeopt =~ "noselect")
+          let delay = 0
+        else
+          let delay = 30
+        endif
+          call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []

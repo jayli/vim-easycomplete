@@ -142,6 +142,7 @@ function! s:RemainInsertMode()
   else
     call execute("normal! A")
   endif
+  call easycomplete#zizz()
 endfunction
 
 function! s:GetSnippets(res_array)

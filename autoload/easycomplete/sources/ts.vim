@@ -425,6 +425,9 @@ function! easycomplete#sources#ts#CompleteChanged()
   if !easycomplete#CompleteCursored() | return | endif
   if empty(s:request_queue_ctx)       | return | endif
   if s:EntryDetailsIsFetching()       | return | endif
+  if easycomplete#util#GetPluginNameFromUserData(l:item) != "ts"
+    return
+  endif
   if !empty(
         \   easycomplete#util#GetInfoByCompleteItem(
         \      l:item,
