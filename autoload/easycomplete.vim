@@ -40,6 +40,7 @@ let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
 let g:easycomplete_completechanged_event = {}
 let g:easycomplete_diagnostics_render_delay = 200
 let g:easycomplete_popup_delay = 170
+let g:easycomplete_showmode = &showmode
 " lsp server 是独占还是共享
 let g:easycomplete_shared_lsp_server = 1
 " 用来判断是否是 c-v 粘贴
@@ -1031,6 +1032,9 @@ function! easycomplete#CompleteShow()
       call timer_start(2, { -> easycomplete#sources#ts#CompleteChanged() })
     endif
   endif
+  if g:easycomplete_showmode
+    setlocal noshowmode
+  endif
 endfunction
 
 function! s:CloseCompleteInfo()
@@ -1796,6 +1800,9 @@ function! s:flush()
   if easycomplete#util#InsertMode() && complete_check()
     call s:StopAsyncRun()
     call s:AsyncRun(function("complete"),[col("."),[]], 50)
+  endif
+  if g:easycomplete_showmode
+    set showmode
   endif
   let s:easycomplete_start_pos = 0
 endfunction
