@@ -52,8 +52,10 @@ let s:buf = {
 
 function! easycomplete#popup#MenuPopupChanged(info)
   if empty(v:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
-    " 如果默认选中第一项
+    " 如果默认选中第一项的逻辑
     let curr_item = easycomplete#GetCursordItem()
+    " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
+    " 这里应该避免多次相同事件触发，这个条件写的不work
     " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
     "   return
     " endif
@@ -466,7 +468,9 @@ function! s:NVimShow(opt, windowtype, float_type)
   unlet winargs[2].filetype
   silent noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
-  " call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  if has('nvim-0.10.0')
+    call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  endif
   if exists('*nvim_win_set_config')
     " call nvim_win_set_config(g:easycomplete_popup_win[a:windowtype], {})
   else

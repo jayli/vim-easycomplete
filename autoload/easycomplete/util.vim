@@ -996,7 +996,8 @@ function! easycomplete#util#SnipMap(key, val)
   return a:val
 endfunction " }}}
 
-" TODO this function need to be updated
+" TODO by jayli 2023-12-12
+" This function need to be updated
 " matchfuzzy is not aviable in nvim(<= 0.5.0)
 " This Custom empletation is lack of sorting by matching score
 " Custom MatchFuzzy {{{

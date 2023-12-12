@@ -289,8 +289,6 @@ function! s:CompleteHandler(res)
     call s:flush()
   endif
   try
-    " echom result
-    " echom '---------'
     for item in result
       let l:word = get(item, "word")
       let l:info = get(item, "info")

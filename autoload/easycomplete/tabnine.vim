@@ -1,5 +1,6 @@
 " ./sources/tn.vim 负责pum匹配，这里只负责做代码联想提示
 " tabnine suggestion 和 tabnine complete 共享一个 job
+" tabnine suggestion 只支持 nvim
 
 let s:tabnine_toolkit = easycomplete#util#HasLua() ? v:lua.require("easycomplete.tabnine") : v:null
 " 临时存放 suggest 或者 complete

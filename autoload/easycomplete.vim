@@ -305,12 +305,6 @@ function! s:SecondCompleteRendering(start_pos, result)
     call s:StopAsyncRun()
     call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
   endif
-  if !(&completeopt =~ "noselect")
-    call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
-    if easycomplete#util#GetCurrentPluginName() == "ts"
-      call timer_start(1, { -> easycomplete#sources#ts#CompleteChanged() })
-    endif
-  endif
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
@@ -676,7 +670,7 @@ function! easycomplete#typing()
     return ""
   endif
 
-  " TODO here，为了防止tab补全 tabnine后自动触发complete动作，这里需要更多测试兼容性
+  " TODO 为了防止tab补全 tabnine后自动触发complete动作，这里需要更多测试兼容性
   if s:zizzing() | return "" | endif
 
   if !easycomplete#FireCondition()
@@ -1224,7 +1218,7 @@ function! easycomplete#TypeEnterWithPUM()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
         call timer_start(30, { -> call(function("UltiSnips#Anon"), [insert_text, word])})
-        " TODO here jayli 把光标 cursor 到正确的位置
+        " TODO 把光标 cursor 到正确的位置
         " call timer_start(170, { -> s:HandleLspSnipPosition(oitems)})
       else
         " do nothing
@@ -1536,17 +1530,15 @@ endfunction
 
 function! s:complete(start, context) abort
   if mode() =~# 'i' && &paste != 1
-    if g:easycomplete_colorful
-      noa silent! call easycomplete#colorful#complete(a:start, a:content)
+    let should_fire_pum_show = v:false
+    if !pumvisible() && !empty(a:context)
+      let should_fire_pum_show = v:true
+    endif
+    noa silent! call complete(a:start, a:context)
+    if should_fire_pum_show
+      doautocmd <nomodeline> User easycomplete_pum_show
     else
-      let should_fire_pum_show = v:false
-      if !pumvisible() && !empty(a:context)
-        let should_fire_pum_show = v:true
-      endif
-      noa silent! call complete(a:start, a:context)
-      if should_fire_pum_show
-        doautocmd <nomodeline> User easycomplete_pum_show
-      endif
+      call s:ShowCompleteInfoInSecondRendering()
     endif
   endif
   noa silent! call easycomplete#popup#overlay()
@@ -1566,6 +1558,18 @@ function! easycomplete#_complete(start, items)
     silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     if should_fire_pum_show
       doautocmd <nomodeline> User easycomplete_pum_show
+    else
+      call s:ShowCompleteInfoInSecondRendering()
+    endif
+  endif
+endfunction
+
+" 这里只处理默认无 noselect 的情况
+function! s:ShowCompleteInfoInSecondRendering()
+  if !(&completeopt =~ "noselect")
+    call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
+    if easycomplete#util#GetCurrentPluginName() == "ts"
+      call timer_start(1, { -> easycomplete#sources#ts#CompleteChanged() })
     endif
   endif
 endfunction
@@ -2107,7 +2111,6 @@ function! easycomplete#TextChangedP()
     call s:StopAsyncRun()
     " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
     " 不能杜绝，但能大大缓解
-
     call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
     let b:old_changedtick = b:changedtick
   endif
