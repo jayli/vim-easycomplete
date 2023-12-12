@@ -53,7 +53,11 @@ let s:buf = {
 function! easycomplete#popup#MenuPopupChanged(info)
   if empty(v:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
     " 如果默认选中第一项
-    let s:item = easycomplete#GetCursordItem()
+    let curr_item = easycomplete#GetCursordItem()
+    " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
+    "   return
+    " endif
+    let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   else
     if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
@@ -64,6 +68,30 @@ function! easycomplete#popup#MenuPopupChanged(info)
     call easycomplete#popup#DoPopup(a:info, g:easycomplete_popup_delay)
   endif
   let s:info = a:info
+endfunction
+
+function! s:GetMenuInfoWinid()
+  return g:easycomplete_popup_win["popup"]
+endfunction
+
+function! s:SamePositionAsLastTime()
+  let pum_pos = pum_getpos()
+  if !exists("s:easycomplete_pum_pos")
+    let s:easycomplete_pum_pos = deepcopy(pum_pos)
+    return v:false
+  endif
+  " if !pumvisible()
+  "   unlet s:easycomplete_pum_pos
+  "   return v:false
+  " endif
+  if pum_pos.height == s:easycomplete_pum_pos.height &&
+        \  pum_pos.width == s:easycomplete_pum_pos.width &&
+        \  pum_pos.col == s:easycomplete_pum_pos.col &&
+        \  pum_pos.row == s:easycomplete_pum_pos.row
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 function! easycomplete#popup#CompleteDone()
@@ -438,27 +466,19 @@ function! s:NVimShow(opt, windowtype, float_type)
   else
     let hl = 'Pmenu'
   endif
-  " if !empty(get(g:easycomplete_popup_win, a:windowtype, ""))
-  "   let a:opt.win = get(g:easycomplete_popup_win, a:windowtype, "")
-  " endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
   unlet winargs[2].filetype
   silent let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
-  call nvim_set_option_value('winhl', hl_str, {'win': winid})
   let g:easycomplete_popup_win[a:windowtype] = winid
   if exists('*nvim_win_set_config')
     call nvim_win_set_config(g:easycomplete_popup_win[a:windowtype], {
-          \ 'cursorline': v:false,
-          \ 'colorcolumn': '',
           \ })
   else
     call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
     call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
-    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
   endif
-  call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'off')
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)

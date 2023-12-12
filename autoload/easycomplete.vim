@@ -296,10 +296,9 @@ function! s:SecondCompleteRendering(start_pos, result)
   if g:env_is_iterm
     call s:StopAsyncRun()
     if len(g:easycomplete_stunt_menuitems) < 40
-      call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+      silent noa call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
     else
-      call s:StopAsyncRun()
-      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 0)
+      silent noa call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 0)
     endif
   else
     call s:StopAsyncRun()
@@ -1074,9 +1073,7 @@ function! s:ShowCompleteInfoWithoutTimer()
     if type(info) == type("")
       let info = [info]
     endif
-    " call s:StopAsyncRun()
     call s:ShowCompleteInfo(info)
-    " call s:AsyncRun(function('s:ShowCompleteInfo'), [info], 100)
   endif
 endfunction
 
@@ -1558,7 +1555,14 @@ function! easycomplete#_complete(start, items)
         \ 'candidates': a:items,
         \ }
   if mode() =~# 'i' && &paste != 1
+    let should_fire_pum_show = v:false
+    if !pumvisible() && !empty(a:item)
+      let should_fire_pum_show = v:true
+    endif
     silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
+    if should_fire_pum_show
+      doautocmd <nomodeline> User easycomplete_pum_show
+    endif
   endif
 endfunction
 

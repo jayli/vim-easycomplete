@@ -92,19 +92,23 @@ function! s:HasItem(list,item)
 endfunction
 
 function! s:SameItem(item1,item2)
-  let item1 = a:item1
-  let item2 = a:item2
-  if get(item1, "word") ==# get(item2, "word")
-        \ && get(item1, "menu") ==# get(item2, "menu")
-        \ && get(item1, "kind") ==# get(item2, "kind")
-        \ && get(item1, "abbr") ==# get(item2, "abbr")
-        \ && get(item1, "info") ==# get(item2, "info")
+  let l:item1 = a:item1
+  let l:item2 = a:item2
+  if get(l:item1, "word") ==# get(l:item2, "word")
+        \ && get(l:item1, "menu") ==# get(l:item2, "menu")
+        \ && get(l:item1, "kind") ==# get(l:item2, "kind")
+        \ && get(l:item1, "abbr") ==# get(l:item2, "abbr")
+        \ && get(l:item1, "info") ==# get(l:item2, "info")
     return v:true
   else
     return v:false
   endif
 endfunction
 " }}}
+
+function! easycomplete#util#SameItem(item1, item2) " {{{
+  return s:SameItem(a:item1, a:item2)
+endfunction " }}}
 
 " goto location {{{
 function! easycomplete#util#location(path, line, col, ...) abort
