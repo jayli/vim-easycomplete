@@ -486,6 +486,10 @@ function! s:NVimShow(opt, windowtype, float_type)
       call setwinvar(g:easycomplete_popup_win[a:windowtype], '&wrap', 0)
     endif
   endif
+  try
+    call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "TSBufDisable highlight")
+  catch
+  endtry
   " Popup and Signature
   if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
     call setbufvar(winbufnr(winid), '&filetype', l:filetype)
@@ -539,7 +543,7 @@ function! easycomplete#popup#close(...)
       if id > 0
         let winid = g:easycomplete_popup_win[windowtype]
         if !(&completeopt =~ "noselect")
-          let delay = 0
+          let delay = 20
         else
           let delay = 30
         endif
@@ -553,13 +557,13 @@ endfunction
 
 function! s:NvimCloseFloatWithPum(winid)
   if nvim_win_is_valid(a:winid)
-    call nvim_win_hide(a:winid)
+    call nvim_win_close(a:winid, 1)
   endif
   if pumvisible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)
-        call nvim_win_hide(winid)
+        call nvim_win_close(winid, 1)
       endif
     endif
   endif
