@@ -297,9 +297,9 @@ function! s:SecondCompleteRendering(start_pos, result)
   if g:env_is_iterm
     call s:StopAsyncRun()
     if len(g:easycomplete_stunt_menuitems) < 40
-      silent noa call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+      call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 5)
     else
-      silent noa call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 0)
+      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 5)
     endif
   else
     call s:StopAsyncRun()
