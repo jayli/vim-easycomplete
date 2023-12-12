@@ -56,6 +56,9 @@ function! easycomplete#tabnine#SuggestFlagClear()
 endfunction
 
 function! easycomplete#tabnine#SuggestFlagCheck()
+  if !exists("b:tabnine_typing_type")
+    return v:false
+  endif
   if b:tabnine_typing_type == "suggest"
     call easycomplete#tabnine#SuggestFlagClear()
     return v:true
