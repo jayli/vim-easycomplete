@@ -1181,6 +1181,9 @@ endfunction
 " <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   let l:item = easycomplete#GetCompletedItem()
+  if empty(l:item) && !(&completeopt =~ "noselect")
+    let l:item = easycomplete#GetCursordItem()
+  endif
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
   " 选中目录
