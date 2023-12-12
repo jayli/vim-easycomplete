@@ -438,6 +438,9 @@ function! s:NVimShow(opt, windowtype, float_type)
   else
     let hl = 'Pmenu'
   endif
+  " if !empty(get(g:easycomplete_popup_win, a:windowtype, ""))
+  "   let a:opt.win = get(g:easycomplete_popup_win, a:windowtype, "")
+  " endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   let hl_str = 'Normal:' . hl . ',NormalNC:' . hl
   let winargs = [s:buf[a:windowtype], 0, a:opt]
@@ -447,15 +450,12 @@ function! s:NVimShow(opt, windowtype, float_type)
   let g:easycomplete_popup_win[a:windowtype] = winid
   if exists('*nvim_win_set_config')
     call nvim_win_set_config(g:easycomplete_popup_win[a:windowtype], {
-          \ 'relativenumber': v:false,
           \ 'cursorline': v:false,
-          \ 'cursorcolumn': v:false,
           \ 'colorcolumn': '',
           \ })
   else
     call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
     call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
-    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorcolumn', v:false)
     call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'colorcolumn', '')
   endif
   call nvim_win_set_var(g:easycomplete_popup_win[a:windowtype], 'syntax', 'off')
@@ -533,13 +533,13 @@ endfunction
 
 function! s:NvimCloseFloatWithPum(winid)
   if nvim_win_is_valid(a:winid)
-    call nvim_win_close(a:winid, 1)
+    call nvim_win_hide(a:winid)
   endif
   if pumvisible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)
-        call nvim_win_close(winid, 1)
+        call nvim_win_hide(winid)
       endif
     endif
   endif

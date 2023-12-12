@@ -64,6 +64,7 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   try
     call easycomplete#util#execute(a:winid, exec_cmd)
   catch
+    echom v:exception
   endtry
 endfunction " }}}
 
