@@ -278,6 +278,8 @@ function! s:popup(info)
   if easycomplete#FirstSelectedWithOptDefaultSelected()
     " do nothing
     " call easycomplete#popup#close("popup")
+    let s:event = v:event
+    let s:last_event = v:event
   else
     if s:is_nvim && g:easycomplete_popup_win["popup"] && s:event == s:last_event
       return
