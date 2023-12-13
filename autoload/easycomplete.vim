@@ -384,6 +384,23 @@ function! easycomplete#FirstSelectedWithOptDefaultSelected()
   return v:false
 endfunction
 
+" 当completeopt无noselect，展开pum且已经开始选择item动作(当前Cursored的位置不是第一个)
+function! s:AntiFirstSelectedWithOptDefaultSelected()
+  if &completeopt =~ "noselect"
+    return v:false
+  endif
+  if !pumvisible()
+    return v:false
+  endif
+  if !easycomplete#CompleteCursored()
+    return v:false
+  endif
+  if complete_info()['selected'] > 0
+    return v:true
+  endif
+  return v:false
+endfunction
+
 function! easycomplete#SetCompletedItem(item)
   let g:easycomplete_completed_item = a:item
 endfunction
@@ -1479,6 +1496,9 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
     else
       if !pumvisible()
+        let should_stop_render = 1
+      endif
+      if s:AntiFirstSelectedWithOptDefaultSelected()
         let should_stop_render = 1
       endif
     endif
