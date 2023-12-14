@@ -310,7 +310,7 @@ function! s:CompleteHandler(res)
         if !easycomplete#CompleteCursored() && &completeopt =~ "noselect"
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
         endif
-        if easycomplete#CompleteCursored() && !(&completeopt =~ "noselect")
+        if !easycomplete#PumSelecting() && !(&completeopt =~ "noselect")
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
         endif
         " if s:tn_render_timer > 0
@@ -438,4 +438,8 @@ endfunction
 
 function! s:StopAsyncRun(...)
   return call('easycomplete#util#StopAsyncRun', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
 endfunction
