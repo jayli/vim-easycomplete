@@ -45,12 +45,13 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
                 \ "matchgroup=Conceal end=/\%(``\)\@!`/ containedin=TOP concealends"],"")
   let original_filetype = getwinvar(a:winid, "&filetype")
   if has("nvim")
+    let local_filetype = has("nvim-0.10.0-dev") ? "txt" : "help"
     let exec_cmd = [
           \ "hi helpCommand cterm=underline gui=underline ctermfg=White guifg=White",
           \ "silent! syntax clear NewCodeBlock",
           \ regin_cmd,
           \ "hi! link NewCodeBlock helpCommand",
-          \ "let &filetype='help'",
+          \ "let &filetype='" . local_filetype . "'",
           \ ]
   else
     let exec_cmd = [
