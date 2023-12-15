@@ -467,8 +467,12 @@ function! s:NVimShow(opt, windowtype, float_type)
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   " let hl_str = 'Normal:Pmenu,NormalNC:Pmenu'
   let winargs = [s:buf[a:windowtype], 0, a:opt]
-  unlet winargs[2].filetype
-  unlet winargs[2].highlight
+  if has_key(winargs[2], "filetype")
+    unlet winargs[2].filetype
+  endif
+  if has_key(winargs[2], "highlight")
+    unlet winargs[2].highlight
+  endif
   silent noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
   if has('nvim-0.10.0')
