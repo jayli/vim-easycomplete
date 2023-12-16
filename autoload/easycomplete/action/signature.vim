@@ -23,7 +23,7 @@ endfunction
 function! easycomplete#action#signature#handle()
   let typed = s:GetTyped()
   if easycomplete#IsBacking()
-    if typed =~ "\\w($" || (typed =~ "\\w(.*,$" && getline(".") =~ "(")
+    if easycomplete#action#signature#FireCondition()
       call s:do()
     else
       call s:close()
@@ -34,15 +34,16 @@ function! easycomplete#action#signature#handle()
     endif
     if typed =~ ")$"
       call s:close()
-    elseif typed =~ "\\w($" || (typed =~ "\\w(.*,$" && getline(".") =~ "(")
+    elseif easycomplete#action#signature#FireCondition()
       call s:do()
     endif
     " call s:close()
   endif
 endfunction
 
-function! s:ShouldClose()
-  let typed = s:GetTyped()
+function! easycomplete#action#signature#FireCondition()
+  let l:typed = s:GetTyped()
+  return l:typed =~ "\\w($" || (l:typed =~ "\\w(.*,$" && getline(".") =~ "(")
 endfunction
 
 function! s:GetTyped()
