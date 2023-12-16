@@ -23,18 +23,18 @@ endfunction
 function! easycomplete#action#signature#handle()
   let typed = s:GetTyped()
   if easycomplete#IsBacking()
-    if typed =~ "\\w($" || typed =~ "\\w(.*,$"
+    if typed =~ "\\w($" || (typed =~ "\\w(.*,$" && getline(".") =~ "(")
       call s:do()
     else
       call s:close()
     endif
   else
     if trim(getline(".")) == ""
-      call s:do()
+      call s:close()
     endif
     if typed =~ ")$"
       call s:close()
-    elseif typed =~ "\\w($" || typed =~ "\\w(.*,$"
+    elseif typed =~ "\\w($" || (typed =~ "\\w(.*,$" && getline(".") =~ "(")
       call s:do()
     endif
     " call s:close()
