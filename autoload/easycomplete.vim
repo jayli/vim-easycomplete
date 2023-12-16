@@ -1119,7 +1119,7 @@ endfunction
 
 function! easycomplete#CleverTab()
   if !easycomplete#ok('g:easycomplete_enable')
-    return
+    return "\<Tab>"
   endif
   if pumvisible()
     call s:zizz()
