@@ -29,6 +29,9 @@ function! easycomplete#action#signature#handle()
       call s:close()
     endif
   else
+    if trim(getline(".")) == ""
+      call s:do()
+    endif
     if typed =~ ")$"
       call s:close()
     elseif typed =~ "\\w($" || typed =~ "\\w(.*,$"
