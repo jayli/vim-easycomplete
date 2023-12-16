@@ -503,6 +503,9 @@ function! s:NVimShow(opt, windowtype, float_type)
     call setbufvar(winbufnr(winid), '&filetype', 'txt')
   endif
   if a:windowtype == "float" && a:float_type == "signature"
+    if has("nvim-0.9.0")
+      call setbufvar(winbufnr(winid), '&filetype', 'markdown')
+    endif
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
   endif
 endfunction
