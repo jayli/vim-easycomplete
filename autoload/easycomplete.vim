@@ -100,7 +100,6 @@ function! easycomplete#_enable()
   call s:ConstructorCalling()
   doautocmd <nomodeline> User easycomplete_after_constructor
   call s:SetupCompleteCache()
-  call easycomplete#ui#SetScheme()
   " lsp 服务初始化必须要放在按键绑定之后
   if !easycomplete#sources#deno#IsTSOrJSFiletype() || easycomplete#sources#deno#IsDenoProject()
     call easycomplete#lsp#enable()

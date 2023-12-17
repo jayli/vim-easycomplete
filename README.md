@@ -136,7 +136,6 @@ Global configurations
 | `g:easycomplete_diagnostics_enable`  | 1             | Enable diagnostics                                            |
 | `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
-| `g:easycomplete_scheme`              | `""`          | Popup menu colorscheme                                        |
 
 Typing `:h easycomplete` for help.
 
@@ -263,8 +262,6 @@ Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 ---------------------
 
 ## Beautify the vim completion menu
-
-There are four build-in popup menu themes in cterm: `blue`,`light`,`rider` and `sharp`(for iterm). (`let g:easycomplete_scheme="sharp"`).
 
 If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font = 1`
 

@@ -1,43 +1,3 @@
-" Cterm 下默认四种菜单样式
-" 支持四种 dark, light, rider, sharp
-" Set Scheme {{{
-function! easycomplete#ui#SetScheme()
-  if !exists("g:easycomplete_scheme")
-    return
-  endif
-  " hi Pmenu      ctermfg=111 ctermbg=235
-  " hi PmenuSel   ctermfg=255 ctermbg=238
-  " hi PmenuSbar              ctermbg=235
-  " hi PmenuThumb             ctermbg=234
-  let l:scheme_config = {
-        \   'light': [[234, 251], [255, 26], [-1,  251], [-1,  247]],
-        \   'rider': [[251, 237], [231, 25], [-1,  237], [-1,  239]],
-        \   'sharp': [[255, 237], [235, 255], [-1, 245], [-1,  255]],
-        \   'blue':  [['White', 'DarkBlue'], ['Red', 'White'], [-1, 245],[-1,  255]],
-        \ }
-  if has_key(l:scheme_config, g:easycomplete_scheme) && g:env_is_iterm == v:false
-    let sch = l:scheme_config[g:easycomplete_scheme]
-    let hiPmenu =      ['hi','Pmenu',      'ctermfg='.sch[0][0], 'ctermbg='.sch[0][1]]
-    let hiPmenuSel =   ['hi','PmenuSel',   'ctermfg='.sch[1][0], 'ctermbg='.sch[1][1]]
-    let hiPmenuSbar =  ['hi','PmenuSbar',  '',                   'ctermbg='.sch[2][1]]
-    let hiPmenuThumb = ['hi','PmenuThumb', '',                   'ctermbg='.sch[3][1]]
-    execute join(hiPmenu, ' ')
-    execute join(hiPmenuSel, ' ')
-    execute join(hiPmenuSbar, ' ')
-    execute join(hiPmenuThumb, ' ')
-  endif
-
-  if g:env_is_iterm == v:true
-    if g:easycomplete_scheme == 'sharp'
-      hi! PMenu guifg=#d4d4d4 guibg=#252526 gui=NONE
-      hi! PmenuSel guifg=#ffffff guibg=#04395e gui=NONE
-      hi! PmenuSbar guibg=#252526
-      hi! PmenuThumb guibg=#474747
-    endif
-
-  endif
-endfunction " }}}
-
 " markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
@@ -47,7 +7,8 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   if has("nvim")
     if has("nvim-0.9.0")
       let exec_cmd = [
-            \ "hi markdownCode cterm=underline gui=underline",
+            \ 'syntax region markdownRule matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends',
+            \ "hi markdownRule cterm=underline gui=underline",
             \ ]
     else
       let exec_cmd = [
