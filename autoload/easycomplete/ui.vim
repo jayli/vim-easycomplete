@@ -8,6 +8,7 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
     if has("nvim-0.9.0")
       let exec_cmd = [
             \ 'syntax region markdownRule matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends',
+            \ 'syntax region markdownCode matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
             \ "hi markdownRule cterm=underline gui=underline",
             \ ]
     else
