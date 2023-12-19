@@ -260,7 +260,8 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
     if has('nvim')
-      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 50)
+      " 这里为啥有 50 的 delay？导致关闭的时候有一个延迟
+      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 0)
       call s:CloseCompleteInfo()
     else
       call s:CloseCompletionMenu()
