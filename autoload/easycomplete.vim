@@ -657,6 +657,7 @@ endfunction
 
 function! easycomplete#BackSpace()
   if pumvisible()
+    " backspace 都会关闭 pum，这里尽量避免关闭 pum 带来的闪烁
     let l:items = complete_info()["items"]
     let l:startcol = get(g:easycomplete_firstcomplete_ctx, "startcol", 0)
     if l:startcol != 0 && l:startcol < col('.') - 1
@@ -670,10 +671,10 @@ endfunction
 function! s:RemainPumWhileBS(startcol, items)
   if !(&completeopt =~ "noselect")
     setlocal completeopt+=noselect
-    call complete(a:startcol, a:items)
+    silent noa call s:SimpleComplete(a:startcol, a:items)
     setlocal completeopt-=noselect
   else
-    call complete(a:startcol, a:items)
+    silent noa call s:SimpleComplete(a:startcol, a:items)
   endif
 endfunction
 
@@ -1599,6 +1600,15 @@ function! easycomplete#_complete(start, items)
       call s:ShowCompleteInfoInSecondRendering()
     endif
   endif
+endfunction
+
+" 简单的触发pum，只给BackSpacer用
+function! s:SimpleComplete(start, items)
+  let g:easycomplete_complete_ctx = {
+        \ 'start': a:start,
+        \ 'candidates': a:items,
+        \ }
+  silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
 endfunction
 
 " 这里只处理默认无 noselect 的情况
