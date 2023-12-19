@@ -656,7 +656,25 @@ function! s:BackingCompleteHandler()
 endfunction
 
 function! easycomplete#BackSpace()
-  return "\<BS>"
+  if pumvisible()
+    let l:items = complete_info()["items"]
+    let l:startcol = get(g:easycomplete_firstcomplete_ctx, "startcol", 0)
+    if l:startcol != 0 && l:startcol < col('.') - 1
+      call s:StopAsyncRun()
+      call s:AsyncRun(function("s:RemainPumWhileBS"), [l:startcol, l:items], 0)
+    endif
+  endif
+  return "\<C-H>"
+endfunction
+
+function! s:RemainPumWhileBS(startcol, items)
+  if !(&completeopt =~ "noselect")
+    setlocal completeopt+=noselect
+    call complete(a:startcol, a:items)
+    setlocal completeopt-=noselect
+  else
+    call complete(a:startcol, a:items)
+  endif
 endfunction
 
 " 正常输入和退格监听函数
@@ -1261,6 +1279,7 @@ function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)
   let cursor_line = getcurpos()[1] - backline
   let cursor_row = a:start_row
   " call cursor(cursor_line, cursor_row)
+  " ignore here
   call s:console(backline, cursor_line, cursor_row)
 endfunction
 
@@ -1656,7 +1675,7 @@ function! s:NormalizeMenulist(arr, plugin_name)
       let l:menu_item = {
             \ 'word':      item,    'menu':       '',
             \ 'user_data': json_encode(r_user_data), 'info': '',
-            \ 'kind':      '',      'equal':      1,
+            \ 'kind':      '',      'equal':      0,
             \ 'dup':       1,       'abbr':      '',
             \ 'kind_number' : get(item, 'kind_number', 0),
             \ 'plugin_name' : a:plugin_name,
@@ -1666,7 +1685,7 @@ function! s:NormalizeMenulist(arr, plugin_name)
     if type(item) == type({})
       call add(l:menu_list, extend({
             \   'word': '',      'menu': '',
-            \   'user_data': json_encode(r_user_data), 'equal': 1,
+            \   'user_data': json_encode(r_user_data), 'equal': 0,
             \   'dup': 1,        'info': '',
             \   'kind': '',      'abbr': '',
             \   'kind_number' : get(item, 'kind_number', 0),
