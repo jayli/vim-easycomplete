@@ -4,6 +4,10 @@ let s:response_ready = 0
 
 function! easycomplete#action#diagnostics#do()
   " 确保从这里 fire 的 diagnostic 才会被更新渲染
+  if easycomplete#util#GetLspPluginName() == "ts"
+    call easycomplete#sources#ts#lint()
+    return
+  endif
   if !easycomplete#util#LspServerReady() | return | endif
   call easycomplete#lsp#notify_diagnostics_update()
   let s:response_ready = 0
