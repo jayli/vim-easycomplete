@@ -2059,11 +2059,11 @@ function! easycomplete#CursorHold()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+  call easycomplete#lint()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
         \ && easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#LintPopup()
   endif
-  call easycomplete#lint()
 endfunction
 
 function! easycomplete#CursorHoldI()
