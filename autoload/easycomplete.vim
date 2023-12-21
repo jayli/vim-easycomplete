@@ -650,33 +650,21 @@ function! s:BackingCompleteHandler()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
-      call s:StopAsyncRun()
-      call s:AsyncRun(function("s:complete"), [start_pos, result], 0)
+      noa silent! call complete(start_pos, result)
     endif
   endif
 endfunction
 
 function! easycomplete#BackSpace()
+  return "\<C-H>"
   if pumvisible()
-    " backspace 都会关闭 pum，这里尽量避免关闭 pum 带来的闪烁
     let l:items = complete_info()["items"]
     let l:startcol = get(g:easycomplete_firstcomplete_ctx, "startcol", 0)
     if l:startcol != 0 && l:startcol < col('.') - 1
-      call s:StopAsyncRun()
-      call s:AsyncRun(function("s:RemainPumWhileBS"), [l:startcol, l:items], 0)
+      " call s:CreateShadowWindow()
     endif
   endif
   return "\<C-H>"
-endfunction
-
-function! s:RemainPumWhileBS(startcol, items)
-  if !(&completeopt =~ "noselect")
-    setlocal completeopt+=noselect
-    silent noa call s:SimpleComplete(a:startcol, a:items)
-    setlocal completeopt-=noselect
-  else
-    silent noa call s:SimpleComplete(a:startcol, a:items)
-  endif
 endfunction
 
 " 正常输入和退格监听函数

@@ -475,7 +475,7 @@ function! s:NVimShow(opt, windowtype, float_type)
   endif
   silent noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
-  if has('nvim-0.10.0')
+  if exists("*nvim_win_set_option")
     call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
   endif
   if exists('*nvim_win_set_config')
