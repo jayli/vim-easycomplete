@@ -101,7 +101,7 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath)
         call add(result_with_kind, {"word": item, "menu" : "[File]"})
       else
         call add(result_with_kind, {"word": item,
-              \ "menu" : "file",
+              \ "menu" : "[file]",
               \ "kind": ""
               \ })
       endif
