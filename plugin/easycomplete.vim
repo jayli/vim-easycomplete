@@ -41,8 +41,8 @@ if g:easycomplete_nerd_font == 1
         \    }
         \ }
   let g:easycomplete_sign_text = {
-        \   'error':       "",
-        \   'warning':     "",
+        \   'error':       "",
+        \   'warning':     "",
         \   'information': '',
         \   'hint':        ''
         \ }
@@ -50,17 +50,17 @@ if g:easycomplete_nerd_font == 1
         \ 'class':     "",  'color':         "",
         \ 'constant':  "",  'constructor':   "",
         \ 'enum':      "",  'enummember':    "",
-        \ 'field':     "料", 'file':          '',
+        \ 'field':     "",  'file':          '',
         \ 'folder':    "",  'function':      "ƒ",
         \ 'interface': "",  'keyword':       "",
-        \ 'snippet':   "",  'struct':        "פּ",
+        \ 'snippet':   "",  'struct':        "󰙅",
         \ 'text':      "",  'typeparameter': "§",
         \ 'variable':  "",  'module':        '',
         \ 'event': '',
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',
-        \ 's':'פּ', 'v':'',
+        \ 's':'󰙅', 'v':'',
         \ 'i':'𝘪', 'm':'𝘮',
         \ 'p':'𝘱', 'k':'𝘬',
         \ 'o':"𝘰", 'd':'𝘥',
