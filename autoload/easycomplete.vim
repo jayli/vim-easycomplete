@@ -2197,6 +2197,7 @@ function! easycomplete#BufEnter()
 endfunction
 
 function! easycomplete#finish()
+  " call s:errlog('[LOG]', "exit vim", v:exiting, v:dying)
   try
     finish
   catch

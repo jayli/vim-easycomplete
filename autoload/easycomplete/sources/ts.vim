@@ -93,6 +93,10 @@ endfunction
 
 " regist events
 function! easycomplete#sources#ts#constructor(opt, ctx)
+  if !empty(v:exiting) || !empty(v:dying)
+    call s:errlog("[LOG]", "exiting vim", v:exiting, v:dying)
+    return
+  endif
   if easycomplete#sources#deno#IsDenoProject()
     call easycomplete#UnRegisterSource("ts")
     return
@@ -1052,4 +1056,8 @@ endfunction
 
 function! s:get(...)
   return call('easycomplete#util#get', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction
