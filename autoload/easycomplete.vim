@@ -2195,6 +2195,15 @@ function! easycomplete#BufEnter()
     call timer_start(1600, { -> easycomplete#lint() })
   endif
 endfunction
+
+function! easycomplete#finish()
+  try
+    finish
+  catch
+    " do nothing
+  endtry
+endfunction
+
 function! s:HasKey(...)
   return call('easycomplete#util#HasKey', a:000)
 endfunction
