@@ -112,6 +112,8 @@ noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
 ```
 
+`set updatetime=300` (in lua `vim.opt.updatetime = 300`) is highly recommended.
+
 Global configurations
 
 | Global Configure                     | Default       | Description                                                   |
