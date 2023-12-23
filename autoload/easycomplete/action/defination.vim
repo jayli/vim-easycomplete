@@ -66,6 +66,10 @@ function! s:HandleLspCallback(ctx, server, type, data) abort
 endfunction
 
 function! s:DefinationCalling()
+  if &filetype == "help"
+    exec "tag ". expand('<cword>')
+    return
+  endif
   let l:ctx = easycomplete#context()
   let syntax_going = v:false
   let sources = easycomplete#GetAllPlugins()
