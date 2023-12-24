@@ -3,13 +3,17 @@
 let s:pum_window = 0
 let s:pum_buffer = 0
 
-function! easycomplete#pum#complete()
-  call s:CreateWindow(4, ["abc","def","sdkksdf","sdfjiijx dii","sd0ocxi"])
+function! easycomplete#pum#complete(startcol, items)
+  call s:CreateWindow(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
 function! s:CreateWindow(startcol, lines)
   call s:InitBuffer()
-  let opts = {"relative":'win', "row":3, "col":a:startcol, "width":12, "height":10}
+  let buffer_size = s:GetBufSize(a:lines)
+  let pum_pos = s:GetPumPos(a:startcol, buffer_size)
+  let opts = {"relative": "win"}
+  call extend(opts, pum_pos)
+  call s:console(opts)
   let winid = nvim_open_win(s:pum_buffer, v:false, opts)
   call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
   call setwinvar(winid, '&scrolloff', 0)
@@ -19,6 +23,27 @@ function! s:CreateWindow(startcol, lines)
   call setwinvar(winid, '&signcolumn', "no")
   call setwinvar(winid, '&cursorline', 0)
   call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
+  let s:pum_window = winid
+endfunction
+
+" 根据起始位置和buffer的大小，计算Pum应该有的大小和位置，返回 options
+function! s:GetPumPos(startcol, buffer_size)
+  let cursor_line = line(".")
+  return {"row": cursor_line, "col": a:startcol,
+        \ "width":  a:buffer_size.width,
+        \ "height": a:buffer_size.height
+        \ }
+endfunction
+
+function! s:flush()
+  if nvim_win_is_valid(s:pum_window)
+    call nvim_win_close(s:pum_window, 1)
+  endif
+  let s:pum_window = 0
+endfunction
+
+function! s:pumvisible()
+  return s:pum_window > 0 ? v:true : v:false
 endfunction
 
 function! s:InitBuffer()
@@ -33,16 +58,25 @@ function! s:InitBuffer()
   endif
 endfunction
 
-function! easycomplete#pum#normalize(...)
-  let data = a:0 ? a:1 : []
-  let data = easycomplete#lua#data()
-  let base_param = s:GetBaseParam(data)
-  let word_max_length = base_param["word_max_length"]
-  let kind_max_length = base_param["kind_max_length"]
-  let menu_max_length = base_param["menu_max_length"]
-  let pum_height = len(data)
-  let pum_width = word_max_length + kind_max_length + menu_max_length + 5
-  call s:log(base_param.items)
+function! s:GetBufSize(lines)
+  let buffer_width = s:MaxLength(a:lines) + 2
+  let buffer_height = len(a:lines)
+  return {"width": buffer_width, "height": buffer_height}
+endfunction
+
+function! s:MaxLength(lines)
+  let max_length = 0
+  for item in a:lines
+    let curr_length = strlen(item)
+    if curr_length > max_length
+      let max_length = curr_length
+    endif
+  endfor
+  return max_length
+endfunction
+
+function! s:NormalizeItems(items)
+  return map(copy(a:items), 'v:val["word"]')
 endfunction
 
 function! s:GetBaseParam(data)

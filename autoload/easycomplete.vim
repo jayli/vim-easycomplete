@@ -1557,6 +1557,8 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
+  " call easycomplete#pum#complete(a:start, a:context)
+  " return
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
     if !pumvisible() && !empty(a:context)
@@ -2172,7 +2174,6 @@ function! easycomplete#BufLeave()
 endfunction
 
 function! easycomplete#InsertEnter()
-  call easycomplete#pum#complete() " TODO here jayli
   call easycomplete#sign#DiagHoverFlush()
 endfunction
 
