@@ -1,10 +1,39 @@
+" for nvim only
 
-function! easycomplete#colorful#complete()
+let s:pum_window = 0
+let s:pum_buffer = 0
 
-
+function! easycomplete#pum#complete()
+  call s:CreateWindow(4, ["abc","def","sdkksdf","sdfjiijx dii","sd0ocxi"])
 endfunction
 
-function! easycomplete#colorful#normalize(...)
+function! s:CreateWindow(startcol, lines)
+  call s:InitBuffer()
+  let opts = {"relative":'win', "row":3, "col":a:startcol, "width":12, "height":10}
+  let winid = nvim_open_win(s:pum_buffer, v:false, opts)
+  call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  call setwinvar(winid, '&scrolloff', 0)
+  call setwinvar(winid, '&spell', 0)
+  call setwinvar(winid, '&number', 0)
+  call setwinvar(winid, '&wrap', 0)
+  call setwinvar(winid, '&signcolumn', "no")
+  call setwinvar(winid, '&cursorline', 0)
+  call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
+endfunction
+
+function! s:InitBuffer()
+  if empty(s:pum_buffer)
+    let pum_buffer = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_option(pum_buffer, 'filetype', "txt")
+    call nvim_buf_set_option(pum_buffer, 'syntax', 'on')
+    call setbufvar(pum_buffer, '&buflisted', 0)
+    call setbufvar(pum_buffer, '&buftype', 'nofile')
+    call setbufvar(pum_buffer, '&undolevels', -1)
+    let s:pum_buffer = pum_buffer
+  endif
+endfunction
+
+function! easycomplete#pum#normalize(...)
   let data = a:0 ? a:1 : []
   let data = easycomplete#lua#data()
   let base_param = s:GetBaseParam(data)

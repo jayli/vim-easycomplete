@@ -2172,6 +2172,7 @@ function! easycomplete#BufLeave()
 endfunction
 
 function! easycomplete#InsertEnter()
+  call easycomplete#pum#complete() " TODO here jayli
   call easycomplete#sign#DiagHoverFlush()
 endfunction
 
