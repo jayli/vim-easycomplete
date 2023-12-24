@@ -3,6 +3,14 @@
 let s:pum_window = 0
 let s:pum_buffer = 0
 
+" window 内高度，不包含tabline和statusline: winheight(win_getid())
+" 当前window的起始位置，算上了 tabline: win_screenpos(win_getid())
+" cursor所在位置相对window顶部的位置，不包含tabline: winline()
+" cursor所在位置相对window到底部的位置，
+" screen 整个视口高度，&window
+" cursor 相对 screen 顶部的高度(含当前 cursor): win_screenpos(win_getid())[0] + winline() - 1
+" cursor 相对 screen 底部的高度(含当前 cursor 和 statusline): &lines - (win_screenpos(win_getid())[0] + winline() - 1)
+
 function! easycomplete#pum#complete(startcol, items)
   call s:CreateWindow(a:startcol, s:NormalizeItems(a:items))
 endfunction
@@ -11,9 +19,8 @@ function! s:CreateWindow(startcol, lines)
   call s:InitBuffer()
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:GetPumPos(a:startcol, buffer_size)
-  let opts = {"relative": "win"}
+  let opts = {"relative": "win", "focusable": v:false}
   call extend(opts, pum_pos)
-  call s:console(opts)
   let winid = nvim_open_win(s:pum_buffer, v:false, opts)
   call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
   call setwinvar(winid, '&scrolloff', 0)
@@ -26,13 +33,76 @@ function! s:CreateWindow(startcol, lines)
   let s:pum_window = winid
 endfunction
 
+" Cursor 距离 screen top 的位置，含 cursor 的位置，算上了 tabline
+function! s:CursorTop()
+  return win_screenpos(win_getid())[0] + winline() - 1
+endfunction
+
+" Cursor 距离 screen bottom 的位置，含 cursor 的位置，算上了 statusline
+function! s:CursorBottom()
+  return &lines - s:CursorTop()
+endfunction
+
+" 判断 PUM 是向上展示还是向下展示
+function! s:PumDirection(buffer_height)
+  let buffer_height = a:buffer_height
+  let below_space = s:CursorBottom() - 1
+  
+  " 如果底部空间不够
+  if buffer_height > below_space
+    if below_space < 6 " 底部空间太小，小于 6，一律在上部展示
+      return "above"
+    elseif below_space >= 10 " 底部空间大于等于10，一律在底部展示
+      return "below"
+    elseif buffer_height - below_space <= 5 " 底部空间只藏了5个及以内的item，可以在底部展示
+      return "below"
+    else " 底部空间不够且溢出5个以上的 item，就展示在上部
+      return "above"
+    endif
+  else " 如果底部空间足够
+    return "below"
+  endif
+endfunction
+
+
 " 根据起始位置和buffer的大小，计算Pum应该有的大小和位置，返回 options
 function! s:GetPumPos(startcol, buffer_size)
-  let cursor_line = line(".")
-  return {"row": cursor_line, "col": a:startcol,
+  let pum_direction = s:PumDirection(a:buffer_size.height)
+  let l:height = 0
+  let l:row = 0
+  if pum_direction == "below"
+    let below_space = s:CursorBottom() - 1
+    if a:buffer_size.height >= below_space " 需要滚动
+      let l:height = below_space
+    else
+      let l:height = a:buffer_size.height
+    endif
+    let l:row = s:CursorTop() - 1
+  endif
+  if pum_direction == "above"
+    let above_space = s:CursorTop() - 1
+    if a:buffer_size.height >= above_space
+      let l:height = above_space
+    else
+      let l:height = a:buffer_size.height
+    endif
+    let l:row = s:CursorTop() - l:height - 2
+  endif
+  return {"row": l:row, "col": a:startcol + s:PaddingLeft() - 2,
         \ "width":  a:buffer_size.width,
-        \ "height": a:buffer_size.height
+        \ "height": l:height 
         \ }
+endfunction
+
+function! s:PaddingLeft()
+  let original_width = 0
+  if &signcolumn == "yes"
+    let original_width = original_width + 2
+  endif
+  if &number == 1
+    let original_width = original_width + &numberwidth
+  endif
+  return original_width
 endfunction
 
 function! s:flush()
@@ -76,7 +146,7 @@ function! s:MaxLength(lines)
 endfunction
 
 function! s:NormalizeItems(items)
-  return map(copy(a:items), 'v:val["word"]')
+  return map(copy(a:items), '" " . v:val["word"]')
 endfunction
 
 function! s:GetBaseParam(data)
