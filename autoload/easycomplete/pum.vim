@@ -1,7 +1,10 @@
 " for nvim only
 
 let s:pum_window = 0
+let s:scroll_bar = 0
 let s:pum_buffer = 0
+let s:selected_i = 0
+let s:curr_items = []
 
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
 " 当前window的起始位置，算上了 tabline: win_screenpos(win_getid())
@@ -12,25 +15,57 @@ let s:pum_buffer = 0
 " cursor 相对 screen 底部的高度(含当前 cursor 和 statusline): &lines - (win_screenpos(win_getid())[0] + winline() - 1)
 
 function! easycomplete#pum#complete(startcol, items)
+  let s:curr_items = deepcopy(a:items)
   call s:CreateWindow(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
 function! s:CreateWindow(startcol, lines)
   call s:InitBuffer()
   let buffer_size = s:GetBufSize(a:lines)
-  let pum_pos = s:GetPumPos(a:startcol, buffer_size)
-  let opts = {"relative": "win", "focusable": v:false}
+  let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
+  let opts = {
+        \ "relative": "win",
+        \ "focusable": v:false
+        \ }
   call extend(opts, pum_pos)
   let winid = nvim_open_win(s:pum_buffer, v:false, opts)
-  call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
   call setwinvar(winid, '&scrolloff', 0)
   call setwinvar(winid, '&spell', 0)
   call setwinvar(winid, '&number', 0)
   call setwinvar(winid, '&wrap', 0)
   call setwinvar(winid, '&signcolumn', "no")
-  call setwinvar(winid, '&cursorline', 0)
+  if !(&completeopt=~"noselect")
+    call setwinvar(winid, '&cursorline', 1)
+  else
+    call setwinvar(winid, '&cursorline', 0)
+  endif
   call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
   let s:pum_window = winid
+  if s:HasScrollbar()
+    call s:InitScrollBar()
+  endif
+endfunction
+
+function! s:select(line_index)
+  if !s:pumvisible() | return | endif
+  if a:line_index > len(s:curr_items)
+    let l:line_index = a:line_index % len(s:curr_items)
+  else
+    let l:line_index = a:line_index
+  endif
+  if l:line_index == 0
+    call setwinvar(s:pum_window, '&cursorline', 0)
+    let s:selected_i = 0
+  else
+    call setwinvar(s:pum_window, '&cursorline', 1)
+    call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
+    let s:selected_i = l:line_index
+  endif
+endfunction
+
+function! easycomplete#pum#select(line_index)
+  call s:select(a:line_index)
 endfunction
 
 " Cursor 距离 screen top 的位置，含 cursor 的位置，算上了 tabline
@@ -41,6 +76,31 @@ endfunction
 " Cursor 距离 screen bottom 的位置，含 cursor 的位置，算上了 statusline
 function! s:CursorBottom()
   return &lines - s:CursorTop()
+endfunction
+
+" TODO
+function! s:InitScrollBar()
+  if !s:pumvisible() | return | endif
+  let window_info = s:WindowInfo()
+endfunction
+
+function! s:HasScrollbar()
+  return s:scroll_bar == 1 ? v:true : v:false
+endfunction
+
+function! s:WindowInfo()
+  if s:pumvisible()
+    let pos = nvim_win_get_position(s:pum_window)
+    let h = nvim_win_get_height(s:pum_window)
+    let w = nvim_win_get_width(s:pum_window)
+    return {"pos":pos, "height": h, "width": w}
+  else
+    return {}
+  endif
+endfunction
+
+function! s:CompleteInfo()
+
 endfunction
 
 " 判断 PUM 是向上展示还是向下展示
@@ -64,11 +124,11 @@ function! s:PumDirection(buffer_height)
   endif
 endfunction
 
-
 " 根据起始位置和buffer的大小，计算Pum应该有的大小和位置，返回 options
-function! s:GetPumPos(startcol, buffer_size)
+function! s:ComputePumPos(startcol, buffer_size)
   let pum_direction = s:PumDirection(a:buffer_size.height)
   let l:height = 0
+  let l:width = a:buffer_size.width
   let l:row = 0
   if pum_direction == "below"
     let below_space = s:CursorBottom() - 1
@@ -88,8 +148,15 @@ function! s:GetPumPos(startcol, buffer_size)
     endif
     let l:row = s:CursorTop() - l:height - 2
   endif
+  if l:height < a:buffer_size.height
+    " 判断是否应该出现 scrollbar
+    let s:scroll_bar = 1
+    let l:width = a:buffer_size.width + 1
+  else
+    let s:scroll_bar = 0
+  endif
   return {"row": l:row, "col": a:startcol + s:PaddingLeft() - 2,
-        \ "width":  a:buffer_size.width,
+        \ "width":  l:width,
         \ "height": l:height 
         \ }
 endfunction
@@ -110,6 +177,9 @@ function! s:flush()
     call nvim_win_close(s:pum_window, 1)
   endif
   let s:pum_window = 0
+  let s:scroll_bar = 0
+  let s:selected_i = 0
+  let s:curr_items = []
 endfunction
 
 function! s:pumvisible()

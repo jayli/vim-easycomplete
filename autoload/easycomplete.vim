@@ -1557,6 +1557,7 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
+  " jayli here
   " call easycomplete#pum#complete(a:start, a:context)
   " return
   if mode() =~# 'i' && &paste != 1
