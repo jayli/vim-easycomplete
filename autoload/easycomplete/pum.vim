@@ -31,7 +31,7 @@ function! s:OpenWindow(startcol, lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
   let opts = {
-        \ "relative": "win",
+        \ "relative": "editor",
         \ "focusable": v:false
         \ }
   call extend(opts, pum_pos)
@@ -196,16 +196,16 @@ function! s:ComputePumPos(startcol, buffer_size)
     else
       let l:height = a:buffer_size.height
     endif
-    let l:row = s:CursorTop() - 1
+    let l:row = s:CursorTop()
   endif
   if pum_direction == "above"
     let above_space = s:CursorTop() - 1
-    if a:buffer_size.height >= above_space
+    if a:buffer_size.height >= above_space " 需要滚动
       let l:height = above_space
     else
       let l:height = a:buffer_size.height
     endif
-    let l:row = s:CursorTop() - l:height - 2
+    let l:row = s:CursorTop() - l:height - 1
   endif
   if l:height < a:buffer_size.height
     " 判断是否应该出现 scrollbar
