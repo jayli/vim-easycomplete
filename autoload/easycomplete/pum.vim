@@ -28,6 +28,7 @@ function! s:CreateWindow(startcol, lines)
         \ "focusable": v:false
         \ }
   call extend(opts, pum_pos)
+  " 已经存在的 windowid 用 nvim_win_set_config
   let winid = nvim_open_win(s:pum_buffer, v:false, opts)
   call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
   call setwinvar(winid, '&scrolloff', 0)
