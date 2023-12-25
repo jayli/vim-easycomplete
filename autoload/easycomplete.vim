@@ -725,6 +725,7 @@ function! easycomplete#typing()
   " TODO 为了防止tab补全 tabnine后自动触发complete动作，这里需要更多测试兼容性
   if s:zizzing() | return "" | endif
 
+
   if !easycomplete#FireCondition()
     " tabnine
     if easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
@@ -741,6 +742,7 @@ function! easycomplete#typing()
     endif
   endif
 
+
   " vim lsp 返回结果中包含多层的对象，比如 "a.b.c"，这样在输入"." 时就需要匹配
   " 返回结果中的"."，":" 也是同理，这里只对 viml 做特殊处理
   if s:VimColonTyping()
@@ -750,9 +752,10 @@ function! easycomplete#typing()
   elseif s:zizzing()
     return ""
   endif
-  if pumvisible()
+  if pumvisible() || easycomplete#pum#visible()
     return ""
   endif
+
   let b:typing_ctx = easycomplete#context()
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
@@ -1039,13 +1042,21 @@ endfunction
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
+    let ctx = easycomplete#context()
     " tabnine
     if easycomplete#sources#tn#available()
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
+    if g:env_is_nvim && empty(l:vim_word)
+      call s:CloseCompletionMenu()
+      call s:flush()
+      call s:StopZizz()
+      call timer_start(2, { -> easycomplete#typing() })
+      return
+    endif
     call s:CompleteTypingMatch(l:vim_word)
-    let b:typing_ctx = easycomplete#context()
+    let b:typing_ctx = ctx
   catch
     call s:log('[CompleteMatchAction]', v:exception)
     call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
