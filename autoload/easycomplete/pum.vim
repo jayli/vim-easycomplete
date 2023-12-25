@@ -16,6 +16,7 @@ let s:curr_items = []
 " screen 整个视口高度，&window
 " cursor 相对 screen 顶部的高度(含当前 cursor): win_screenpos(win_getid())[0] + winline() - 1
 " cursor 相对 screen 底部的高度(含当前 cursor 和 statusline): &lines - (win_screenpos(win_getid())[0] + winline() - 1)
+" cursor 相对 screen 左侧的距离(含当前cursor)，win_screenpos(win_getid())[1] + wincol() - 1
 
 function! easycomplete#pum#complete(startcol, items)
   if len(a:items) == 0
@@ -157,6 +158,11 @@ function! s:CursorBottom()
   return &lines - s:CursorTop()
 endfunction
 
+" Cursor 距离 screen left 的位置，含 cursor 的位置
+function! s:CursorLeft()
+  return win_screenpos(win_getid())[1] + wincol() - 1
+endfunction
+
 " TODO
 function! s:InitScrollBar()
   if !s:pumvisible() | return | endif
@@ -230,9 +236,12 @@ function! s:ComputePumPos(startcol, buffer_size)
   else
     let s:scroll_bar = 0
   endif
-  return {"row": l:row, "col": a:startcol + s:PaddingLeft() - 2,
+  " 计算相对于 editor 的 startcol
+  let offset = col('.') - a:startcol
+  let realcol = s:CursorLeft() - offset
+  return {"row": l:row, "col": realcol - 2,
         \ "width":  l:width,
-        \ "height": l:height 
+        \ "height": l:height
         \ }
 endfunction
 

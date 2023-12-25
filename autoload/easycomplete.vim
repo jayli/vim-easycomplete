@@ -3,6 +3,8 @@
 " Description:  A minimalism style complete plugin for vim/nvim
 " More Info:    <https://github.com/jayli/vim-easycomplete>
 
+
+
 if get(g:, 'easycomplete_script_loaded')
   finish
 endif
@@ -706,6 +708,9 @@ function! easycomplete#typing()
   if g:env_is_vim && s:BackChecking()
     let g:easycomplete_backing = 1
     call s:BackingCompleteHandler()
+    return ""
+  elseif g:env_is_nvim && s:BackChecking() && !easycomplete#pum#visible()
+    " 回退不能激发 complete
     return ""
   else
     let g:easycomplete_backing = 0
@@ -2141,6 +2146,11 @@ function! easycomplete#CursorMoved()
 endfunction
 
 function! easycomplete#CursorMovedI()
+  if exists("b:old_changedtick") && b:old_changedtick == b:changedtick " 只是移动光标，没有修改buf
+    if g:env_is_nvim && easycomplete#pum#visible()
+      call easycomplete#pum#close()
+    endif
+  endif
 endfunction
 
 function! easycomplete#defination()
