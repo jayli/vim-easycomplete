@@ -525,6 +525,7 @@ augroup easycomplete#NormalBinding
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
+  autocmd User easycomplete_pum_done call easycomplete#CompleteDone()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
@@ -548,6 +549,10 @@ command! BackToOriginalBuffer : call easycomplete#BackToOriginalBuffer()
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
+if g:env_is_nvim
+  inoremap <expr> <C-N> easycomplete#CtlN()
+  inoremap <expr> <C-P> easycomplete#CtlP()
+endif
 " inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>

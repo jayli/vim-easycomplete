@@ -1,5 +1,5 @@
 " File:         easycomplete.vim
-" Author:       @jayli <https://github.com/jayli/>
+" Author:       @拔赤 <https://github.com/jayli/>
 " Description:  A minimalism style complete plugin for vim/nvim
 " More Info:    <https://github.com/jayli/vim-easycomplete>
 
@@ -123,6 +123,9 @@ function! s:SetCompleteOption()
   setlocal completeopt-=preview
   setlocal completeopt-=longest
   setlocal cpoptions+=B
+  if g:env_is_vim
+    setlocal backspace+=indent,start
+  endif
 endfunction
 
 function! easycomplete#GetBindingKeys()
@@ -330,9 +333,17 @@ function! easycomplete#CompleteDone()
     return
   endif
   " bugfix for #88
-  if pumvisible() || (empty(v:completed_item) && g:easycomplete_first_complete_hit != 1)
-    call s:zizz()
-    return
+  if g:env_is_nvim
+    "TODO v:complete_item 是否是必须的，还需再测试一下
+    if easycomplete#pum#visible() || (g:easycomplete_first_complete_hit != 1)
+      call s:zizz()
+      return
+    endif
+  else
+    if pumvisible() || (empty(v:completed_item) && g:easycomplete_first_complete_hit != 1)
+      call s:zizz()
+      return
+    endif
   endif
   call s:flush()
 endfunction
@@ -650,7 +661,11 @@ function! s:BackingCompleteHandler()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
-      noa silent! call complete(start_pos, result)
+      if g:env_is_nvim
+        noa silent! call easycomplete#pum#complete(start_pos, result)
+      else
+        noa silent! call complete(start_pos, result)
+      endif
     endif
   endif
 endfunction
@@ -1130,9 +1145,14 @@ function! easycomplete#CleverTab()
   if !easycomplete#ok('g:easycomplete_enable')
     return "\<Tab>"
   endif
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
     return "\<C-N>"
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call s:zizz()
+    " TODO here jayli，tab 动作需要补全行为
+    call easycomplete#pum#next()
+    return ""
   else
     if easycomplete#tabnine#SnippetReady()
       " call easycomplete#tabnine#insert()
@@ -1193,7 +1213,30 @@ function! easycomplete#CleverShiftTab()
     return
   endif
   call s:zizz()
-  return pumvisible() ? "\<C-P>" : "\<Tab>"
+  if g:env_is_vim
+    return pumvisible() ? "\<C-P>" : "\<Tab>"
+  else
+    if easycomplete#pum#visible()
+      call easycomplete#pum#prev()
+    endif
+    return ""
+  endif
+endfunction
+
+" nvim only
+function! easycomplete#CtlN()
+  if easycomplete#pum#visible()
+    call easycomplete#pum#next()
+  endif
+  return ""
+endfunction
+
+" nvim only
+function! easycomplete#CtlP()
+  if easycomplete#pum#visible()
+    call easycomplete#pum#prev()
+  endif
+  return ""
 endfunction
 
 " <CR> 逻辑，主要判断是否展开代码片段
@@ -1317,13 +1360,20 @@ endfunction
 
 " close pum
 function! s:CloseCompletionMenu()
-  if pumvisible()
-    if !(&completeopt =~ "noselect")
-      silent! noa call s:SendKeys("\<ESC>a")
-    else
-      silent! noa call s:SendKeys("\<C-Y>")
+  if g:env_is_nvim
+    if easycomplete#pum#visible()
+      call easycomplete#pum#close()
+      call s:zizz()
     endif
-    call s:zizz()
+  else
+    if pumvisible()
+      if !(&completeopt =~ "noselect")
+        silent! noa call s:SendKeys("\<ESC>a")
+      else
+        silent! noa call s:SendKeys("\<C-Y>")
+      endif
+      call s:zizz()
+    endif
   endif
   call s:ResetCompletedItem()
 endfunction
@@ -1557,15 +1607,19 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
-  " jayli here
-  " call easycomplete#pum#complete(a:start, a:context)
-  " return
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
-    if !pumvisible() && !empty(a:context)
-      let should_fire_pum_show = v:true
+    if g:env_is_nvim
+      if !easycomplete#pum#visible() && !empty(a:context)
+        let should_fire_pum_show = v:true
+      endif
+      noa call easycomplete#pum#complete(a:start, a:context)
+    else
+      if !pumvisible() && !empty(a:context)
+        let should_fire_pum_show = v:true
+      endif
+      noa silent! call complete(a:start, a:context)
     endif
-    noa silent! call complete(a:start, a:context)
     if should_fire_pum_show
       doautocmd <nomodeline> User easycomplete_pum_show
     else
@@ -1583,10 +1637,18 @@ function! easycomplete#_complete(start, items)
         \ }
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
-    if !pumvisible() && !empty(a:item)
-      let should_fire_pum_show = v:true
+    if g:env_is_nvim
+      if !easycomplete#pum#visible() && !empty(a:item)
+        let should_fire_pum_show = v:true
+      endif
+      call easycomplete#pum#complete(a:start, a:items)
+    else
+      let should_fire_pum_show = v:false
+      if !pumvisible() && !empty(a:item)
+        let should_fire_pum_show = v:true
+      endif
+      silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     endif
-    silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     if should_fire_pum_show
       doautocmd <nomodeline> User easycomplete_pum_show
     else
@@ -1847,6 +1909,9 @@ function! s:flush()
   endif
   if g:easycomplete_showmode
     set showmode
+  endif
+  if g:env_is_nvim
+    call s:CloseCompletionMenu()
   endif
   let s:easycomplete_start_pos = 0
 endfunction

@@ -1,4 +1,7 @@
 " for nvim only
+" TODO
+" select 过程中的单词补全
+" 回车的处理
 
 let s:pum_window = 0
 let s:scroll_bar = 0
@@ -15,12 +18,16 @@ let s:curr_items = []
 " cursor 相对 screen 底部的高度(含当前 cursor 和 statusline): &lines - (win_screenpos(win_getid())[0] + winline() - 1)
 
 function! easycomplete#pum#complete(startcol, items)
+  if len(a:items) == 0
+    call s:close()
+    return
+  endif
   let s:curr_items = deepcopy(a:items)
-  call s:CreateWindow(a:startcol, s:NormalizeItems(a:items))
+  call s:OpenWindow(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
-function! s:CreateWindow(startcol, lines)
-  call s:InitBuffer()
+function! s:OpenWindow(startcol, lines)
+  call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
   let opts = {
@@ -28,30 +35,65 @@ function! s:CreateWindow(startcol, lines)
         \ "focusable": v:false
         \ }
   call extend(opts, pum_pos)
-  " 已经存在的 windowid 用 nvim_win_set_config
-  let winid = nvim_open_win(s:pum_buffer, v:false, opts)
-  call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
-  call setwinvar(winid, '&scrolloff', 0)
-  call setwinvar(winid, '&spell', 0)
-  call setwinvar(winid, '&number', 0)
-  call setwinvar(winid, '&wrap', 0)
-  call setwinvar(winid, '&signcolumn', "no")
-  if !(&completeopt=~"noselect")
-    call setwinvar(winid, '&cursorline', 1)
+  if empty(s:pum_window)
+    let winid = nvim_open_win(s:pum_buffer, v:false, opts)
+    call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
+    call setwinvar(winid, '&scrolloff', 0)
+    call setwinvar(winid, '&spell', 0)
+    call setwinvar(winid, '&number', 0)
+    call setwinvar(winid, '&wrap', 0)
+    call setwinvar(winid, '&signcolumn', "no")
+    let s:pum_window = winid
   else
-    call setwinvar(winid, '&cursorline', 0)
+    " 已经存在的 windowid 用 nvim_win_set_config
+    call nvim_win_set_config(s:pum_window, opts)
   endif
-  call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
-  let s:pum_window = winid
+  call s:reset()
   if s:HasScrollbar()
     call s:InitScrollBar()
   endif
 endfunction
 
+function! s:SelectNext()
+  if !s:pumvisible() | return | endif
+  let item_length = len(s:curr_items)
+  let next_i = 0
+  if s:selected_i == item_length
+    let next_i = 0
+  else
+    let next_i = s:selected_i + 1
+  endif
+  call s:select(next_i)
+  let s:selected_i = next_i
+endfunction
+
+function! s:SelectPrev()
+  if !s:pumvisible() | return | endif
+  let item_length = len(s:curr_items)
+  let prev_i = 0
+  if s:selected_i == 1
+    let prev_i = 0
+  elseif s:selected_i == 0
+    let prev_i = item_length
+  else
+    let prev_i = s:selected_i - 1
+  endif
+  call s:select(prev_i)
+  let s:selected_i = prev_i
+endfunction
+
+function! easycomplete#pum#next()
+  call s:SelectNext()
+endfunction
+
+function! easycomplete#pum#prev()
+  call s:SelectPrev()
+endfunction
+
 function! s:select(line_index)
   if !s:pumvisible() | return | endif
   if a:line_index > len(s:curr_items)
-    let l:line_index = a:line_index % len(s:curr_items)
+    let l:line_index = (a:line_index + len(s:curr_items)) % len(s:curr_items)
   else
     let l:line_index = a:line_index
   endif
@@ -173,9 +215,20 @@ function! s:PaddingLeft()
   return original_width
 endfunction
 
+" secondcomplete 过程中有可能手动移动了 pum 的 cursor，继续 typing
+" 时需要reset一下状态 
+function! s:reset()
+  if !(&completeopt=~"noselect")
+    call s:select(1)
+  else
+    call s:select(0)
+  endif
+endfunction
+
 function! s:flush()
-  if nvim_win_is_valid(s:pum_window)
+  if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
+    doautocmd <nomodeline> User easycomplete_pum_done
   endif
   let s:pum_window = 0
   let s:scroll_bar = 0
@@ -183,11 +236,23 @@ function! s:flush()
   let s:curr_items = []
 endfunction
 
+function! s:close()
+  call s:flush()
+endfunction
+
+function! easycomplete#pum#close()
+  call s:flush()
+endfunction
+
 function! s:pumvisible()
   return s:pum_window > 0 ? v:true : v:false
 endfunction
 
-function! s:InitBuffer()
+function! easycomplete#pum#visible()
+  return s:pumvisible()
+endfunction
+
+function! s:InitBuffer(lines)
   if empty(s:pum_buffer)
     let pum_buffer = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_option(pum_buffer, 'filetype', "txt")
@@ -197,6 +262,7 @@ function! s:InitBuffer()
     call setbufvar(pum_buffer, '&undolevels', -1)
     let s:pum_buffer = pum_buffer
   endif
+  call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
 endfunction
 
 function! s:GetBufSize(lines)
