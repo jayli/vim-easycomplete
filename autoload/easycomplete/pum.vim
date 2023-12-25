@@ -127,6 +127,22 @@ function! s:select(line_index)
   endif
 endfunction
 
+" TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
+function! easycomplete#pum#SetWordBySelecting()
+  let backing_count = col('.') - get(b:typing_ctx, "startcol", 0)
+  let oprator_str = ""
+  let i = 0
+  while i < backing_count
+    let oprator_str .= "\<backspace>"
+    let i += 1
+  endwhile
+  if !easycomplete#pum#CompleteCursored()
+    return oprator_str . get(b:typing_ctx, "typing", "")
+  else
+    return oprator_str . get(easycomplete#pum#CursoredItem(), "word", "")
+  endif
+endfunction
+
 function! easycomplete#pum#select(line_index)
   call s:select(a:line_index)
 endfunction
@@ -299,7 +315,7 @@ function! s:MaxLength(lines)
 endfunction
 
 function! s:NormalizeItems(items)
-  return map(copy(a:items), '" " . v:val["word"]')
+  return map(copy(a:items), '" " . easycomplete#util#GetItemAbbr(v:val)')
 endfunction
 
 function! s:GetBaseParam(data)

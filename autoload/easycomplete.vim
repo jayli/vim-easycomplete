@@ -462,8 +462,11 @@ function! s:BackChecking()
 endfunction
 
 function! easycomplete#Up()
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call easycomplete#pum#prev()
+    return ""
   else
     call easycomplete#popup#close("float")
   endif
@@ -471,8 +474,11 @@ function! easycomplete#Up()
 endfunction
 
 function! easycomplete#Down()
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call easycomplete#pum#next()
+    return ""
   else
     call easycomplete#popup#close("float")
   endif
@@ -1163,9 +1169,8 @@ function! easycomplete#CleverTab()
     return "\<C-N>"
   elseif g:env_is_nvim && easycomplete#pum#visible()
     call s:zizz()
-    " TODO here jayli，tab 动作需要补全行为
     call easycomplete#pum#next()
-    return ""
+    return easycomplete#pum#SetWordBySelecting()
   else
     if easycomplete#tabnine#SnippetReady()
       " call easycomplete#tabnine#insert()
@@ -1231,8 +1236,10 @@ function! easycomplete#CleverShiftTab()
   else
     if easycomplete#pum#visible()
       call easycomplete#pum#prev()
+      return easycomplete#pum#SetWordBySelecting()
+    else
+      return ""
     endif
-    return ""
   endif
 endfunction
 
@@ -1261,27 +1268,25 @@ function! easycomplete#TypeEnterWithPUM()
   endif
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-  " 选中目录
-  if (pumvisible() && !empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
-    call s:CloseCompletionMenu()
-    call s:flush()
-    call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
-    return "\<C-Y>"
-  endif
-  " 选中 snippet
-  if (pumvisible() && !empty(l:item) && s:SnipSupports() &&
-        \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips")
-    call s:ExpandSnipManually(get(l:item, "word"))
-    call s:zizz()
-    return "\<C-Y>"
-  endif
-  " 未选中任何单词，直接回车，直接关闭匹配菜单
-  if pumvisible() && s:SnipSupports() && empty(l:item)
-    call s:zizz()
-    return "\<C-Y>"
-  endif
-  " 其他选中动作一律插入单词并关闭匹配菜单
-  if pumvisible()
+  if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
+    " 选中目录
+    if (!empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
+      call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
+      return s:CtrlY()
+    endif
+    " 选中 snippet
+    if (!empty(l:item) && s:SnipSupports() &&
+          \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
+      call timer_start(10, { -> s:ExpandSnipManually(get(l:item, "word")) })
+      call s:zizz()
+      return s:CtrlY()
+    endif
+    " 未选中任何单词，直接回车，直接关闭匹配菜单
+    if s:SnipSupports() && empty(l:item) && !s:zizzing()
+      call s:zizz()
+      return s:CtrlY()
+    endif
+    " 其他选中动作一律插入单词并关闭匹配菜单
     call s:zizz()
     " 新增 expandable 支持 for #48
     if easycomplete#util#expandable(l:item)
@@ -1305,9 +1310,22 @@ function! easycomplete#TypeEnterWithPUM()
         call s:AsyncRun("easycomplete#action#signature#do",[], 60)
       endif
     endif
-    return "\<C-Y>"
+    return s:CtrlY()
+  else " 如果没有 pum，正常回车
+    return "\<CR>"
   endif
-  return "\<CR>"
+endfunction
+
+" pumvisible 情况下，填入选中的单词，并关闭 pum
+function! s:CtrlY()
+  if g:env_is_vim
+    return "\<C-Y>"
+  else
+    let ret_str = easycomplete#pum#SetWordBySelecting()
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return ret_str
+  endif
 endfunction
 
 function! s:HandleLspSnipPosition(lsp_item)
@@ -1375,7 +1393,7 @@ endfunction
 function! s:CloseCompletionMenu()
   if g:env_is_nvim
     if easycomplete#pum#visible()
-      call easycomplete#pum#close()
+      call timer_start(5, { -> easycomplete#pum#close() })
       call s:zizz()
     endif
   else

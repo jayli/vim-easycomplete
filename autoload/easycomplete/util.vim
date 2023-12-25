@@ -1155,6 +1155,18 @@ function! s:GetItemWord(item)
   return t_str
 endfunction
 
+function! s:GetItemAbbr(item)
+  let abbr = get(a:item, 'abbr', '')
+  let word = get(a:item, 'word', '')
+  let t_str = empty(abbr) ? word : abbr
+  return t_str
+endfunction
+
+" GetItemAbbr {{{
+function! easycomplete#util#GetItemAbbr(...)
+  return call("s:GetItemAbbr", a:000)
+endfunction " }}}
+
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
   let l1 = get(a:entry1, "item_length", 0)
   let l2 = get(a:entry2, "item_length", 0)
