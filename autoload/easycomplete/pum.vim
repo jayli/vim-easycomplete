@@ -90,6 +90,26 @@ function! easycomplete#pum#prev()
   call s:SelectPrev()
 endfunction
 
+function! easycomplete#pum#CompleteCursored()
+  return s:selected_i == 0 ? v:false : v:true
+endfunction
+
+function! easycomplete#pum#CompleteInfo()
+  let l:ret = {
+        \ "mode": "function",
+        \ "pum_visible": s:pumvisible() ? v:true : v:false,
+        \ "items": s:curr_items,
+        \ "selected": s:selected_i - 1,
+        \ }
+  return l:ret
+endfunction
+
+function! easycomplete#pum#CursoredItem()
+  if !s:pumvisible() | return {} | endif
+  if s:selected_i == 0 | return {} | endif
+  return s:curr_items[s:selected_i - 1]
+endfunction
+
 function! s:select(line_index)
   if !s:pumvisible() | return | endif
   if a:line_index > len(s:curr_items)
@@ -140,10 +160,6 @@ function! s:WindowInfo()
   else
     return {}
   endif
-endfunction
-
-function! s:CompleteInfo()
-
 endfunction
 
 " 判断 PUM 是向上展示还是向下展示

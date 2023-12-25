@@ -526,6 +526,7 @@ augroup easycomplete#NormalBinding
   autocmd BufLeave * noa call easycomplete#BufLeave()
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
   autocmd User easycomplete_pum_done call easycomplete#CompleteDone()
+  autocmd User easycomplete_pum_textchanged_p call easycomplete#TextChangedP()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
