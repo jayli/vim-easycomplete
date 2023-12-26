@@ -56,7 +56,9 @@ function! easycomplete#popup#MenuPopupChanged(info)
   " 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
   " 这里应该避免多次相同事件同时发生
   let curr_item = easycomplete#GetCursordItem()
-  if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
+  if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime()
+                                \ && easycomplete#util#SameItem(s:item, curr_item)
+                                \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     return
   endif
   if g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected()
@@ -65,6 +67,8 @@ function! easycomplete#popup#MenuPopupChanged(info)
   elseif g:env_is_vim && empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && empty(a:info)
+    call easycomplete#popup#close("popup")
   else
     if empty(l:event) && empty(g:easycomplete_completechanged_event) | return | endif
     let s:event = empty(l:event) ? copy(g:easycomplete_completechanged_event) : copy(l:event)
@@ -82,6 +86,7 @@ endfunction
 
 function! s:SamePositionAsLastTime()
   let pum_pos = g:env_is_vim ? pum_getpos() : easycomplete#pum#CompleteChangedEvnet()
+  if empty(pum_pos) | return v:false | endif
   if !exists("s:easycomplete_pum_pos")
     let s:easycomplete_pum_pos = deepcopy(pum_pos)
     return v:false
@@ -90,10 +95,10 @@ function! s:SamePositionAsLastTime()
   "   unlet s:easycomplete_pum_pos
   "   return v:false
   " endif
-  if pum_pos.height == s:easycomplete_pum_pos.height &&
-        \  pum_pos.width == s:easycomplete_pum_pos.width &&
-        \  pum_pos.col == s:easycomplete_pum_pos.col &&
-        \  pum_pos.row == s:easycomplete_pum_pos.row
+  if pum_pos.height == get(s:easycomplete_pum_pos, "height", 0) &&
+        \  pum_pos.width == get(s:easycomplete_pum_pos, "width", 0) &&
+        \  pum_pos.col == get(s:easycomplete_pum_pos, "col", 0) &&
+        \  pum_pos.row == get(s:easycomplete_pum_pos, "row", 0)
     return v:true
   else
     let s:easycomplete_pum_pos = deepcopy(pum_pos)

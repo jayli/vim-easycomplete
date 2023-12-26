@@ -335,14 +335,17 @@ function! easycomplete#CompleteDone()
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
-  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
+  elseif g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
     call easycomplete#popup#CompleteDone()
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
+    " call easycomplete#popup#CompleteDone()
+    call s:CloseCompleteInfo()
   else
     call easycomplete#popup#CompleteDone()
   endif
   if g:env_is_nvim && easycomplete#IsBacking()
     call s:StopAsyncRun()
-    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 50)
+    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 5)
   endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
@@ -718,6 +721,9 @@ function! s:BackingCompleteHandler()
         " 这里在nvim中模拟completedone事件
         if !empty(result)
           doautocmd <nomodeline> User easycomplete_pum_done
+        else
+          doautocmd <nomodeline> User easycomplete_pum_done
+          call s:CloseCompleteInfo()
         endif
       else
         noa silent! call complete(start_pos, result)
@@ -1196,7 +1202,6 @@ function! s:PumDeflect()
   if empty(b:typing_ctx) | return v:false | endif
   let pum_pos = easycomplete#pum#CompleteChangedEvnet()
   let cursor_left = easycomplete#pum#CursorLeft()
-  call s:console(cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol), pum_pos.col + 1)
   if cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol) == pum_pos.col + 1
     " 未偏转
     return v:false
