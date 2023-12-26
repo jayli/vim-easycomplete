@@ -324,43 +324,59 @@ function! s:MaxLength(lines)
 endfunction
 
 function! s:NormalizeItems(items)
-  return map(copy(a:items), '" " . easycomplete#util#GetItemAbbr(v:val)')
+  let new_line_arr = s:GetFullfillItems(a:items)
+  try
+    return map(copy(new_line_arr["items"]), function('s:MapFunction'))
+  catch
+    call s:console(v:exception)
+  endtry
 endfunction
 
-function! s:GetBaseParam(data)
+function! s:MapFunction(key, val)
+  let ret = [
+        \ " ",
+        \ get(a:val, "abbr", ""), " ",
+        \ get(a:val, "kind", ""), " ",
+        \ get(a:val, "menu", ""),
+        \ ]
+  return join(ret,"")
+endfunction
+
+function! s:GetFullfillItems(data)
   let wlength = 0
   let word_arr_length = []
   let kind_arr_length = []
   let menu_arr_length = []
+  let abbr_arr_length = []
   let new_data = []
   for item in a:data
-    let abbr = get(item, "abbr", "")
-    let word = empty(abbr) ? get(item, "word", "") : abbr
+    let abbr = easycomplete#util#GetItemAbbr(item)
+    let word = get(item, "word", "")
+    if empty(get(item, "abbr", ""))
+      let item["abbr"] = abbr
+    endif
     let word_arr_length += [strlen(word)]
-    let kind_arr_length += [strlen(get(item, "kind", ""))]
-    let menu_arr_length += [strlen(get(item, "menu", ""))]
+    let abbr_arr_length += [strlen(abbr)]
+    let kind_arr_length += [strlen(trim(get(item, "kind", "")))]
+    let menu_arr_length += [strlen(trim(get(item, "menu", "")))]
   endfor
   let maxlength = {
         \ "word_max_length": max(word_arr_length),
+        \ "abbr_max_length": max(abbr_arr_length),
         \ "kind_max_length": max(kind_arr_length),
         \ "menu_max_length": max(menu_arr_length)
         \ }
   for item in a:data
     call add(new_data, {
-          \ "abbr": s:fullfill(get(item, "abbr", ""), maxlength.word_max_length),
+          \ "abbr": s:fullfill(get(item, "abbr", ""), maxlength.abbr_max_length),
           \ "word": s:fullfill(get(item, "word", ""), maxlength.word_max_length),
-          \ "kind": s:fullfill(get(item, "kind", ""), maxlength.kind_max_length),
-          \ "menu": s:fullfill(get(item, "menu", ""), maxlength.menu_max_length)
+          \ "kind": s:fullfill(trim(get(item, "kind", "")), maxlength.kind_max_length),
+          \ "menu": s:fullfill(trim(get(item, "menu", "")), maxlength.menu_max_length)
           \ })
   endfor
   return extend({
         \ "items": new_data,
-        \ },
-        \ {
-        \ "word_max_length": max(word_arr_length),
-        \ "kind_max_length": max(kind_arr_length),
-        \ "menu_max_length": max(menu_arr_length)
-        \ })
+        \ }, maxlength)
 endfunction
 
 function! s:fullfill(word, length)
