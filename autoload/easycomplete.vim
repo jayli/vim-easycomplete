@@ -1244,6 +1244,10 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
   endfor
 endfunction
 
+function! s:RememberCtx()
+  let b:typing_ctx = easycomplete#context()
+endfunction
+
 function! easycomplete#CleverTab()
   if !easycomplete#ok('g:easycomplete_enable')
     return "\<Tab>"
@@ -1254,6 +1258,7 @@ function! easycomplete#CleverTab()
   elseif g:env_is_nvim && easycomplete#pum#visible()
     call s:zizz()
     call easycomplete#pum#next()
+    call timer_start(5, { -> s:RememberCtx()})
     return easycomplete#pum#SetWordBySelecting()
   else
     if easycomplete#tabnine#SnippetReady()
@@ -1320,6 +1325,7 @@ function! easycomplete#CleverShiftTab()
   else
     if easycomplete#pum#visible()
       call easycomplete#pum#prev()
+      call timer_start(5, { -> s:RememberCtx()})
       return easycomplete#pum#SetWordBySelecting()
     else
       return ""
