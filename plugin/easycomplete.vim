@@ -514,7 +514,7 @@ augroup easycomplete#NormalBinding
   autocmd ExitPre * call easycomplete#finish()
   " SecondComplete Entry
   autocmd CompleteChanged * noa call easycomplete#CompleteChanged()
-  autocmd TextChangedP * : noa call easycomplete#TextChangedP()
+  autocmd TextChangedP * noa call easycomplete#TextChangedP()
   autocmd InsertCharPre * call easycomplete#InsertCharPre()
   autocmd CompleteDone * call easycomplete#CompleteDone()
   autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -527,6 +527,7 @@ augroup easycomplete#NormalBinding
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
   autocmd User easycomplete_pum_done call easycomplete#CompleteDone()
   autocmd User easycomplete_pum_textchanged_p call easycomplete#TextChangedP()
+  autocmd User easycomplete_pum_completechanged noa call easycomplete#CompleteChanged()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)

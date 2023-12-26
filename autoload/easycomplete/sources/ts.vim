@@ -119,6 +119,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
     " autocmd FileType *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#bufEnter()
     " hack for #56
     autocmd CompleteChanged *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#CompleteChanged()
+    autocmd User easycomplete_pum_completechanged noa call easycomplete#sources#ts#CompleteChanged()
     if g:env_is_vim
       autocmd SafeState *.mjs,*.ejs,*.js,*.ts,*.jsx,*.tsx call easycomplete#sources#ts#init()
     endif
@@ -388,7 +389,11 @@ endfunction
 "     }, ...]
 function! easycomplete#sources#ts#EntryDetailsCallback(item)
   call s:EntryDetailsStatusReset()
-  if !pumvisible()
+  if g:env_is_vim && !pumvisible()
+    return
+  endif
+
+  if g:env_is_nvim && !easycomplete#pum#visible()
     return
   endif
 
@@ -440,7 +445,8 @@ function! easycomplete#sources#ts#CompleteChanged()
         \ )
     return
   endif
-  if empty(v:event)
+  let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
+  if empty(l:event)
     call s:DoFetchEntryDetails(s:request_queue_ctx, [l:item])
   else
     " 异步执行，避免快速移动光标的闪烁
@@ -449,7 +455,7 @@ function! easycomplete#sources#ts#CompleteChanged()
           \ [s:request_queue_ctx, [l:item]],
           \ 50)
     " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构
-    let g:easycomplete_completechanged_event = deepcopy(v:event)
+    let g:easycomplete_completechanged_event = deepcopy(l:event)
   endif
 endfunction
 

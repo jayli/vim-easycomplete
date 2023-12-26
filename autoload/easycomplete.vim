@@ -330,6 +330,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
+  call s:console('completedone')
   call easycomplete#popup#CompleteDone()
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
@@ -394,13 +395,18 @@ function! easycomplete#FirstSelectedWithOptDefaultSelected()
   if &completeopt =~ "noselect"
     return v:false
   endif
-  if !pumvisible()
+  if g:env_is_vim && !pumvisible()
+    return v:false
+  endif
+  if g:env_is_nvim && !easycomplete#pum#visible()
     return v:false
   endif
   if !easycomplete#CompleteCursored()
     return v:false
   endif
-  if complete_info()['selected'] == 0
+  let l:selected = g:env_is_nvim ?
+        \ easycomplete#pum#CompleteInfo()['selected'] : complete_info()['selected']
+  if l:selected == 0
     return v:true
   endif
   return v:false
@@ -1069,6 +1075,7 @@ function! easycomplete#CompleteChanged()
   " 是不会触发 showinfo 的动作的
   " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
+  call s:console('completechanged')
   let item = deepcopy(easycomplete#GetCursordItem())
   call easycomplete#SetCompletedItem(item)
   if empty(item)
@@ -1077,9 +1084,9 @@ function! easycomplete#CompleteChanged()
   endif
   let b:typing_ctx = easycomplete#context()
   call easycomplete#ShowCompleteInfoByItem(item)
-
+  let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " Hack 所有异步获取 document 时，需要暂存 event
-  let g:easycomplete_completechanged_event = deepcopy(v:event)
+  let g:easycomplete_completechanged_event = deepcopy(l:event)
 endfunction
 
 function! easycomplete#CompleteShow()
@@ -1104,6 +1111,7 @@ endfunction
 
 function! easycomplete#ShowCompleteInfoByItem(item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
+  call s:console(info)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(a:item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
@@ -1654,6 +1662,7 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
+  " todo jayli 这里要模拟 completechanged 事件
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
     if g:env_is_nvim

@@ -6,6 +6,8 @@
 let s:pum_window = 0
 let s:scroll_bar = 0
 let s:pum_buffer = 0
+" complete_info() 中 selected 从 0 开始，这里从 1 开始
+" easycomplete#pum#CompleteInfo() 的返回和 complete_info() 保持一致
 let s:selected_i = 0
 let s:curr_items = []
 
@@ -70,6 +72,34 @@ function! s:SelectNext()
   endif
   call s:select(next_i)
   let s:selected_i = next_i
+  doautocmd <nomodeline> User easycomplete_pum_completechanged
+endfunction
+
+function! easycomplete#pum#CompleteChangedEvnet()
+  let l:event = {}
+  if !s:pumvisible() || !easycomplete#pum#CompleteCursored()
+    return l:event
+  endif
+  let completed_item = easycomplete#pum#CursoredItem()
+  let pum_pos = s:GetPumPos()
+  let h = pum_pos.height
+  let w = pum_pos.width
+  let r = pum_pos.pos[0]
+  let c = pum_pos.pos[1]
+  let scrollbar = s:HasScrollbar()
+  if scrollbar
+    let w = w - 1
+  endif
+  let item_size = len(s:curr_items)
+  return {
+        \ "completed_item": completed_item,
+        \ "col": c + 1,
+        \ "row": r,
+        \ "height": h,
+        \ "width": w - 1,
+        \ "scrollbar": scrollbar,
+        \ "size": item_size
+        \}
 endfunction
 
 function! s:SelectPrev()
@@ -85,6 +115,7 @@ function! s:SelectPrev()
   endif
   call s:select(prev_i)
   let s:selected_i = prev_i
+  doautocmd <nomodeline> User easycomplete_pum_completechanged
 endfunction
 
 function! easycomplete#pum#next()
@@ -273,6 +304,7 @@ endfunction
 function! s:flush()
   if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
+    call s:console('pum closed')
     doautocmd <nomodeline> User easycomplete_pum_done
   endif
   let s:pum_window = 0

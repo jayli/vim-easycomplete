@@ -51,7 +51,8 @@ let s:buf = {
       \ }
 
 function! easycomplete#popup#MenuPopupChanged(info)
-  if empty(v:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
+  let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
+  if empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
     " 如果默认选中第一项的逻辑
     let curr_item = easycomplete#GetCursordItem()
     " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
@@ -62,10 +63,10 @@ function! easycomplete#popup#MenuPopupChanged(info)
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   else
-    if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
-    let s:event = empty(v:event) ? copy(g:easycomplete_completechanged_event) : copy(v:event)
-    let s:item = has_key(v:event, 'completed_item') ?
-          \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
+    if empty(l:event) && empty(g:easycomplete_completechanged_event) | return | endif
+    let s:event = empty(l:event) ? copy(g:easycomplete_completechanged_event) : copy(l:event)
+    let s:item = has_key(l:event, 'completed_item') ?
+          \ copy(l:event.completed_item) : copy(easycomplete#GetCompletedItem())
 
     call easycomplete#popup#DoPopup(a:info, g:easycomplete_popup_delay)
   endif
@@ -263,7 +264,11 @@ endfunction
 " s:popup 代替 popup_info 方法，只给 completion 使用
 " 外部调用时统一使用 easycomplete#popup#float() 方法
 function! s:popup(info)
-  if !pumvisible() || !easycomplete#CompleteCursored()
+  if g:env_is_vim && (!pumvisible() || !easycomplete#CompleteCursored())
+    call easycomplete#popup#close("popup")
+    return
+  endif
+  if g:env_is_nvim && (!easycomplete#pum#visible() || !easycomplete#CompleteCursored())
     call easycomplete#popup#close("popup")
     return
   endif
@@ -278,8 +283,9 @@ function! s:popup(info)
   if easycomplete#FirstSelectedWithOptDefaultSelected()
     " do nothing
     " call easycomplete#popup#close("popup")
-    let s:event = v:event
-    let s:last_event = v:event
+    let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
+    let s:event = l:event
+    let s:last_event = l:event
   else
     if s:is_nvim && g:easycomplete_popup_win["popup"] && s:event == s:last_event
       return
@@ -309,7 +315,11 @@ function! s:popup(info)
         \ 'style':'minimal',
         \ 'filetype': &filetype
         \ }
-  let pum_pos = pum_getpos()
+  if g:env_is_vim
+    let pum_pos = pum_getpos()
+  else
+    let pum_pos = g:easycomplete_completechanged_event
+  endif
   if get(pum_pos, 'scrollbar')
     let right_avail_col  = pum_pos.col + pum_pos.width + 1
   else
@@ -558,7 +568,9 @@ function! easycomplete#popup#close(...)
         else
           let delay = 30
         endif
-          call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
+          
+        call s:console('close popup')
+        call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []
