@@ -55,6 +55,10 @@ function! s:OpenWindow(startcol, lines)
   endif
 endfunction
 
+function! easycomplete#pum#GetPos()
+  return s:GetPumPos()
+endfunction
+
 function! s:SelectNext()
   if !s:pumvisible() | return | endif
   let item_length = len(s:curr_items)
@@ -166,14 +170,14 @@ endfunction
 " TODO
 function! s:InitScrollBar()
   if !s:pumvisible() | return | endif
-  let window_info = s:WindowInfo()
+  let window_info = s:GetPumPos()
 endfunction
 
 function! s:HasScrollbar()
   return s:scroll_bar == 1 ? v:true : v:false
 endfunction
 
-function! s:WindowInfo()
+function! s:GetPumPos()
   if s:pumvisible()
     let pos = nvim_win_get_position(s:pum_window)
     let h = nvim_win_get_height(s:pum_window)
@@ -307,7 +311,7 @@ function! s:InitBuffer(lines)
 endfunction
 
 function! s:GetBufSize(lines)
-  let buffer_width = s:MaxLength(a:lines) + 2
+  let buffer_width = s:MaxLength(a:lines) + 1
   let buffer_height = len(a:lines)
   return {"width": buffer_width, "height": buffer_height}
 endfunction
@@ -315,7 +319,7 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strlen(item)
+    let curr_length = strdisplaywidth(item)
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -325,11 +329,7 @@ endfunction
 
 function! s:NormalizeItems(items)
   let new_line_arr = s:GetFullfillItems(a:items)
-  try
-    return map(copy(new_line_arr["items"]), function('s:MapFunction'))
-  catch
-    call s:console(v:exception)
-  endtry
+  return map(copy(new_line_arr["items"]), function('s:MapFunction'))
 endfunction
 
 function! s:MapFunction(key, val)
@@ -355,10 +355,10 @@ function! s:GetFullfillItems(data)
     if empty(get(item, "abbr", ""))
       let item["abbr"] = abbr
     endif
-    let word_arr_length += [strlen(word)]
-    let abbr_arr_length += [strlen(abbr)]
-    let kind_arr_length += [strlen(trim(get(item, "kind", "")))]
-    let menu_arr_length += [strlen(trim(get(item, "menu", "")))]
+    let word_arr_length += [strdisplaywidth(word)]
+    let abbr_arr_length += [strdisplaywidth(abbr)]
+    let kind_arr_length += [strdisplaywidth(trim(get(item, "kind", "")))]
+    let menu_arr_length += [strdisplaywidth(trim(get(item, "menu", "")))]
   endfor
   let maxlength = {
         \ "word_max_length": max(word_arr_length),
@@ -367,11 +367,13 @@ function! s:GetFullfillItems(data)
         \ "menu_max_length": max(menu_arr_length)
         \ }
   for item in a:data
+    let f_kind = s:fullfill(trim(get(item, "kind", "")), maxlength.kind_max_length)
+    let f_menu = s:fullfill(trim(get(item, "menu", "")), maxlength.menu_max_length)
     call add(new_data, {
           \ "abbr": s:fullfill(get(item, "abbr", ""), maxlength.abbr_max_length),
           \ "word": s:fullfill(get(item, "word", ""), maxlength.word_max_length),
-          \ "kind": s:fullfill(trim(get(item, "kind", "")), maxlength.kind_max_length),
-          \ "menu": s:fullfill(trim(get(item, "menu", "")), maxlength.menu_max_length)
+          \ "kind": f_kind,
+          \ "menu": f_menu
           \ })
   endfor
   return extend({
@@ -380,12 +382,16 @@ function! s:GetFullfillItems(data)
 endfunction
 
 function! s:fullfill(word, length)
-  let word_length = strlen(a:word)
+  let word_length = strdisplaywidth(a:word)
   if word_length >= a:length
     return a:word
   endif
   let inc = a:length - word_length
   return a:word . repeat(" ", inc)
+endfunction
+
+function! easycomplete#pum#fullfill(word, length)
+  return s:fullfill(a:word, a:length)
 endfunction
 
 function! s:log(...)
