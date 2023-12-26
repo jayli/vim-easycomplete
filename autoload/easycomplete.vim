@@ -335,12 +335,14 @@ function! easycomplete#CompleteDone()
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
-    call s:StopAsyncRun()
-    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 20)
   elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
     call easycomplete#popup#CompleteDone()
   else
     call easycomplete#popup#CompleteDone()
+  endif
+  if g:env_is_nvim && easycomplete#IsBacking()
+    call s:StopAsyncRun()
+    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 50)
   endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
@@ -365,7 +367,8 @@ endfunction
 " 却实际上是 true，保险起见加上一个timer
 function! s:CompleteDoneTeardown()
   if g:env_is_nvim && !easycomplete#pum#visible()
-    call easycomplete#popup#CompleteDone()
+    " call easycomplete#popup#CompleteDone()
+    call s:CloseCompleteInfo()
   endif
 endfunction
 

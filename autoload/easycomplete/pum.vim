@@ -12,6 +12,7 @@ let s:selected_i = 0
 let s:curr_items = []
 " 类似 b:typing_ctx，为了避免干扰，这里只给 pum 使用
 let s:original_ctx = {}
+let s:original_opt = {}
 
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
 " 当前window的起始位置，算上了 tabline: win_screenpos(win_getid())
@@ -42,13 +43,15 @@ function! s:OpenWindow(startcol, lines)
         \ }
   call extend(opts, pum_pos)
   if empty(s:pum_window)
+    call s:CacheOpt()
     let winid = nvim_open_win(s:pum_buffer, v:false, opts)
     call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
-    call setwinvar(winid, '&scrolloff', 0)
-    call setwinvar(winid, '&spell', 0)
-    call setwinvar(winid, '&number', 0)
-    call setwinvar(winid, '&wrap', 0)
-    call setwinvar(winid, '&signcolumn', "no")
+    call setwinvar(bufwinnr(s:pum_buffer), '&scrolloff', 0)
+    call setwinvar(bufwinnr(s:pum_buffer), '&spell', 0)
+    call setwinvar(bufwinnr(s:pum_buffer), '&number', 0)
+    call setwinvar(bufwinnr(s:pum_buffer), '&wrap', 0)
+    call setwinvar(bufwinnr(s:pum_buffer), '&signcolumn', "no")
+    call setwinvar(bufwinnr(s:pum_buffer), '&hlsearch', 0)
     let s:pum_window = winid
     let s:original_ctx = b:typing_ctx
   else
@@ -64,6 +67,20 @@ endfunction
 
 function! easycomplete#pum#GetPos()
   return s:GetPumPos()
+endfunction
+
+function! s:CacheOpt()
+  let s:original_opt = {
+        \ "hlsearch": &hlsearch,
+        \ "wrap": &wrap,
+        \ "spell": &spell
+        \ }
+endfunction
+
+function! s:RestoreOpt()
+  call setwinvar(0, '&hlsearch', get(s:original_opt, "hlsearch"))
+  call setwinvar(0, '&wrap', get(s:original_opt, "wrap"))
+  call setwinvar(0, '&spell', get(s:original_opt, "spell"))
 endfunction
 
 function! s:SelectNext()
@@ -307,6 +324,7 @@ function! s:flush()
   let should_fire_pum_done = 0
   if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
+    call s:RestoreOpt()
     let should_fire_pum_done = 1
   endif
   let s:pum_window = 0
