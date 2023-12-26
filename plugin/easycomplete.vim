@@ -524,6 +524,9 @@ augroup easycomplete#NormalBinding
   autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
+  if has("nvim")
+    autocmd WinScrolled * noa call easycomplete#WinScrolled()
+  endif
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
   " 下面自定义事件只在 nvim 下有效
   autocmd User easycomplete_pum_done call easycomplete#CompleteDone()

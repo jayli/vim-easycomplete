@@ -53,17 +53,16 @@ let s:buf = {
 function! easycomplete#popup#MenuPopupChanged(info)
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " 这两个 if 如果默认选中第一项的逻辑
-  " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
-  " 这里应该避免多次相同事件触发，这个条件写的不work
-  " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
-  "   return
-  " endif
+  " 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
+  " 这里应该避免多次相同事件同时发生
+  let curr_item = easycomplete#GetCursordItem()
+  if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
+    return
+  endif
   if g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected()
-    let curr_item = easycomplete#GetCursordItem()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   elseif g:env_is_vim && empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
-    let curr_item = easycomplete#GetCursordItem()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   else
@@ -82,7 +81,7 @@ function! s:GetMenuInfoWinid()
 endfunction
 
 function! s:SamePositionAsLastTime()
-  let pum_pos = pum_getpos()
+  let pum_pos = g:env_is_vim ? pum_getpos() : easycomplete#pum#CompleteChangedEvnet()
   if !exists("s:easycomplete_pum_pos")
     let s:easycomplete_pum_pos = deepcopy(pum_pos)
     return v:false
@@ -97,6 +96,7 @@ function! s:SamePositionAsLastTime()
         \  pum_pos.row == s:easycomplete_pum_pos.row
     return v:true
   else
+    let s:easycomplete_pum_pos = deepcopy(pum_pos)
     return v:false
   endif
 endfunction

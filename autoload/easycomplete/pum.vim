@@ -3,6 +3,11 @@
 " select 过程中的单词补全
 " 回车的处理
 
+let s:default_pum_pot = {
+        \ "relative": "editor",
+        \ "focusable": v:false,
+        \ "bufpos": [0,0]
+        \ }
 let s:pum_window = 0
 let s:scroll_bar = 0
 let s:pum_buffer = 0
@@ -12,6 +17,7 @@ let s:selected_i = 0
 let s:curr_items = []
 " 类似 b:typing_ctx，为了避免干扰，这里只给 pum 使用
 let s:original_ctx = {}
+" 当前编辑窗口的原始配置
 let s:original_opt = {}
 
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
@@ -36,11 +42,7 @@ function! s:OpenWindow(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
-  let opts = {
-        \ "relative": "editor",
-        \ "focusable": v:false,
-        \ "bufpos": [0,0]
-        \ }
+  let opts = deepcopy(s:default_pum_pot)
   call extend(opts, pum_pos)
   if empty(s:pum_window)
     call s:CacheOpt()
@@ -62,6 +64,26 @@ function! s:OpenWindow(startcol, lines)
   call s:reset()
   if s:HasScrollbar()
     call s:InitScrollBar()
+  endif
+  call nvim_win_set_cursor(s:pum_window, [1, 0])
+endfunction
+
+function! easycomplete#pum#WinScrolled()
+  if !s:pumvisible() | return | endif
+  let cursor_left = s:CursorLeft()
+  let typing_word = easycomplete#util#GetTypingWord()
+  let new_startcol = getcurpos()[2] - strlen(typing_word)
+  let lines = getbufline(s:pum_buffer, 1, "$")
+  let buffer_size = s:GetBufSize(lines)
+  let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
+  let opts = deepcopy(s:default_pum_pot)
+  call extend(opts, pum_pos)
+  call nvim_win_set_config(s:pum_window, opts)
+  if has_key(v:event, bufwinid(bufnr("")))
+    let curr_item = easycomplete#pum#CursoredItem()
+    if !empty(curr_item)
+      call easycomplete#ShowCompleteInfoByItem(curr_item)
+    endif
   endif
 endfunction
 
@@ -460,4 +482,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:trace(...)
+  return call('easycomplete#util#trace', a:000)
 endfunction

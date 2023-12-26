@@ -363,6 +363,10 @@ function! easycomplete#CompleteDone()
   call s:flush()
 endfunction
 
+function! easycomplete#WinScrolled()
+  call easycomplete#pum#WinScrolled()
+endfunction
+
 " 有时候 pum_done 事件执行的比 PumClose 要快，这时判断 pumvisible 应该为 false
 " 却实际上是 true，保险起见加上一个timer
 function! s:CompleteDoneTeardown()
@@ -488,6 +492,10 @@ function! s:BackChecking()
     return v:false
   endif
   return v:false
+endfunction
+
+function! easycomplete#BackChecking()
+  return s:BackChecking()
 endfunction
 
 function! easycomplete#Up()
@@ -1163,6 +1171,10 @@ function! s:ShowCompleteInfoWithoutTimer()
     let item = easycomplete#pum#CursoredItem()
   else
     let item = complete_info()["items"][complete_info()['selected']]
+  endif
+  if empty(item)
+    call s:CloseCompleteInfo()
+    return
   endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
