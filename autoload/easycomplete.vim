@@ -11,7 +11,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -758,7 +758,6 @@ function! easycomplete#typing()
       return ""
     endif
   endif
-
 
   " vim lsp 返回结果中包含多层的对象，比如 "a.b.c"，这样在输入"." 时就需要匹配
   " 返回结果中的"."，":" 也是同理，这里只对 viml 做特殊处理

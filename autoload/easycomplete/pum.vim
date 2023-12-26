@@ -10,6 +10,8 @@ let s:pum_buffer = 0
 " easycomplete#pum#CompleteInfo() 的返回和 complete_info() 保持一致
 let s:selected_i = 0
 let s:curr_items = []
+" 类似 b:typing_ctx，为了避免干扰，这里只给 pum 使用
+let s:original_ctx = {}
 
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
 " 当前window的起始位置，算上了 tabline: win_screenpos(win_getid())
@@ -48,6 +50,7 @@ function! s:OpenWindow(startcol, lines)
     call setwinvar(winid, '&wrap', 0)
     call setwinvar(winid, '&signcolumn', "no")
     let s:pum_window = winid
+    let s:original_ctx = b:typing_ctx
   else
     " 已经存在的 windowid 用 nvim_win_set_config
     call nvim_win_set_config(s:pum_window, opts)
@@ -167,15 +170,10 @@ endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
-  let backing_count = col('.') - get(b:typing_ctx, "startcol", 0)
-  let oprator_str = ""
-  let i = 0
-  while i < backing_count
-    let oprator_str .= "\<backspace>"
-    let i += 1
-  endwhile
+  let backing_count = col('.') - get(s:original_ctx, "startcol", 0)
+  let oprator_str = repeat("\<backspace>", backing_count)
   if !easycomplete#pum#CompleteCursored()
-    return oprator_str . get(b:typing_ctx, "typing", "")
+    return oprator_str . get(s:original_ctx, "typing", "")
   else
     return oprator_str . get(easycomplete#pum#CursoredItem(), "word", "")
   endif
@@ -315,6 +313,7 @@ function! s:flush()
   let s:scroll_bar = 0
   let s:selected_i = 0
   let s:curr_items = []
+  let s:original_ctx = {}
   if should_fire_pum_done
     doautocmd <nomodeline> User easycomplete_pum_done
   endif
