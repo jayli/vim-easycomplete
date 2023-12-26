@@ -525,6 +525,7 @@ augroup easycomplete#NormalBinding
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
+  " 下面自定义事件只在 nvim 下有效
   autocmd User easycomplete_pum_done call easycomplete#CompleteDone()
   autocmd User easycomplete_pum_textchanged_p call easycomplete#TextChangedP()
   autocmd User easycomplete_pum_completechanged noa call easycomplete#CompleteChanged()

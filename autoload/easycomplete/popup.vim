@@ -52,14 +52,18 @@ let s:buf = {
 
 function! easycomplete#popup#MenuPopupChanged(info)
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
-  if empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
-    " 如果默认选中第一项的逻辑
+  " 这两个 if 如果默认选中第一项的逻辑
+  " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
+  " 这里应该避免多次相同事件触发，这个条件写的不work
+  " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
+  "   return
+  " endif
+  if g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected()
     let curr_item = easycomplete#GetCursordItem()
-    " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
-    " 这里应该避免多次相同事件触发，这个条件写的不work
-    " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
-    "   return
-    " endif
+    let s:item = deepcopy(curr_item)
+    call easycomplete#popup#DoPopup(a:info, 1)
+  elseif g:env_is_vim && empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
+    let curr_item = easycomplete#GetCursordItem()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   else
@@ -318,7 +322,7 @@ function! s:popup(info)
   if g:env_is_vim
     let pum_pos = pum_getpos()
   else
-    let pum_pos = g:easycomplete_completechanged_event
+    let pum_pos = easycomplete#pum#CompleteChangedEvnet()
   endif
   if get(pum_pos, 'scrollbar')
     let right_avail_col  = pum_pos.col + pum_pos.width + 1
@@ -568,8 +572,6 @@ function! easycomplete#popup#close(...)
         else
           let delay = 30
         endif
-          
-        call s:console('close popup')
         call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0

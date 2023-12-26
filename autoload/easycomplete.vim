@@ -330,8 +330,14 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
-  call s:console('completedone')
-  call easycomplete#popup#CompleteDone()
+  " hack for Nvim
+  " 正常情况下回退会触发 completedone，进而导致popup_close，这里要重新打开下
+  if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
+        \ && easycomplete#FirstSelectedWithOptDefaultSelected()
+    call s:ShowCompleteInfoWithoutTimer()
+  else
+    call easycomplete#popup#CompleteDone()
+  endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
@@ -685,6 +691,11 @@ function! s:BackingCompleteHandler()
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
       if g:env_is_nvim
         noa silent! call easycomplete#pum#complete(start_pos, result)
+        " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
+        " 这里在nvim中模拟completedone事件
+        if !empty(result)
+          doautocmd <nomodeline> User easycomplete_pum_done
+        endif
       else
         noa silent! call complete(start_pos, result)
       endif
@@ -1075,7 +1086,6 @@ function! easycomplete#CompleteChanged()
   " 是不会触发 showinfo 的动作的
   " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
-  call s:console('completechanged')
   let item = deepcopy(easycomplete#GetCursordItem())
   call easycomplete#SetCompletedItem(item)
   if empty(item)
@@ -1111,7 +1121,6 @@ endfunction
 
 function! easycomplete#ShowCompleteInfoByItem(item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
-  call s:console(info)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(a:item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
@@ -1127,8 +1136,11 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   endif
 endfunction
 
+function! easycomplete#ShowCompleteInfoWithoutTimer()
+  call s:ShowCompleteInfoWithoutTimer()
+endfunction
+
 function! s:ShowCompleteInfoWithoutTimer()
-  return
   if !easycomplete#CompleteCursored()
     call s:CloseCompleteInfo()
     return
@@ -1148,6 +1160,23 @@ function! s:ShowCompleteInfoWithoutTimer()
       let info = [info]
     endif
     call s:ShowCompleteInfo(info)
+  endif
+endfunction
+
+" pum 的位置发生了偏转，自定义 pum 触碰到右边距时会发生
+" 实测无法正常及时检测是否发生偏转
+function! s:PumDeflect()
+  if !easycomplete#pum#visible() | return v:false | endif
+  if empty(b:typing_ctx) | return v:false | endif
+  let pum_pos = easycomplete#pum#CompleteChangedEvnet()
+  let cursor_left = easycomplete#pum#CursorLeft()
+  call s:console(cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol), pum_pos.col + 1)
+  if cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol) == pum_pos.col + 1
+    " 未偏转
+    return v:false
+  else
+    " 发生了偏转
+    return v:true
   endif
 endfunction
 

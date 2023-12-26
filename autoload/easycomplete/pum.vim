@@ -35,7 +35,8 @@ function! s:OpenWindow(startcol, lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
   let opts = {
         \ "relative": "editor",
-        \ "focusable": v:false
+        \ "focusable": v:false,
+        \ "bufpos": [0,0]
         \ }
   call extend(opts, pum_pos)
   if empty(s:pum_window)
@@ -50,6 +51,7 @@ function! s:OpenWindow(startcol, lines)
   else
     " 已经存在的 windowid 用 nvim_win_set_config
     call nvim_win_set_config(s:pum_window, opts)
+    doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
   if s:HasScrollbar()
@@ -198,6 +200,14 @@ function! s:CursorLeft()
   return win_screenpos(win_getid())[1] + wincol() - 1
 endfunction
 
+function! s:CursorRight()
+  return &columns - s:CursorLeft()
+endfunction
+
+function! easycomplete#pum#CursorLeft()
+  return s:CursorLeft()
+endfunction
+
 " TODO
 function! s:InitScrollBar()
   if !s:pumvisible() | return | endif
@@ -274,21 +284,15 @@ function! s:ComputePumPos(startcol, buffer_size)
   " 计算相对于 editor 的 startcol
   let offset = col('.') - a:startcol
   let realcol = s:CursorLeft() - offset
+  " 如果触碰到右壁，默认缩短，和 vim 保持一致，永远和字符对齐
+  let right_space = &columns - (realcol - 2)
+  if right_space < l:width
+    let l:width = right_space
+  endif
   return {"row": l:row, "col": realcol - 2,
         \ "width":  l:width,
         \ "height": l:height
         \ }
-endfunction
-
-function! s:PaddingLeft()
-  let original_width = 0
-  if &signcolumn == "yes"
-    let original_width = original_width + 2
-  endif
-  if &number == 1
-    let original_width = original_width + &numberwidth
-  endif
-  return original_width
 endfunction
 
 " secondcomplete 过程中有可能手动移动了 pum 的 cursor，继续 typing
@@ -302,15 +306,18 @@ function! s:reset()
 endfunction
 
 function! s:flush()
+  let should_fire_pum_done = 0
   if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
-    call s:console('pum closed')
-    doautocmd <nomodeline> User easycomplete_pum_done
+    let should_fire_pum_done = 1
   endif
   let s:pum_window = 0
   let s:scroll_bar = 0
   let s:selected_i = 0
   let s:curr_items = []
+  if should_fire_pum_done
+    doautocmd <nomodeline> User easycomplete_pum_done
+  endif
 endfunction
 
 function! s:close()
