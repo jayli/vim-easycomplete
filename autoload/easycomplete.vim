@@ -335,6 +335,10 @@ function! easycomplete#CompleteDone()
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
+    call s:StopAsyncRun()
+    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 20)
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
+    call easycomplete#popup#CompleteDone()
   else
     call easycomplete#popup#CompleteDone()
   endif
@@ -355,6 +359,14 @@ function! easycomplete#CompleteDone()
     endif
   endif
   call s:flush()
+endfunction
+
+" 有时候 pum_done 事件执行的比 PumClose 要快，这时判断 pumvisible 应该为 false
+" 却实际上是 true，保险起见加上一个timer
+function! s:CompleteDoneTeardown()
+  if g:env_is_nvim && !easycomplete#pum#visible()
+    call easycomplete#popup#CompleteDone()
+  endif
 endfunction
 
 function! easycomplete#InsertLeave()
