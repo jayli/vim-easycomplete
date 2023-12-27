@@ -56,16 +56,18 @@ function! s:OpenWindow(startcol, lines)
     call s:CacheOpt()
     let winid = nvim_open_win(s:pum_buffer, v:false, opts)
     let s:pum_window = winid
-    call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
+    let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel'
+    " call nvim_win_set_option(winid, 'winhl', hl)
+    call setwinvar(winid, '&winhl', hl)
+    call setwinvar(winid, '&scrolloff', 0)
+    call setwinvar(winid, '&spell', 0)
+    call setwinvar(winid, '&number', 0)
+    call setwinvar(winid, '&wrap', 0)
+    call setwinvar(winid, '&signcolumn', "no")
+    call setwinvar(winid, '&hlsearch', 0)
+    call setwinvar(winid, '&list', 0)
+    call setwinvar(winid, '&conceallevel', 3)
     call s:hl()
-    call setwinvar(bufwinnr(s:pum_buffer), '&scrolloff', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&spell', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&number', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&wrap', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&signcolumn', "no")
-    call setwinvar(bufwinnr(s:pum_buffer), '&hlsearch', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&list', 0)
-    call setwinvar(bufwinnr(s:pum_buffer), '&conceallevel', 3)
     let s:original_ctx = b:typing_ctx
   else
     " 已经存在的 windowid 用 nvim_win_set_config
