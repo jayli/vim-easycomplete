@@ -750,6 +750,11 @@ function! easycomplete#typing()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+
+  if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
+    return ""
+  endif
+
   let g:easycomplete_start = reltime()
   if g:env_is_vim && s:BackChecking()
     let g:easycomplete_backing = 1
@@ -770,7 +775,6 @@ function! easycomplete#typing()
 
   " TODO 为了防止tab补全 tabnine后自动触发complete动作，这里需要更多测试兼容性
   if s:zizzing() | return "" | endif
-
 
   if !easycomplete#FireCondition()
     " tabnine
@@ -795,9 +799,6 @@ function! easycomplete#typing()
   elseif s:VimDotTyping()
     " continue
   elseif s:zizzing()
-    return ""
-  endif
-  if pumvisible() || easycomplete#pum#visible()
     return ""
   endif
 
@@ -1097,7 +1098,7 @@ function! s:CompleteMatchAction()
       call s:CloseCompletionMenu()
       call s:flush()
       call s:StopZizz()
-      call timer_start(2, { -> easycomplete#typing() })
+      call timer_start(15, { -> easycomplete#typing() })
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)
