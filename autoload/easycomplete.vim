@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -1121,7 +1121,9 @@ function! easycomplete#CompleteChanged()
     return
   endif
   let b:typing_ctx = easycomplete#context()
-  call easycomplete#ShowCompleteInfoByItem(item)
+  " 改成异步，避免按住tab时连续触发completechanged会频繁大量调用
+  call s:StopAsyncRun()
+  call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 5)
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " Hack 所有异步获取 document 时，需要暂存 event
   let g:easycomplete_completechanged_event = deepcopy(l:event)
