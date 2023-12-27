@@ -70,16 +70,16 @@ endfunction
 
 function! easycomplete#pum#WinScrolled()
   if !s:pumvisible() | return | endif
-  let cursor_left = s:CursorLeft()
-  let typing_word = easycomplete#util#GetTypingWord()
-  let new_startcol = getcurpos()[2] - strlen(typing_word)
-  let lines = getbufline(s:pum_buffer, 1, "$")
-  let buffer_size = s:GetBufSize(lines)
-  let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
-  let opts = deepcopy(s:default_pum_pot)
-  call extend(opts, pum_pos)
-  call nvim_win_set_config(s:pum_window, opts)
   if has_key(v:event, bufwinid(bufnr("")))
+    let cursor_left = s:CursorLeft()
+    let typing_word = easycomplete#util#GetTypingWord()
+    let new_startcol = getcurpos()[2] - strlen(typing_word)
+    let lines = getbufline(s:pum_buffer, 1, "$")
+    let buffer_size = s:GetBufSize(lines)
+    let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
+    let opts = deepcopy(s:default_pum_pot)
+    call extend(opts, pum_pos)
+    call nvim_win_set_config(s:pum_window, opts)
     let curr_item = easycomplete#pum#CursoredItem()
     if !empty(curr_item)
       call easycomplete#ShowCompleteInfoByItem(curr_item)
@@ -210,11 +210,11 @@ endfunction
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
   let backing_count = col('.') - get(s:original_ctx, "startcol", 0)
-  let oprator_str = repeat("\<backspace>", backing_count)
+  let oprator_str = repeat("\<bs>", backing_count)
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
-    return oprator_str . get(easycomplete#pum#CursoredItem(), "word", "")
+    return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
 endfunction
 

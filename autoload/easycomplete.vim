@@ -3,15 +3,13 @@
 " Description:  A minimalism style complete plugin for vim/nvim
 " More Info:    <https://github.com/jayli/vim-easycomplete>
 
-
-
 if get(g:, 'easycomplete_script_loaded')
   finish
 endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -320,7 +318,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " 防止抖动用的
+  " 防止抖动
   let result_all = easycomplete#sources#tn#GetGlboalSoucresItems() + result
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
@@ -330,23 +328,24 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
-  " hack for Nvim
-  " 正常情况下回退会触发 completedone，进而导致popup_close，这里要重新打开下
+  " hack for nvim
+  " 正常情况下回退会触发 completedone，进而导致popup_close，nvim
+  " 中也遵循这个逻辑，需要手动再打开一下
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
   elseif g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
     call easycomplete#popup#CompleteDone()
   elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
-    " call easycomplete#popup#CompleteDone()
     call s:CloseCompleteInfo()
   else
     call easycomplete#popup#CompleteDone()
   endif
-  if g:env_is_nvim && easycomplete#IsBacking()
-    call s:StopAsyncRun()
-    call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 5)
-  endif
+  " 偶尔会有一些pum关闭后completeinfo没有关闭，这里做一个扫尾
+  " if g:env_is_nvim && easycomplete#IsBacking()
+  "   call s:StopAsyncRun()
+  "   call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 5)
+  " endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
@@ -374,7 +373,6 @@ endfunction
 " 却实际上是 true，保险起见加上一个timer
 function! s:CompleteDoneTeardown()
   if g:env_is_nvim && !easycomplete#pum#visible()
-    " call easycomplete#popup#CompleteDone()
     call s:CloseCompleteInfo()
   endif
 endfunction
@@ -419,6 +417,7 @@ function! easycomplete#GetCursordItem()
   return {}
 endfunction
 
+" typing 过程中需要即时展开completeinfo，这里先做一个判断
 function! easycomplete#FirstSelectedWithOptDefaultSelected()
   if &completeopt =~ "noselect"
     return v:false
@@ -1566,7 +1565,11 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   endif
 
   if easycomplete#CompleteCursored()
-    call feedkeys("\<C-E>")
+    if g:env_is_nvim
+      call s:CloseCompletionMenu()
+    else
+      call feedkeys("\<C-E>")
+    endif
   endif
 
   " FristComplete 的过滤方法参照 YCM 和 coc 重写了
@@ -1729,7 +1732,6 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
-  " todo jayli 这里要模拟 completechanged 事件
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
     if g:env_is_nvim
@@ -2288,6 +2290,7 @@ function! easycomplete#TextChangedI()
   " TextCHangedP 和 TextChangedI 是互斥的
   if g:env_is_nvim && easycomplete#pum#visible()
     " TextChangedP
+    " call s:RememberCtx()
     doautocmd <nomodeline> User easycomplete_pum_textchanged_p
   else
     " TextChangedI
@@ -2326,7 +2329,7 @@ function! easycomplete#TextChangedP()
   if b:old_changedtick == b:changedtick
     " in neovim textchangedI and textchangedP will fired at the same time with
     " firstcomplete
-  elseif g:env_is_vim && easycomplete#CompleteCursored() &&
+  elseif g:env_is_vim && easycomplete#CompleteCursored() && s:zizzing() &&
         \ get(selected_item, "word", "") == l:ctx['typed'][line_length - word_str_len:line_length - 1]
     " 直接按下 C-P 或者 C-N 不做任何处理
   elseif g:env_is_nvim && easycomplete#pum#visible() && !s:zizzing()
