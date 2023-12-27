@@ -42,7 +42,7 @@ function! s:hl()
         \ "hi AAA guifg=red",
         \ "hi BBB guifg=lightblue",
         \ ]
-  call win_execute(s:pum_window, join(a:exec_cmd, "\n"))
+  call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
 
 function! s:OpenWindow(startcol, lines)
@@ -57,6 +57,7 @@ function! s:OpenWindow(startcol, lines)
     let winid = nvim_open_win(s:pum_buffer, v:false, opts)
     let s:pum_window = winid
     call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
+    call s:hl()
     call setwinvar(bufwinnr(s:pum_buffer), '&scrolloff', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&spell', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&number', 0)
@@ -65,7 +66,6 @@ function! s:OpenWindow(startcol, lines)
     call setwinvar(bufwinnr(s:pum_buffer), '&hlsearch', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&list', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&conceallevel', 3)
-    call s:hl()
     let s:original_ctx = b:typing_ctx
   else
     " 已经存在的 windowid 用 nvim_win_set_config
