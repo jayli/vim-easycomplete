@@ -1,8 +1,4 @@
 " for nvim only
-" TODO
-" select 过程中的单词补全
-" 回车的处理
-
 let s:default_pum_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
@@ -38,7 +34,19 @@ function! easycomplete#pum#complete(startcol, items)
   call s:OpenWindow(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
+function! s:hl()
+  let hl_name = "easycomplete_pum_hl"
+  let exec_cmd = [
+        \ 'syntax region AAA matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends',
+        \ 'syntax region BBB matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
+        \ "hi AAA guifg=red",
+        \ "hi BBB guifg=lightblue",
+        \ ]
+  call win_execute(s:pum_window, join(a:exec_cmd, "\n"))
+endfunction
+
 function! s:OpenWindow(startcol, lines)
+  call add(a:lines, "`sdf`,|sdfsdf|,*sdfsfs* s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
@@ -47,6 +55,7 @@ function! s:OpenWindow(startcol, lines)
   if empty(s:pum_window)
     call s:CacheOpt()
     let winid = nvim_open_win(s:pum_buffer, v:false, opts)
+    let s:pum_window = winid
     call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel')
     call setwinvar(bufwinnr(s:pum_buffer), '&scrolloff', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&spell', 0)
@@ -54,7 +63,9 @@ function! s:OpenWindow(startcol, lines)
     call setwinvar(bufwinnr(s:pum_buffer), '&wrap', 0)
     call setwinvar(bufwinnr(s:pum_buffer), '&signcolumn', "no")
     call setwinvar(bufwinnr(s:pum_buffer), '&hlsearch', 0)
-    let s:pum_window = winid
+    call setwinvar(bufwinnr(s:pum_buffer), '&list', 0)
+    call setwinvar(bufwinnr(s:pum_buffer), '&conceallevel', 3)
+    call s:hl()
     let s:original_ctx = b:typing_ctx
   else
     " 已经存在的 windowid 用 nvim_win_set_config
