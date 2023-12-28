@@ -57,7 +57,7 @@ function! s:hl()
 endfunction
 
 function! s:OpenPum(startcol, lines)
-  call add(a:lines, "`sdf`,|sdfsdf|,*sdfsfs* s df")
+  " call add(a:lines, "`sdf`,|sdfsdf|,*sdfsfs* s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
@@ -83,6 +83,7 @@ endfunction
 function! easycomplete#pum#WinScrolled()
   if !s:pumvisible() | return | endif
   if has_key(v:event, bufwinid(bufnr("")))
+    " 编辑窗口的移动
     let cursor_left = s:CursorLeft()
     let typing_word = easycomplete#util#GetTypingWord()
     let new_startcol = getcurpos()[2] - strlen(typing_word)
@@ -96,6 +97,9 @@ function! easycomplete#pum#WinScrolled()
     if !empty(curr_item)
       call easycomplete#ShowCompleteInfoByItem(curr_item)
     endif
+  endif
+  if has_key(v:event, s:pum_window)
+    call s:RenderScrollbar()
   endif
 endfunction
 
@@ -291,15 +295,15 @@ function! s:RenderScrollbar()
   endif
   if empty(s:scrollbar_buffer)
     let s:scrollbar_buffer = s:CreateEmptyBuffer()
+    let buflines = s:GetScrollBufflines()
+    call nvim_buf_set_lines(s:scrollbar_buffer, 0, -1, v:false, buflines)
   endif
-  let buflines = s:GetScrollBufflines()
-  call nvim_buf_set_lines(s:scrollbar_buffer, 0, -1, v:false, buflines)
   let scrollbar_pos = s:ComputeScrollPos()
   let scrollbar_opts = deepcopy(s:default_scroll_pot)
   call extend(scrollbar_opts, scrollbar_pos)
   if empty(s:scrollbar_window)
     " create scroll window
-    let hl = "Normal:Visual,NormalNC:Visual,CursorLine:Visual"
+    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar"
     let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
   else
     " update scroll window
@@ -311,13 +315,52 @@ function! s:GetScrollBufflines()
   return repeat([" "],100)
 endfunction
 
-" TODO here
 function! s:ComputeScrollPos()
   let pum_pos = s:GetPumPos()
   let c = pum_pos.pos[1] + pum_pos.width - 1
   let r = pum_pos.pos[0]
-  let h = 4
   let w = 1
+  " ---- 计算 scrollbar 的高度 ----
+  let buf_h = len(s:curr_items)
+  let pum_h = pum_pos.height
+  let scroll_h = float2nr(floor(pum_h * pum_h / buf_h))
+  if scroll_h >= pum_h
+    let scroll_h = pum_h
+  endif
+  let h = scroll_h
+  " ---- 计算scrollbar 的位置 ----
+  let top_line = getwininfo(s:pum_window)[0]["topline"]
+  if top_line == 1
+    let r = pum_pos.pos[0]
+  elseif top_line == buf_h - pum_h + 1
+    let r = pum_pos.pos[0] + buf_h - pum_h
+  else
+    let p_position = (top_line - 1) * 1.0 / (buf_h - pum_h)
+    let r_position = float2nr((pum_h * p_position * 1.0) - (scroll_h * 1.0 / 2))
+    if r_position < 0
+      let r_position = 0
+    elseif r_position > buf_h - pum_h
+      let r_position = buf_h - pum_h
+    endif
+    let r = pum_pos.pos[0] + r_position
+  endif
+  " ---- 计算 scrollbar 的高度 ----
+  " try
+  "   let buf_h = len(s:curr_items)
+  "   let pum_h = pum_pos.height
+  "   let top_line = getwininfo(s:pum_window)[0]["topline"]
+  "   let scroll_h = pum_h - (buf_h - pum_h)
+  "   let h = scroll_h
+  "   if top_line == 1
+  "     let r = pum_pos.pos[0]
+  "   elseif top_line == buf_h - pum_h + 1
+  "     let r = pum_pos.pos[0] + buf_h - pum_h
+  "   else
+  "     let r = pum_pos.pos[0] + top_line - 1
+  "   endif
+  " catch
+  "   call s:console(v:exception)
+  " endtry
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
