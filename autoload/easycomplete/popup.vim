@@ -482,7 +482,6 @@ function! s:VimShow(opt, windowtype, float_type)
 endfunction
 
 function! s:NVimShow(opt, windowtype, float_type)
-  call s:console('popup')
   if s:is_vim | return | endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   " let hl_str = 'Normal:Pmenu,NormalNC:Pmenu'
