@@ -13,6 +13,7 @@ let s:default_scroll_pot = {
         \ }
 let s:pum_window = 0
 let s:pum_buffer = 0
+let s:pum_direction = ""
 
 " scrollbar vars
 let s:scrollbar_window = 0
@@ -323,33 +324,36 @@ function! s:ComputeScrollPos()
   " ---- 计算 scrollbar 的高度 ----
   let buf_h = len(s:curr_items)
   let pum_h = pum_pos.height
-  let scroll_h = float2nr(floor(pum_h * pum_h / buf_h))
+  let scroll_h = float2nr(floor(pum_h * pum_h * 1.0 / buf_h))
   if scroll_h >= pum_h
     let scroll_h = pum_h
   endif
   let h = scroll_h
   " ---- 计算scrollbar 的位置 ----
   let top_line = getwininfo(s:pum_window)[0]["topline"]
+  let max_off_r = pum_h - scroll_h
+  let max_top_line = buf_h - pum_h + 1
   if top_line == 1
     let r = pum_pos.pos[0]
-  elseif top_line == buf_h - pum_h + 1
-    let r = pum_pos.pos[0] + buf_h - pum_h
+  elseif top_line >= max_top_line
+    let r = pum_pos.pos[0] + max_off_r
   else
     let p_position = (top_line - 1) * 1.0 / (buf_h - pum_h)
     let r_position = float2nr((pum_h * p_position * 1.0) - (scroll_h * 1.0 / 2))
-    call s:console(r_position, top_line, pum_h - scroll_h ,buf_h - pum_h, scroll_h)
     if r_position < 0
       let r_position = 0
-    elseif r_position > pum_h - scroll_h
-      let r_position = pum_h - scroll_h
+    elseif r_position >= max_off_r
+      let r_position = max_off_r
     endif
+
     if r_position == 0 && top_line > 1
       let r_position = 1
-    elseif r_position == pum_h - scroll_h && top_line < buf_h - pum_h + 1
-      let r_position = pum_h - scroll_h - 1
+    elseif r_position == max_off_r && top_line < max_top_line
+      let r_position = max_off_r - 1
     endif
     let r = pum_pos.pos[0] + r_position
   endif
+
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
@@ -399,6 +403,7 @@ endfunction
 " 根据起始位置和buffer的大小，计算Pum应该有的大小和位置，返回 options
 function! s:ComputePumPos(startcol, buffer_size)
   let pum_direction = s:PumDirection(a:buffer_size.height)
+  let s:pum_direction = pum_direction
   let l:height = 0
   let l:width = a:buffer_size.width
   let l:row = 0
@@ -467,6 +472,7 @@ function! s:flush()
   let s:curr_items = []
   let s:original_ctx = {}
   let s:scrollbar_window = 0
+  let s:pum_direction = ""
   if should_fire_pum_done
     doautocmd <nomodeline> User easycomplete_pum_done
   endif
