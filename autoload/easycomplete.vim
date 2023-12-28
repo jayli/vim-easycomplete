@@ -1097,7 +1097,7 @@ function! s:CompleteMatchAction()
       call s:CloseCompletionMenu()
       call s:flush()
       call s:StopZizz()
-      call timer_start(15, { -> easycomplete#typing() })
+      call timer_start(8, { -> easycomplete#typing() })
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)

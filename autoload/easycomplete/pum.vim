@@ -5,10 +5,19 @@ let s:default_pum_pot = {
         \ "zindex": 50,
         \ "bufpos": [0,0]
         \ }
+let s:default_scroll_pot = {
+        \ "relative": "editor",
+        \ "focusable": v:false,
+        \ "zindex": 51,
+        \ "bufpos": [0,0]
+        \ }
 let s:pum_window = 0
-let s:pum_scrollbar = 0
-let s:has_scrollbar = 0
 let s:pum_buffer = 0
+
+" scrollbar vars
+let s:scrollbar_window = 0
+let s:scrollbar_buffer = 0
+let s:has_scrollbar = 0
 " complete_info() 中 selected 从 0 开始，这里从 1 开始
 " easycomplete#pum#CompleteInfo() 的返回和 complete_info() 保持一致
 let s:selected_i = 0
@@ -33,7 +42,7 @@ function! easycomplete#pum#complete(startcol, items)
     return
   endif
   let s:curr_items = deepcopy(a:items)
-  call s:OpenWindow(a:startcol, s:NormalizeItems(a:items))
+  call s:OpenPum(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
 function! s:hl()
@@ -47,39 +56,27 @@ function! s:hl()
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
 
-function! s:OpenWindow(startcol, lines)
+function! s:OpenPum(startcol, lines)
   call add(a:lines, "`sdf`,|sdfsdf|,*sdfsfs* s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
-  let opts = deepcopy(s:default_pum_pot)
-  call extend(opts, pum_pos)
+  let pum_opts = deepcopy(s:default_pum_pot)
+  call extend(pum_opts, pum_pos)
   if empty(s:pum_window)
     call s:CacheOpt()
-    let winid = nvim_open_win(s:pum_buffer, v:false, opts)
-    let s:pum_window = winid
     let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel'
-    " call nvim_win_set_option(winid, 'winhl', hl)
-    call setwinvar(winid, '&winhl', hl)
-    call setwinvar(winid, '&scrolloff', 0)
-    call setwinvar(winid, '&spell', 0)
-    call setwinvar(winid, '&number', 0)
-    call setwinvar(winid, '&wrap', 0)
-    call setwinvar(winid, '&signcolumn', "no")
-    call setwinvar(winid, '&hlsearch', 0)
-    call setwinvar(winid, '&list', 0)
-    call setwinvar(winid, '&conceallevel', 3)
+    let winid = s:OpenFloatWindow(s:pum_buffer, pum_opts, hl)
+    let s:pum_window = winid
     call s:hl()
     let s:original_ctx = b:typing_ctx
   else
     " 已经存在的 windowid 用 nvim_win_set_config
-    call nvim_win_set_config(s:pum_window, opts)
+    call nvim_win_set_config(s:pum_window, pum_opts)
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
-  if s:HasScrollbar()
-    call s:RenderScrollbar()
-  endif
+  call s:RenderScrollbar()
   call nvim_win_set_cursor(s:pum_window, [1, 0])
 endfunction
 
@@ -262,17 +259,72 @@ function! easycomplete#pum#CursorLeft()
   return s:CursorLeft()
 endfunction
 
-" TODO
+function! s:CreateEmptyBuffer()
+  let local_buffer = nvim_create_buf(v:false, v:true)
+  call nvim_buf_set_option(local_buffer, 'filetype', "txt")
+  call nvim_buf_set_option(local_buffer, 'syntax', 'on')
+  call setbufvar(local_buffer, '&buflisted', 0)
+  call setbufvar(local_buffer, '&buftype', 'nofile')
+  call setbufvar(local_buffer, '&undolevels', -1)
+  return local_buffer
+endfunction
+
+function! s:OpenFloatWindow(buf, opts, hl)
+  let winid = nvim_open_win(a:buf, v:false, a:opts)
+  call setwinvar(winid, '&winhl', a:hl)
+  call setwinvar(winid, '&scrolloff', 0)
+  call setwinvar(winid, '&spell', 0)
+  call setwinvar(winid, '&number', 0)
+  call setwinvar(winid, '&wrap', 0)
+  call setwinvar(winid, '&signcolumn', "no")
+  call setwinvar(winid, '&hlsearch', 0)
+  call setwinvar(winid, '&list', 0)
+  call setwinvar(winid, '&conceallevel', 3)
+  return winid
+endfunction
+
 function! s:RenderScrollbar()
   if !s:pumvisible() || !s:HasScrollbar()
     call s:CloseScrollBar()
     return
   endif
+  if empty(s:scrollbar_buffer)
+    let s:scrollbar_buffer = s:CreateEmptyBuffer()
+  endif
+  let buflines = s:GetScrollBufflines()
+  call nvim_buf_set_lines(s:scrollbar_buffer, 0, -1, v:false, buflines)
+  let scrollbar_pos = s:ComputeScrollPos()
+  let scrollbar_opts = deepcopy(s:default_scroll_pot)
+  call extend(scrollbar_opts, scrollbar_pos)
+  if empty(s:scrollbar_window)
+    " create scroll window
+    let hl = "Normal:Visual,NormalNC:Visual,CursorLine:Visual"
+    let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
+  else
+    " update scroll window
+    call nvim_win_set_config(s:scrollbar_window, scrollbar_opts)
+  endif
+endfunction
+
+function! s:GetScrollBufflines()
+  return repeat([" "],100)
+endfunction
+
+" TODO here
+function! s:ComputeScrollPos()
   let pum_pos = s:GetPumPos()
+  let c = pum_pos.pos[1] + pum_pos.width - 1
+  let r = pum_pos.pos[0]
+  let h = 4
+  let w = 1
+  return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
 function! s:CloseScrollBar()
-
+  if !empty(s:scrollbar_window) && nvim_win_is_valid(s:scrollbar_window)
+    call nvim_win_close(s:scrollbar_window, 1)
+  endif
+  let s:scrollbar_window = 0
 endfunction
 
 function! s:HasScrollbar()
@@ -373,11 +425,15 @@ function! s:flush()
     call s:RestoreOpt()
     let should_fire_pum_done = 1
   endif
+  if !empty(s:scrollbar_window)
+    call s:CloseScrollBar()
+  endif
   let s:pum_window = 0
   let s:has_scrollbar = 0
   let s:selected_i = 0
   let s:curr_items = []
   let s:original_ctx = {}
+  let s:scrollbar_window = 0
   if should_fire_pum_done
     doautocmd <nomodeline> User easycomplete_pum_done
   endif
@@ -401,12 +457,7 @@ endfunction
 
 function! s:InitBuffer(lines)
   if empty(s:pum_buffer)
-    let pum_buffer = nvim_create_buf(v:false, v:true)
-    call nvim_buf_set_option(pum_buffer, 'filetype', "txt")
-    call nvim_buf_set_option(pum_buffer, 'syntax', 'on')
-    call setbufvar(pum_buffer, '&buflisted', 0)
-    call setbufvar(pum_buffer, '&buftype', 'nofile')
-    call setbufvar(pum_buffer, '&undolevels', -1)
+    let pum_buffer = s:CreateEmptyBuffer()
     let s:pum_buffer = pum_buffer
   endif
   call nvim_buf_set_lines(s:pum_buffer, 0, -1, v:false, a:lines)
