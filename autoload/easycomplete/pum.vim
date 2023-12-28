@@ -2,10 +2,12 @@
 let s:default_pum_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
+        \ "zindex": 50,
         \ "bufpos": [0,0]
         \ }
 let s:pum_window = 0
-let s:scroll_bar = 0
+let s:pum_scrollbar = 0
+let s:has_scrollbar = 0
 let s:pum_buffer = 0
 " complete_info() 中 selected 从 0 开始，这里从 1 开始
 " easycomplete#pum#CompleteInfo() 的返回和 complete_info() 保持一致
@@ -76,7 +78,7 @@ function! s:OpenWindow(startcol, lines)
   endif
   call s:reset()
   if s:HasScrollbar()
-    call s:InitScrollBar()
+    call s:RenderScrollbar()
   endif
   call nvim_win_set_cursor(s:pum_window, [1, 0])
 endfunction
@@ -222,13 +224,20 @@ endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
-  let backing_count = col('.') - get(s:original_ctx, "startcol", 0)
+  let backing_count = col('.') - s:GetStartCol()
   let oprator_str = repeat("\<bs>", backing_count)
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
     return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
+endfunction
+
+function! s:GetStartCol()
+  " TODO 还要减去 window 的padding left
+  let pum_pos = s:GetPumPos()
+  let startcol = pum_pos.pos[1] + 1
+  return startcol
 endfunction
 
 function! easycomplete#pum#select(line_index)
@@ -259,13 +268,20 @@ function! easycomplete#pum#CursorLeft()
 endfunction
 
 " TODO
-function! s:InitScrollBar()
-  if !s:pumvisible() | return | endif
-  let window_info = s:GetPumPos()
+function! s:RenderScrollbar()
+  if !s:pumvisible() || !s:HasScrollbar()
+    call s:CloseScrollBar()
+    return
+  endif
+  let pum_pos = s:GetPumPos()
+endfunction
+
+function! s:CloseScrollBar()
+
 endfunction
 
 function! s:HasScrollbar()
-  return s:scroll_bar == 1 ? v:true : v:false
+  return s:has_scrollbar == 1 ? v:true : v:false
 endfunction
 
 function! s:GetPumPos()
@@ -326,10 +342,10 @@ function! s:ComputePumPos(startcol, buffer_size)
   endif
   if l:height < a:buffer_size.height
     " 判断是否应该出现 scrollbar
-    let s:scroll_bar = 1
+    let s:has_scrollbar = 1
     let l:width = a:buffer_size.width + 1
   else
-    let s:scroll_bar = 0
+    let s:has_scrollbar = 0
   endif
   " 计算相对于 editor 的 startcol
   let offset = col('.') - a:startcol
@@ -363,7 +379,7 @@ function! s:flush()
     let should_fire_pum_done = 1
   endif
   let s:pum_window = 0
-  let s:scroll_bar = 0
+  let s:has_scrollbar = 0
   let s:selected_i = 0
   let s:curr_items = []
   let s:original_ctx = {}
