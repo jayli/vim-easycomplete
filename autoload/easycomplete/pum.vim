@@ -312,7 +312,7 @@ function! s:RenderScrollbar()
 endfunction
 
 function! s:GetScrollBufflines()
-  return repeat([" "],100)
+  return repeat([" "], len(s:curr_items))
 endfunction
 
 function! s:ComputeScrollPos()
@@ -337,30 +337,19 @@ function! s:ComputeScrollPos()
   else
     let p_position = (top_line - 1) * 1.0 / (buf_h - pum_h)
     let r_position = float2nr((pum_h * p_position * 1.0) - (scroll_h * 1.0 / 2))
+    call s:console(r_position, top_line, pum_h - scroll_h ,buf_h - pum_h, scroll_h)
     if r_position < 0
       let r_position = 0
-    elseif r_position > buf_h - pum_h
-      let r_position = buf_h - pum_h
+    elseif r_position > pum_h - scroll_h
+      let r_position = pum_h - scroll_h
+    endif
+    if r_position == 0 && top_line > 1
+      let r_position = 1
+    elseif r_position == pum_h - scroll_h && top_line < buf_h - pum_h + 1
+      let r_position = pum_h - scroll_h - 1
     endif
     let r = pum_pos.pos[0] + r_position
   endif
-  " ---- 计算 scrollbar 的高度 ----
-  " try
-  "   let buf_h = len(s:curr_items)
-  "   let pum_h = pum_pos.height
-  "   let top_line = getwininfo(s:pum_window)[0]["topline"]
-  "   let scroll_h = pum_h - (buf_h - pum_h)
-  "   let h = scroll_h
-  "   if top_line == 1
-  "     let r = pum_pos.pos[0]
-  "   elseif top_line == buf_h - pum_h + 1
-  "     let r = pum_pos.pos[0] + buf_h - pum_h
-  "   else
-  "     let r = pum_pos.pos[0] + top_line - 1
-  "   endif
-  " catch
-  "   call s:console(v:exception)
-  " endtry
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
