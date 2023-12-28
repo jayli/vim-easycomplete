@@ -338,7 +338,7 @@ function! s:ComputeScrollPos()
   elseif top_line >= max_top_line
     let r = pum_pos.pos[0] + max_off_r
   else
-    let p_position = (top_line - 1) * 1.0 / (buf_h - pum_h)
+    let p_position = (top_line) * 1.0 / (max_top_line)
     let r_position = float2nr((pum_h * p_position * 1.0) - (scroll_h * 1.0 / 2))
     if r_position < 0
       let r_position = 0
