@@ -1022,6 +1022,17 @@ function! easycomplete#util#MatchFuzzy(array, word, ...)
   endif
 endfunction " }}}
 
+function! s:ReplaceMent(abbr, positions, wrap_char)
+  let letters = map(str2list(a:abbr), { _, val -> nr2char(val)})
+  for item in a:positions
+    let fuzzy_index = item
+    let letters[fuzzy_index] = a:wrap_char . letters[fuzzy_index] . a:wrap_char
+  endfor
+  let res_o = join(letters, "")
+  let res_r = substitute(res_o, repeat(a:wrap_char, 2), "", 'g')
+  return res_r
+endfunction
+
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
 " maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
@@ -1038,7 +1049,23 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let original_matching = []
     let fuzzymatching = []
     let all_items = a:all_menu
-    let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
+    " let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
+    let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
+    let fuzzymatching = matching_res[0]
+    let fuzzy_position = matching_res[1] "--------------------------------------------------here
+    if g:env_is_nvim
+      let count_i = 0
+      while count_i < len(fuzzymatching)
+        let abbr = get(fuzzymatching[count_i], "abbr", "")
+        if empty(abbr)
+          let fuzzymatching[count_i]["abbr"] = fuzzymatching[count_i]["word"]
+          let abbr = fuzzymatching[count_i]["word"]
+        endif
+        let posi = fuzzy_position[count_i]
+        let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, posi, "`")
+        let count_i += 1
+      endwhile
+    endif
     if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 1
       call sort(fuzzymatching, "easycomplete#util#SortTextComparatorByLength")
     endif

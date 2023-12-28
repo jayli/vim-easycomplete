@@ -520,6 +520,7 @@ function! s:MaxLength(lines)
 endfunction
 
 function! s:NormalizeItems(items)
+  echom a:items
   let new_line_arr = s:GetFullfillItems(a:items)
   return map(copy(new_line_arr["items"]), function('s:MapFunction'))
 endfunction
@@ -541,6 +542,7 @@ function! s:GetFullfillItems(data)
   let menu_arr_length = []
   let abbr_arr_length = []
   let new_data = []
+  " ------------ find max length --------------
   for item in a:data
     let abbr = easycomplete#util#GetItemAbbr(item)
     let word = get(item, "word", "")
@@ -562,8 +564,10 @@ function! s:GetFullfillItems(data)
     let f_kind = s:fullfill(trim(get(item, "kind", "")), maxlength.kind_max_length)
     let f_menu = s:fullfill(trim(get(item, "menu", "")), maxlength.menu_max_length)
     call add(new_data, {
-          \ "abbr": s:fullfill(get(item, "abbr", ""), maxlength.abbr_max_length),
-          \ "word": s:fullfill(get(item, "word", ""), maxlength.word_max_length),
+          \ "abbr": s:FullfillMarkedAbbr(get(item, "abbr", ""),
+          \                              get(item, "abbr_marked", ""),
+          \                              maxlength.abbr_max_length),
+          \ "word": get(item, "word", ""),
           \ "kind": f_kind,
           \ "menu": f_menu
           \ })
@@ -571,6 +575,12 @@ function! s:GetFullfillItems(data)
   return extend({
         \ "items": new_data,
         \ }, maxlength)
+endfunction
+
+function! s:FullfillMarkedAbbr(abbr, abbr_marked, max_length)
+  let added_spaces = a:max_length - len(a:abbr)
+  let res = a:abbr_marked . repeat(" ", added_spaces)
+  return res
 endfunction
 
 function! s:fullfill(word, length)

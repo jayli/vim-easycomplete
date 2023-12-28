@@ -1575,7 +1575,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     endif
   endif
 
-  " FristComplete 的过滤方法参照 YCM 和 coc 重写了
+  " FristComplete 的过滤方法重写了
   " 为了避免重复过滤，去掉了这里的 CompleteMenuFilter 动作
   " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
