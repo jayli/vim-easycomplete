@@ -128,6 +128,7 @@ function! s:SelectNext()
   endif
   call s:select(next_i)
   let s:selected_i = next_i
+  call easycomplete#zizz()
   doautocmd <nomodeline> User easycomplete_pum_completechanged
 endfunction
 

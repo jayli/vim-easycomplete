@@ -61,7 +61,10 @@ function! easycomplete#popup#MenuPopupChanged(info)
                                 \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     return
   endif
-  if g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected()
+
+  if g:env_is_nvim && empty(curr_item)
+    call easycomplete#popup#close("popup")
+  elseif g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected() && !easycomplete#zizzing()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
   elseif g:env_is_vim && empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()

@@ -1193,7 +1193,8 @@ function! s:ShowCompleteInfoWithoutTimer()
     if type(info) == type("")
       let info = [info]
     endif
-    call s:ShowCompleteInfo(info)
+    " call s:ShowCompleteInfo(info)
+    call easycomplete#popup#DoPopup(info, 0)
   endif
 endfunction
 
@@ -1637,6 +1638,10 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
+endfunction
+
+function! easycomplete#zizzing()
+  return s:zizzing()
 endfunction
 
 function! easycomplete#GetOptions(name)
