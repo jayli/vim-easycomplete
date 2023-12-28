@@ -224,20 +224,15 @@ endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
-  let backing_count = col('.') - s:GetStartCol()
+  let pum_pos = s:GetPumPos()
+  let cursor_left = s:CursorLeft()
+  let backing_count = cursor_left - pum_pos.pos[1] - 2 
   let oprator_str = repeat("\<bs>", backing_count)
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
     return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
-endfunction
-
-function! s:GetStartCol()
-  " TODO 还要减去 window 的padding left
-  let pum_pos = s:GetPumPos()
-  let startcol = pum_pos.pos[1] + 1
-  return startcol
 endfunction
 
 function! easycomplete#pum#select(line_index)
