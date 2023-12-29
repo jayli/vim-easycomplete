@@ -103,12 +103,9 @@ function! easycomplete#pum#WinScrolled()
     endif
   endif
   if has_key(v:event, s:pum_window)
+    " pum 窗口的移动
     call s:RenderScrollbar()
   endif
-endfunction
-
-function! easycomplete#pum#GetPos()
-  return s:GetPumPos()
 endfunction
 
 function! s:CacheOpt()
@@ -147,13 +144,12 @@ function! s:SelectNext()
   doautocmd <nomodeline> User easycomplete_pum_completechanged
 endfunction
 
-function! easycomplete#pum#CompleteChangedEvnet()
-  let l:event = {}
-  if !s:pumvisible() || !easycomplete#pum#CompleteCursored()
-    return l:event
+" 和 pum_getpos() 的返回格式保持一致
+function! easycomplete#pum#PumGetPos()
+  if !s:pumvisible()
+    return {}
   endif
-  let completed_item = easycomplete#pum#CursoredItem()
-  let pum_pos = s:GetPumPos()
+  let pum_pos = s:PumPosition()
   let h = pum_pos.height
   let w = pum_pos.width
   let r = pum_pos.pos[0]
@@ -164,7 +160,6 @@ function! easycomplete#pum#CompleteChangedEvnet()
   endif
   let item_size = len(s:curr_items)
   return {
-        \ "completed_item": completed_item,
         \ "col": c + 1,
         \ "row": r,
         \ "height": h,
@@ -172,6 +167,15 @@ function! easycomplete#pum#CompleteChangedEvnet()
         \ "scrollbar": scrollbar,
         \ "size": item_size
         \}
+endfunction
+
+function! easycomplete#pum#CompleteChangedEvnet()
+  if !s:pumvisible() || !easycomplete#pum#CompleteCursored()
+    return {}
+  endif
+  let pum_pos = easycomplete#pum#PumGetPos()
+  let completed_item = easycomplete#pum#CursoredItem()
+  return extend(pum_pos, {"completed_item": completed_item })
 endfunction
 
 function! s:SelectPrev()
@@ -202,6 +206,7 @@ function! easycomplete#pum#CompleteCursored()
   return s:selected_i == 0 ? v:false : v:true
 endfunction
 
+" 格式保持和 complete_info() 一致
 function! easycomplete#pum#CompleteInfo()
   let l:ret = {
         \ "mode": "function",
@@ -288,7 +293,7 @@ endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
-  let pum_pos = s:GetPumPos()
+  let pum_pos = s:PumPosition()
   let cursor_left = s:CursorLeft()
   let backing_count = cursor_left - pum_pos.pos[1] - 2 
   let oprator_str = repeat("\<bs>", backing_count)
@@ -378,7 +383,7 @@ function! s:GetScrollBufflines()
 endfunction
 
 function! s:ComputeScrollPos()
-  let pum_pos = s:GetPumPos()
+  let pum_pos = s:PumPosition()
   let c = pum_pos.pos[1] + pum_pos.width - 1
   let r = pum_pos.pos[0]
   let w = 1
@@ -429,7 +434,7 @@ function! s:HasScrollbar()
   return s:has_scrollbar == 1 ? v:true : v:false
 endfunction
 
-function! s:GetPumPos()
+function! s:PumPosition()
   if s:pumvisible()
     let pos = nvim_win_get_position(s:pum_window)
     let h = nvim_win_get_height(s:pum_window)

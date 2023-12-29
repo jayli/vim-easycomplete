@@ -88,7 +88,7 @@ function! s:GetMenuInfoWinid()
 endfunction
 
 function! s:SamePositionAsLastTime()
-  let pum_pos = g:env_is_vim ? pum_getpos() : easycomplete#pum#CompleteChangedEvnet()
+  let pum_pos = g:env_is_vim ? pum_getpos() : easycomplete#pum#PumGetPos()
   if empty(pum_pos) | return v:false | endif
   if !exists("s:easycomplete_pum_pos")
     let s:easycomplete_pum_pos = deepcopy(pum_pos)
@@ -245,9 +245,14 @@ endfunction
 function! s:IsOverlay()
   let float_winid = g:easycomplete_popup_win['float']
   if empty(float_winid) | return v:false | endif
-  if empty(pum_getpos()) | return v:false | endif
+  if g:env_is_vim && empty(pum_getpos())
+    return v:false
+  elseif g:env_is_nvim && !easycomplete#pum#visible()
+    return v:false
+  endif
+  " if empty(pum_getpos()) | return v:false | endif
   let float_config = getwininfo(float_winid)[0]
-  let pum_config = pum_getpos()
+  let pum_config = g:env_is_vim ? pum_getpos() : easycomplete#pum#PumGetPos()
   let overlay = v:false
   if float_config.height != 1
     if pum_config.row <= float_config.winrow
@@ -330,7 +335,7 @@ function! s:popup(info)
   if g:env_is_vim
     let pum_pos = pum_getpos()
   else
-    let pum_pos = easycomplete#pum#CompleteChangedEvnet()
+    let pum_pos = easycomplete#pum#PumGetPos()
   endif
   if get(pum_pos, 'scrollbar')
     let right_avail_col  = pum_pos.col + pum_pos.width + 1

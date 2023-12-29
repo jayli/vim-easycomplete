@@ -1204,7 +1204,7 @@ endfunction
 function! s:PumDeflect()
   if !easycomplete#pum#visible() | return v:false | endif
   if empty(b:typing_ctx) | return v:false | endif
-  let pum_pos = easycomplete#pum#CompleteChangedEvnet()
+  let pum_pos = easycomplete#pum#PumGetPos()
   let cursor_left = easycomplete#pum#CursorLeft()
   if cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol) == pum_pos.col + 1
     " 未偏转
@@ -1692,7 +1692,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render && len(source_result) > 0
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 600)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
