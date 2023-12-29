@@ -46,8 +46,9 @@ function! easycomplete#pum#complete(startcol, items)
     call s:close()
     return
   endif
-  let s:curr_items = deepcopy(a:items)
-  call s:OpenPum(a:startcol, s:NormalizeItems(a:items))
+  let items = s:TabNineHLNormalize(a:items)
+  let s:curr_items = deepcopy(items)
+  call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
 endfunction
 
 " 基础的三类样式用到的 Conceal 字符:
@@ -120,6 +121,39 @@ function! easycomplete#pum#WinScrolled()
     " pum 窗口的移动
     call s:RenderScrollbar()
   endif
+endfunction
+
+function! s:TabNineHLNormalize(menu_items)
+  if empty(b:typing_ctx) | return a:menu_items | endif
+  let typing_word = get(b:typing_ctx, "typing", "")
+  for k in range(5)
+    let item = a:menu_items[k]
+    if has_key(item, "plugin_name") && get(item, "plugin_name") ==# "tn"
+      let abbr = get(item, "abbr", "")
+      let count_k = s:CompareStrings(typing_word, abbr)
+      let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 50)
+      let item["marked_position"] = range(count_k)
+    endif
+  endfor
+  return a:menu_items
+endfunction
+
+function! s:CompareStrings(str1, str2)
+  let len1 = strlen(a:str1)
+  let len2 = strlen(a:str2)
+  let min_len = min([len1, len2])
+  let count = 0
+  for i in range(min_len)
+    let char1 = a:str1[i]
+    let char2 = a:str2[i]
+
+    if char1 == char2
+      let count += 1
+    else
+      break
+    endif
+  endfor
+  return count
 endfunction
 
 function! s:CacheOpt()
