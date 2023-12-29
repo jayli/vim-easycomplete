@@ -63,9 +63,9 @@ function! s:hl()
         \ "hi EasyFuzzyMatch guifg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi link EasyKind PmenuKind",
         \ "hi link EasyExtra PmenuExtra",
-        \ "hi link PmenuExtraSel PmenuSel",
-        \ "hi link PmenuKindSel PmenuSel"
         \ ]
+        " \ "hi link PmenuExtraSel PmenuSel",
+        " \ "hi link PmenuKindSel PmenuSel"
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
 
