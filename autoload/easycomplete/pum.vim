@@ -31,6 +31,7 @@ let s:original_ctx = {}
 " 当前编辑窗口的原始配置
 let s:original_opt = {}
 
+" 几个常用尺寸的计算
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
 " 当前window的起始位置，算上了 tabline: win_screenpos(win_getid())
 " cursor所在位置相对window顶部的位置，不包含tabline: winline()
@@ -49,19 +50,27 @@ function! easycomplete#pum#complete(startcol, items)
   call s:OpenPum(a:startcol, s:NormalizeItems(a:items))
 endfunction
 
+" 基础的三类样式用到的 Conceal 字符:
+"  EazyFuzzyMatch: "`", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
+"  EasyKind:       "|", 继承 PmenuKind
+"  EasyExtra:      "^", 继承 PmenuExtra
 function! s:hl()
   let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
   let exec_cmd = [
-        \ 'syntax region FuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
-        \ 'syntax region BBB matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
-        \ "hi FuzzyMatch guifg=" . easycomplete#ui#GetFgColor(hl_group),
-        \ "hi BBB guifg=orange",
+        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
+        \ 'syntax region EasyKind matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
+        \ 'syntax region EasyExtra matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
+        \ "hi EasyFuzzyMatch guifg=" . easycomplete#ui#GetFgColor(hl_group),
+        \ "hi link EasyKind PmenuKind",
+        \ "hi link EasyExtra PmenuExtra",
+        \ "hi link PmenuExtraSel PmenuSel",
+        \ "hi link PmenuKindSel PmenuSel"
         \ ]
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
 
 function! s:OpenPum(startcol, lines)
-  " call add(a:lines, "`sdf`,|sdfsdf|,*sdfsfs* s df")
+  " call add(a:lines, "`sdf`,|sdfsdf|, ^sdfsfs^ s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
@@ -237,7 +246,7 @@ function! s:select(line_index)
     call setwinvar(s:pum_window, '&cursorline', 1)
     call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
     let s:selected_i = l:line_index
-    call s:HLCursordFuzzyChar("FuzzyMatch", 2)
+    call s:HLCursordFuzzyChar("EasyFuzzyMatch", 2)
   endif
 endfunction
 
@@ -579,7 +588,7 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(substitute(item, "\[`|]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(item, "\[`|^]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -596,8 +605,8 @@ function! s:MapFunction(key, val)
   let ret = [
         \ " ",
         \ get(a:val, "abbr", ""), " ",
-        \ get(a:val, "kind", ""), " ",
-        \ get(a:val, "menu", ""),
+        \ "|" . get(a:val, "kind", "") . "|", " ",
+        \ "^" . get(a:val, "menu", "") . "^",
         \ ]
   return join(ret,"")
 endfunction
