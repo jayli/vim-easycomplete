@@ -56,11 +56,16 @@ endfunction
 "  EasyExtra:      "^", 继承 PmenuExtra
 function! s:hl()
   let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
+  if easycomplete#util#IsGui()
+    let dev = "gui"
+  else
+    let dev = "cterm"
+  endif
   let exec_cmd = [
         \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
         \ 'syntax region EasyKind matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
         \ 'syntax region EasyExtra matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
-        \ "hi EasyFuzzyMatch guifg=" . easycomplete#ui#GetFgColor(hl_group),
+        \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi link EasyKind PmenuKind",
         \ "hi link EasyExtra PmenuExtra",
         \ ]
