@@ -409,6 +409,9 @@ function! s:OpenFloatWindow(buf, opts, hl)
   call setwinvar(winid, '&hlsearch', 0)
   call setwinvar(winid, '&list', 0)
   call setwinvar(winid, '&conceallevel', 3)
+  if exists("&pumblend")
+    call setwinvar(winid, '&winblend', &pumblend)
+  endif
   return winid
 endfunction
 

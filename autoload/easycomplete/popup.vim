@@ -510,6 +510,9 @@ function! s:NVimShow(opt, windowtype, float_type)
       call setwinvar(g:easycomplete_popup_win[a:windowtype], '&wrap', 0)
     endif
   endif
+  if a:windowtype == 'popup' && exists("&pumblend")
+    call setwinvar(g:easycomplete_popup_win[a:windowtype], '&winblend', &pumblend)
+  endif
   try
     call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "TSBufDisable highlight")
   catch
