@@ -15,6 +15,9 @@ let s:pum_window = 0
 let s:pum_buffer = 0
 let s:pum_direction = ""
 
+" 临时样式存储
+let g:easycomplete_match_id = 0
+
 " scrollbar vars
 let s:scrollbar_window = 0
 let s:scrollbar_buffer = 0
@@ -49,7 +52,7 @@ endfunction
 function! s:hl()
   let hl_name = "easycomplete_pum_hl"
   let exec_cmd = [
-        \ 'syntax region AAA matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends',
+        \ 'syntax region AAA matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
         \ 'syntax region BBB matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
         \ "hi AAA guifg=" . easycomplete#ui#GetFgColor("SpecialKey"),
         \ "hi BBB guifg=orange",
@@ -229,7 +232,51 @@ function! s:select(line_index)
     call setwinvar(s:pum_window, '&cursorline', 1)
     call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
     let s:selected_i = l:line_index
+    call s:HLCursordFuzzyChar("AAA", 2)
   endif
+endfunction
+
+function! s:ComputeHLPositions(abbr_marked, fuzzy_p, prefix_length)
+  let position = []
+  let count_i = 0  " marked abbr cursor
+  let cursor = 0  " abbr cursor
+  while count_i < strlen(a:abbr_marked)
+    if a:abbr_marked[count_i] == "`"
+      let count_i += 1
+      continue
+    endif
+    if index(a:fuzzy_p, cursor) >= 0
+      call add(position, count_i + a:prefix_length)
+    endif
+    let cursor += 1
+    let count_i += 1
+  endwhile
+  return position
+endfunction
+
+function! s:HLCursordFuzzyChar(hl_group, prefix_length)
+  if !empty(g:easycomplete_match_id)
+    try
+      call matchdelete(g:easycomplete_match_id, s:pum_window)
+    catch
+      echom v:exception
+    endtry
+  endif
+  if !easycomplete#pum#CompleteCursored()
+    let g:easycomplete_match_id = 0
+    return
+  endif
+  let selected_item = easycomplete#pum#CursoredItem()
+  let abbr_marked = get(selected_item, "abbr_marked", "")
+  let marked_position = get(selected_item, "marked_position", [])
+  if empty(abbr_marked)
+    let g:easycomplete_match_id = 0
+    return
+  endif
+  let hl_p = s:ComputeHLPositions(abbr_marked, marked_position, a:prefix_length)
+  let param_arr = map(copy(hl_p), "[s:selected_i, v:val, 1]")
+  let exec_str = "let g:easycomplete_match_id = matchaddpos('" . a:hl_group . "', " . string(param_arr) . ")"
+  call win_execute(s:pum_window, exec_str)
 endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
@@ -480,6 +527,7 @@ function! s:flush()
   let s:original_ctx = {}
   let s:scrollbar_window = 0
   let s:pum_direction = ""
+  let g:easycomplete_match_id = 0
   if should_fire_pum_done
     doautocmd <nomodeline> User easycomplete_pum_done
   endif

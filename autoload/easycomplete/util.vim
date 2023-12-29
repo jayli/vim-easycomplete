@@ -974,7 +974,6 @@ function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
 endfunction "}}}
 
 " SnipMap {{{
-
 function! s:get(...)
   return call('easycomplete#util#get', a:000)
 endfunction
@@ -992,7 +991,6 @@ function! easycomplete#util#SnipMap(key, val)
         \   'lsp_item': lsp_item
         \ }))
   let a:val['user_data'] = new_user_data
-  " call s:log(lsp_item.textEdit)
   return a:val
 endfunction " }}}
 
@@ -1061,8 +1059,9 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
           let fuzzymatching[count_i]["abbr"] = fuzzymatching[count_i]["word"]
           let abbr = fuzzymatching[count_i]["word"]
         endif
-        let posi = fuzzy_position[count_i]
-        let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, posi, "`")
+        let p = fuzzy_position[count_i]
+        let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, p, "`")
+        let fuzzymatching[count_i]["marked_position"] = p
         let count_i += 1
       endwhile
     endif
