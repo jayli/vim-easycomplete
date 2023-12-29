@@ -508,10 +508,11 @@ function! s:GetBufSize(lines)
   return {"width": buffer_width, "height": buffer_height}
 endfunction
 
+" TODO here ---------------------------------------- 要把 `` 之类的包含符去掉后计算宽度
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(item)
+    let curr_length = strdisplaywidth(substitute(item, "\[`|]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -520,7 +521,6 @@ function! s:MaxLength(lines)
 endfunction
 
 function! s:NormalizeItems(items)
-  echom a:items
   let new_line_arr = s:GetFullfillItems(a:items)
   return map(copy(new_line_arr["items"]), function('s:MapFunction'))
 endfunction
@@ -544,11 +544,12 @@ function! s:GetFullfillItems(data)
   let new_data = []
   " ------------ find max length --------------
   for item in a:data
-    let abbr = easycomplete#util#GetItemAbbr(item)
+    " let abbr = easycomplete#util#GetItemAbbr(item)
     let word = get(item, "word", "")
-    if empty(get(item, "abbr", ""))
-      let item["abbr"] = abbr
-    endif
+    let abbr = get(item, "abbr", "")
+    " if empty(get(item, "abbr", ""))
+    "   let item["abbr"] = abbr
+    " endif
     let word_arr_length += [strdisplaywidth(word)]
     let abbr_arr_length += [strdisplaywidth(abbr)]
     let kind_arr_length += [strdisplaywidth(trim(get(item, "kind", "")))]
