@@ -28,7 +28,7 @@ if g:easycomplete_nerd_font == 1
         \      "menu":"Text",
         \    },
         \   "snip": {
-        \      "kind":"",
+        \      "kind":"",
         \      "menu":"code"
         \    },
         \   "dict": {

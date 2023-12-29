@@ -59,6 +59,12 @@ endfunction
 "  EazyFuzzyMatch: "`", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
 "  EasyKind:       "|", 继承 PmenuKind
 "  EasyExtra:      "^", 继承 PmenuExtra
+" 
+" vscode 提供了超过五种 kind 颜色配置，以把 lsp 和 text
+" 区分开，这里增加两种常见的配置：
+"  EasyFunction:   "§", Function/Method
+"  EasySnippet:    "¤", Snippet
+"  EasyTabNine:    "©", TabNine
 function! s:hl()
   let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
   if easycomplete#util#IsGui()
@@ -68,11 +74,17 @@ function! s:hl()
   endif
   let exec_cmd = [
         \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
-        \ 'syntax region EasyKind matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
-        \ 'syntax region EasyExtra matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
+        \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
+        \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
+        \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends',
+        \ 'syntax region EasySnippet    matchgroup=Conceal start=/\%(¤¤\)\@!¤/ matchgroup=Conceal end=/\%(¤¤\)\@!¤/ concealends',
+        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/\%(©©\)\@!©/ matchgroup=Conceal end=/\%(©©\)\@!©/ concealends',
         \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
-        \ "hi link EasyKind PmenuKind",
-        \ "hi link EasyExtra PmenuExtra",
+        \ "hi link EasyKind     PmenuKind",
+        \ "hi link EasyExtra    PmenuExtra",
+        \ "hi link EasyFunction Conditional",
+        \ "hi link EasySnippet  Number",
+        \ "hi link EasyTabNine  Character",
         \ ]
         " \ "hi link PmenuExtraSel PmenuSel",
         " \ "hi link PmenuKindSel PmenuSel"
@@ -139,7 +151,7 @@ function! s:TabNineHLNormalize(menu_items)
       if count_k == 0
         let item["abbr_marked"] = abbr
       else
-        let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 50)
+        let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 150)
       endif
       let item["marked_position"] = range(count_k)
     endif
@@ -639,7 +651,7 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(substitute(item, "\[`|^]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(item, "\[`|^§¤©]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -653,10 +665,22 @@ function! s:NormalizeItems(items)
 endfunction
 
 function! s:MapFunction(key, val)
+  let kind_str = "|"
+  if g:easycomplete_nerd_font
+    let kind_o = get(a:val, "kind", "")
+    if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["constant"]
+      let kind_str = "§"
+    elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"]
+      let kind_str = "¤"
+    elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
+      let kind_str = "©"
+    endif
+  endif
   let ret = [
         \ " ",
         \ get(a:val, "abbr", ""), " ",
-        \ "|" . get(a:val, "kind", "") . "|", " ",
+        \ kind_str . get(a:val, "kind", "") . kind_str, " ",
         \ "^" . get(a:val, "menu", "") . "^",
         \ ]
   return join(ret,"")
