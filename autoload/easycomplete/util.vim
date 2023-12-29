@@ -180,6 +180,9 @@ function! easycomplete#util#GetPluginNameFromUserData(item) " {{{
 endfunction " }}}
 
 function! s:GetPluginNameFromUserData(item) " {{{
+  if has_key(a:item, "plugin_name")
+    return get(a:item, "plugin_name", "")
+  endif
   let user_data = easycomplete#util#GetUserData(a:item)
   let plugin_name = get(user_data, "plugin_name", "")
   return plugin_name

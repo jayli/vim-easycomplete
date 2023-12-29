@@ -1,3 +1,6 @@
+" ------------------------------
+" TODO 连续tab移动选中态,很卡 jayli，比如在js文件中输入hi
+" ------------------------------
 " for nvim only
 let s:default_pum_pot = {
         \ "relative": "editor",
