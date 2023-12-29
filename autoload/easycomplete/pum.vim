@@ -51,8 +51,8 @@ function! s:hl()
   let exec_cmd = [
         \ 'syntax region AAA matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends',
         \ 'syntax region BBB matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
-        \ "hi AAA guifg=red",
-        \ "hi BBB guifg=lightblue",
+        \ "hi AAA guifg=" . easycomplete#ui#GetFgColor("SpecialKey"),
+        \ "hi BBB guifg=orange",
         \ ]
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
@@ -109,17 +109,24 @@ function! easycomplete#pum#GetPos()
 endfunction
 
 function! s:CacheOpt()
-  let s:original_opt = {
-        \ "hlsearch": &hlsearch,
-        \ "wrap": &wrap,
-        \ "spell": &spell
-        \ }
+  for item in ["hlsearch", "wrap", "spell"]
+    let s:original_opt[item] = eval("&" . item)
+  endfor
+  " let s:original_opt = {
+  "       \ "hlsearch": &hlsearch,
+  "       \ "wrap": &wrap,
+  "       \ "spell": &spell
+  "       \ }
 endfunction
 
 function! s:RestoreOpt()
-  call setwinvar(0, '&hlsearch', get(s:original_opt, "hlsearch"))
-  call setwinvar(0, '&wrap', get(s:original_opt, "wrap"))
-  call setwinvar(0, '&spell', get(s:original_opt, "spell"))
+  for k in keys(s:original_opt)
+    let v = get(s:original_opt, k, "")
+    call setwinvar(0, "&" . k, v)
+  endfor
+  " call setwinvar(0, '&hlsearch', get(s:original_opt, "hlsearch"))
+  " call setwinvar(0, '&wrap', get(s:original_opt, "wrap"))
+  " call setwinvar(0, '&spell', get(s:original_opt, "spell"))
 endfunction
 
 function! s:SelectNext()
@@ -579,8 +586,8 @@ function! s:GetFullfillItems(data)
 endfunction
 
 function! s:FullfillMarkedAbbr(abbr, abbr_marked, max_length)
-  let added_spaces = a:max_length - len(a:abbr)
-  let res = a:abbr_marked . repeat(" ", added_spaces)
+  let added_spaces = a:max_length - strdisplaywidth(a:abbr)
+  let res = (empty(a:abbr_marked) ? a:abbr : a:abbr_marked) . repeat(" ", added_spaces)
   return res
 endfunction
 

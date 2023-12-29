@@ -1052,7 +1052,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     " let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
     let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
     let fuzzymatching = matching_res[0]
-    let fuzzy_position = matching_res[1] "--------------------------------------------------here
+    let fuzzy_position = matching_res[1]
     if g:env_is_nvim
       let count_i = 0
       while count_i < len(fuzzymatching)

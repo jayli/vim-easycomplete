@@ -1094,6 +1094,7 @@ function! s:CompleteMatchAction()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
     if g:env_is_nvim && empty(l:vim_word)
+      " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
       call s:CloseCompletionMenu()
       call s:flush()
       call s:StopZizz()
