@@ -46,7 +46,11 @@ function! easycomplete#pum#complete(startcol, items)
     call s:close()
     return
   endif
-  let items = s:TabNineHLNormalize(a:items)
+  if easycomplete#ok("g:easycomplete_tabnine_enable")
+    let items = s:TabNineHLNormalize(a:items)
+  else
+    let items = a:items
+  endif
   let s:curr_items = deepcopy(items)
   call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
 endfunction
@@ -126,12 +130,17 @@ endfunction
 function! s:TabNineHLNormalize(menu_items)
   if empty(b:typing_ctx) | return a:menu_items | endif
   let typing_word = get(b:typing_ctx, "typing", "")
-  for k in range(5)
+  let count_o = min([len(a:menu_items), 5])
+  for k in range(count_o)
     let item = a:menu_items[k]
     if has_key(item, "plugin_name") && get(item, "plugin_name") ==# "tn"
       let abbr = get(item, "abbr", "")
       let count_k = s:CompareStrings(typing_word, abbr)
-      let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 50)
+      if count_k == 0
+        let item["abbr_marked"] = abbr
+      else
+        let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 50)
+      endif
       let item["marked_position"] = range(count_k)
     endif
   endfor

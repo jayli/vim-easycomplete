@@ -1098,7 +1098,9 @@ function! s:CompleteMatchAction()
       call s:CloseCompletionMenu()
       call s:flush()
       call s:StopZizz()
-      call timer_start(8, { -> easycomplete#typing() })
+      " 这里的 timer 要比 tabnine 的触发慢 20ms 以上才能正常激活 
+      let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
+      call timer_start(local_delay, { -> easycomplete#typing() })
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)
