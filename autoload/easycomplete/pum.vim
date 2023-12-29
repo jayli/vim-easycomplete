@@ -15,7 +15,7 @@ let s:pum_window = 0
 let s:pum_buffer = 0
 let s:pum_direction = ""
 
-" 临时样式存储
+" pum 高亮所需的临时样式 match id
 let g:easycomplete_match_id = 0
 
 " scrollbar vars
@@ -50,11 +50,11 @@ function! easycomplete#pum#complete(startcol, items)
 endfunction
 
 function! s:hl()
-  let hl_name = "easycomplete_pum_hl"
+  let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
   let exec_cmd = [
-        \ 'syntax region AAA matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
+        \ 'syntax region FuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
         \ 'syntax region BBB matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
-        \ "hi AAA guifg=" . easycomplete#ui#GetFgColor("SpecialKey"),
+        \ "hi FuzzyMatch guifg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi BBB guifg=orange",
         \ ]
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
@@ -232,7 +232,7 @@ function! s:select(line_index)
     call setwinvar(s:pum_window, '&cursorline', 1)
     call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
     let s:selected_i = l:line_index
-    call s:HLCursordFuzzyChar("AAA", 2)
+    call s:HLCursordFuzzyChar("FuzzyMatch", 2)
   endif
 endfunction
 

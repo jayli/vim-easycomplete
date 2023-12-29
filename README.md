@@ -138,6 +138,7 @@ Global configurations
 | `g:easycomplete_diagnostics_enable`  | 1             | Enable diagnostics                                            |
 | `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
+| `g:easycomplete_fuzzymatch_hlgroup`  | `""`          | Custom fuzzy matching charactors Highlight group name         |
 
 Typing `:h easycomplete` for help.
 
@@ -268,6 +269,8 @@ Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font = 1`
 
 If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](beautify-menu-items.md).
+
+You can add custom fuzzy matching charactors your own high light group via `g:easycomplete_fuzzymatch_hlgroup = "MyGroup"`.
 
 ## Add custom completion plugin
 
