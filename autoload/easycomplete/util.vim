@@ -1021,7 +1021,9 @@ function! easycomplete#util#MatchFuzzy(array, word, ...)
 endfunction " }}}
 
 function! s:ReplaceMent(abbr, positions, wrap_char)
-  let letters = map(str2list(a:abbr), { _, val -> nr2char(val)})
+  " let letters = map(str2list(a:abbr), { _, val -> nr2char(val)})
+  " 字符串形式的 lamda 表达式速度比内联函快接近一倍
+  let letters = map(str2list(a:abbr), "nr2char(v:val)")
   for item in a:positions
     let fuzzy_index = item
     let letters[fuzzy_index] = a:wrap_char . letters[fuzzy_index] . a:wrap_char
@@ -1051,7 +1053,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
     let fuzzymatching = matching_res[0]
     let fuzzy_position = matching_res[1]
-    if g:env_is_nvim
+    if g:env_is_nvim && has("nvim-0.7.0")
       let count_i = 0
       while count_i < len(fuzzymatching)
         let abbr = get(fuzzymatching[count_i], "abbr", "")

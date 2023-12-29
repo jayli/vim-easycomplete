@@ -236,6 +236,7 @@ function! s:select(line_index)
   endif
 endfunction
 
+" 根据原始的 fuzzy position 计算 abbr_marked 中真实的高亮位置
 function! s:ComputeHLPositions(abbr_marked, fuzzy_p, prefix_length)
   let position = []
   let count_i = 0  " marked abbr cursor
@@ -274,9 +275,15 @@ function! s:HLCursordFuzzyChar(hl_group, prefix_length)
     return
   endif
   let hl_p = s:ComputeHLPositions(abbr_marked, marked_position, a:prefix_length)
+  " let param_arr = map(copy(hl_p), { _, val -> [s:selected_i, val, 1]})
+  " 字符串 lamda 表达式比内联函数更快
   let param_arr = map(copy(hl_p), "[s:selected_i, v:val, 1]")
   let exec_str = "let g:easycomplete_match_id = matchaddpos('" . a:hl_group . "', " . string(param_arr) . ")"
-  call win_execute(s:pum_window, exec_str)
+  try
+    call win_execute(s:pum_window, exec_str)
+  catch
+    " do nothing
+  endtry
 endfunction
 
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
