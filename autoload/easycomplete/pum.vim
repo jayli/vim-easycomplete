@@ -296,7 +296,7 @@ function! easycomplete#pum#CursoredItem()
   " TODO jayli here - ----------------------------------------------
   " tab 移动过程中会报错
   if s:selected_i > len(s:curr_items)
-    call s:trace(string(len(s:curr_items)) . " " . string(s:selected_i) . s:original_ctx["typing"])
+    call s:log("ERR", string(len(s:curr_items)) . " " . string(s:selected_i) . s:original_ctx["typing"])
     return {}
   endif
   return s:curr_items[s:selected_i - 1]
@@ -669,7 +669,6 @@ function! s:GetBufSize(lines)
   return {"width": buffer_width, "height": buffer_height}
 endfunction
 
-" TODO here ---------------------------------------- 要把 `` 之类的包含符去掉后计算宽度
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
