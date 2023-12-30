@@ -2244,6 +2244,9 @@ function! easycomplete#CursorMovedI()
     if g:env_is_nvim && easycomplete#pum#visible()
       call easycomplete#pum#close()
     endif
+    if easycomplete#action#signature#visible()
+      call easycomplete#popup#close("float")
+    endif
   endif
 endfunction
 

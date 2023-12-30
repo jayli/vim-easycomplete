@@ -20,7 +20,7 @@ let s:float_max_height = 15
 let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 " signature/lint
-let s:float_type = "signature"
+let s:float_type = ""
 
 augroup easycomplete#popup#au
   autocmd!
@@ -229,6 +229,15 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     call s:NVimShow(opt, "float", a:float_type)
   elseif s:is_vim
     call s:VimShow(opt, "float", a:float_type)
+  endif
+  let s:float_type = a:float_type
+endfunction
+
+function! easycomplete#popup#SignatureVisible()
+  if empty(s:float_type) || empty(g:easycomplete_popup_win["float"])
+    return v:false
+  else
+    return v:true
   endif
 endfunction
 
@@ -556,6 +565,9 @@ function! easycomplete#popup#close(...)
     return
   endif
   let windowtype = a:1
+  if windowtype == "float"
+    let s:float_type = ""
+  endif
   if windowtype == "float" &&
         \ bufnr() != expand("<abuf>") &&
         \ !empty(expand("<abuf>")) &&

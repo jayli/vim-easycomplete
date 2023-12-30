@@ -176,6 +176,10 @@ function! s:SignatureCallback(title, param, doc)
                              \ 'Pmenu', 0, "", [0, 0 - offset], 'signature')
 endfunction
 
+function! easycomplete#action#signature#visible()
+  return easycomplete#popup#SignatureVisible()
+endfunction
+
 function! s:GetParameterLabel(signature, parameter) abort
   if has_key(a:parameter, 'label')
     if type(a:parameter['label']) == type([])
