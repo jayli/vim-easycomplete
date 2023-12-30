@@ -762,7 +762,11 @@ function! s:fullfill(word, length)
     return a:word
   endif
   let inc = a:length - word_length
-  return a:word . repeat(" ", inc)
+  if g:easycomplete_nerd_font
+    return repeat(" ", inc) . a:word
+  else
+    return a:word . repeat(" ", inc)
+  endif
 endfunction
 
 function! easycomplete#pum#fullfill(word, length)
