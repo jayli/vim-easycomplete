@@ -260,18 +260,28 @@ function! s:TabnineJobCallback(job_id, data, event)
     call s:CompleteHandler([])
     return
   endif
-  if !pumvisible() && t9_cmp_kind == "snippet"
+  " ----------------- pum 不存在时执行回调 -----------------
+  if g:env_is_vim && !pumvisible() && t9_cmp_kind == "snippet"
     call s:SuggestHandler(res_array)
     return
   endif
-  " 当snippet结果返回时，已经存在匹配菜单了，则丢弃
-  if pumvisible() && t9_cmp_kind == "snippet"
+  if g:env_is_nvim && !easycomplete#pum#visible() && t9_cmp_kind == "snippet"
+    call s:SuggestHandler(res_array)
+    return
+  endif
+  " ---- 当snippet结果返回时，已经存在匹配菜单了，则丢弃 -----
+  if g:env_is_vim && pumvisible() && t9_cmp_kind == "snippet"
+    call s:CompleteHandler([])
+    return
+  endif
+  if g:env_is_nvim && easycomplete#pum#visible() && t9_cmp_kind == "snippet"
     call s:CompleteHandler([])
     return
   endif
   " 如果有标志位，等同认为是 suggest
-  if !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
+  if g:env_is_vim && !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
     call s:SuggestHandler(res_array)
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#tabnine#SuggestFlagCheck()
   else " 配合pum显示tabnine提示词s
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)
@@ -279,7 +289,11 @@ function! s:TabnineJobCallback(job_id, data, event)
 endfunction
 
 function! s:SuggestHandler(res_array)
-  if pumvisible() | return | endif
+  if g:env_is_vim && pumvisible()
+    return
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    return
+  endif
   call easycomplete#tabnine#Callback(a:res_array)
 endfunction
 

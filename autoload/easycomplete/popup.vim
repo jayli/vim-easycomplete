@@ -559,7 +559,7 @@ function! easycomplete#popup#close(...)
   if windowtype == "float" &&
         \ bufnr() != expand("<abuf>") &&
         \ !empty(expand("<abuf>")) &&
-        \ pumvisible() &&
+        \ ((g:env_is_vim && pumvisible()) || g:env_is_nvim && easycomplete#pum#visible()) &&
         \ easycomplete#util#InsertMode()
     return
   endif
@@ -592,7 +592,7 @@ function! s:NvimCloseFloatWithPum(winid)
   if nvim_win_is_valid(a:winid)
     call nvim_win_close(a:winid, 1)
   endif
-  if pumvisible() && s:IsOverlay()
+  if easycomplete#pum#visible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)

@@ -27,7 +27,7 @@ function easycomplete#tabnine#ready()
 endfunction
 
 function! easycomplete#tabnine#fire()
-  if pumvisible()
+  if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
     return
   endif
   if !easycomplete#tabnine#ready()

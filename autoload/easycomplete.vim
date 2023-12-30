@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -441,7 +441,9 @@ endfunction
 
 " 展开pum且已经开始选择item动作(当前Cursored的位置不是第一个)
 function! easycomplete#PumSelecting()
-  if pumvisible() && complete_info()['selected'] > 0
+  if g:env_is_vim && pumvisible() && complete_info()['selected'] > 0
+    return v:true
+  elseif g:env_is_nvim && easycomplete#pum#CompleteCursored()
     return v:true
   else
     return v:false
@@ -732,14 +734,6 @@ function! s:BackingCompleteHandler()
 endfunction
 
 function! easycomplete#BackSpace()
-  return "\<C-H>"
-  if pumvisible()
-    let l:items = complete_info()["items"]
-    let l:startcol = get(g:easycomplete_firstcomplete_ctx, "startcol", 0)
-    if l:startcol != 0 && l:startcol < col('.') - 1
-      " call s:CreateShadowWindow()
-    endif
-  endif
   return "\<C-H>"
 endfunction
 
@@ -1688,7 +1682,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 回值后进行重新过滤呈现
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
     else
-      if !pumvisible()
+      if (g:env_is_vim && !pumvisible()) || (g:env_is_nvim && !easycomplete#pum#visible())
         let should_stop_render = 1
       endif
     endif
