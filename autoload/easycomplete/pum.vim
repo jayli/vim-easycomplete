@@ -700,7 +700,7 @@ function! s:MapFunction(key, val)
   endif
   let ret = [
         \ " ",
-        \ get(a:val, "abbr", ""), " ",
+        \ get(a:val, "abbr", ""), "  ",
         \ kind_str . get(a:val, "kind", "") . kind_str, " ",
         \ "^" . get(a:val, "menu", "") . "^",
         \ ]
