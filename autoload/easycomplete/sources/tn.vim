@@ -89,7 +89,7 @@ function! easycomplete#sources#tn#VimColonTyping(typed)
   if !(&filetype == "vim")
     return v:false
   endif
-  if a:typed =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\[0-9a-zA-Z_\]*$"
+  if a:typed =~ "\\W*\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\[0-9a-zA-Z_\]*$"
     return v:true
   else
     return v:false
@@ -275,6 +275,11 @@ function! s:TabnineJobCallback(job_id, data, event)
     call s:CompleteHandler([])
     return
   endif
+  " ----------------- 过滤 vim 的 g: 之类的输入  -----------------
+  if easycomplete#sources#tn#VimColonTyping(l:ctx["typed"])
+    call s:CompleteHandler([])
+    return
+  endif
   " ----------------- pum 不存在时执行回调 -----------------
   if g:env_is_vim && !pumvisible() && t9_cmp_kind == "snippet"
     call s:SuggestHandler(res_array)
@@ -309,7 +314,9 @@ function! s:SuggestHandler(res_array)
   elseif g:env_is_nvim && easycomplete#pum#visible()
     return
   endif
-  call easycomplete#tabnine#Callback(a:res_array)
+  if easycomplete#ok("g:easycomplete_tabnine_suggestion")
+    call easycomplete#tabnine#Callback(a:res_array)
+  endif
 endfunction
 
 function! s:CompleteHandler(res)
@@ -442,7 +449,8 @@ function! s:NormalizeCompleteResult(data)
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})
-  return l:words
+  " 最多只输出百分比最靠前的三个匹配结果
+  return l:words[0:2]
 endfunction
 
 " ' 4%' -> ' 4%'

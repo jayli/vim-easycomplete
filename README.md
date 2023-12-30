@@ -249,12 +249,12 @@ Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
 
 - *line_limit*: The number of lines before and after the cursor to send to TabNine. If the option is smaller, the performance may be improved. (default: 1000)
-- *max_num_result*: Max results from TabNine. (default: 10)
+- *max_num_result*: Max results from TabNine. (default: 3)
 
 ```vim
 let g:easycomplete_tabnine_config = {
     \ 'line_limit': 1000,
-    \ 'max_num_result' : 10,
+    \ 'max_num_result' : 3,
     \ }
 ```
 

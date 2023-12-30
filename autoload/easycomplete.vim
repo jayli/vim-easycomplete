@@ -1084,7 +1084,7 @@ function! s:CompleteMatchAction()
     call s:StopZizz()
     let ctx = easycomplete#context()
     " tabnine
-    if easycomplete#sources#tn#available() && easycomplete#sources#tn#VimColonTyping(ctx["typed"])
+    if easycomplete#sources#tn#available()
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
