@@ -1,5 +1,5 @@
 " File:         easycomplete.vim
-" Author:       @jayli <https://github.com/jayli/>
+" Author:       @拔赤 <https://github.com/jayli/>
 " Description:  A minimalism style complete plugin for vim/nvim
 " More Info:    <https://github.com/jayli/vim-easycomplete>
 
@@ -123,6 +123,9 @@ function! s:SetCompleteOption()
   setlocal completeopt-=preview
   setlocal completeopt-=longest
   setlocal cpoptions+=B
+  if g:env_is_vim
+    setlocal backspace+=indent,start
+  endif
 endfunction
 
 function! easycomplete#GetBindingKeys()
@@ -315,7 +318,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " 防止抖动用的
+  " 防止抖动
   let result_all = easycomplete#sources#tn#GetGlboalSoucresItems() + result
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
@@ -325,16 +328,53 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
 endfunction
 
 function! easycomplete#CompleteDone()
-  call easycomplete#popup#CompleteDone()
+  " hack for nvim
+  " 正常情况下回退会触发 completedone，进而导致popup_close，nvim
+  " 中也遵循这个逻辑，需要手动再打开一下
+  if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
+        \ && easycomplete#FirstSelectedWithOptDefaultSelected()
+    call s:ShowCompleteInfoWithoutTimer()
+  elseif g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
+    call easycomplete#popup#CompleteDone()
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#IsBacking()
+    call s:CloseCompleteInfo()
+  else
+    call easycomplete#popup#CompleteDone()
+  endif
+  " 偶尔会有一些pum关闭后completeinfo没有关闭，这里做一个扫尾
+  " if g:env_is_nvim && easycomplete#IsBacking()
+  "   call s:StopAsyncRun()
+  "   call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 5)
+  " endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
   " bugfix for #88
-  if pumvisible() || (empty(v:completed_item) && g:easycomplete_first_complete_hit != 1)
-    call s:zizz()
-    return
+  if g:env_is_nvim
+    "TODO v:complete_item 是否是必须的，还需再测试一下
+    if easycomplete#pum#visible() || (g:easycomplete_first_complete_hit != 1)
+      call s:zizz()
+      return
+    endif
+  else
+    if pumvisible() || (empty(v:completed_item) && g:easycomplete_first_complete_hit != 1)
+      call s:zizz()
+      return
+    endif
   endif
   call s:flush()
+endfunction
+
+function! easycomplete#WinScrolled()
+  call easycomplete#pum#WinScrolled()
+endfunction
+
+" 有时候 pum_done 事件执行的比 PumClose 要快，这时判断 pumvisible 应该为 false
+" 却实际上是 true，保险起见加上一个timer
+function! s:CompleteDoneTeardown()
+  if g:env_is_nvim && !easycomplete#pum#visible()
+    call s:CloseCompleteInfo()
+  endif
 endfunction
 
 function! easycomplete#InsertLeave()
@@ -353,33 +393,47 @@ function! easycomplete#flush()
   call s:flush()
 endfunction
 
-" 判断 pum 是否是选中状态
+" 判断 pum 是否是选中状态，兼容 nvim 和 vim
 function! easycomplete#CompleteCursored()
-  if !pumvisible()
+  if g:env_is_nvim && easycomplete#pum#visible()
+    return easycomplete#pum#CompleteCursored()
+  elseif g:env_is_vim && pumvisible()
+    return complete_info()['selected'] == -1 ? v:false : v:true
+  else
     return v:false
   endif
-  return complete_info()['selected'] == -1 ? v:false : v:true
 endfunction
 
+" 兼容nvim 和 vim
 function! easycomplete#GetCursordItem()
   if easycomplete#CompleteCursored()
-    let l:item = complete_info()["items"][complete_info()['selected']]
-    return l:item
+    if g:env_is_nvim
+      return easycomplete#pum#CursoredItem()
+    else
+      let l:item = complete_info()["items"][complete_info()['selected']]
+      return l:item
+    endif
   endif
   return {}
 endfunction
 
+" typing 过程中需要即时展开completeinfo，这里先做一个判断
 function! easycomplete#FirstSelectedWithOptDefaultSelected()
   if &completeopt =~ "noselect"
     return v:false
   endif
-  if !pumvisible()
+  if g:env_is_vim && !pumvisible()
+    return v:false
+  endif
+  if g:env_is_nvim && !easycomplete#pum#visible()
     return v:false
   endif
   if !easycomplete#CompleteCursored()
     return v:false
   endif
-  if complete_info()['selected'] == 0
+  let l:selected = g:env_is_nvim ?
+        \ easycomplete#pum#CompleteInfo()['selected'] : complete_info()['selected']
+  if l:selected == 0
     return v:true
   endif
   return v:false
@@ -387,7 +441,7 @@ endfunction
 
 " 展开pum且已经开始选择item动作(当前Cursored的位置不是第一个)
 function! easycomplete#PumSelecting()
-  if pumvisible() && complete_info()['selected'] > 0
+  if easycomplete#pum#CompleteCursored()
     return v:true
   else
     return v:false
@@ -442,9 +496,16 @@ function! s:BackChecking()
   return v:false
 endfunction
 
+function! easycomplete#BackChecking()
+  return s:BackChecking()
+endfunction
+
 function! easycomplete#Up()
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call easycomplete#pum#prev()
+    return ""
   else
     call easycomplete#popup#close("float")
   endif
@@ -452,8 +513,11 @@ function! easycomplete#Up()
 endfunction
 
 function! easycomplete#Down()
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call easycomplete#pum#next()
+    return ""
   else
     call easycomplete#popup#close("float")
   endif
@@ -606,11 +670,14 @@ endfunction
 
 " vim 的冒号
 function! s:VimColonTyping()
-  if &filetype == "vim" &&
-        \ (
-        \   easycomplete#context()['typed'] =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+  if !(&filetype == "vim")
+    return v:false
+  endif
+  let l:typed = easycomplete#context()['typed']
+  if    (
+        \   l:typed =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
         \   ||
-        \   easycomplete#context()['typed'] =~ "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \   l:typed =~ "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
         \ )
     return v:true
   else
@@ -650,20 +717,24 @@ function! s:BackingCompleteHandler()
       let g:easycomplete_stunt_menuitems = s:GetCompleteCache(s:GetTypingWordByGtx())['menu_items']
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
-      noa silent! call complete(start_pos, result)
+      if g:env_is_nvim
+        noa silent! call easycomplete#pum#complete(start_pos, result)
+        " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
+        " 这里在nvim中模拟completedone事件
+        if !empty(result)
+          doautocmd <nomodeline> User easycomplete_pum_done
+        else
+          doautocmd <nomodeline> User easycomplete_pum_done
+          call s:CloseCompleteInfo()
+        endif
+      else
+        noa silent! call complete(start_pos, result)
+      endif
     endif
   endif
 endfunction
 
 function! easycomplete#BackSpace()
-  return "\<C-H>"
-  if pumvisible()
-    let l:items = complete_info()["items"]
-    let l:startcol = get(g:easycomplete_firstcomplete_ctx, "startcol", 0)
-    if l:startcol != 0 && l:startcol < col('.') - 1
-      " call s:CreateShadowWindow()
-    endif
-  endif
   return "\<C-H>"
 endfunction
 
@@ -673,10 +744,18 @@ function! easycomplete#typing()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+
+  if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
+    return ""
+  endif
+
   let g:easycomplete_start = reltime()
-  if s:BackChecking()
+  if g:env_is_vim && s:BackChecking()
     let g:easycomplete_backing = 1
     call s:BackingCompleteHandler()
+    return ""
+  elseif g:env_is_nvim && s:BackChecking() && !easycomplete#pum#visible()
+    " 回退不能激发 complete
     return ""
   else
     let g:easycomplete_backing = 0
@@ -716,9 +795,7 @@ function! easycomplete#typing()
   elseif s:zizzing()
     return ""
   endif
-  if pumvisible()
-    return ""
-  endif
+
   let b:typing_ctx = easycomplete#context()
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
@@ -742,7 +819,7 @@ function! s:DoComplete(immediately)
     return v:null
   endif
 
-  if complete_check()
+  if g:env_is_vim && complete_check()
     call s:flush()
     return v:null
   endif
@@ -1005,13 +1082,24 @@ endfunction
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
+    let ctx = easycomplete#context()
     " tabnine
     if easycomplete#sources#tn#available()
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
+    if g:env_is_nvim && empty(l:vim_word)
+      " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
+      call s:CloseCompletionMenu()
+      call s:flush()
+      call s:StopZizz()
+      " 这里的 timer 要比 tabnine 的触发慢 20ms 以上才能正常激活 
+      let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
+      call timer_start(local_delay, { -> easycomplete#typing() })
+      return
+    endif
     call s:CompleteTypingMatch(l:vim_word)
-    let b:typing_ctx = easycomplete#context()
+    let b:typing_ctx = ctx
   catch
     call s:log('[CompleteMatchAction]', v:exception)
     call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
@@ -1031,10 +1119,12 @@ function! easycomplete#CompleteChanged()
     return
   endif
   let b:typing_ctx = easycomplete#context()
-  call easycomplete#ShowCompleteInfoByItem(item)
-
+  " 改成异步，避免按住tab时连续触发completechanged会频繁大量调用
+  call s:StopAsyncRun()
+  call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 5)
+  let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " Hack 所有异步获取 document 时，需要暂存 event
-  let g:easycomplete_completechanged_event = deepcopy(v:event)
+  let g:easycomplete_completechanged_event = deepcopy(l:event)
 endfunction
 
 function! easycomplete#CompleteShow()
@@ -1074,12 +1164,24 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   endif
 endfunction
 
+function! easycomplete#ShowCompleteInfoWithoutTimer()
+  call s:ShowCompleteInfoWithoutTimer()
+endfunction
+
 function! s:ShowCompleteInfoWithoutTimer()
   if !easycomplete#CompleteCursored()
     call s:CloseCompleteInfo()
     return
   endif
-  let item = complete_info()["items"][complete_info()['selected']]
+  if g:env_is_nvim
+    let item = easycomplete#pum#CursoredItem()
+  else
+    let item = complete_info()["items"][complete_info()['selected']]
+  endif
+  if empty(item)
+    call s:CloseCompleteInfo()
+    return
+  endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
@@ -1089,7 +1191,24 @@ function! s:ShowCompleteInfoWithoutTimer()
     if type(info) == type("")
       let info = [info]
     endif
-    call s:ShowCompleteInfo(info)
+    " call s:ShowCompleteInfo(info)
+    call easycomplete#popup#DoPopup(info, 0)
+  endif
+endfunction
+
+" pum 的位置发生了偏转，自定义 pum 触碰到右边距时会发生
+" 实测无法正常及时检测是否发生偏转
+function! s:PumDeflect()
+  if !easycomplete#pum#visible() | return v:false | endif
+  if empty(b:typing_ctx) | return v:false | endif
+  let pum_pos = easycomplete#pum#PumGetPos()
+  let cursor_left = easycomplete#pum#CursorLeft()
+  if cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol) == pum_pos.col + 1
+    " 未偏转
+    return v:false
+  else
+    " 发生了偏转
+    return v:true
   endif
 endfunction
 
@@ -1126,13 +1245,22 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
   endfor
 endfunction
 
+function! s:RememberCtx()
+  let b:typing_ctx = easycomplete#context()
+endfunction
+
 function! easycomplete#CleverTab()
   if !easycomplete#ok('g:easycomplete_enable')
     return "\<Tab>"
   endif
-  if pumvisible()
+  if g:env_is_vim && pumvisible()
     call s:zizz()
     return "\<C-N>"
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call s:zizz()
+    call easycomplete#pum#next()
+    call timer_start(5, { -> s:RememberCtx()})
+    return easycomplete#pum#SetWordBySelecting()
   else
     if easycomplete#tabnine#SnippetReady()
       " call easycomplete#tabnine#insert()
@@ -1193,7 +1321,33 @@ function! easycomplete#CleverShiftTab()
     return
   endif
   call s:zizz()
-  return pumvisible() ? "\<C-P>" : "\<Tab>"
+  if g:env_is_vim
+    return pumvisible() ? "\<C-P>" : "\<Tab>"
+  else
+    if easycomplete#pum#visible()
+      call easycomplete#pum#prev()
+      call timer_start(5, { -> s:RememberCtx()})
+      return easycomplete#pum#SetWordBySelecting()
+    else
+      return ""
+    endif
+  endif
+endfunction
+
+" nvim only
+function! easycomplete#CtlN()
+  if easycomplete#pum#visible()
+    call easycomplete#pum#next()
+  endif
+  return ""
+endfunction
+
+" nvim only
+function! easycomplete#CtlP()
+  if easycomplete#pum#visible()
+    call easycomplete#pum#prev()
+  endif
+  return ""
 endfunction
 
 " <CR> 逻辑，主要判断是否展开代码片段
@@ -1205,27 +1359,25 @@ function! easycomplete#TypeEnterWithPUM()
   endif
   " 得到光标处单词
   let l:word = matchstr(getline('.'), '\S\+\%'.col('.').'c')
-  " 选中目录
-  if (pumvisible() && !empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
-    call s:CloseCompletionMenu()
-    call s:flush()
-    call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
-    return "\<C-Y>"
-  endif
-  " 选中 snippet
-  if (pumvisible() && !empty(l:item) && s:SnipSupports() &&
-        \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips")
-    call s:ExpandSnipManually(get(l:item, "word"))
-    call s:zizz()
-    return "\<C-Y>"
-  endif
-  " 未选中任何单词，直接回车，直接关闭匹配菜单
-  if pumvisible() && s:SnipSupports() && empty(l:item)
-    call s:zizz()
-    return "\<C-Y>"
-  endif
-  " 其他选中动作一律插入单词并关闭匹配菜单
-  if pumvisible()
+  if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
+    " 选中目录
+    if (!empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
+      call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
+      return s:CtrlY()
+    endif
+    " 选中 snippet
+    if (!empty(l:item) && s:SnipSupports() &&
+          \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
+      call timer_start(10, { -> s:ExpandSnipManually(get(l:item, "word")) })
+      call s:zizz()
+      return s:CtrlY()
+    endif
+    " 未选中任何单词，直接回车，直接关闭匹配菜单
+    if s:SnipSupports() && empty(l:item) && !s:zizzing()
+      call s:zizz()
+      return s:CtrlY()
+    endif
+    " 其他选中动作一律插入单词并关闭匹配菜单
     call s:zizz()
     " 新增 expandable 支持 for #48
     if easycomplete#util#expandable(l:item)
@@ -1249,9 +1401,22 @@ function! easycomplete#TypeEnterWithPUM()
         call s:AsyncRun("easycomplete#action#signature#do",[], 60)
       endif
     endif
-    return "\<C-Y>"
+    return s:CtrlY()
+  else " 如果没有 pum，正常回车
+    return "\<CR>"
   endif
-  return "\<CR>"
+endfunction
+
+" pumvisible 情况下，填入选中的单词，并关闭 pum
+function! s:CtrlY()
+  if g:env_is_vim
+    return "\<C-Y>"
+  else
+    let ret_str = easycomplete#pum#SetWordBySelecting()
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return ret_str
+  endif
 endfunction
 
 function! s:HandleLspSnipPosition(lsp_item)
@@ -1317,13 +1482,20 @@ endfunction
 
 " close pum
 function! s:CloseCompletionMenu()
-  if pumvisible()
-    if !(&completeopt =~ "noselect")
-      silent! noa call s:SendKeys("\<ESC>a")
-    else
-      silent! noa call s:SendKeys("\<C-Y>")
+  if g:env_is_nvim
+    if easycomplete#pum#visible()
+      call timer_start(5, { -> easycomplete#pum#close() })
+      call s:zizz()
     endif
-    call s:zizz()
+  else
+    if pumvisible()
+      if !(&completeopt =~ "noselect")
+        silent! noa call s:SendKeys("\<ESC>a")
+      else
+        silent! noa call s:SendKeys("\<C-Y>")
+      endif
+      call s:zizz()
+    endif
   endif
   call s:ResetCompletedItem()
 endfunction
@@ -1394,10 +1566,14 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   endif
 
   if easycomplete#CompleteCursored()
-    call feedkeys("\<C-E>")
+    if g:env_is_nvim
+      call s:CloseCompletionMenu()
+    else
+      call feedkeys("\<C-E>")
+    endif
   endif
 
-  " FristComplete 的过滤方法参照 YCM 和 coc 重写了
+  " FristComplete 的过滤方法重写了
   " 为了避免重复过滤，去掉了这里的 CompleteMenuFilter 动作
   " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
@@ -1462,6 +1638,10 @@ function! s:FirstComplete(start_pos, menuitems)
   endif
 endfunction
 
+function! easycomplete#zizzing()
+  return s:zizzing()
+endfunction
+
 function! easycomplete#GetOptions(name)
   return get(g:easycomplete_source, a:name, {})
 endfunction
@@ -1503,13 +1683,13 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 回值后进行重新过滤呈现
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
     else
-      if !pumvisible()
+      if (g:env_is_vim && !pumvisible()) || (g:env_is_nvim && !easycomplete#pum#visible())
         let should_stop_render = 1
       endif
     endif
 
     if !should_stop_render && len(source_result) > 0
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 600)
+      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
@@ -1559,10 +1739,17 @@ endfunction
 function! s:complete(start, context) abort
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
-    if !pumvisible() && !empty(a:context)
-      let should_fire_pum_show = v:true
+    if g:env_is_nvim
+      if !easycomplete#pum#visible() && !empty(a:context)
+        let should_fire_pum_show = v:true
+      endif
+      noa call easycomplete#pum#complete(a:start, a:context)
+    else
+      if !pumvisible() && !empty(a:context)
+        let should_fire_pum_show = v:true
+      endif
+      noa silent! call complete(a:start, a:context)
     endif
-    noa silent! call complete(a:start, a:context)
     if should_fire_pum_show
       doautocmd <nomodeline> User easycomplete_pum_show
     else
@@ -1580,10 +1767,18 @@ function! easycomplete#_complete(start, items)
         \ }
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
-    if !pumvisible() && !empty(a:item)
-      let should_fire_pum_show = v:true
+    if g:env_is_nvim
+      if !easycomplete#pum#visible() && !empty(a:item)
+        let should_fire_pum_show = v:true
+      endif
+      call easycomplete#pum#complete(a:start, a:items)
+    else
+      let should_fire_pum_show = v:false
+      if !pumvisible() && !empty(a:item)
+        let should_fire_pum_show = v:true
+      endif
+      silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     endif
-    silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     if should_fire_pum_show
       doautocmd <nomodeline> User easycomplete_pum_show
     else
@@ -1845,11 +2040,14 @@ function! s:flush()
   if g:easycomplete_showmode
     set showmode
   endif
+  if g:env_is_nvim
+    call s:CloseCompletionMenu()
+  endif
   let s:easycomplete_start_pos = 0
 endfunction
 
 function! s:ResetCompletedItem()
-  if pumvisible()
+  if pumvisible() || easycomplete#pum#visible()
     return
   endif
   let g:easycomplete_completed_item = {}
@@ -2042,6 +2240,11 @@ function! easycomplete#CursorMoved()
 endfunction
 
 function! easycomplete#CursorMovedI()
+  if exists("b:old_changedtick") && b:old_changedtick == b:changedtick " 只是移动光标，没有修改buf
+    if g:env_is_nvim && easycomplete#pum#visible()
+      call easycomplete#pum#close()
+    endif
+  endif
 endfunction
 
 function! easycomplete#defination()
@@ -2089,14 +2292,22 @@ function! easycomplete#TextChangedI()
   if exists('b:easycomplete_enable') && empty(b:easycomplete_enable)
     return
   endif
-  call easycomplete#tabnine#flush()
-  call easycomplete#typing()
-  if easycomplete#ok('g:easycomplete_signature_enable')
-    " hack for #281
-    call timer_start(50, { -> easycomplete#action#signature#handle()})
+  " TextCHangedP 和 TextChangedI 是互斥的
+  if g:env_is_nvim && easycomplete#pum#visible()
+    " TextChangedP
+    " call s:RememberCtx()
+    doautocmd <nomodeline> User easycomplete_pum_textchanged_p
+  else
+    " TextChangedI
+    call easycomplete#tabnine#flush()
+    call easycomplete#typing()
+    if easycomplete#ok('g:easycomplete_signature_enable')
+      " hack for #281
+      call timer_start(50, { -> easycomplete#action#signature#handle()})
+    endif
+    let b:old_changedtick = b:changedtick
+    return ""
   endif
-  let b:old_changedtick = b:changedtick
-  return ""
 endfunction
 
 function! easycomplete#TextChangedP()
@@ -2123,10 +2334,29 @@ function! easycomplete#TextChangedP()
   if b:old_changedtick == b:changedtick
     " in neovim textchangedI and textchangedP will fired at the same time with
     " firstcomplete
-  elseif easycomplete#CompleteCursored() &&
+  elseif g:env_is_vim && easycomplete#CompleteCursored() && s:zizzing() &&
         \ get(selected_item, "word", "") == l:ctx['typed'][line_length - word_str_len:line_length - 1]
     " 直接按下 C-P 或者 C-N 不做任何处理
-  elseif pumvisible() && !s:zizzing()
+  elseif g:env_is_nvim && easycomplete#pum#visible() && !s:zizzing()
+    " custom pum 和 默认 pum 的行为不一致
+    " 默认 pum 在回退时都要先触发 completedone 然后关闭 pum，所以这里 hack
+    " 的比较麻烦，custom pum 就不用这么麻烦，直接这里判断是否是回退即可
+    let g:easycomplete_start = reltime()
+    " 判断是否为回退
+    if s:BackChecking()
+      let g:easycomplete_backing = 1
+      call s:BackingCompleteHandler()
+    else
+      let g:easycomplete_backing = 0
+      " 首次激发不走这里的逻辑，走 Textchangedi 里的逻辑
+      if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
+        return
+      else
+        call s:CompleteMatchAction()
+      endif
+    endif
+    let b:old_changedtick = b:changedtick
+  elseif g:env_is_vim && pumvisible() && !s:zizzing()
     " tabnine, 空格 trigger 出的 tabnine menu 敲入字母后的逻辑
     if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
       " nvim 中的 paste text 行为异常，空格弹出 pum 后直接 paste 时，c-y 会把

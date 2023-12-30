@@ -24,11 +24,11 @@ endif
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"󰀬",
+        \      "kind":"",
         \      "menu":"Text",
         \    },
         \   "snip": {
-        \      "kind":"",
+        \      "kind":"",
         \      "menu":"code"
         \    },
         \   "dict": {
@@ -50,18 +50,18 @@ if g:easycomplete_nerd_font == 1
         \ 'class':     "",  'color':         "",
         \ 'constant':  "",  'constructor':   "",
         \ 'enum':      "",  'enummember':    "",
-        \ 'field':     "",  'file':          '',
+        \ 'field':     "",  'file':          '',
         \ 'folder':    "",  'function':      "ƒ",
         \ 'interface': "",  'keyword':       "",
         \ 'snippet':   "",  'struct':        "󰙅",
         \ 'text':      "",  'typeparameter': "§",
-        \ 'variable':  "",  'module':        '',
+        \ 'variable':  "",  'module':        '',
         \ 'event': '',
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',
-        \ 's':'󰙅', 'v':'',
-        \ 'i':'𝘪', 'm':'𝘮',
+        \ 's':'󰙅', 'v':'',
+        \ 'i':'𝘪', 'm':'',
         \ 'p':'𝘱', 'k':'𝘬',
         \ 'o':"𝘰", 'd':'𝘥',
         \ 'l':"𝘭", 'a':"𝘢",
@@ -89,6 +89,9 @@ let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 
+if !exists("g:easycomplete_fuzzymatch_hlgroup")
+  let g:easycomplete_fuzzymatch_hlgroup = ""
+endif
 if !exists("g:easycomplete_tabnine_suggestion")
   let g:easycomplete_tabnine_suggestion = 1
 endif
@@ -514,7 +517,7 @@ augroup easycomplete#NormalBinding
   autocmd ExitPre * call easycomplete#finish()
   " SecondComplete Entry
   autocmd CompleteChanged * noa call easycomplete#CompleteChanged()
-  autocmd TextChangedP * : noa call easycomplete#TextChangedP()
+  autocmd TextChangedP * noa call easycomplete#TextChangedP()
   autocmd InsertCharPre * call easycomplete#InsertCharPre()
   autocmd CompleteDone * call easycomplete#CompleteDone()
   autocmd InsertLeave * call easycomplete#InsertLeave()
@@ -524,7 +527,14 @@ augroup easycomplete#NormalBinding
   autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
   autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
+  if has("nvim")
+    autocmd WinScrolled * noa call easycomplete#WinScrolled()
+  endif
   autocmd User easycomplete_pum_show call easycomplete#CompleteShow()
+  " 下面自定义事件只在 nvim 下有效
+  autocmd User easycomplete_pum_done call easycomplete#CompleteDone()
+  autocmd User easycomplete_pum_textchanged_p call easycomplete#TextChangedP()
+  autocmd User easycomplete_pum_completechanged noa call easycomplete#CompleteChanged()
 augroup END
 
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
@@ -548,6 +558,10 @@ command! BackToOriginalBuffer : call easycomplete#BackToOriginalBuffer()
 inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
+if g:env_is_nvim
+  inoremap <expr> <C-N> easycomplete#CtlN()
+  inoremap <expr> <C-P> easycomplete#CtlP()
+endif
 " inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap <silent> <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap <silent> <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>

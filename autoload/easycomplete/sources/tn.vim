@@ -76,10 +76,25 @@ function! easycomplete#sources#tn#FireCondition()
           \ index(charset, l:typed[strlen(l:typed) - 2]) < 0
       return v:true
     endif
+    if easycomplete#sources#tn#VimColonTyping(l:typed)
+      return v:false
+    endif
     return v:false
   else
     return v:false
   endif
+endfunction
+
+function! easycomplete#sources#tn#VimColonTyping(typed)
+  if !(&filetype == "vim")
+    return v:false
+  endif
+  if a:typed =~ "\\W*\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\[0-9a-zA-Z_\]*$"
+    return v:true
+  else
+    return v:false
+  endif
+
 endfunction
 
 function! easycomplete#sources#tn#GetGlboalSoucresItems()
@@ -260,18 +275,33 @@ function! s:TabnineJobCallback(job_id, data, event)
     call s:CompleteHandler([])
     return
   endif
-  if !pumvisible() && t9_cmp_kind == "snippet"
+  " ----------------- 过滤 vim 的 g: 之类的输入  -----------------
+  if easycomplete#sources#tn#VimColonTyping(l:ctx["typed"])
+    call s:CompleteHandler([])
+    return
+  endif
+  " ----------------- pum 不存在时执行回调 -----------------
+  if g:env_is_vim && !pumvisible() && t9_cmp_kind == "snippet"
     call s:SuggestHandler(res_array)
     return
   endif
-  " 当snippet结果返回时，已经存在匹配菜单了，则丢弃
-  if pumvisible() && t9_cmp_kind == "snippet"
+  if g:env_is_nvim && !easycomplete#pum#visible() && t9_cmp_kind == "snippet"
+    call s:SuggestHandler(res_array)
+    return
+  endif
+  " ---- 当snippet结果返回时，已经存在匹配菜单了，则丢弃 -----
+  if g:env_is_vim && pumvisible() && t9_cmp_kind == "snippet"
+    call s:CompleteHandler([])
+    return
+  endif
+  if g:env_is_nvim && easycomplete#pum#visible() && t9_cmp_kind == "snippet"
     call s:CompleteHandler([])
     return
   endif
   " 如果有标志位，等同认为是 suggest
-  if !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
+  if g:env_is_vim && !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
     call s:SuggestHandler(res_array)
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#tabnine#SuggestFlagCheck()
   else " 配合pum显示tabnine提示词s
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)
@@ -279,8 +309,14 @@ function! s:TabnineJobCallback(job_id, data, event)
 endfunction
 
 function! s:SuggestHandler(res_array)
-  if pumvisible() | return | endif
-  call easycomplete#tabnine#Callback(a:res_array)
+  if g:env_is_vim && pumvisible()
+    return
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    return
+  endif
+  if easycomplete#ok("g:easycomplete_tabnine_suggestion")
+    call easycomplete#tabnine#Callback(a:res_array)
+  endif
 endfunction
 
 function! s:CompleteHandler(res)
@@ -310,8 +346,10 @@ function! s:CompleteHandler(res)
         if !easycomplete#CompleteCursored() && &completeopt =~ "noselect"
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
         endif
-        if !easycomplete#PumSelecting() && !(&completeopt =~ "noselect")
+        if easycomplete#CompleteCursored()  && !(&completeopt =~ "noselect")
+              \ && easycomplete#pum#CompleteInfo()["selected"] == 0
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
+          " call s:UpdateRendering(result)
         endif
         " if s:tn_render_timer > 0
         "   call timer_stop(s:tn_render_timer)
@@ -411,7 +449,8 @@ function! s:NormalizeCompleteResult(data)
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})
-  return l:words
+  " 最多只输出百分比最靠前的三个匹配结果
+  return l:words[0:2]
 endfunction
 
 " ' 4%' -> ' 4%'

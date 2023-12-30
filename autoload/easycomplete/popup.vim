@@ -51,21 +51,32 @@ let s:buf = {
       \ }
 
 function! easycomplete#popup#MenuPopupChanged(info)
-  if empty(v:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
-    " 如果默认选中第一项的逻辑
-    let curr_item = easycomplete#GetCursordItem()
-    " TODO 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
-    " 这里应该避免多次相同事件触发，这个条件写的不work
-    " if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime() && easycomplete#util#SameItem(s:item, curr_item)
-    "   return
-    " endif
+  let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
+  " 这两个 if 如果默认选中第一项的逻辑
+  " 一次 typingmatch 会触发多次MenuPopupChanged，一般会2次或者3次
+  " 这里应该避免多次相同事件同时发生
+  let curr_item = easycomplete#GetCursordItem()
+  if !empty(s:GetMenuInfoWinid()) && s:SamePositionAsLastTime()
+                                \ && easycomplete#util#SameItem(s:item, curr_item)
+                                \ && easycomplete#FirstSelectedWithOptDefaultSelected()
+    return
+  endif
+
+  if g:env_is_nvim && empty(curr_item)
+    call easycomplete#popup#close("popup")
+  elseif g:env_is_nvim && easycomplete#FirstSelectedWithOptDefaultSelected() && !easycomplete#zizzing()
     let s:item = deepcopy(curr_item)
     call easycomplete#popup#DoPopup(a:info, 1)
+  elseif g:env_is_vim && empty(l:event) && easycomplete#FirstSelectedWithOptDefaultSelected()
+    let s:item = deepcopy(curr_item)
+    call easycomplete#popup#DoPopup(a:info, 1)
+  elseif g:env_is_nvim && !easycomplete#pum#visible() && empty(a:info)
+    call easycomplete#popup#close("popup")
   else
-    if empty(v:event) && empty(g:easycomplete_completechanged_event) | return | endif
-    let s:event = empty(v:event) ? copy(g:easycomplete_completechanged_event) : copy(v:event)
-    let s:item = has_key(v:event, 'completed_item') ?
-          \ copy(v:event.completed_item) : copy(easycomplete#GetCompletedItem())
+    if empty(l:event) && empty(g:easycomplete_completechanged_event) | return | endif
+    let s:event = empty(l:event) ? copy(g:easycomplete_completechanged_event) : copy(l:event)
+    let s:item = has_key(l:event, 'completed_item') ?
+          \ copy(l:event.completed_item) : copy(easycomplete#GetCompletedItem())
 
     call easycomplete#popup#DoPopup(a:info, g:easycomplete_popup_delay)
   endif
@@ -77,7 +88,8 @@ function! s:GetMenuInfoWinid()
 endfunction
 
 function! s:SamePositionAsLastTime()
-  let pum_pos = pum_getpos()
+  let pum_pos = g:env_is_vim ? pum_getpos() : easycomplete#pum#PumGetPos()
+  if empty(pum_pos) | return v:false | endif
   if !exists("s:easycomplete_pum_pos")
     let s:easycomplete_pum_pos = deepcopy(pum_pos)
     return v:false
@@ -86,12 +98,13 @@ function! s:SamePositionAsLastTime()
   "   unlet s:easycomplete_pum_pos
   "   return v:false
   " endif
-  if pum_pos.height == s:easycomplete_pum_pos.height &&
-        \  pum_pos.width == s:easycomplete_pum_pos.width &&
-        \  pum_pos.col == s:easycomplete_pum_pos.col &&
-        \  pum_pos.row == s:easycomplete_pum_pos.row
+  if pum_pos.height == get(s:easycomplete_pum_pos, "height", 0) &&
+        \  pum_pos.width == get(s:easycomplete_pum_pos, "width", 0) &&
+        \  pum_pos.col == get(s:easycomplete_pum_pos, "col", 0) &&
+        \  pum_pos.row == get(s:easycomplete_pum_pos, "row", 0)
     return v:true
   else
+    let s:easycomplete_pum_pos = deepcopy(pum_pos)
     return v:false
   endif
 endfunction
@@ -232,9 +245,14 @@ endfunction
 function! s:IsOverlay()
   let float_winid = g:easycomplete_popup_win['float']
   if empty(float_winid) | return v:false | endif
-  if empty(pum_getpos()) | return v:false | endif
+  if g:env_is_vim && empty(pum_getpos())
+    return v:false
+  elseif g:env_is_nvim && !easycomplete#pum#visible()
+    return v:false
+  endif
+  " if empty(pum_getpos()) | return v:false | endif
   let float_config = getwininfo(float_winid)[0]
-  let pum_config = pum_getpos()
+  let pum_config = g:env_is_vim ? pum_getpos() : easycomplete#pum#PumGetPos()
   let overlay = v:false
   if float_config.height != 1
     if pum_config.row <= float_config.winrow
@@ -263,7 +281,11 @@ endfunction
 " s:popup 代替 popup_info 方法，只给 completion 使用
 " 外部调用时统一使用 easycomplete#popup#float() 方法
 function! s:popup(info)
-  if !pumvisible() || !easycomplete#CompleteCursored()
+  if g:env_is_vim && (!pumvisible() || !easycomplete#CompleteCursored())
+    call easycomplete#popup#close("popup")
+    return
+  endif
+  if g:env_is_nvim && (!easycomplete#pum#visible() || !easycomplete#CompleteCursored())
     call easycomplete#popup#close("popup")
     return
   endif
@@ -278,8 +300,9 @@ function! s:popup(info)
   if easycomplete#FirstSelectedWithOptDefaultSelected()
     " do nothing
     " call easycomplete#popup#close("popup")
-    let s:event = v:event
-    let s:last_event = v:event
+    let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
+    let s:event = l:event
+    let s:last_event = l:event
   else
     if s:is_nvim && g:easycomplete_popup_win["popup"] && s:event == s:last_event
       return
@@ -309,7 +332,11 @@ function! s:popup(info)
         \ 'style':'minimal',
         \ 'filetype': &filetype
         \ }
-  let pum_pos = pum_getpos()
+  if g:env_is_vim
+    let pum_pos = pum_getpos()
+  else
+    let pum_pos = easycomplete#pum#PumGetPos()
+  endif
   if get(pum_pos, 'scrollbar')
     let right_avail_col  = pum_pos.col + pum_pos.width + 1
   else
@@ -473,23 +500,18 @@ function! s:NVimShow(opt, windowtype, float_type)
   if has_key(winargs[2], "highlight")
     unlet winargs[2].highlight
   endif
-  silent noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
+  silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
-  if exists("*nvim_win_set_option")
-    call nvim_win_set_option(winid, 'winhl', 'Normal:Pmenu,NormalNC:Pmenu')
-  endif
-  if exists('*nvim_win_set_config')
-    " call nvim_win_set_config(g:easycomplete_popup_win[a:windowtype], {})
-  else
-    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'relativenumber', v:false)
-    call nvim_win_set_option(g:easycomplete_popup_win[a:windowtype], 'cursorline', v:false)
-  endif
+  call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)
     if a:windowtype == 'popup'
       call setwinvar(g:easycomplete_popup_win[a:windowtype], '&wrap', 0)
     endif
+  endif
+  if a:windowtype == 'popup' && exists("&pumblend")
+    call setwinvar(g:easycomplete_popup_win[a:windowtype], '&winblend', &pumblend)
   endif
   try
     call easycomplete#util#execute(g:easycomplete_popup_win[a:windowtype], "TSBufDisable highlight")
@@ -537,7 +559,7 @@ function! easycomplete#popup#close(...)
   if windowtype == "float" &&
         \ bufnr() != expand("<abuf>") &&
         \ !empty(expand("<abuf>")) &&
-        \ pumvisible() &&
+        \ ((g:env_is_vim && pumvisible()) || g:env_is_nvim && easycomplete#pum#visible()) &&
         \ easycomplete#util#InsertMode()
     return
   endif
@@ -558,7 +580,7 @@ function! easycomplete#popup#close(...)
         else
           let delay = 30
         endif
-          call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
+        call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []
@@ -570,7 +592,7 @@ function! s:NvimCloseFloatWithPum(winid)
   if nvim_win_is_valid(a:winid)
     call nvim_win_close(a:winid, 1)
   endif
-  if pumvisible() && s:IsOverlay()
+  if easycomplete#pum#visible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)

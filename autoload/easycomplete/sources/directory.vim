@@ -35,7 +35,10 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
 endfunction
 
 function! easycomplete#sources#directory#pum()
-  if !pumvisible() || !exists('g:easycomplete_stunt_menuitems')
+  if g:env_is_vim && (!pumvisible() || !exists('g:easycomplete_stunt_menuitems'))
+    return v:valse
+  endif
+  if g:env_is_nvim && (!easycomplete#pum#visible() || !exists('g:easycomplete_stunt_menuitems'))
     return v:valse
   endif
   if empty(g:easycomplete_stunt_menuitems)
@@ -91,16 +94,16 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath)
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item . "/", "menu" : "[Dir]"})
+        call add(result_with_kind, {"word": item . "/", "abbr":item, "menu" : "[Dir]"})
       else
-        call add(result_with_kind, {"word": item . "/",
+        call add(result_with_kind, {"word": item . "/", "abbr":item,
               \ "menu" : "folder", "kind": "" })
       endif
     else
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item, "menu" : "[File]"})
+        call add(result_with_kind, {"word": item, "abbr":item,"menu" : "[File]"})
       else
-        call add(result_with_kind, {"word": item,
+        call add(result_with_kind, {"word": item, "abbr": item,
               \ "menu" : "[file]",
               \ "kind": ""
               \ })

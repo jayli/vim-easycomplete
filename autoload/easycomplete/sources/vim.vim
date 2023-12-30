@@ -30,7 +30,7 @@ function! easycomplete#sources#vim#filter(matches)
   if ctx['typed'] =~ "s:\\w\\{-}$"
     " hack for vim-language-server:
     "   s:<Tab> 和 s:abc<Tab> 匹配回来的 insertText 不应该带上 "s:"
-    "   g:b:l:a: 都是正确的，只有 s: 不正确
+    "   g:b:l:a:v: 都是正确的，只有 s: 不正确
     "   需要修改 word 为 insertText.slice(2)
     let matches = map(copy(matches), function("s:VimHack_S_ColonMap"))
   endif
