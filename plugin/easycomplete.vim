@@ -24,11 +24,11 @@ endif
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"󰀬",
+        \      "kind":"",
         \      "menu":"Text",
         \    },
         \   "snip": {
-        \      "kind":"",
+        \      "kind":"",
         \      "menu":"code"
         \    },
         \   "dict": {
@@ -50,18 +50,18 @@ if g:easycomplete_nerd_font == 1
         \ 'class':     "",  'color':         "",
         \ 'constant':  "",  'constructor':   "",
         \ 'enum':      "",  'enummember':    "",
-        \ 'field':     "",  'file':          '',
+        \ 'field':     "",  'file':          '',
         \ 'folder':    "",  'function':      "ƒ",
         \ 'interface': "",  'keyword':       "",
         \ 'snippet':   "",  'struct':        "󰙅",
         \ 'text':      "",  'typeparameter': "§",
-        \ 'variable':  "",  'module':        '',
+        \ 'variable':  "",  'module':        '',
         \ 'event': '',
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',
-        \ 's':'󰙅', 'v':'',
-        \ 'i':'𝘪', 'm':'𝘮',
+        \ 's':'󰙅', 'v':'',
+        \ 'i':'𝘪', 'm':'',
         \ 'p':'𝘱', 'k':'𝘬',
         \ 'o':"𝘰", 'd':'𝘥',
         \ 'l':"𝘭", 'a':"𝘢",

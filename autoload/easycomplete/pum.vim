@@ -111,6 +111,7 @@ function! s:OpenPum(startcol, lines)
   else
     " 已经存在的 windowid 用 nvim_win_set_config
     call nvim_win_set_config(s:pum_window, pum_opts)
+    let s:original_ctx = b:typing_ctx
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
@@ -292,6 +293,12 @@ endfunction
 function! easycomplete#pum#CursoredItem()
   if !s:pumvisible() | return {} | endif
   if s:selected_i == 0 | return {} | endif
+  " TODO jayli here - ----------------------------------------------
+  " tab 移动过程中会报错
+  if s:selected_i > len(s:curr_items)
+    call s:trace(string(len(s:curr_items)) . " " . string(s:selected_i) . s:original_ctx["typing"])
+    return {}
+  endif
   return s:curr_items[s:selected_i - 1]
 endfunction
 
@@ -373,7 +380,7 @@ function! easycomplete#pum#SetWordBySelecting()
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
-    silent! noa call timer_start(1, { -> s:InsertWord(word) })
+    silent! noa call timer_start(0, { -> s:InsertWord(word) })
     return ""
     " return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
