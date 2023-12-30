@@ -1052,7 +1052,8 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let original_matching = []
     let fuzzymatching = []
     let all_items = a:all_menu
-    " let fuzzymatching = all_items->matchfuzzy(word, {'key': 'word'})
+    " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
+    " 和 word 不是一一对应的，通过word fuzzy 匹配的位置无法正确应用在 abbr 上
     let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
     let fuzzymatching = matching_res[0]
     let fuzzy_position = matching_res[1]

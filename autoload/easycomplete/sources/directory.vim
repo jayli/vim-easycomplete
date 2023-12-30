@@ -35,10 +35,10 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
 endfunction
 
 function! easycomplete#sources#directory#pum()
-  if g:env_is_vim && !pumvisible() || !exists('g:easycomplete_stunt_menuitems')
+  if g:env_is_vim && (!pumvisible() || !exists('g:easycomplete_stunt_menuitems'))
     return v:valse
   endif
-  if g:env_is_nvim && !easycomplete#pum#visible() || !exists('g:easycomplete_stunt_menuitems')
+  if g:env_is_nvim && (!easycomplete#pum#visible() || !exists('g:easycomplete_stunt_menuitems'))
     return v:valse
   endif
   if empty(g:easycomplete_stunt_menuitems)

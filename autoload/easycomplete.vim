@@ -441,9 +441,7 @@ endfunction
 
 " 展开pum且已经开始选择item动作(当前Cursored的位置不是第一个)
 function! easycomplete#PumSelecting()
-  if g:env_is_vim && pumvisible() && complete_info()['selected'] > 0
-    return v:true
-  elseif g:env_is_nvim && easycomplete#pum#CompleteCursored()
+  if easycomplete#pum#CompleteCursored()
     return v:true
   else
     return v:false

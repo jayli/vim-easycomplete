@@ -324,8 +324,10 @@ function! s:CompleteHandler(res)
         if !easycomplete#CompleteCursored() && &completeopt =~ "noselect"
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
         endif
-        if !easycomplete#PumSelecting() && !(&completeopt =~ "noselect")
+        if easycomplete#CompleteCursored()  && !(&completeopt =~ "noselect")
+              \ && easycomplete#pum#CompleteInfo()["selected"] == 0
           call easycomplete#util#call(function("s:UpdateRendering"), [result])
+          " call s:UpdateRendering(result)
         endif
         " if s:tn_render_timer > 0
         "   call timer_stop(s:tn_render_timer)
