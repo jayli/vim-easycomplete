@@ -17,7 +17,6 @@ let s:default_scroll_pot = {
 let s:pum_window = 0
 let s:pum_buffer = 0
 let s:pum_direction = ""
-let s:hide_pum = has('nvim-0.6.1') || has('patch-8.2.3389')
 
 " pum 高亮所需的临时样式 match id
 let g:easycomplete_match_id = 0
@@ -385,11 +384,7 @@ function! s:InsertWord(word)
   let startcol = s:original_ctx["startcol"]
   noa set completeopt=menu
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-  if s:hide_pum
-    call feedkeys("\<C-x>\<C-z>", 'in')
-  else
-    call feedkeys("\<space>\<bs>", 'in')
-  endif
+  silent! noa call complete(startcol, [])
   execute 'noa set completeopt='.saved_completeopt
 endfunction
 
