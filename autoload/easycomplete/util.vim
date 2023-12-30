@@ -1056,7 +1056,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
     let fuzzymatching = matching_res[0]
     let fuzzy_position = matching_res[1]
-    if g:env_is_nvim && has("nvim-0.7.0")
+    if g:env_is_nvim && has("nvim-0.6.1")
       let count_i = 0
       while count_i < len(fuzzymatching)
         let abbr = get(fuzzymatching[count_i], "abbr", "")
