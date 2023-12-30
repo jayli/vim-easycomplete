@@ -39,6 +39,7 @@ function! s:GetKeywords(typing)
             \ "icase" : 1,
             \ "equal" : 1,
             \ "info" : "",
+            \ "abbr" : word,
             \ "kind" : g:easycomplete_kindflag_buf,
             \ "menu" : g:easycomplete_menuflag_buf,
             \ })
@@ -49,6 +50,7 @@ function! s:GetKeywords(typing)
             \ "icase" : 1,
             \ "equal" : 1,
             \ "info" : "",
+            \ "abbr" : word,
             \ "kind" : g:easycomplete_kindflag_dict,
             \ "menu" : g:easycomplete_menuflag_dict,
             \ })
