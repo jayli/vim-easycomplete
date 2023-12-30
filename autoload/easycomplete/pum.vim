@@ -65,7 +65,7 @@ endfunction
 " 
 " vscode 提供了超过五种 kind 颜色配置，以把 lsp 和 text
 " 区分开，这里增加两种常见的配置：
-"  EasyFunction:   "§", Function/Method
+"  EasyFunction:   "¡", Function/Method
 "  EasySnippet:    "¤", Snippet
 "  EasyTabNine:    "©", TabNine
 function! s:hl()
@@ -79,7 +79,7 @@ function! s:hl()
         \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
         \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
         \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
-        \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends',
+        \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(¡¡\)\@!¡/ matchgroup=Conceal end=/\%(¡¡\)\@!¡/ concealends',
         \ 'syntax region EasySnippet    matchgroup=Conceal start=/\%(¤¤\)\@!¤/ matchgroup=Conceal end=/\%(¤¤\)\@!¤/ concealends',
         \ 'syntax region EasyTabNine    matchgroup=Conceal start=/\%(©©\)\@!©/ matchgroup=Conceal end=/\%(©©\)\@!©/ concealends',
         \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
@@ -673,7 +673,7 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(substitute(item, "\[`|^§¤©]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(item, "\[`|^¡¤©]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -692,7 +692,7 @@ function! s:MapFunction(key, val)
     let kind_o = get(a:val, "kind", "")
     if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["constant"]
-      let kind_str = "§"
+      let kind_str = "¡"
     elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"]
       let kind_str = "¤"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
