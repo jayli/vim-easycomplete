@@ -1054,15 +1054,9 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let all_items = a:all_menu
     " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
     " 和 word 不是一一对应的，通过word fuzzy 匹配的位置无法正确应用在 abbr 上
-     
-    for item in all_items
-      if empty(get(item, "abbr",""))
-        call s:console('无 abbr', item['word'], item['kind'])
-      endif
-    endfor
-
-    
-    let matching_res = all_items->matchfuzzypos(word, {'key': 'word'})
+    " 这里只 hack 了 vim，其他类型的文件未测试
+    let key_name = (&filetype == "vim") ? "abbr" : "word"
+    let matching_res = all_items->matchfuzzypos(word, {'key': key_name})
     let fuzzymatching = matching_res[0]
     let fuzzy_position = matching_res[1]
     if g:env_is_nvim && has("nvim-0.6.1")

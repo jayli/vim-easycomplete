@@ -76,10 +76,25 @@ function! easycomplete#sources#tn#FireCondition()
           \ index(charset, l:typed[strlen(l:typed) - 2]) < 0
       return v:true
     endif
+    if easycomplete#sources#tn#VimColonTyping(l:typed)
+      return v:false
+    endif
     return v:false
   else
     return v:false
   endif
+endfunction
+
+function! easycomplete#sources#tn#VimColonTyping(typed)
+  if !(&filetype == "vim")
+    return v:false
+  endif
+  if a:typed =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):\[0-9a-zA-Z_\]*$"
+    return v:true
+  else
+    return v:false
+  endif
+
 endfunction
 
 function! easycomplete#sources#tn#GetGlboalSoucresItems()

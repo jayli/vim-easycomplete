@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -670,11 +670,14 @@ endfunction
 
 " vim 的冒号
 function! s:VimColonTyping()
-  if &filetype == "vim" &&
-        \ (
-        \   easycomplete#context()['typed'] =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+  if !(&filetype == "vim")
+    return v:false
+  endif
+  let l:typed = easycomplete#context()['typed']
+  if    (
+        \   l:typed =~ "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
         \   ||
-        \   easycomplete#context()['typed'] =~ "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
+        \   l:typed =~ "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$"
         \ )
     return v:true
   else
@@ -1081,7 +1084,7 @@ function! s:CompleteMatchAction()
     call s:StopZizz()
     let ctx = easycomplete#context()
     " tabnine
-    if easycomplete#sources#tn#available()
+    if easycomplete#sources#tn#available() && easycomplete#sources#tn#VimColonTyping(ctx["typed"])
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
