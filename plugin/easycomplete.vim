@@ -21,22 +21,27 @@ if !exists("g:easycomplete_nerd_font")
   let g:easycomplete_nerd_font = 0
 endif
 
+if !exists("g:easycomplete_kind_icons")
+  let g:easycomplete_kind_icons = {}
+endif
+let kind_icons = g:easycomplete_kind_icons
+
 if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
-        \      "kind":"",
+        \      "kind":get(kind_icons, "buf", ""),
         \      "menu":"Text",
         \    },
         \   "snip": {
-        \      "kind":"",
+        \      "kind":get(kind_icons, "snip", ""),
         \      "menu":"code"
         \    },
         \   "dict": {
-        \      "kind":"󰈍",
-        \      "menu":"[Dic]",
+        \      "kind":get(kind_icons, "dict", "󰈍"),
+        \      "menu":"[Dict]",
         \    },
         \   "tabnine": {
-        \      "kind":"󱙺",
+        \      "kind":get(kind_icons, "tabnine", "󱙺"),
         \      "menu":"𝘛𝘕"
         \    }
         \ }
@@ -47,16 +52,18 @@ if g:easycomplete_nerd_font == 1
         \   'hint':        ''
         \ }
   let g:easycomplete_lsp_type_font = {
-        \ 'class':     "",  'color':         "",
-        \ 'constant':  "",  'constructor':   "",
-        \ 'enum':      "",  'enummember':    "",
-        \ 'field':     "",  'file':          '',
-        \ 'folder':    "",  'function':      "ƒ",
-        \ 'interface': "",  'keyword':       "",
-        \ 'snippet':   "",  'struct':        "󰙅",
-        \ 'text':      "",  'typeparameter': "§",
-        \ 'variable':  "",  'module':        '',
-        \ 'event': '',
+        \ 'class':     get(kind_icons, "class", ""),     'color':         get(kind_icons, "color", ""),
+        \ 'constant':  get(kind_icons, "constant", ""),  'constructor':   get(kind_icons, "constructor", ""),
+        \ 'enum':      get(kind_icons, "enum", ""),      'enummember':    get(kind_icons, "enummember", ""),
+        \ 'field':     get(kind_icons, "field", ""),     'file':          get(kind_icons, "file", ''),
+        \ 'folder':    get(kind_icons, "folder", ""),    'function':      get(kind_icons, "function", "ƒ"),
+        \ 'interface': get(kind_icons, "interface", ""), 'keyword':       get(kind_icons, "keyword", ""),
+        \ 'snippet':   get(kind_icons, "snippet", ""),   'struct':        get(kind_icons, "struct", "󰙅"),
+        \ 'text':      get(kind_icons, "text", ""),      'typeparameter': get(kind_icons, "typeparameter", "§"),
+        \ 'variable':  get(kind_icons, "variable", ""),  'module':        get(kind_icons, "module", ''),
+        \ 'event':     get(kind_icons, "event", ''),     'var':           get(kind_icons, "var", ""),
+        \ 'const':     get(kind_icons, "const", ""),     'alias':         get(kind_icons, 'alias', ""),
+        \ 'let':       get(kind_icons, "let", ""),       'parameter':     get(kind_icons, 'parameter', "󰏗"),
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',

@@ -260,7 +260,9 @@ If you just want to use default nerdfonts configuration, you can simplily config
 
 If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](beautify-menu-items.md).
 
-You can add custom fuzzy matching charactors your own high light group via `g:easycomplete_fuzzymatch_hlgroup = "MyGroup"`.
+You can add custom fuzzy matching charactors your own highlight group via `g:easycomplete_fuzzymatch_hlgroup = "MyGroup"`.
+
+More examples here: [full custom config](custom-config.md)
 
 ![截屏2023-12-30 20 25 06](https://github.com/jayli/vim-easycomplete/assets/188244/597db686-d4fe-4b25-8c39-d9b90db184cb)
 
