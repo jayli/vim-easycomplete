@@ -75,6 +75,10 @@ if g:easycomplete_nerd_font == 1
         \ }
 endif
 
+if !exists("g:easycomplete_pum_format")
+  let g:easycomplete_pum_format = ["abbr", "kind", "menu"]
+endif
+
 if !exists("g:easycomplete_menu_skin")
   let g:easycomplete_menu_skin = {}
 endif

@@ -316,7 +316,14 @@ function! s:select(line_index)
     call setwinvar(s:pum_window, '&cursorline', 1)
     call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
     let s:selected_i = l:line_index
-    call s:HLCursordFuzzyChar("EasyFuzzyMatch", 2)
+    " TODO here 这里在 kind 开头的时候，cursorline 高亮的位置出错
+    " 原因是特殊字符的长度问题，strlen("ˆ") == 2 而不是1
+    if g:easycomplete_pum_format[0] == "kind"
+      let prefix_length = 8
+    else
+      let prefix_length = 2
+    endif
+    call s:HLCursordFuzzyChar("EasyFuzzyMatch", prefix_length)
   endif
 endfunction
 
@@ -363,6 +370,7 @@ function! s:HLCursordFuzzyChar(hl_group, prefix_length)
   " 字符串 lamda 表达式比内联函数更快
   let param_arr = map(copy(hl_p), "[s:selected_i, v:val, 1]")
   let exec_str = "let g:easycomplete_match_id = matchaddpos('" . a:hl_group . "', " . string(param_arr) . ")"
+  call s:console(param_arr)
   try
     call win_execute(s:pum_window, exec_str)
   catch
@@ -686,24 +694,33 @@ function! s:NormalizeItems(items)
 endfunction
 
 function! s:MapFunction(key, val)
-  let kind_str = "|"
+  let kind_char = "|"
   if g:easycomplete_nerd_font
     let kind_o = get(a:val, "kind", "")
     if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["constant"]
-      let kind_str = "¡"
+      let kind_char = "¡"
     elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"]
-      let kind_str = "¤"
+      let kind_char = "¤"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
-      let kind_str = "©"
+      let kind_char = "©"
     endif
   endif
-  let ret = [
-        \ " ",
-        \ get(a:val, "abbr", ""), "  ",
-        \ kind_str . get(a:val, "kind", "") . kind_str, " ",
-        \ "^" . get(a:val, "menu", "") . "^",
-        \ ]
+  let format_object = {
+        \ "abbr" : get(a:val, "abbr", ""),
+        \ "kind" : kind_char . get(a:val, "kind", "") . kind_char,
+        \ "menu" : "^" . get(a:val, "menu", "") . "^"
+        \ }
+  let ret = []
+  for item in g:easycomplete_pum_format
+    call add(ret, " " . get(format_object, item, ""))
+  endfor
+  " let ret = [
+  "       \ " ",
+  "       \ get(a:val, "abbr", ""), "  ",
+  "       \ kind_fullfilled, " ",
+  "       \ "^" . get(a:val, "menu", "") . "^",
+  "       \ ]
   return join(ret,"")
 endfunction
 
