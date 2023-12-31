@@ -42,7 +42,7 @@ use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 ```
 Run `:PackerInstall`
 
-You can use my default configuration [here](my-custom-config.md) with lua.
+You can use my default configuration [here](my-custom-config.md) with lua. [Full configuration](custom-config.md)
 
 ## Commands
 
@@ -70,7 +70,7 @@ All commands:
 
 ## Configuration
 
-The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](https://gist.github.com/jayli/75d9c68cdfd286dd84a85c44cf3f9085)). Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
+The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](./custom-config.md)). Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
 Example configuration with lua:
 
