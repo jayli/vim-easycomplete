@@ -27,29 +27,19 @@ It contains these features:
 
 Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 or higher is required.
 
-For vim-plug:
+Vim config via vim-plug:
 
 ```vim
 Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
 ```
-
 Run `:PlugInstall`.
 
-For dein.vim
-
-```vim
-call dein#add('jayli/vim-easycomplete')
-call dein#add('SirVer/ultisnips')
-```
-
-For Packer.nvim
+Nvim config via Packer.nvim
 
 ```lua
-use { 'SirVer/ultisnips' }
-use { 'jayli/vim-easycomplete' }
+use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 ```
-
 Run `:PackerInstall`
 
 You can use my default configuration [here](my-custom-config.md) with lua.
