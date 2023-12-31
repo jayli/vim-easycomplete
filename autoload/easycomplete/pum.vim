@@ -370,7 +370,6 @@ function! s:HLCursordFuzzyChar(hl_group, prefix_length)
   " 字符串 lamda 表达式比内联函数更快
   let param_arr = map(copy(hl_p), "[s:selected_i, v:val, 1]")
   let exec_str = "let g:easycomplete_match_id = matchaddpos('" . a:hl_group . "', " . string(param_arr) . ")"
-  call s:console(param_arr)
   try
     call win_execute(s:pum_window, exec_str)
   catch
