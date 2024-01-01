@@ -260,6 +260,7 @@ function! s:IsOverlay()
     return v:false
   endif
   " if empty(pum_getpos()) | return v:false | endif
+  if empty(getwininfo(float_winid)) | return v:false | endif
   let float_config = getwininfo(float_winid)[0]
   let pum_config = g:env_is_vim ? pum_getpos() : easycomplete#pum#PumGetPos()
   let overlay = v:false
