@@ -322,41 +322,16 @@ function! s:select(line_index)
     call setwinvar(s:pum_window, '&cursorline', 1)
     call nvim_win_set_cursor(s:pum_window, [l:line_index, 1])
     let s:selected_i = l:line_index
-    " TODO here 这里在 kind 开头的时候，cursorline 高亮的位置出错
-    " 原因是特殊字符的长度问题，strlen("ˆ") == 2 而不是1
     if g:easycomplete_pum_format[0] == "kind" && g:easycomplete_nerd_font == 1
-      try
-        let bufline_str = getbufline(s:pum_buffer, s:selected_i)[0]
-        let kind_char = bufline_str[2]
-        " call s:log(bufline_str[1], bufline_str[2], s:strlen(bufline_str[2]),str2list(bufline_str[2]), bufline_str)
-        " 控制台运行得到的结果
-        " str2list("") = [59158]
-        " strlen("") = 3
-        " 在程序里执行得到的结果
-        " str2list(l:char) = [238]
-        " strlen(l:char) = 2
-        "
-        " 为什么不一致? 这里先强行加 1 hack 一下，还没找到规律
-        " vim 中 o 匹配有问题
-        let prefix_length = 5 + s:strlen(kind_char) + 1
-      catch
-        echom v:exception
-      endtry
+      let bufline_str = getbufline(s:pum_buffer, s:selected_i)[0]
+      " 读取行内 nerdfont 字符时要用函数 strcharpart，不能所下标
+      " line_str[1], 用下标取不完整
+      let kind_char = strcharpart(bufline_str, 2, 1)
+      let prefix_length = 5 + strlen(kind_char)
     else
       let prefix_length = 2
     endif
     call s:HLCursordFuzzyChar("EasyFuzzyMatch", prefix_length)
-  endif
-endfunction
-
-function! s:strlen(char)
-  let num = str2list(a:char)[0]
-  if num >= 2048
-    return 3
-  elseif num >= 128 && num <= 2047
-    return 2
-  else
-    return 1
   endif
 endfunction
 
