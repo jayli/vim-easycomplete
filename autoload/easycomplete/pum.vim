@@ -1,5 +1,5 @@
 scriptencoding utf-8
-" for nvim only
+" 自定义 window 实现 pum, for nvim only
 " 默认 pum window 初始化属性
 let s:default_pum_pot = {
         \ "relative": "editor",
@@ -92,12 +92,6 @@ function! s:hl()
         \ "hi link EasyTabNine  Character",
         \ "hi link EasyNormal   Pmenu",
         \ ]
-        " \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
-        " \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(¡¡\)\@!¡/ matchgroup=Conceal end=/\%(¡¡\)\@!¡/ concealends',
-        " \ 'syntax region EasySnippet    matchgroup=Conceal start=/\%(¤¤\)\@!¤/ matchgroup=Conceal end=/\%(¤¤\)\@!¤/ concealends',
-        " \ 'syntax region EasyTabNine    matchgroup=Conceal start=/\%(©©\)\@!©/ matchgroup=Conceal end=/\%(©©\)\@!©/ concealends',
-        " \ "hi link PmenuExtraSel PmenuSel",
-        " \ "hi link PmenuKindSel PmenuSel"
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
 endfunction
 
@@ -199,7 +193,7 @@ function! s:CacheOpt()
   "       \ }
 endfunction
 
-function! s:RestoreOpt()
+function! s:RecoverOpt()
   for k in keys(s:original_opt)
     let v = get(s:original_opt, k, "")
     call setwinvar(0, "&" . k, v)
@@ -324,8 +318,8 @@ function! s:select(line_index)
     let s:selected_i = l:line_index
     if g:easycomplete_pum_format[0] == "kind" && g:easycomplete_nerd_font == 1
       let bufline_str = getbufline(s:pum_buffer, s:selected_i)[0]
-      " 读取行内 nerdfont 字符时要用函数 strcharpart，不能所下标
-      " line_str[1], 用下标取不完整
+      " 读取行内 nerdfont 字符时要用函数 strcharpart，不能用下标
+      " line_str[1], 用下标取的结果会把字符截断
       let kind_char = strcharpart(bufline_str, 2, 1)
       let prefix_length = 5 + strlen(kind_char)
     else
@@ -635,7 +629,7 @@ function! s:flush()
   let should_fire_pum_done = 0
   if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
-    call s:RestoreOpt()
+    call s:RecoverOpt()
     let should_fire_pum_done = 1
   endif
   if !empty(s:scrollbar_window)
@@ -742,12 +736,6 @@ function! s:MapFunction(key, val)
   for item in format_s
     call add(ret, " " . get(format_object, item, ""))
   endfor
-  " let ret = [
-  "       \ " ",
-  "       \ get(a:val, "abbr", ""), "  ",
-  "       \ kind_fullfilled, " ",
-  "       \ "^" . get(a:val, "menu", "") . "^",
-  "       \ ]
   return join(ret,"")
 endfunction
 

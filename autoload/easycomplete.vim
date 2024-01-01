@@ -263,7 +263,6 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
     if has('nvim')
-      " 这里为啥有 50 的 delay？导致关闭的时候有一个延迟
       call s:AsyncRun(function('s:CloseCompletionMenu'),[], 0)
       call s:CloseCompleteInfo()
     else
@@ -1994,11 +1993,9 @@ function! s:SnippetsInit()
       let g:UltiSnipsSnippetDirectories = [
             \ easycomplete_root . "/snippets/ultisnips"
             \ ]
-      " Enable looking for SnipMate snippets in
-      " &runtimepath. UltiSnips will search only for
-      " directories named 'snippets' while looking for
-      " SnipMate snippets. Defaults to "1", so UltiSnips
-      " will look for SnipMate snippets.
+      " 在 &runtimepath 中搜寻 snippets
+      " Ultisnips 只会查找`snippets`命名的目录，在目录中查找 SnipMate snippets
+      " 默认是 1，这里会去查找 SnipMate 的 snippet.
       let g:UltiSnipsEnableSnipMate = 1
     endif
   catch
@@ -2102,6 +2099,7 @@ function! s:ResetBacking(...)
 endfunction
 
 " 空闲 30ms，简单粗暴避免事件意外触发
+" vim 和 nvim 的事件设计有一些不一致，这时通过 zizz 来避免误操作非常好用
 function! s:zizz()
   let delay = g:env_is_nvim ? 30 : (&filetype == 'vim' ? 50 : 50)
   let g:easycomplete_backing_or_cr = 1
@@ -2240,7 +2238,8 @@ function! easycomplete#CursorMoved()
 endfunction
 
 function! easycomplete#CursorMovedI()
-  if exists("b:old_changedtick") && b:old_changedtick == b:changedtick " 只是移动光标，没有修改buf
+  " 只是移动光标，没有修改buf
+  if exists("b:old_changedtick") && b:old_changedtick == b:changedtick
     if g:env_is_nvim && easycomplete#pum#visible()
       call easycomplete#pum#close()
     endif
@@ -2273,14 +2272,6 @@ function! easycomplete#CursorHold()
 endfunction
 
 function! easycomplete#CursorHoldI()
-  " hi! PmenuKind guifg=red
-  " syntax region ABC start=/\[/ end=/\]/ contains=All
-  " syntax match DEF /#.*/
-  " hi! ABC guifg=red gui=underline
-  " hi! DEF guifg=green gui=underline
-  " hi! def link Pmenu ABC
-  " call complete(col('.'), ['abc𝖺𝗮𝕏𝕤g','x[d]ef','xyz','asdfa #sdf','asdjick','asjicxvj issdf'])
-  " return
   if easycomplete#IsBacking()
     " do nothting
   else
@@ -2335,8 +2326,7 @@ function! easycomplete#TextChangedP()
     let word_str_len = strlen(selected_item["word"])
   endif
   if b:old_changedtick == b:changedtick
-    " in neovim textchangedI and textchangedP will fired at the same time with
-    " firstcomplete
+    " neovim 中 textchangedI and textchangedP 会在 Firstcomplete 时同时触发
   elseif g:env_is_vim && easycomplete#CompleteCursored() && s:zizzing() &&
         \ get(selected_item, "word", "") == l:ctx['typed'][line_length - word_str_len:line_length - 1]
     " 直接按下 C-P 或者 C-N 不做任何处理
@@ -2477,4 +2467,3 @@ endfunction
 function! Console(...)
   return call('easycomplete#log#log', a:000)
 endfunction
-

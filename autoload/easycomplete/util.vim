@@ -1026,7 +1026,7 @@ function! easycomplete#util#MatchFuzzy(array, word, ...)
   endif
 endfunction " }}}
 
-function! s:ReplaceMent(abbr, positions, wrap_char)
+function! s:ReplaceMent(abbr, positions, wrap_char) " {{{
   " let letters = map(str2list(a:abbr), { _, val -> nr2char(val)})
   " 字符串形式的 lamda 表达式速度比内联函快接近一倍
   let letters = map(str2list(a:abbr), "nr2char(v:val)")
@@ -1037,7 +1037,7 @@ function! s:ReplaceMent(abbr, positions, wrap_char)
   let res_o = join(letters, "")
   let res_r = substitute(res_o, repeat(a:wrap_char, 2), "", 'g')
   return res_r
-endfunction
+endfunction " }}}
 
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
