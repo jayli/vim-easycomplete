@@ -4,6 +4,7 @@ Full config in lua script:
 use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 
 -- Enable the plugin. Default is on.
+-- Install lsp via `:InstallLspServer`
 vim.g.easycomplete_enable = 1
 
 -- Highlight the symbol when holding the cursor if you need it.
@@ -58,7 +59,7 @@ vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 -- Define highlight group for fuzzy matched charactors.
 vim.g.easycomplete_fuzzymatch_hlgroup = "MyGroup"
 
--- Enable Tabnine, default is on
+-- Enable Tabnine, default is on, install tabnine lsp via `:InstallLspServer tn`
 vim.g.easycomplete_tabnine_enable
 -- Enable Tabnine suggestion, default is on
 vim.g.easycomplete_tabnine_suggestion = 1
