@@ -1,3 +1,4 @@
+scriptencoding utf-8
 " for nvim only
 " 默认 pum window 初始化属性
 let s:default_pum_pot = {
@@ -336,6 +337,7 @@ function! s:select(line_index)
         " strlen(l:char) = 2
         "
         " 为什么不一致? 这里先强行加 1 hack 一下，还没找到规律
+        " vim 中 o 匹配有问题
         let prefix_length = 5 + s:strlen(kind_char) + 1
       catch
         echom v:exception
