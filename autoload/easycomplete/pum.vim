@@ -7,8 +7,15 @@ let s:default_pum_pot = {
         \ "zindex": 50,
         \ "bufpos": [0,0]
         \ }
+" Scrollthumb 默认属性
+let s:default_scroll_thumb_pot = {
+        \ "relative": "editor",
+        \ "focusable": v:false,
+        \ "zindex": 52,
+        \ "bufpos": [0,0]
+        \ }
 " Scrollbar 默认属性
-let s:default_scroll_pot = {
+let s:default_scroll_bar_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
         \ "zindex": 51,
@@ -21,7 +28,9 @@ let s:pum_direction = ""
 " pum 高亮所需的临时样式 match id
 let g:easycomplete_match_id = 0
 
-" scrollbar vars
+" scrollthumb vars
+let s:scrollthumb_window = 0
+" scrollbar window
 let s:scrollbar_window = 0
 let s:scrollbar_buffer = 0
 let s:has_scrollbar = 0
@@ -116,7 +125,8 @@ function! s:OpenPum(startcol, lines)
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
-  call s:RenderScrollbar()
+  call s:RenderScrollThumb()
+  call s:RenderScrollBar()
   call nvim_win_set_cursor(s:pum_window, [1, 0])
 endfunction
 
@@ -140,7 +150,7 @@ function! easycomplete#pum#WinScrolled()
   endif
   if has_key(v:event, s:pum_window)
     " pum 窗口的移动
-    call s:RenderScrollbar()
+    call s:RenderScrollThumb()
   endif
 endfunction
 
@@ -401,26 +411,33 @@ function! easycomplete#pum#SetWordBySelecting()
     " 时的重回。这里暂时加上了异步调用的 Stop，避免异常 CompleteDone。
     " 卡顿的问题无法解决。
     " 当关闭 Treesitter 和 syntax off 后始终很流畅
-    " silent! noa call timer_start(0, { -> s:InsertWord(word) })
-    silent! noa call easycomplete#util#StopAsyncRun()
-    silent! noa call easycomplete#util#AsyncRun(function("s:InsertWord"), [word], 0)
+    if exists("b:insert_word_timer") && b:easy_insert_word_timer > 0
+      call timer_stop(b:easy_insert_word_timer)
+      let b:easy_insert_word_timer = 0
+    endif
+    let b:easy_insert_word_timer = timer_start(2, { -> s:InsertWord(word) })
     return ""
     " return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
 endfunction
 
 function! s:InsertWord(word)
-  let saved_completeopt = &completeopt
-  let startcol = s:original_ctx["startcol"]
-  noa set completeopt=menu
-  if &textwidth > 0
-    let textwidth = &textwidth
-    noa setl textwidth=0
-    call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
-  endif
-  silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-  silent! noa call complete(startcol, [])
-  execute 'noa set completeopt='.saved_completeopt
+  try
+    let saved_completeopt = &completeopt
+    let startcol = s:original_ctx["startcol"]
+    noa set completeopt=menu
+    if &textwidth > 0
+      let textwidth = &textwidth
+      noa setl textwidth=0
+      call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
+    endif
+    silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
+    silent! noa call complete(startcol, [])
+    execute 'noa set completeopt='.saved_completeopt
+  catch
+    call s:console(v:exception)
+
+  endtry
 endfunction
 
 function! easycomplete#pum#select(line_index)
@@ -477,21 +494,21 @@ function! s:OpenFloatWindow(buf, opts, hl)
   return winid
 endfunction
 
-function! s:RenderScrollbar()
+function! s:RenderScrollBar()
   if !s:pumvisible() || !s:HasScrollbar()
     call s:CloseScrollBar()
     return
   endif
+  " ScrollThumb 和 ScrollBar 共用一个 buffer
   if empty(s:scrollbar_buffer)
     let s:scrollbar_buffer = s:CreateEmptyBuffer()
     let buflines = s:GetScrollBufflines()
     call nvim_buf_set_lines(s:scrollbar_buffer, 0, -1, v:false, buflines)
   endif
-  let scrollbar_pos = s:ComputeScrollPos()
-  let scrollbar_opts = deepcopy(s:default_scroll_pot)
-  call extend(scrollbar_opts, scrollbar_pos)
+  let pos = s:ComputeScrollBarPos()
+  let scrollbar_opts = deepcopy(s:default_scroll_bar_pot)
+  call extend(scrollbar_opts, pos)
   if empty(s:scrollbar_window)
-    " create scroll window
     let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar"
     let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
   else
@@ -500,11 +517,50 @@ function! s:RenderScrollbar()
   endif
 endfunction
 
+function! s:CloseScrollBar()
+  if !empty(s:scrollbar_window) && nvim_win_is_valid(s:scrollbar_window)
+    call nvim_win_close(s:scrollbar_window, 1)
+  endif
+  let s:scrollbar_window = 0
+endfunction
+
+function! s:RenderScrollThumb()
+  if !s:pumvisible() || !s:HasScrollbar()
+    call s:CloseScrollThumb()
+    return
+  endif
+  if empty(s:scrollbar_buffer)
+    let s:scrollbar_buffer = s:CreateEmptyBuffer()
+    let buflines = s:GetScrollBufflines()
+    call nvim_buf_set_lines(s:scrollbar_buffer, 0, -1, v:false, buflines)
+  endif
+  let pos = s:ComputeScrollThumbPos()
+  let scrollthumb_opts = deepcopy(s:default_scroll_thumb_pot)
+  call extend(scrollthumb_opts, pos)
+  if empty(s:scrollthumb_window)
+    " create scrollthumb window
+    let hl = "Normal:PmenuThumb,NormalNC:PmenuThumb,CursorLine:PmenuThumb"
+    let s:scrollthumb_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollthumb_opts, hl)
+  else
+    " update scrollthumb window
+    call nvim_win_set_config(s:scrollthumb_window, scrollthumb_opts)
+  endif
+endfunction
+
 function! s:GetScrollBufflines()
   return repeat([" "], len(s:curr_items))
 endfunction
 
-function! s:ComputeScrollPos()
+function! s:ComputeScrollBarPos()
+  let pum_pos = s:PumPosition()
+  let c = pum_pos.pos[1] + pum_pos.width - 1
+  let r = pum_pos.pos[0]
+  let w = 1
+  let h = pum_pos.height
+  return { "col": c, "row": r, "width": w, "height": h }
+endfunction
+
+function! s:ComputeScrollThumbPos()
   let pum_pos = s:PumPosition()
   let c = pum_pos.pos[1] + pum_pos.width - 1
   let r = pum_pos.pos[0]
@@ -545,11 +601,11 @@ function! s:ComputeScrollPos()
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
-function! s:CloseScrollBar()
-  if !empty(s:scrollbar_window) && nvim_win_is_valid(s:scrollbar_window)
-    call nvim_win_close(s:scrollbar_window, 1)
+function! s:CloseScrollThumb()
+  if !empty(s:scrollthumb_window) && nvim_win_is_valid(s:scrollthumb_window)
+    call nvim_win_close(s:scrollthumb_window, 1)
   endif
-  let s:scrollbar_window = 0
+  let s:scrollthumb_window = 0
 endfunction
 
 function! s:HasScrollbar()
@@ -651,6 +707,9 @@ function! s:flush()
     call s:RecoverOpt()
     let should_fire_pum_done = 1
   endif
+  if !empty(s:scrollthumb_window)
+    call s:CloseScrollThumb()
+  endif
   if !empty(s:scrollbar_window)
     call s:CloseScrollBar()
   endif
@@ -659,7 +718,8 @@ function! s:flush()
   let s:selected_i = 0
   let s:curr_items = []
   let s:original_ctx = {}
-  let s:scrollbar_window = 0
+  let s:scrollthumb_window = 0
+  let s:scrollbar_window= 0
   let s:pum_direction = ""
   let g:easycomplete_match_id = 0
   if should_fire_pum_done
