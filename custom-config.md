@@ -27,6 +27,7 @@ vim.g.easycomplete_kind_icons = {
   tabnine = "󱙺",
   operator = "󰞷",
   class = "",
+  local = "✎",
   constant = "",
   enum = "",
   field = "",

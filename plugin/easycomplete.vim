@@ -65,6 +65,7 @@ if g:easycomplete_nerd_font == 1
         \ 'const':     get(kind_icons, "const", ""),     'alias':         get(kind_icons, 'alias', ""),
         \ 'let':       get(kind_icons, "let", ""),       'parameter':     get(kind_icons, 'parameter', "󰏗"),
         \ 'operator':  get(kind_icons, 'operator', "󱧕"),  'property':      get(kind_icons, 'property', "󰙅"),
+        \ 'local':     get(kind_icons, 'local', "󱘫"),
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',
@@ -72,7 +73,7 @@ if g:easycomplete_nerd_font == 1
         \ 'i':'𝘪', 'm':'',
         \ 'p':'𝘱', 'k':'𝘬',
         \ 'o':"󱧕", 'd':'𝘥',
-        \ 'l':"𝘭", 'a':"𝘢",
+        \ 'l':"󱘫", 'a':"𝘢",
         \ }
 endif
 
