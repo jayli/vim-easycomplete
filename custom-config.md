@@ -49,6 +49,7 @@ vim.g.easycomplete_kind_icons = {
   var = "",
   alias = "",
   parameter = "󰏗",
+  property = "󰙅"
 }
 
 -- Custom pum format. Only avilable with `g:easycomplete_nerd_font == 1` in nvim

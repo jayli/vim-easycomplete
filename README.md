@@ -12,7 +12,7 @@ There are many excellent vim auto-completion plugins such as [nvim-cmp](https://
 
 Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box. It requires pure VimScript. It's also super simple to configure. For example, You do not have to install Node and a bunch of Node modules unless you write node code.
 
-<img src="https://gw.alicdn.com/imgextra/i2/O1CN01OA1VV41QHbd7Y2WKu_!!6000000001951-1-tps-1209-693.gif" width=650 />
+https://github.com/jayli/vim-easycomplete/assets/188244/5fdef6cb-ef1d-4428-960e-d9802cbc2a84
 
 It contains these features:
 
