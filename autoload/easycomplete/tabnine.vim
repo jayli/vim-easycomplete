@@ -37,6 +37,9 @@ function! easycomplete#tabnine#fire()
   if !s:IsLastChar()
     return
   endif
+  if easycomplete#IsBacking()
+    return
+  endif
   " 不是魔术指令
   if getline('.')[0:col('.')] =~ "\\s\\{-}TabNine::\\(config\\|sem\\)$"
     return

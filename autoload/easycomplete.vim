@@ -464,6 +464,10 @@ function! easycomplete#IsBacking()
   return g:easycomplete_backing
 endfunction
 
+function! s:TrimEnd(str)
+  return substitute(a:str, "^\\(.\\{\-}\\)\\s\\+$","\\1","g")
+endfunction
+
 function! s:BackChecking()
   let curr_ctx = easycomplete#context()
   if !exists('b:typing_ctx')
@@ -476,6 +480,10 @@ function! s:BackChecking()
         \ && strlen(get(old_ctx,'typed',"")) >= 2
     if curr_ctx['typed'] ==# old_ctx['typed'][:-2]
       " 单行后退非到达首字母的后退
+      return v:true
+    endif
+    if s:TrimEnd(curr_ctx['typed']) ==# s:TrimEnd(old_ctx['typed']) && strlen(curr_ctx['typed']) < strlen(old_ctx['typed'])
+      " 单行回退只删除空格或者删除tab
       return v:true
     endif
     if curr_ctx['typed'] ==# old_ctx['typed'] && strlen(curr_ctx['line']) == strlen(old_ctx['line']) - 1
@@ -749,16 +757,19 @@ function! easycomplete#typing()
   endif
 
   let g:easycomplete_start = reltime()
-  if g:env_is_vim && s:BackChecking()
+  let back_checking = s:BackChecking()
+  if g:env_is_vim && back_checking
     let g:easycomplete_backing = 1
     call s:BackingCompleteHandler()
     return ""
-  elseif g:env_is_nvim && s:BackChecking() && !easycomplete#pum#visible()
+  endif
+  if g:env_is_nvim && back_checking
+    let g:easycomplete_backing = 1
     " 回退不能激发 complete
     return ""
-  else
-    let g:easycomplete_backing = 0
   endif
+
+  let g:easycomplete_backing = 0
 
   " 判断是否是 C-V 粘贴
   call s:AsyncRun(function('s:ResetInsertChar'), [], 30)
@@ -2403,6 +2414,7 @@ function! easycomplete#BufLeave()
 endfunction
 
 function! easycomplete#InsertEnter()
+  let b:typing_ctx = easycomplete#context()
   call easycomplete#sign#DiagHoverFlush()
 endfunction
 
