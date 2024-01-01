@@ -61,7 +61,7 @@ endfunction
 " 基础的三类样式用到的 Conceal 字符:
 "  EazyFuzzyMatch: "`", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
 "  EasyKind:       "|", 继承 PmenuKind
-"  EasyExtra:      "^", 继承 PmenuExtra
+"  EasyExtra:      "‰", 继承 PmenuExtra
 " 
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
 " 区分开，这里增加四种常见的颜色配置：
@@ -77,13 +77,13 @@ function! s:hl()
     let dev = "cterm"
   endif
   let exec_cmd = [
-        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
-        \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
-        \ 'syntax region EasyKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends',
-        \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends',
-        \ 'syntax region EasySnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends',
-        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends',
-        \ 'syntax region EasyNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends',
+        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends oneline keepend',
+        \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
+        \ 'syntax region EasyKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
+        \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
+        \ 'syntax region EasySnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
+        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends oneline',
+        \ 'syntax region EasyNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
         \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi link EasyKind     PmenuKind",
         \ "hi link EasyExtra    PmenuExtra",
@@ -686,7 +686,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s&\[^&\]&\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s;\[^;\];\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s:\[^:\]:\\s", " x ", "g")
-    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[`|^]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[`|‰]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -725,7 +725,7 @@ function! s:MapFunction(key, val)
   let format_object = {
         \ "abbr" : get(a:val, "abbr", ""),
         \ "kind" : kind_char . get(a:val, "kind", "") . kind_char,
-        \ "menu" : "^" . get(a:val, "menu", "") . "^"
+        \ "menu" : "‰" . get(a:val, "menu", "") . "‰"
         \ }
   let ret = []
   if g:easycomplete_nerd_font
