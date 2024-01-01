@@ -196,7 +196,7 @@ endfunction " }}}
 
 function! easycomplete#util#GetUserData(item) " {{{
   let user_data_str = get(a:item, 'user_data', "")
-  if !empty(user_data_str)
+  if empty(user_data_str)
     return {}
   endif
   try
