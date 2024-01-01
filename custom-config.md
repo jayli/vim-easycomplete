@@ -50,7 +50,7 @@ vim.g.easycomplete_kind_icons = {
   parameter = "󰏗",
 }
 
--- Custom pum format
+-- Custom pum format. Only avilable with `g:easycomplete_nerd_font == 1` in nvim
 vim.g.easycomplete_pum_format = ["kind", "abbr", "menu"]
 
 -- Define highlight group for fuzzy matched charactors.

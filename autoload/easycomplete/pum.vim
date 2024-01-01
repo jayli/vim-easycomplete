@@ -322,7 +322,7 @@ function! s:select(line_index)
     let s:selected_i = l:line_index
     " TODO here 这里在 kind 开头的时候，cursorline 高亮的位置出错
     " 原因是特殊字符的长度问题，strlen("ˆ") == 2 而不是1
-    if g:easycomplete_pum_format[0] == "kind"
+    if g:easycomplete_pum_format[0] == "kind" && g:easycomplete_nerd_font == 1
       try
         let bufline_str = getbufline(s:pum_buffer, s:selected_i)[0]
         let kind_char = bufline_str[2]
@@ -741,7 +741,12 @@ function! s:MapFunction(key, val)
         \ "menu" : "^" . get(a:val, "menu", "") . "^"
         \ }
   let ret = []
-  for item in g:easycomplete_pum_format
+  if g:easycomplete_nerd_font
+    let format_s = g:easycomplete_pum_format
+  else
+    let format_s = ["abbr", "kind", "menu"]
+  endif
+  for item in format_s
     call add(ret, " " . get(format_object, item, ""))
   endfor
   " let ret = [
