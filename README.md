@@ -42,7 +42,7 @@ use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 ```
 Run `:PackerInstall`
 
-You can use my default configuration [here](my-custom-config.md) with lua. [Full configuration](custom-config.md)
+[Full configuration](custom-config.md) with lua.
 
 ## Commands
 
@@ -259,7 +259,7 @@ Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 
 If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font = 1`
 
-If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](beautify-menu-items.md).
+If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](custom-config.md).
 
 You can add custom fuzzy matching charactors your own highlight group via `g:easycomplete_fuzzymatch_hlgroup = "MyGroup"`.
 
