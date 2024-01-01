@@ -294,9 +294,10 @@ endfunction
 function! easycomplete#pum#CursoredItem()
   if !s:pumvisible() | return {} | endif
   if s:selected_i == 0 | return {} | endif
-  " TODO tab 移动过程中会报错，未复现
+  " Treesitter 开启时当前输入的 syntax token
+  " 破损的情况下会很卡，会出现报错，给 insertword
+  " 加上了定时器的关闭，缓解这个问题。
   if s:selected_i > len(s:curr_items)
-    call s:log("ERR", string(len(s:curr_items)) . " " . string(s:selected_i) . s:original_ctx["typing"])
     return {}
   endif
   return s:curr_items[s:selected_i - 1]
@@ -389,7 +390,20 @@ function! easycomplete#pum#SetWordBySelecting()
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
-    silent! noa call timer_start(0, { -> s:InsertWord(word) })
+    " 正常情况下调用 InsertWord 是很流畅没问题的
+    " 在开启 Treesitter 的情况下，当所输入的位置不在一个小的 Syntax Token
+    " 内，比如字符串没有闭合，数组或者对象也存在破损，这时连续 Tab
+    " 频繁插入单词会导致大量的 Treesitter
+    " 的计算，切换动作就会很卡。进而导致异常的 completedone 事件的发生
+    " VIM 自带的 PUM 同样存在这个问题，默认 PUM 不会导致 CompleteDone
+    " 发生，但会非常卡。试了下关闭 Treesitter
+    " 体验不好，屏幕会频繁闪烁，也同样会造成大量的 Treesitter Enable
+    " 时的重回。这里暂时加上了异步调用的 Stop，避免异常 CompleteDone。
+    " 卡顿的问题无法解决。
+    " 当关闭 Treesitter 和 syntax off 后始终很流畅
+    " silent! noa call timer_start(0, { -> s:InsertWord(word) })
+    silent! noa call easycomplete#util#StopAsyncRun()
+    silent! noa call easycomplete#util#AsyncRun(function("s:InsertWord"), [word], 0)
     return ""
     " return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
@@ -399,6 +413,11 @@ function! s:InsertWord(word)
   let saved_completeopt = &completeopt
   let startcol = s:original_ctx["startcol"]
   noa set completeopt=menu
+  if &textwidth > 0
+    let textwidth = &textwidth
+    noa setl textwidth=0
+    call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
+  endif
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
   silent! noa call complete(startcol, [])
   execute 'noa set completeopt='.saved_completeopt
