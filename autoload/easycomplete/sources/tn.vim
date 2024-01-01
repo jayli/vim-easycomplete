@@ -329,11 +329,13 @@ function! s:CompleteHandler(res)
       let l:word = get(item, "word")
       let l:info = get(item, "info")
       let l:menu = get(item, "menu")
-      let l:new_user_data = json_encode(extend(easycomplete#util#GetUserData(item), {
+      let sha256_str = strpart(easycomplete#util#Sha256(l:word), 0, 15)
+      let user_data_json = extend(easycomplete#util#GetUserData(item), {
             \   'plugin_name': "tn",
-            \   'sha256': easycomplete#util#Sha256(l:word)
-            \ }))
-      let item["user_data"] = l:new_user_data
+            \   'sha256': sha256_str
+            \ })
+      let item["user_data"] = json_encode(user_data_json)
+      let item["user_data_json"] = user_data_json
     endfor
     if s:force_complete
       call easycomplete#util#call(function("s:UpdateRendering"), [result])

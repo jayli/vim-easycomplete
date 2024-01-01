@@ -1861,9 +1861,15 @@ function! s:NormalizeMenulist(arr, plugin_name)
   let l:menu_list = []
   for item in a:arr
     let o_user_data = easycomplete#util#GetUserData(item)
+    let o_sha256 = get(o_user_data, "sha256", "")
+    if empty(o_sha256)
+      let sha256_str = strpart(sha256(string(item)), 0, 15)
+    else
+      let sha256_str = o_sha256
+    endif
     let r_user_data = extend(o_user_data, {
           \ 'plugin_name': a:plugin_name,
-          \ 'sha256':      sha256(string(item)),
+          \ 'sha256':      sha256_str,
           \ })
     if type(item) == type("")
       let l:menu_item = {
@@ -1873,6 +1879,7 @@ function! s:NormalizeMenulist(arr, plugin_name)
             \ 'dup':       1,       'abbr':      '',
             \ 'kind_number' : get(item, 'kind_number', 0),
             \ 'plugin_name' : a:plugin_name,
+            \ 'user_data_json': r_user_data
             \ }
       call add(l:menu_list, l:menu_item)
     endif
@@ -1884,6 +1891,7 @@ function! s:NormalizeMenulist(arr, plugin_name)
             \   'kind': '',      'abbr': '',
             \   'kind_number' : get(item, 'kind_number', 0),
             \   'plugin_name' : a:plugin_name,
+            \   'user_data_json': r_user_data
             \ },  item ))
     endif
   endfor

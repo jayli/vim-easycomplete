@@ -195,6 +195,9 @@ function! easycomplete#util#GetSha256(item) " {{{
 endfunction " }}}
 
 function! easycomplete#util#GetUserData(item) " {{{
+  if has_key(a:item, "user_data_json")
+    return get(a:item, "user_data_json", {})
+  endif
   let user_data_str = get(a:item, 'user_data', "")
   if empty(user_data_str)
     return {}
@@ -218,7 +221,6 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     let l:info = s:GetTabNineItemInfo(a:item)
     return l:info
   endif
-
   let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
   let t_name = s:TrimWavyLine(t_name)
   let t_sha = easycomplete#util#GetSha256(a:item)
@@ -1403,6 +1405,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
   let info = exists('a:val.info') ? a:val.info : ""
   let kind_number = exists('a:val.kind_number') ? a:val.kind_number : 0
   let user_data = exists('a:val.user_data') ? a:val.user_data : ""
+  let user_data_json = exists('a:val.user_data_json') ? a:val.user_data_json : {}
   let ret = {
         \ "abbr":      abbr,
         \ "dup":       1,
@@ -1414,17 +1417,20 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
         \ "equal":     1,
         \ "user_data": user_data,
         \ "kind_number": kind_number,
+        \ "user_data_json": user_data_json
         \ }
   if is_func
     if stridx(word,"(") <= 0
       let ret["word"] = word . "()"
       let ret['abbr'] = word . "~"
-      let ret['user_data'] = json_encode(extend(easycomplete#util#GetUserData(a:val), {
+      let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
             \ 'expandable': 1,
             \ 'custom_expand': 1,
             \ 'placeholder_position': strlen(word) + 1,
             \ 'cursor_backing_steps': 1
-            \ }))
+            \ })
+      let ret['user_data'] = json_encode(user_data_json_f)
+      let ret['user_data_json'] = user_data_json_f
     endif
   endif
   return ret
@@ -1620,23 +1626,28 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
       let l:cursor_backing_steps = strlen(l:vim_complete_item['word'][l:placeholder_position:])
       let l:vim_complete_item['abbr'] = l:completion_item['label'] . '~'
       if strlen(l:origin_word) > strlen(l:vim_complete_item['word'])
-        let l:vim_complete_item['user_data'] = json_encode({
+        let l:user_data_json = {
               \ 'expandable':1,
               \ 'placeholder_position': l:placeholder_position,
-              \ 'cursor_backing_steps': l:cursor_backing_steps})
+              \ 'cursor_backing_steps': l:cursor_backing_steps}
+        let l:vim_complete_item['user_data'] = json_encode(l:user_data_json)
+        let l:vim_complete_item['user_data_json'] = l:user_data_json
       endif
-      let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
+      let l:user_data_json_l = extend(easycomplete#util#GetUserData(l:vim_complete_item), {
             \ 'expandable': 1,
-            \ }))
+            \ })
+      let l:vim_complete_item['user_data'] = json_encode(l:user_data_json_l)
+      let l:vim_complete_item['user_data_json'] = l:user_data_json_l
     elseif l:completion_item['label'] =~ ".(.*)$"
       let l:vim_complete_item['abbr'] = l:completion_item['label']
       let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
-      let l:vim_complete_item["user_data"] = json_encode({
+      let l:vim_complete_item['user_data_json'] = {
         \ 'custom_expand': 1,
         \ 'expandable': 1,
         \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
         \ 'cursor_backing_steps': 1
-        \ })
+        \ }
+      let l:vim_complete_item["user_data"] = json_encode(l:vim_complete_item['user_data_json'])
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
@@ -1649,11 +1660,15 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['info'] = l:t_info
     endif
-    let l:vim_complete_item['user_data'] = json_encode(extend(easycomplete#util#GetUserData(l:vim_complete_item), {
+    let sha256_str_o = easycomplete#util#Sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info']))
+    let sha256_str = strpart(sha256_str_o, 0, 15)
+    let user_data_json = extend(easycomplete#util#GetUserData(l:vim_complete_item), {
           \   'plugin_name': a:plugin_name,
-          \   'sha256': easycomplete#util#Sha256(l:vim_complete_item['word'] . string(l:vim_complete_item['info'])),
+          \   'sha256': sha256_str,
           \   'lsp_item': l:completion_item
-          \ }))
+          \ })
+    let l:vim_complete_item['user_data'] = json_encode(user_data_json)
+    let l:vim_complete_item["user_data_json"] = user_data_json
     " LSP 初始化未完成时往往会返回 word 为空的一个提示: "LSP initalize not
     " ready... 0 / 40" 这里不需要
     if get(l:vim_complete_item, "word", "") != ""

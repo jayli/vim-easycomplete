@@ -45,16 +45,19 @@ function! s:CompleteHandler(typing, name, ctx, startcol)
         continue
       endif
     endtry
+    let sha256_str = strpart(easycomplete#util#Sha256(trigger . string(code_info)), 0, 15)
+    let user_data_json = {
+          \     'plugin_name': a:name,
+          \     'sha256': sha256_str,
+          \   }
     call add(suggestions, {
           \ 'word' : trigger,
           \ 'abbr' : trigger . '~',
           \ 'kind' : g:easycomplete_kindflag_snip,
           \ 'menu' : g:easycomplete_menuflag_snip,
-          \ 'user_data': json_encode({
-          \     'plugin_name': a:name,
-          \     'sha256': easycomplete#util#Sha256(trigger . string(code_info)),
-          \   }),
-          \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info)
+          \ 'user_data': json_encode(user_data_json),
+          \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
+          \ 'user_data_json': user_data_json
           \ })
   endfor
   call easycomplete#complete(a:name, a:ctx, a:startcol, suggestions)
