@@ -1,13 +1,12 @@
-" ------------------------------
-" TODO 连续tab移动选中态,很卡 jayli，比如在js文件中输入hi
-" ------------------------------
 " for nvim only
+" 默认 pum window 初始化属性
 let s:default_pum_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
         \ "zindex": 50,
         \ "bufpos": [0,0]
         \ }
+" Scrollbar 默认属性
 let s:default_scroll_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
@@ -63,11 +62,12 @@ endfunction
 "  EasyKind:       "|", 继承 PmenuKind
 "  EasyExtra:      "^", 继承 PmenuExtra
 " 
-" vscode 提供了超过五种 kind 颜色配置，以把 lsp 和 text
-" 区分开，这里增加两种常见的配置：
-"  EasyFunction:   "%", Function/Method
-"  EasySnippet:    "&", Snippet
+" vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
+" 区分开，这里增加四种常见的颜色配置：
+"  EasyFunction:   "%", Function/Constant/Scruct
+"  EasySnippet:    "&", Snippet/snip
 "  EasyTabNine:    ";", TabNine
+"  EasyNormal:     ":", Buf/Text/dict - Pmenu 默认色
 function! s:hl()
   let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
   if easycomplete#util#IsGui()
@@ -82,12 +82,14 @@ function! s:hl()
         \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends',
         \ 'syntax region EasySnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends',
         \ 'syntax region EasyTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends',
+        \ 'syntax region EasyNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends',
         \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi link EasyKind     PmenuKind",
         \ "hi link EasyExtra    PmenuExtra",
         \ "hi link EasyFunction Conditional",
         \ "hi link EasySnippet  Number",
         \ "hi link EasyTabNine  Character",
+        \ "hi link EasyNormal   Pmenu",
         \ ]
         " \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
         " \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(¡¡\)\@!¡/ matchgroup=Conceal end=/\%(¡¡\)\@!¡/ concealends',
@@ -297,8 +299,7 @@ endfunction
 function! easycomplete#pum#CursoredItem()
   if !s:pumvisible() | return {} | endif
   if s:selected_i == 0 | return {} | endif
-  " TODO jayli here - ----------------------------------------------
-  " tab 移动过程中会报错
+  " TODO tab 移动过程中会报错，未复现
   if s:selected_i > len(s:curr_items)
     call s:log("ERR", string(len(s:curr_items)) . " " . string(s:selected_i) . s:original_ctx["typing"])
     return {}
@@ -709,7 +710,12 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(substitute(item, "\[`|^%&;]", "", "g"))
+    let remove_style_wrapper = item
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s%\[^%\]%\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s&\[^&\]&\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s;\[^;\];\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s:\[^:\]:\\s", " x ", "g")
+    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[`|^]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -727,12 +733,22 @@ function! s:MapFunction(key, val)
   if g:easycomplete_nerd_font
     let kind_o = get(a:val, "kind", "")
     if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
-          \ kind_o ==# g:easycomplete_lsp_type_font["constant"]
+          \ kind_o ==# g:easycomplete_lsp_type_font["constant"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["struct"]
+      " 颜色1
       let kind_char = "%"
-    elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"]
+    elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["snippet"]
+      " 颜色2
       let kind_char = "&"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
+      " 颜色3
       let kind_char = ";"
+    elseif kind_o ==# g:easycomplete_menu_skin["buf"]["kind"] ||
+          \ kind_o ==# g:easycomplete_menu_skin["dict"]["kind"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["text"]
+      " 颜色4，标准色
+      let kind_char = ":"
     endif
   endif
   let format_object = {

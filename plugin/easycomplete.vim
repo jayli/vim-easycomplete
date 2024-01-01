@@ -64,13 +64,14 @@ if g:easycomplete_nerd_font == 1
         \ 'event':     get(kind_icons, "event", ''),     'var':           get(kind_icons, "var", ""),
         \ 'const':     get(kind_icons, "const", ""),     'alias':         get(kind_icons, 'alias', ""),
         \ 'let':       get(kind_icons, "let", ""),       'parameter':     get(kind_icons, 'parameter', "󰏗"),
+        \ 'operator':  get(kind_icons, 'operator', "󱧕"),
         \ 'r':'', 't':'',
         \ 'f':'f', 'c':'',
         \ 'u':'𝘶', 'e':'𝘦',
         \ 's':'󰙅', 'v':'',
         \ 'i':'𝘪', 'm':'',
         \ 'p':'𝘱', 'k':'𝘬',
-        \ 'o':"𝘰", 'd':'𝘥',
+        \ 'o':"󱧕", 'd':'𝘥',
         \ 'l':"𝘭", 'a':"𝘢",
         \ }
 endif

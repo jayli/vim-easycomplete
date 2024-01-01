@@ -24,6 +24,7 @@ vim.g.easycomplete_kind_icons = {
   dict = "󰈍",
   snip = "",
   tabnine = "󱙺",
+  operator = "󰞷",
   class = "",
   constant = "",
   enum = "",
@@ -51,7 +52,7 @@ vim.g.easycomplete_kind_icons = {
 }
 
 -- Custom pum format. Only avilable with `g:easycomplete_nerd_font == 1` in nvim
-vim.g.easycomplete_pum_format = ["kind", "abbr", "menu"]
+vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 
 -- Define highlight group for fuzzy matched charactors.
 vim.g.easycomplete_fuzzymatch_hlgroup = "MyGroup"
