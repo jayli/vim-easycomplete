@@ -65,9 +65,9 @@ endfunction
 " 
 " vscode 提供了超过五种 kind 颜色配置，以把 lsp 和 text
 " 区分开，这里增加两种常见的配置：
-"  EasyFunction:   "¡", Function/Method
-"  EasySnippet:    "¤", Snippet
-"  EasyTabNine:    "©", TabNine
+"  EasyFunction:   "%", Function/Method
+"  EasySnippet:    "&", Snippet
+"  EasyTabNine:    ";", TabNine
 function! s:hl()
   let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
   if easycomplete#util#IsGui()
@@ -77,11 +77,11 @@ function! s:hl()
   endif
   let exec_cmd = [
         \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends keepend',
-        \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
         \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(^^\)\@!^/ matchgroup=Conceal end=/\%(^^\)\@!^/ concealends',
-        \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(¡¡\)\@!¡/ matchgroup=Conceal end=/\%(¡¡\)\@!¡/ concealends',
-        \ 'syntax region EasySnippet    matchgroup=Conceal start=/\%(¤¤\)\@!¤/ matchgroup=Conceal end=/\%(¤¤\)\@!¤/ concealends',
-        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/\%(©©\)\@!©/ matchgroup=Conceal end=/\%(©©\)\@!©/ concealends',
+        \ 'syntax region EasyKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends',
+        \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends',
+        \ 'syntax region EasySnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends',
+        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends',
         \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
         \ "hi link EasyKind     PmenuKind",
         \ "hi link EasyExtra    PmenuExtra",
@@ -89,6 +89,10 @@ function! s:hl()
         \ "hi link EasySnippet  Number",
         \ "hi link EasyTabNine  Character",
         \ ]
+        " \ 'syntax region EasyKind       matchgroup=Conceal start=/\%(||\)\@!|/ matchgroup=Conceal end=/\%(||\)\@!|/ concealends',
+        " \ 'syntax region EasyFunction   matchgroup=Conceal start=/\%(¡¡\)\@!¡/ matchgroup=Conceal end=/\%(¡¡\)\@!¡/ concealends',
+        " \ 'syntax region EasySnippet    matchgroup=Conceal start=/\%(¤¤\)\@!¤/ matchgroup=Conceal end=/\%(¤¤\)\@!¤/ concealends',
+        " \ 'syntax region EasyTabNine    matchgroup=Conceal start=/\%(©©\)\@!©/ matchgroup=Conceal end=/\%(©©\)\@!©/ concealends',
         " \ "hi link PmenuExtraSel PmenuSel",
         " \ "hi link PmenuKindSel PmenuSel"
   call win_execute(s:pum_window, join(exec_cmd, "\n"))
@@ -319,11 +323,37 @@ function! s:select(line_index)
     " TODO here 这里在 kind 开头的时候，cursorline 高亮的位置出错
     " 原因是特殊字符的长度问题，strlen("ˆ") == 2 而不是1
     if g:easycomplete_pum_format[0] == "kind"
-      let prefix_length = 8
+      try
+        let bufline_str = getbufline(s:pum_buffer, s:selected_i)[0]
+        let kind_char = bufline_str[2]
+        " call s:log(bufline_str[1], bufline_str[2], s:strlen(bufline_str[2]),str2list(bufline_str[2]), bufline_str)
+        " 控制台运行得到的结果
+        " str2list("") = [59158]
+        " strlen("") = 3
+        " 在程序里执行得到的结果
+        " str2list(l:char) = [238]
+        " strlen(l:char) = 2
+        "
+        " 为什么不一致? 这里先强行加 1 hack 一下，还没找到规律
+        let prefix_length = 5 + s:strlen(kind_char) + 1
+      catch
+        echom v:exception
+      endtry
     else
       let prefix_length = 2
     endif
     call s:HLCursordFuzzyChar("EasyFuzzyMatch", prefix_length)
+  endif
+endfunction
+
+function! s:strlen(char)
+  let num = str2list(a:char)[0]
+  if num >= 2048
+    return 3
+  elseif num >= 128 && num <= 2047
+    return 2
+  else
+    return 1
   endif
 endfunction
 
@@ -679,7 +709,7 @@ endfunction
 function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
-    let curr_length = strdisplaywidth(substitute(item, "\[`|^¡¤©]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(item, "\[`|^%&;]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -698,11 +728,11 @@ function! s:MapFunction(key, val)
     let kind_o = get(a:val, "kind", "")
     if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["constant"]
-      let kind_char = "¡"
+      let kind_char = "%"
     elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"]
-      let kind_char = "¤"
+      let kind_char = "&"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
-      let kind_char = "©"
+      let kind_char = ";"
     endif
   endif
   let format_object = {
