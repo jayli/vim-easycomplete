@@ -6,11 +6,11 @@
 
 ## Why
 
-There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate the capabilities of an AI coding assistant as well.
+There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate an AI coding assistant as well.
 
 ## What
 
-Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. The goal is to work everywhere out of the box. It requires pure VimScript. It's also super simple to configure. For example, You do not have to install Node and a bunch of Node modules unless you write node code.
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. It aims to be available out of the box on linux and mac. It is implemented in pure VimScript and is extremely simple to configure without installing Node and a bunch of Node modules.
 
 https://github.com/jayli/vim-easycomplete/assets/188244/5fdef6cb-ef1d-4428-960e-d9802cbc2a84
 
@@ -25,7 +25,7 @@ It contains these features:
 
 ## Installation
 
-Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.4.4 or higher is required.
+Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.6.0 or higher is required.
 
 Vim config via vim-plug with vimscript:
 
