@@ -422,22 +422,17 @@ function! easycomplete#pum#SetWordBySelecting()
 endfunction
 
 function! s:InsertWord(word)
-  try
-    let saved_completeopt = &completeopt
-    let startcol = s:original_ctx["startcol"]
-    noa set completeopt=menu
-    if &textwidth > 0
-      let textwidth = &textwidth
-      noa setl textwidth=0
-      call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
-    endif
-    silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-    silent! noa call complete(startcol, [])
-    execute 'noa set completeopt='.saved_completeopt
-  catch
-    call s:console(v:exception)
-
-  endtry
+  let saved_completeopt = &completeopt
+  let startcol = s:original_ctx["startcol"]
+  noa set completeopt=menu
+  if &textwidth > 0
+    let textwidth = &textwidth
+    noa setl textwidth=0
+    call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
+  endif
+  silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
+  silent! noa call complete(startcol, [])
+  execute 'noa set completeopt='.saved_completeopt
 endfunction
 
 function! easycomplete#pum#select(line_index)
