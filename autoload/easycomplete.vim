@@ -2219,6 +2219,9 @@ endfunction
 
 " lsp 各项配置检查是否通过
 function! easycomplete#ok(str)
+  if empty(bufname())
+    return v:false
+  endif
   let varstr = substitute(a:str, "[abvgsl]:","","i")
   let flag = 0
   let value = get(g:easycomplete_config, a:str, 0)
