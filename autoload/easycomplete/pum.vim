@@ -68,7 +68,7 @@ function! easycomplete#pum#complete(startcol, items)
 endfunction
 
 " 基础的三类样式用到的 Conceal 字符:
-"  EazyFuzzyMatch: "`", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
+"  EazyFuzzyMatch: "§", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
 "  EasyKind:       "|", 继承 PmenuKind
 "  EasyExtra:      "‰", 继承 PmenuExtra
 " 
@@ -86,7 +86,7 @@ function! s:hl()
     let dev = "cterm"
   endif
   let exec_cmd = [
-        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(``\)\@!`/ matchgroup=Conceal end=/\%(``\)\@!`/ concealends oneline keepend',
+        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
         \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
         \ 'syntax region EasyKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
         \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
@@ -166,7 +166,7 @@ function! s:TabNineHLNormalize(menu_items)
       if count_k == 0
         let item["abbr_marked"] = abbr
       else
-        let item["abbr_marked"] = "`" . strpart(abbr, 0, count_k) . "`" . strpart(abbr, count_k, 150)
+        let item["abbr_marked"] = "§" . strcharpart(abbr, 0, count_k) . "§" . strcharpart(abbr, count_k, 150)
       endif
       let item["marked_position"] = range(count_k)
     endif
@@ -340,14 +340,25 @@ function! s:select(line_index)
   endif
 endfunction
 
+function! s:CharCounts(str, char)
+  let new_str = substitute(a:str, a:char, "", "g")
+  let counts = (strlen(a:str) - strlen(new_str)) / strlen(a:char)
+  return counts
+endfunction
+
 " 根据原始的 fuzzy position 计算 abbr_marked 中真实的高亮位置
 function! s:ComputeHLPositions(abbr_marked, fuzzy_p, prefix_length)
   let position = []
+  let mark_char = "§"
   let count_i = 0  " marked abbr cursor
   let cursor = 0  " abbr cursor
   while count_i < strlen(a:abbr_marked)
-    if a:abbr_marked[count_i] == "`"
-      let count_i += 1
+    " 这里要区分 byte index 和 char index
+    " 下标索引取的值是 byte index，matchaddpos 用的也是 byte index
+    " 比如 '§a'[0] == '§' 是 false，因为第零个位置的 byte index 是 <c2> 
+    " 所以这里的游标需要增加一个完整字符长度的 byte index 长度
+    if a:abbr_marked[count_i] == mark_char[0]
+      let count_i += strlen(mark_char)
       continue
     endif
     if index(a:fuzzy_p, cursor) >= 0
@@ -760,7 +771,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s&\[^&\]&\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s;\[^;\];\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s:\[^:\]:\\s", " x ", "g")
-    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[`|‰]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§|‰]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif

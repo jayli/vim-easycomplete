@@ -1073,7 +1073,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
           let abbr = fuzzymatching[count_i]["word"]
         endif
         let p = fuzzy_position[count_i]
-        let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, p, "`")
+        let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, p, "§")
         let fuzzymatching[count_i]["marked_position"] = p
         let count_i += 1
       endwhile
