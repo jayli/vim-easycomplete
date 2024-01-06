@@ -68,7 +68,7 @@ let g:easycomplete_backing_or_cr = 0
 " 用作 FirstComplete TaskQueue 回调的定时器
 let s:first_render_timer = 0
 " FirstCompleteRendering 中 LSP 的超时时间
-let g:easycomplete_first_render_delay = 1500
+let g:easycomplete_first_render_delay = 500
 " lint 中 FloatWidth
 let g:easycomplete_lint_float_width = 180
 
@@ -1671,6 +1671,13 @@ function! easycomplete#GetPlugNameByCommand(cmd)
   return plug_name
 endfunction
 
+function! s:HackForVimFirstComplete()
+  let l:first_render_delay = g:easycomplete_first_render_delay
+  let g:easycomplete_first_render_delay = 50
+  call s:CompleteHandler()
+  let g:easycomplete_first_render_delay = l:first_render_delay
+endfunction
+
 function! s:FirstCompleteRendering(start_pos, menuitems)
   if easycomplete#util#NotInsertMode()
     call s:flush()
@@ -1687,11 +1694,21 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     if s:OrigionalPosition()
       " 如果 LSP 结果返回时没有前进 typing，就返回结果过滤呈现即可
       let source_result = a:menuitems
+      " vimls 在文件过大时，按键很快时跟不上，这里加一个补救动作
+      if &filetype == "vim" && empty(source_result)
+        call s:HackForVimFirstComplete()
+        return
+      endif
     elseif !empty(typing_word) && easycomplete#context()["typed"] =~ "[a-zA-Z0-9#]$"
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()，叠加之前请求 LSP 的返
       " 回值后进行重新过滤呈现
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
+      " vimlsp 比较慢，文件超过 1000 行后就跟不上敲击动作了
+      if &filetype == "vim" && empty(source_result)
+        call s:HackForVimFirstComplete()
+        return
+      endif
     else
       if (g:env_is_vim && !pumvisible()) || (g:env_is_nvim && !easycomplete#pum#visible())
         let should_stop_render = 1
