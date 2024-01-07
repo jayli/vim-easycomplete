@@ -187,7 +187,9 @@ All supported languages:
 More info about semantic completion for each supported language:
 
 - JavaScript & TypeScript: [tsserver](https://github.com/microsoft/TypeScript) required.
-- Python: [pylsp](https://github.com/palantir/python-language-server) required. (`pip install python-language-server`)
+- Python: There are 2 avilable python-language-server branches:
+    - [pyls](https://github.com/palantir/python-language-server) support python 3.5 ~ 3.10 ([pyls breaks autocomplete on Python 3.11](https://github.com/palantir/python-language-server/issues/959)), `pip3 install python-language-server`
+    - [pylsp](https://github.com/python-lsp/python-lsp-server) work well with python 3.11, `pip3 install python-lsp-server`, (Recommend)
 - Go: [gopls](https://github.com/golang/tools/tree/master/gopls) required. (`go get golang.org/x/tools/gopls`)
 - Vim Script: [vimls](https://github.com/iamcco/vim-language-server) required.
 - C++/C/OC：[Clangd](https://github.com/clangd/clangd) required.

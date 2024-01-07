@@ -385,7 +385,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#py#completor',
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
-      \ 'command': 'pyls'
+      \ 'command': 'pylsp'
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
