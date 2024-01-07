@@ -45,7 +45,11 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
         \ !has_key(a:data['response'], 'result')
     call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
-    echom "lsp error response"
+    if a:plugin_name == "py"
+      call s:log('Lsp Error', 'Please delete global pyls `rm /usr/local/bin/pyls` and reinstall pyls.')
+    else
+      echom "lsp error response"
+    endif
     return
   endif
 
