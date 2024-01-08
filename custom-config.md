@@ -58,7 +58,9 @@ vim.g.easycomplete_kind_icons = {
 vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 
 -- Define highlight group for fuzzy matched charactors.
-vim.g.easycomplete_fuzzymatch_hlgroup = "MyGroup"
+vim.cmd[[
+    hi EasyFuzzyMatch guifg=lightblue
+]]
 
 -- Enable Tabnine, default is on, install tabnine lsp via `:InstallLspServer tn`
 vim.g.easycomplete_tabnine_enable

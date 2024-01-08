@@ -27,6 +27,8 @@ let s:pum_direction = ""
 
 " pum 高亮所需的临时样式 match id
 let g:easycomplete_match_id = 0
+" 高亮exec所需的字符串
+let s:easycomplete_hl_exec_cmd = ""
 
 " scrollthumb vars
 let s:scrollthumb_window = 0
@@ -67,6 +69,10 @@ function! easycomplete#pum#complete(startcol, items)
   call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
 endfunction
 
+function! s:HLExists(group)
+  return easycomplete#ui#HighlightGroupExists(a:group)
+endfunction
+
 " 基础的三类样式用到的 Conceal 字符:
 "  EazyFuzzyMatch: "§", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
 "  EasyKind:       "|", 继承 PmenuKind
@@ -79,29 +85,39 @@ endfunction
 "  EasyTabNine:    ";", TabNine
 "  EasyNormal:     ":", Buf/Text/dict - Pmenu 默认色
 function! s:hl()
-  let hl_group = empty(g:easycomplete_fuzzymatch_hlgroup) ? "Constant" : g:easycomplete_fuzzymatch_hlgroup
-  if easycomplete#util#IsGui()
-    let dev = "gui"
-  else
-    let dev = "cterm"
+  if empty(s:easycomplete_hl_exec_cmd)
+    if easycomplete#util#IsGui()
+      let dev = "gui"
+    else
+      let dev = "cterm"
+    endif
+    let fuzzymatch_hl_group = s:HLExists("EasyFuzzyMatch") ? "EasyFuzzyMatch" : "Constant"
+    let pmenu_kind_hl_group = s:HLExists("EasyPmenuKind") ? "EasyPmenuKind" : "PmenuKind"
+    let pmenu_extra_hl_group = s:HLExists("EasyPmenuExtra") ? "EasyPmenuExtra" : "PmenuExtra"
+    let function_hl_group = s:HLExists("EasyFunction") ? "EasyFunction" : "Conditional"
+    let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Number"
+    let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
+    let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
+
+    let s:easycomplete_hl_exec_cmd = [
+          \ 'syntax region CustomFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
+          \ 'syntax region CustomExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
+          \ 'syntax region CustomKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
+          \ 'syntax region CustomFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
+          \ 'syntax region CustomSnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
+          \ 'syntax region CustomTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends oneline',
+          \ 'syntax region CustomNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
+          \ "hi CustomFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(fuzzymatch_hl_group),
+          \ "hi link CustomKind     " . pmenu_kind_hl_group,
+          \ "hi link CustomExtra    " . pmenu_extra_hl_group,
+          \ "hi link CustomFunction " . function_hl_group,
+          \ "hi link CustomSnippet  " . snippet_hl_group,
+          \ "hi link CustomTabNine  " . tabnine_hl_group,
+          \ "hi link CustomNormal   " . pmenu_hl_group,
+          \ ]
+          " \ "hi Search guibg=NONE guifg=NONE ctermbg=NONE ctermfg=NONE",
   endif
-  let exec_cmd = [
-        \ 'syntax region EasyFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
-        \ 'syntax region EasyExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
-        \ 'syntax region EasyKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
-        \ 'syntax region EasyFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
-        \ 'syntax region EasySnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
-        \ 'syntax region EasyTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends oneline',
-        \ 'syntax region EasyNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
-        \ "hi EasyFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(hl_group),
-        \ "hi link EasyKind     PmenuKind",
-        \ "hi link EasyExtra    PmenuExtra",
-        \ "hi link EasyFunction Conditional",
-        \ "hi link EasySnippet  Number",
-        \ "hi link EasyTabNine  Character",
-        \ "hi link EasyNormal   Pmenu",
-        \ ]
-  call win_execute(s:pum_window, join(exec_cmd, "\n"))
+  call win_execute(s:pum_window, join(s:easycomplete_hl_exec_cmd, "\n"))
 endfunction
 
 function! s:OpenPum(startcol, lines)
@@ -336,7 +352,7 @@ function! s:select(line_index)
     else
       let prefix_length = 2
     endif
-    call s:HLCursordFuzzyChar("EasyFuzzyMatch", prefix_length)
+    call s:HLCursordFuzzyChar("CustomFuzzyMatch", prefix_length)
   endif
 endfunction
 

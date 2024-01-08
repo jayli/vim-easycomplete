@@ -36,6 +36,15 @@ function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   endtry
 endfunction " }}}
 
+function! easycomplete#ui#HighlightGroupExists(group)
+  try
+    call execute("hi " . a:group)
+  catch /411/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
 " Get back ground color form a GroupName {{{
 function! easycomplete#ui#GetBgColor(name)
   return easycomplete#ui#GetHiColor(a:name, "bg")

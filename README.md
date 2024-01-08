@@ -257,13 +257,21 @@ Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
 
 ---------------------
 
-## Beautify the vim completion menu
+## Beautify completion menu
 
-If you just want to use default nerdfonts configuration, you can simplily config `g:easycomplete_nerd_font = 1`
+Set `g:easycomplete_nerd_font = 1` to enable default nerdfonts configuration.
 
 If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](custom-config.md).
 
-You can add custom fuzzy matching charactors your own highlight group via `g:easycomplete_fuzzymatch_hlgroup = "MyGroup"`.
+You can add custom Pmenu styles by defining these highlight groups:
+
+- `EasyFuzzyMatch`: highlight fuzzy matching character. It links to "Constant" by default if it's not defined.
+- `EasyPmenu`: Pmenu style. It links to "Pmenu" by default.
+- `EasyPmenuKind`: PmenuKind style. It links to "PmenuKind" by default.
+- `EasyPmenuExtra`: PmenuExtra style. It links to "PmenuExtra" by default.
+- `EasyFunction`: Function kind icon style. links to "Conditional" by default.
+- `EasySnippet`: Snippet kind icon style. links to "Number" by default.
+- `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
 
 More examples here: [full custom config](custom-config.md)
 
