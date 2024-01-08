@@ -21,9 +21,28 @@ endfunction
 function! easycomplete#sources#cpp#filter(matches)
   let ctx = easycomplete#context()
   let matches = map(copy(a:matches), function("easycomplete#util#FunctionSurffixMap"))
-  return matches
+  let matches_ret = map(copy(matches), function("s:CppItemPrefixHandling"))
+  return matches_ret
+endfunction
+
+function! s:CppItemPrefixHandling(key, val)
+  " `•clockid_t` -> `clockid_t`
+  " ` std::chrono` -> `std::chrono`
+  let item = a:val
+  let first_char = strcharpart(item['abbr'], 0, 1)
+  let abbr = item['abbr']
+  if char2nr(first_char) == 32 " 首字符是空格
+    let item['abbr'] = substitute(abbr, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
+  elseif strlen(first_char) > 1
+    let item['abbr'] = strcharpart(abbr, 1)
+  endif
+  return item
 endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction

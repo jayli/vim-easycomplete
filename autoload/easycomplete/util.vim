@@ -168,7 +168,9 @@ endfunction " }}}
 " trim {{{
 function! easycomplete#util#trim(str)
   if !empty(a:str)
+    " 删除头部空格
     let a1 = substitute(a:str, "^\\s\\+\\(.\\{\-}\\)$","\\1","g")
+    " 删除尾部空格
     let a1 = substitute(a:str, "^\\(.\\{\-}\\)\\s\\+$","\\1","g")
     return a1
   endif
