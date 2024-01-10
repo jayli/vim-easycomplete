@@ -1,4 +1,6 @@
 local M = {}
+local Util = require "easycomplete.util"
+local console = Util.console
 local loading_ns = vim.api.nvim_create_namespace('loading_ns')
 local loading_timer = vim.loop.new_timer()
 local loading_chars = {'⠇','⠋','⠙','⠸','⢰','⣠','⣄'}
@@ -19,6 +21,10 @@ function M.start()
   set_loading_interval(90, function()
     count = count + 1
     vim.schedule(function()
+      if cursor == 1 and vim.fn["easycomplete#pum#visible"]() then
+        M.stop()
+        return
+      end
       vim.api.nvim_buf_set_extmark(0, loading_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, {
           id = 2,
           virt_text_pos = "eol",

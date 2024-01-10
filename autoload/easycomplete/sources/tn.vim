@@ -306,6 +306,7 @@ function! s:TabnineJobCallback(job_id, data, event)
   if g:env_is_vim && !pumvisible() && easycomplete#tabnine#SuggestFlagCheck()
     call s:SuggestHandler(res_array)
   elseif g:env_is_nvim && !easycomplete#pum#visible() && easycomplete#tabnine#SuggestFlagCheck()
+    call s:SuggestHandler(res_array)
   else " 配合pum显示tabnine提示词s
     let result_items = s:NormalizeCompleteResult(a:data)
     call s:CompleteHandler(result_items)

@@ -1,6 +1,7 @@
 local Util = require "easycomplete.util"
 local loading = require "easycomplete.loading"
 local log = Util.log
+local console = Util.console
 local Export = {}
 local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 

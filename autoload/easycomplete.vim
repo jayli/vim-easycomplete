@@ -71,6 +71,8 @@ let s:first_render_timer = 0
 let g:easycomplete_first_render_delay = 500
 " lint 中 FloatWidth
 let g:easycomplete_lint_float_width = 180
+" 控制是否触发tabnine suggest的timer
+let g:easycomplete_tabnine_suggest_timer = 0
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -350,6 +352,10 @@ function! easycomplete#CompleteDone()
   endif
   " bugfix for #88
   if g:env_is_nvim
+    " 触发 tabnine suggest
+    if !easycomplete#pum#visible() && !easycomplete#IsBacking() && easycomplete#tabnine#ready() 
+      call s:LazyTabNineFire(500)
+    endif
     "TODO v:complete_item 是否是必须的，还需再测试一下
     if easycomplete#pum#visible() || (g:easycomplete_first_complete_hit != 1)
       call s:zizz()
@@ -362,6 +368,14 @@ function! easycomplete#CompleteDone()
     endif
   endif
   call s:flush()
+endfunction
+
+function! s:LazyTabNineFire(delay)
+  if g:easycomplete_tabnine_suggest_timer > 0
+    call timer_stop(g:easycomplete_tabnine_suggest_timer)
+    let g:easycomplete_tabnine_suggest_timer = 0
+  endif
+  let g:easycomplete_tabnine_suggest_timer = timer_start(a:delay, { -> easycomplete#tabnine#fire() })
 endfunction
 
 function! easycomplete#WinScrolled()
@@ -2313,8 +2327,8 @@ endfunction
 function! easycomplete#CursorHoldI()
   if easycomplete#IsBacking()
     " do nothting
-  else
-    call easycomplete#tabnine#fire()
+  elseif easycomplete#tabnine#ready()
+    call s:LazyTabNineFire(30)
   endif
 endfunction
 
@@ -2324,6 +2338,9 @@ function! easycomplete#TextChangedI()
   endif
   if exists('b:easycomplete_enable') && empty(b:easycomplete_enable)
     return
+  endif
+  if g:env_is_nvim
+    call easycomplete#tabnine#LoadingStop()
   endif
   " TextCHangedP 和 TextChangedI 是互斥的
   if g:env_is_nvim && easycomplete#pum#visible()

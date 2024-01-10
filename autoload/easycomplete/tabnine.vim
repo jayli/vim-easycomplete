@@ -60,7 +60,11 @@ function! easycomplete#tabnine#SuggestFlagClear()
 endfunction
 
 function! easycomplete#tabnine#TypingType()
-  return b:tabnine_typing_type
+  if exists("b:tabnine_typing_type")
+    return b:tabnine_typing_type
+  else
+    return ""
+  endif
 endfunction
 
 function! easycomplete#tabnine#LoadingStart()
