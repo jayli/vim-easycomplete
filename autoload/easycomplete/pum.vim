@@ -77,12 +77,12 @@ endfunction
 "  EazyFuzzyMatch: "§", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
 "  EasyKind:       "|", 继承 PmenuKind
 "  EasyExtra:      "‰", 继承 PmenuExtra
-" 
+"
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
 " 区分开，这里增加四种常见的颜色配置：
 "  EasyFunction:   "%", Function/Constant/Scruct
 "  EasySnippet:    "&", Snippet/snip
-"  EasyTabNine:    ";", TabNine
+"  EasyTabNine:    "@", TabNine
 "  EasyNormal:     ":", Buf/Text/dict - Pmenu 默认色
 function! s:hl()
   if empty(s:easycomplete_hl_exec_cmd)
@@ -105,7 +105,7 @@ function! s:hl()
           \ 'syntax region CustomKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
           \ 'syntax region CustomFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
-          \ 'syntax region CustomTabNine    matchgroup=Conceal start=/;\([^;];\)\@=/  matchgroup=Conceal end=/\(;[^;]\)\@<=;/ concealends oneline',
+          \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
           \ "hi CustomFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(fuzzymatch_hl_group),
           \ "hi link CustomKind     " . pmenu_kind_hl_group,
@@ -785,7 +785,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = item
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s%\[^%\]%\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s&\[^&\]&\\s", " x ", "g")
-    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s;\[^;\];\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s@\[^@\]@\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s:\[^:\]:\\s", " x ", "g")
     let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§|‰]", "", "g"))
     if curr_length > max_length
@@ -815,7 +815,7 @@ function! s:MapFunction(key, val)
       let kind_char = "&"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
       " 颜色3
-      let kind_char = ";"
+      let kind_char = "@"
     elseif kind_o ==# g:easycomplete_menu_skin["buf"]["kind"] ||
           \ kind_o ==# g:easycomplete_menu_skin["dict"]["kind"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["text"]
