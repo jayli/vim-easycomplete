@@ -59,6 +59,18 @@ function! easycomplete#tabnine#SuggestFlagClear()
   let b:tabnine_typing_type = ""
 endfunction
 
+function! easycomplete#tabnine#TypingType()
+  return b:tabnine_typing_type
+endfunction
+
+function! easycomplete#tabnine#LoadingStart()
+  call s:tabnine_toolkit.loading_start()
+endfunction
+
+function! easycomplete#tabnine#LoadingStop()
+  call s:tabnine_toolkit.loading_stop()
+endfunction
+
 function! easycomplete#tabnine#SuggestFlagCheck()
   if !exists("b:tabnine_typing_type")
     return v:false
@@ -76,6 +88,7 @@ function! s:flush()
   endif
   call s:tabnine_toolkit.delete_hint()
   call easycomplete#tabnine#SuggestFlagClear()
+  call easycomplete#tabnine#LoadingStop()
   let s:tabnine_hint_snippet = []
 endfunction
 

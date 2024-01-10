@@ -1,4 +1,5 @@
 local Util = require "easycomplete.util"
+local loading = require "easycomplete.loading"
 local log = Util.log
 local Export = {}
 local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
@@ -71,7 +72,14 @@ function Export.show_hint(code_block)
     virt_text = virt_text,
     virt_lines = virt_lines
   })
+end
 
+function Export.loading_start()
+  loading.start()
+end
+
+function Export.loading_stop()
+  loading.stop()
 end
 
 function Export.delete_hint()

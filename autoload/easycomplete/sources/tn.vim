@@ -230,6 +230,9 @@ function! easycomplete#sources#tn#SimpleTabNineRequest(...)
   " `OpenUrl`, `SaveSnippet`, `SuggestionShown`, `SuggestionDropped`, `About`, `FileMetadata`,"
   " `RefreshRemoteProperties`, `StartLoginServer`, `ChatCommunicatorAddress`, `Workspace`"}', '']
   call s:TabNineRequest("Autocomplete", l:params, l:ctx)
+  if easycomplete#tabnine#TypingType() == "suggest"
+    call easycomplete#tabnine#LoadingStart()
+  endif
 endfunction
 
 function! s:StartTabNine()
@@ -257,6 +260,7 @@ function! s:StartTabNine()
 endfunction
 
 function! s:TabnineJobCallback(job_id, data, event)
+  call easycomplete#tabnine#LoadingStop()
   let l:ctx = easycomplete#context()
   if a:event != 'stdout'
     call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
