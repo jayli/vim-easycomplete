@@ -87,7 +87,7 @@ function! easycomplete#tabnine#SuggestFlagCheck()
 endfunction
 
 function! s:flush()
-  if easycomplete#tabnine#ready()
+  if !easycomplete#tabnine#ready()
     return
   endif
   if exists("s:tabnine_hint_snippet") && empty(s:tabnine_hint_snippet)
