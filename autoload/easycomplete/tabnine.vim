@@ -64,11 +64,15 @@ function! easycomplete#tabnine#TypingType()
 endfunction
 
 function! easycomplete#tabnine#LoadingStart()
-  call s:tabnine_toolkit.loading_start()
+  if easycomplete#tabnine#ready()
+    call s:tabnine_toolkit.loading_start()
+  endif
 endfunction
 
 function! easycomplete#tabnine#LoadingStop()
-  call s:tabnine_toolkit.loading_stop()
+  if easycomplete#tabnine#ready()
+    call s:tabnine_toolkit.loading_stop()
+  endif
 endfunction
 
 function! easycomplete#tabnine#SuggestFlagCheck()
@@ -83,6 +87,9 @@ function! easycomplete#tabnine#SuggestFlagCheck()
 endfunction
 
 function! s:flush()
+  if easycomplete#tabnine#ready()
+    return
+  endif
   if exists("s:tabnine_hint_snippet") && empty(s:tabnine_hint_snippet)
     return
   endif
