@@ -3,7 +3,7 @@ local Util = require "easycomplete.util"
 local console = Util.console
 local loading_ns = vim.api.nvim_create_namespace('loading_ns')
 local loading_timer = vim.loop.new_timer()
-local loading_chars = {'⠇','⠋','⠙','⠸','⢰','⣠','⣄'}
+local loading_chars = {'⠇','⠋','⠙','⠸','⢰','⣠','⣄','⡆'}
 local cursor = 1
 
 function set_loading_interval(interval, callback)
