@@ -555,7 +555,10 @@ function! easycomplete#context() abort
   let l:ret['lnum'] = l:ret['curpos'][1] " 行号
   let l:ret['col'] = l:ret['curpos'][2] " 列号
   let l:ret['filetype'] = &filetype " filetype
-  let l:ret['filepath'] = expand('%:p') " filepath
+  if !exists("b:easycomplete_buffer_filepath")
+    let b:easycomplete_buffer_filepath = expand('%:p') " filepath
+  end
+  let l:ret['filepath'] = b:easycomplete_buffer_filepath
   let line = getline(l:ret['lnum']) " 当前行内容
   let l:ret['line'] = line
   let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标前敲入的内容
