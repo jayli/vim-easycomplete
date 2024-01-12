@@ -2349,7 +2349,9 @@ function! easycomplete#TextChangedI()
   " TextCHangedP 和 TextChangedI 是互斥的
   if g:env_is_nvim && easycomplete#pum#visible()
     " TextChangedP
-    " call s:RememberCtx()
+    " nvim pum 在 tab select 过程中会触发 TextchangedI，原生 pum 不应当触发
+    " 这里加一个逻辑，阻止掉 tab selecting 过程中的 textchangedp和textchangedi
+    " 事件, vim 中的逻辑不受影响
     if easycomplete#pum#InsertZizzing()
       call easycomplete#pum#InsertAwake()
     else
