@@ -63,7 +63,7 @@ function! easycomplete#ui#GetHiColor(hiName, sufix)
   if empty(hlString) | return my_color | endif
   if easycomplete#util#IsGui()
     " Gui color name
-    let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\w\\+")
+    let my_color = matchstr(hlString,"\\(\\sgui" . sufix . "=\\)\\@<=#\\{-}\\w\\+")
     if empty(my_color)
       let linksGroup = matchstr(hlString, "\\(links\\sto\\s\\+\\)\\@<=\\w\\+")
       if !empty(linksGroup)
