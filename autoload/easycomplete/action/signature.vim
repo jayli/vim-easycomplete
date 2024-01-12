@@ -20,6 +20,17 @@ function! s:close()
   call easycomplete#popup#close("float")
 endfunction
 
+function! easycomplete#action#signature#LazyRunHandle()
+  if !exists("b:signature_timer")
+    let b:signature_timer = 0
+  endif
+  if b:signature_timer > 0
+    call timer_stop(b:signature_timer)
+    let b:signature_timer = 0
+  endif
+  let b:signature_timer = timer_start(50, { -> easycomplete#action#signature#handle() })
+endfunction
+
 function! easycomplete#action#signature#handle()
   let typed = s:GetTyped()
   if easycomplete#IsBacking()
@@ -39,6 +50,7 @@ function! easycomplete#action#signature#handle()
     endif
     " call s:close()
   endif
+  let b:signature_timer = 0
 endfunction
 
 function! easycomplete#action#signature#FireCondition()

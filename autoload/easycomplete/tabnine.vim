@@ -91,10 +91,10 @@ function! easycomplete#tabnine#SuggestFlagCheck()
 endfunction
 
 function! s:flush()
-  if !easycomplete#tabnine#ready()
+  if exists("s:tabnine_hint_snippet") && empty(s:tabnine_hint_snippet)
     return
   endif
-  if exists("s:tabnine_hint_snippet") && empty(s:tabnine_hint_snippet)
+  if !easycomplete#tabnine#ready()
     return
   endif
   call s:tabnine_toolkit.delete_hint()

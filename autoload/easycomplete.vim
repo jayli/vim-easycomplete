@@ -2358,7 +2358,7 @@ function! easycomplete#TextChangedI()
     call easycomplete#typing()
     if easycomplete#ok('g:easycomplete_signature_enable')
       " hack for #281
-      call timer_start(50, { -> easycomplete#action#signature#handle()})
+      call easycomplete#action#signature#LazyRunHandle()
     endif
     let b:old_changedtick = b:changedtick
     return ""
