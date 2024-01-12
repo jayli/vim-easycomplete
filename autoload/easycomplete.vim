@@ -2091,6 +2091,7 @@ function! s:flush()
     call s:CloseCompletionMenu()
   endif
   let s:easycomplete_start_pos = 0
+  let b:old_changedtick = 0
 endfunction
 
 function! s:ResetCompletedItem()
@@ -2346,7 +2347,11 @@ function! easycomplete#TextChangedI()
   if g:env_is_nvim && easycomplete#pum#visible()
     " TextChangedP
     " call s:RememberCtx()
-    doautocmd <nomodeline> User easycomplete_pum_textchanged_p
+    if easycomplete#pum#InsertZizzing()
+      call easycomplete#pum#InsertAwake()
+    else
+      doautocmd <nomodeline> User easycomplete_pum_textchanged_p
+    endif
   else
     " TextChangedI
     call easycomplete#tabnine#flush()
@@ -2474,6 +2479,7 @@ function! easycomplete#BufEnter()
     endif
     call timer_start(1600, { -> easycomplete#lint() })
   endif
+  call s:flush()
 endfunction
 
 function! easycomplete#finish()

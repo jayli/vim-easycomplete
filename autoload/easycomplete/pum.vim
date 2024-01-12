@@ -24,6 +24,9 @@ let s:default_scroll_bar_pot = {
 let s:pum_window = 0
 let s:pum_buffer = 0
 let s:pum_direction = ""
+" Insert word 的动作会触发 TextChangedI → TextChangedP → TypingMatch
+" 这里要让 TextChangedI 躲过去，设置一个标志位
+let s:pum_insert_word_timer = 0
 
 " pum 高亮所需的临时样式 match id
 let g:easycomplete_match_id = 0
@@ -424,6 +427,7 @@ function! easycomplete#pum#SetWordBySelecting()
   let backing_count = cursor_left - pum_pos.pos[1] - 2 
   let oprator_str = repeat("\<bs>", backing_count)
   let word = get(s:curr_items[s:selected_i - 1], "word", "")
+  call s:insert_zizz()
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
@@ -460,6 +464,25 @@ function! s:InsertWord(word)
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
   silent! noa call complete(startcol, [])
   execute 'noa set completeopt='.saved_completeopt
+endfunction
+
+function! s:insert_zizz()
+  if easycomplete#pum#InsertZizzing()
+    call timer_stop(s:pum_insert_word_timer)
+  endif
+  let s:pum_insert_word_timer = timer_start(500, { -> s:insert_awake() })
+endfunction
+
+function! s:insert_awake()
+  let s:pum_insert_word_timer = 0
+endfunction
+
+function! easycomplete#pum#InsertAwake()
+  call s:insert_awake()
+endfunction
+
+function! easycomplete#pum#InsertZizzing()
+  return s:pum_insert_word_timer > 0
 endfunction
 
 function! easycomplete#pum#select(line_index)
