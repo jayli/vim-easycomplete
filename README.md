@@ -128,7 +128,6 @@ Global configurations
 | `g:easycomplete_diagnostics_enable`  | 1             | Enable diagnostics                                            |
 | `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
-| `g:easycomplete_fuzzymatch_hlgroup`  | `""`          | Custom fuzzy matching charactors Highlight group name         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 
 Typing `:h easycomplete` for help.

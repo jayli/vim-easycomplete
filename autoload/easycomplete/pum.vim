@@ -461,6 +461,7 @@ function! s:InsertWord(word)
     noa setl textwidth=0
     call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
   endif
+  call s:insert_zizz()
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
   silent! noa call complete(startcol, [])
   execute 'noa set completeopt='.saved_completeopt
