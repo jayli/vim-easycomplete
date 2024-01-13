@@ -8,23 +8,33 @@ local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 function Export.nvim_init_tabnine_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
   local normal_bg = vim.fn["easycomplete#ui#GetBgColor"]("Normal")
+
+
   local linenr_fg = vim.fn["easycomplete#ui#GetFgColor"]("LineNr")
+
+  local snippet_fg = ""
+  if vim.fn["easycomplete#ui#HighlightGroupExists"]("EasySnippets") then
+    snippet_fg = vim.fn["easycomplete#ui#GetFgColor"]("EasySnippets")
+  else
+    snippet_fg = linenr_fg
+  end
+
   if vim.fn.matchstr(cursorline_bg, "^\\d\\+") ~= "" then
     cursorline_bg = vim.fn.str2nr(cursorline_bg)
   end
   if vim.fn.matchstr(normal_bg, "^\\d\\+") ~= "" then
     normal_bg = vim.fn.str2nr(normal_bg)
   end
-  if vim.fn.matchstr(linenr_fg, "^\\d\\+") ~= "" then
-    linenr_fg = vim.fn.str2nr(linenr_fg)
+  if vim.fn.matchstr(snippet_fg, "^\\d\\+") ~= "" then
+    snippet_fg = vim.fn.str2nr(snippet_fg)
   end
 
   vim.api.nvim_set_hl(0, "TabNineSuggestionFirstLine", {
     bg = cursorline_bg,
-    fg = linenr_fg
+    fg = snippet_fg
   })
   vim.api.nvim_set_hl(0, "TabNineSuggestionNoneFirstLine", {
-    fg = linenr_fg,
+    fg = snippet_fg,
     bg = normal_bg
   })
 end

@@ -271,6 +271,7 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasyFunction`: Function kind icon style. links to "Conditional" by default.
 - `EasySnippet`: Snippet kind icon style. links to "Number" by default.
 - `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
+- `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
 
 More examples here: [full custom config](custom-config.md)
 
