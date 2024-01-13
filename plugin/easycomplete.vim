@@ -34,11 +34,11 @@ if g:easycomplete_nerd_font == 1
         \    },
         \   "snip": {
         \      "kind":get(kind_icons, "snip", ""),
-        \      "menu":"code"
+        \      "menu":"Code"
         \    },
         \   "dict": {
         \      "kind":get(kind_icons, "dict", "󰈍"),
-        \      "menu":"[Dict]",
+        \      "menu":"Dict",
         \    },
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󱙺"),
