@@ -116,4 +116,35 @@ function EasyComplete.normalize_sort(items)
   return items
 end
 
+
+function EasyComplete.distinct(items)
+  local unique_values = {}
+  local result = {}
+  table.sort(items)
+  for _, value in ipairs(items) do
+    if #value == 0 or #value == 1 then
+      -- 空字符串，一个长度的字符
+      -- continue
+    elseif tonumber(value:sub(1,1)) ~= nil then
+      -- 首字符是数字
+      -- continue
+    elseif not unique_values[value] then
+      unique_values[value] = true
+      table.insert(result, value)
+    end
+  end
+  return result
+end
+
+-- 返回去重之后的列表
+function EasyComplete.get_buf_keywords(lines)
+  local buf_keywords = {}
+  for _, line in ipairs(lines) do
+    for word in line:gmatch("[0-9a-zA-Z_#]+") do
+      table.insert(buf_keywords, word)
+    end
+  end
+  return buf_keywords
+end
+
 return EasyComplete

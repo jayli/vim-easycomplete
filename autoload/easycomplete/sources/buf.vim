@@ -1,4 +1,6 @@
 
+let s:lua_toolkit = easycomplete#util#HasLua() ? v:lua.require("easycomplete") : v:null
+
 function! easycomplete#sources#buf#completor(opt, ctx)
   let l:typing = a:ctx['typing']
 
@@ -24,11 +26,13 @@ endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(typing)
-  " preform: 0.036s ~ 0.041s each time
+  " 性能测试，3万个单词两级
+  " lua: 0.0644
+  " vim: 0.2573
   let bufkeyword_list = s:GetBufKeywordsList(a:typing)
   let dickeyword_list = s:GetDicKeywordsList(a:typing)
-  let combined_all  = bufkeyword_list + dickeyword_list
-  call s:ArrayDistinct(combined_all)
+  let combined_all_temp  = bufkeyword_list + dickeyword_list
+  let combined_all = s:ArrayDistinct(combined_all_temp)
   let combined_list = combined_all
   let ret_list = []
   for word in combined_list
@@ -91,9 +95,16 @@ function! s:GetBufKeywordsList(typing)
     else
       let lines = getbufline(buf.bufnr, 1 ,"$")
       let local_kwlist = []
-      for line in lines
-        let local_kwlist += split(line,'[^A-Za-z0-9_#]')
-      endfor
+      " 性能测试：分检出 84238 个单词
+      " lua: 0.021
+      " vim: 0.147
+      if easycomplete#util#HasLua()
+        let local_kwlist = s:lua_toolkit.get_buf_keywords(lines)
+      else
+        for line in lines
+          let local_kwlist += split(line,'[^A-Za-z0-9_#]')
+        endfor
+      endif
       let g:easycomplete_bufkw_storage[nr_key] = local_kwlist
       let g:easycomplete_bufkw_storage[tk_key] = buf["changedtick"]
       let tmpkeywords += local_kwlist
@@ -149,8 +160,8 @@ function! s:GetGlobalDictKeyword()
       call extend(localdicts, split(line, s:KeywordsRegx()))
     endfor
 
-    call s:ArrayDistinct(localdicts)
-    let dictkeywords += localdicts
+    let localdicts_uniq = s:ArrayDistinct(localdicts)
+    let dictkeywords += localdicts_uniq
   endfor
   let b:easycomplete_global_dict = dictkeywords
   return dictkeywords
@@ -175,9 +186,14 @@ endfunction
 
 " List 去重，类似 uniq，纯数字要去掉
 function! s:ArrayDistinct(list)
-  call uniq(sort(a:list))
-  call filter(a:list, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
-  return a:list 
+  if easycomplete#util#HasLua()
+    let ret = s:lua_toolkit.distinct(a:list)
+  else
+    call uniq(sort(a:list))
+    call filter(a:list, '!empty(v:val) && !str2nr(v:val) && len(v:val) != 1')
+    let ret = a:list
+  endif
+  return ret
 endfunction
 
 function! s:log(...)
