@@ -2346,6 +2346,7 @@ function! easycomplete#TextChangedI()
   if g:env_is_nvim
     call easycomplete#tabnine#LoadingStop()
   endif
+  call easycomplete#tabnine#flush()
   " TextCHangedP 和 TextChangedI 是互斥的
   if g:env_is_nvim && easycomplete#pum#visible()
     " TextChangedP
@@ -2359,7 +2360,6 @@ function! easycomplete#TextChangedI()
     endif
   else
     " TextChangedI
-    call easycomplete#tabnine#flush()
     call easycomplete#typing()
     if easycomplete#ok('g:easycomplete_signature_enable')
       " hack for #281
