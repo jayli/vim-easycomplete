@@ -1,5 +1,6 @@
 """ 常用的工具函数
 scriptencoding utf-8
+
 " get file extention {{{
 function! easycomplete#util#extention()
   let filename = fnameescape(fnamemodify(bufname('%'),':p'))
@@ -420,6 +421,10 @@ function! easycomplete#util#FuzzySearch(needle, haystack)
 endfunction
 
 function! s:FuzzySearchRegx(needle, haystack)
+  " if easycomplete#util#HasLua()
+  "   let s:lua_toolkit = v:lua.require("easycomplete")
+  "   return s:lua_toolkit.fuzzy_search(a:needle, a:haystack)
+  " else
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)
   if qlen > tlen
@@ -438,6 +443,7 @@ function! s:FuzzySearchRegx(needle, haystack)
   endif
   let matching = (a:haystack =~ needle_ls_regx)
   return matching ? v:true : v:false
+  " endif
 endfunction
 
 function! s:FuzzySearchSpeedUp(needle, haystack)

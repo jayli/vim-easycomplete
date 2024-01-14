@@ -110,9 +110,18 @@ function! s:GetBufKeywordsList(typing)
       let tmpkeywords += local_kwlist
     endif
   endfor
-  " preform 0.020s for a 10222 -> 611 filter
-  call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
-  let keyword_list = tmpkeywords
+  if exists("*matchfuzzy")
+    " lua 和 vim 的 matchfuzzy 速度对比，vim 更快
+    "    单词数→匹配出的结果个数
+    " lua 53377→9748   0.028384
+    " vim 53377→9748   0.010808
+    " let keyword_list = s:lua_toolkit.matchfuzzy(tmpkeywords, a:typing)
+    let keyword_list = matchfuzzy(tmpkeywords, a:typing, {"limit": 1000})
+  else
+    call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
+    let keyword_list = tmpkeywords
+  endif
+
   return keyword_list
 endfunction
 
