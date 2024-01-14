@@ -56,12 +56,14 @@ function! easycomplete#util#call(method, args) abort
   try
     if type(a:method) == 2 " 是函数
       let TmpCallback = function(a:method, a:args)
-      call TmpCallback()
+      return TmpCallback()
     endif
+    let res = 0
     if type(a:method) == type("string") " 是字符串
-      call call(a:method, a:args)
+      let res = call(a:method, a:args)
     endif
     let g:easycomplete_popup_timer = -1
+    return res
   catch /.*/
     return 0
   endtry
@@ -1825,14 +1827,31 @@ endfunction
 "   call s:DoSth()
 "   call s:StopRecord()
 function! s:StartRecord()
-  let s:easy_start = reltime()
+  if !exists("s:easycomplete_recoding_start")
+    let s:easycomplete_recoding_start = []
+  endif
+  let s:easycomplete_recoding_start += [reltime()]
 endfunction
 
 function! s:StopRecord(...)
   let msg = exists('a:1') ? a:1 : "functinal speed"
-  let sp = reltimestr(reltime(g:easycomplete_start))
-  call call(function('s:console'), [msg, reltimestr(reltime(s:easy_start))])
-endfunction " }}}
+  " get recoded start time
+  if len(s:easycomplete_recoding_start) > 0
+    let start_time = s:easycomplete_recoding_start[-1]
+    call remove(s:easycomplete_recoding_start, -1)
+    call call(function('s:console'), [msg, reltimestr(reltime(start_time))])
+  endif
+endfunction
+
+function! easycomplete#util#StartRecord()
+  call s:StartRecord()
+endfunction
+
+function! easycomplete#util#StopRecord(p)
+  call s:StopRecord(a:p)
+endfunction
+
+" }}}
 
 " fullfill {{{
 " "2"   -> "002"
