@@ -162,8 +162,9 @@ function EasyComplete.fuzzy_search(needle, haystack)
   -- string.find("easycomplete#context","[0-9a-z#]*z[0-9a-z#]*t[0-9a-z#_]*")
   -- string.gsub("easy", "(.)", "-%1")
   local middle_regx = "[0-9a-z#_]*"
-  local needle_ls_regx = string.gsub(needle, "(.)", middle_regx .. "%1") .. middle_regx
-  if string.find(haystack, needle_ls_regx) ~= nil then
+  local needle_ls_regx = string.gsub(needle, "(.)", "%1" .. middle_regx)
+  local idx = string.find(haystack, needle_ls_regx)
+  if idx ~= nil and idx <= 5 then
     return true
   else
     return false
@@ -171,7 +172,7 @@ function EasyComplete.fuzzy_search(needle, haystack)
 end
 
 -- vim.fn.matchfuzzy 的重新实现，只返回结果，不返回分数
-function EasyComplete.matchfuzzy(match_list, needle)
+function EasyComplete.matchfuzzy_and_filter(match_list, needle)
   local result = {}
   for _, item in ipairs(match_list) do
     if EasyComplete.fuzzy_search(needle, item) then
