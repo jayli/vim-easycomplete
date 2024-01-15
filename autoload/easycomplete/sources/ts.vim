@@ -20,7 +20,7 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:locs = v:null
   let s:menu_flag = "[TS]"
   let s:rename_text = ""
-  let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs"]
+  let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs","ets"]
   " 三种提示默认支持，和coc默认配置保持一致:
   " syntaxDiag/semanticDiag/suggestionDiag
   " requestCompleted表示一轮events完成
