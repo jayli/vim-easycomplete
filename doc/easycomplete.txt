@@ -71,25 +71,61 @@ Typing `:h easycomplete` for help.
 
 All commands:
 
-| Command                           | Description                                     |
-|-----------------------------------|-------------------------------------------------|
-| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe         |
-| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`             |
-| `:EasyCompleteDisable`            | Disable EasyComplete                            |
-| `:EasyCompleteEnable`             | Enable EasyComplete                             |
-| `:EasyCompleteGotoDefinition`     | Goto definition position                        |
-| `:EasyCompleteReference`          | Find references                                 |
-| `:EasyCompleteRename`             | Rename                                          |
-| `:EasyCompleteCheck`              | Checking LSP server                             |
-| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                        |
-| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                            |
-| `:EasyCompleteProfileStart`       | Start record diagnostics message                |
-| `:EasyCompleteProfileStop`        | Stop record diagnostics  message                |
-| `:EasyCompleteLint`               | Do diagnostic                                   |
-| `:LintEasyComplete`               | Do diagnostic                                   |
-| `:BackToOriginalBuffer`           | Return to the position before the reference jump|
-| `:DenoCache`                      | Do Deno Cache for downloading modules           |
-| `:CleanLog`                       | close quickfix window                           |
+| Command                           | Description                                         |
+|-----------------------------------|-----------------------------------------------------|
+| `:EasyCompleteInstallServer`      | Install LSP server for current fileytpe             |
+| `:InstallLspServer`               | Same as `EasyCompleteInstallServer`                 |
+| `:EasyCompleteDisable`            | Disable EasyComplete                                |
+| `:EasyCompleteEnable`             | Enable EasyComplete                                 |
+| `:EasyCompleteGotoDefinition`     | Goto definition position                            |
+| `:EasyCompleteReference`          | Find references                                     |
+| `:EasyCompleteRename`             | Rename                                              |
+| `:EasyCompleteCheck`              | Checking LSP server                                 |
+| `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                            |
+| `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                                |
+| `:EasyCompleteProfileStart`       | Start record diagnostics message                    |
+| `:EasyCompleteProfileStop`        | Stop record diagnostics  message                    |
+| `:EasyCompleteLint`               | Do diagnostic                                       |
+| `:LintEasyComplete`               | Do diagnostic                                       |
+| `:BackToOriginalBuffer`           | Return to the position before the reference jump    |
+| `:DenoCache`                      | Do Deno Cache for downloading modules               |
+| `:CleanLog`                       | close quickfix window                               |
+
+===============================================================================
+
+Configuration
+
+Example configuration with lua:>
+
+  -- Highlight the symbol when holding the cursor if you need it
+  vim.g.easycomplete_cursor_word_hl = 1
+  -- Using nerdfont is highly recommended
+  vim.g.easycomplete_nerd_font = 1
+
+  -- GoTo code navigation
+  vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+  vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+  vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+  vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+
+<
+
+Example configuration with vim script:>
+
+" Highlight the symbol when holding the cursor
+let g:easycomplete_cursor_word_hl = 1
+" Using nerdfont is highly recommended
+let g:easycomplete_nerd_font = 1
+
+" GoTo code navigation
+noremap gr :EasyCompleteReference<CR>
+noremap gd :EasyCompleteGotoDefinition<CR>
+noremap rn :EasyCompleteRename<CR>
+noremap gb :BackToOriginalBuffer<CR>
+
+<
+
+`set updatetime=300` (in lua `vim.opt.updatetime = 300`) is highly recommended.
 
 ===============================================================================
 
@@ -155,7 +191,7 @@ Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. Config TabNine v
 
   let g:easycomplete_tabnine_config = {
       \ 'line_limit': 1000,
-      \ 'max_num_result' : 10,
+      \ 'max_num_result' : 3
       \ }
 <
 
