@@ -136,11 +136,11 @@ function! s:OpenPum(startcol, lines)
     let winid = s:OpenFloatWindow(s:pum_buffer, pum_opts, hl)
     let s:pum_window = winid
     call s:hl()
-    let s:original_ctx = b:typing_ctx
+    let s:original_ctx = deepcopy(b:typing_ctx)
   else
     " 已经存在的 windowid 用 nvim_win_set_config
     call nvim_win_set_config(s:pum_window, pum_opts)
-    let s:original_ctx = b:typing_ctx
+    let s:original_ctx = deepcopy(b:typing_ctx)
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
@@ -464,6 +464,7 @@ function! s:InsertWord(word)
   call s:insert_zizz()
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
   silent! noa call complete(startcol, [])
+  call easycomplete#SnapShoot()
   execute 'noa set completeopt='.saved_completeopt
 endfunction
 

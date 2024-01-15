@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -59,7 +59,7 @@ let g:easycomplete_complete_taskqueue = []
 " python，这里留一个小的富裕，设置 80 比较合适
 let g:easycomplete_popup_width = 80
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
-let b:typing_ctx = {}
+let g:easycomplete_typing_ctx = {}
 let b:old_changedtick = 0
 let g:easycomplete_backing = 0
 " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
@@ -91,7 +91,7 @@ function! easycomplete#_enable()
   endif
   let b:easycomplete_loaded_done = 1
   call s:errlog("[LOG]", "Easycomplete Startup", easycomplete#util#GetCurrentFullName())
-  let b:typing_ctx = easycomplete#context()
+  call s:SnapShoot()
   doautocmd <nomodeline> User easycomplete_default_plugin
   doautocmd <nomodeline> User easycomplete_custom_plugin
   call s:SetCompleteOption()
@@ -484,14 +484,10 @@ endfunction
 
 function! s:BackChecking()
   let curr_ctx = easycomplete#context()
-  if !exists('b:typing_ctx')
-    let b:typing_ctx = easycomplete#context()
-  endif
-  let old_ctx = deepcopy(b:typing_ctx)
-  let b:typing_ctx = curr_ctx
+  let old_ctx = deepcopy(g:easycomplete_typing_ctx)
+  " call s:SnapShoot(curr_ctx)
   if empty(curr_ctx) || empty(old_ctx) | return v:false | endif
-  if get(curr_ctx, 'lnum') == get(old_ctx,'lnum')
-        \ && strlen(get(old_ctx,'typed',"")) >= 2
+  if get(curr_ctx, 'lnum') == get(old_ctx,'lnum') && strlen(get(old_ctx,'typed',"")) >= 2
     if curr_ctx['typed'] ==# old_ctx['typed'][:-2]
       " 单行后退非到达首字母的后退
       return v:true
@@ -559,10 +555,10 @@ function! easycomplete#context() abort
     let b:easycomplete_buffer_filepath = expand('%:p') " filepath
   end
   let l:ret['filepath'] = b:easycomplete_buffer_filepath
-  let line = getline(l:ret['lnum']) " 当前行内容
-  let l:ret['line'] = line
-  let l:ret['typed'] = strpart(line, 0, l:ret['col']-1) " 光标前敲入的内容
-  let l:ret['char'] = strpart(line, l:ret['col']-2, 1) " 当前单个字符
+  let l:line = getline(l:ret['lnum']) " 当前行内容
+  let l:ret['line'] = l:line
+  let l:ret['typed'] = strpart(l:line, 0, l:ret['col']-1) " 光标前敲入的内容
+  let l:ret['char'] = strpart(l:line, l:ret['col']-2, 1) " 当前单个字符
   let l:ret['typing'] = s:GetTypingWord() " 当前敲入的单词
   let l:ret['startcol'] = l:ret['col'] - strlen(l:ret['typing']) " 单词起始位置
   return l:ret
@@ -778,6 +774,7 @@ function! easycomplete#typing()
   if g:env_is_vim && back_checking
     let g:easycomplete_backing = 1
     call s:BackingCompleteHandler()
+    call s:SnapShoot()
     return ""
   endif
   if g:env_is_nvim && back_checking
@@ -823,7 +820,7 @@ function! easycomplete#typing()
     return ""
   endif
 
-  let b:typing_ctx = easycomplete#context()
+  call s:SnapShoot()
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
   return ""
@@ -1126,11 +1123,29 @@ function! s:CompleteMatchAction()
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)
-    let b:typing_ctx = ctx
+    call s:SnapShoot(ctx)
   catch
     call s:log('[CompleteMatchAction]', v:exception)
     call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
   endtry
+endfunction
+
+function! s:SnapShoot(...)
+  if empty(a:000)
+    let ctx = easycomplete#context()
+  else
+    let ctx = a:1
+  endif
+  let ctx = easycomplete#context()
+  call s:SetTypingCtx(ctx)
+endfunction
+
+function! s:SetTypingCtx(ctx)
+  let g:easycomplete_typing_ctx = deepcopy(a:ctx)
+endfunction
+
+function! easycomplete#SnapShoot(...)
+  return call('s:SnapShoot', a:000)
 endfunction
 
 function! easycomplete#CompleteChanged()
@@ -1145,7 +1160,7 @@ function! easycomplete#CompleteChanged()
     call s:CloseCompleteInfo()
     return
   endif
-  let b:typing_ctx = easycomplete#context()
+  " call s:SnapShoot()
   " 改成异步，避免按住tab时连续触发completechanged会频繁大量调用
   call s:StopAsyncRun()
   call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 5)
@@ -1223,22 +1238,6 @@ function! s:ShowCompleteInfoWithoutTimer()
   endif
 endfunction
 
-" pum 的位置发生了偏转，自定义 pum 触碰到右边距时会发生
-" 实测无法正常及时检测是否发生偏转
-function! s:PumDeflect()
-  if !easycomplete#pum#visible() | return v:false | endif
-  if empty(b:typing_ctx) | return v:false | endif
-  let pum_pos = easycomplete#pum#PumGetPos()
-  let cursor_left = easycomplete#pum#CursorLeft()
-  if cursor_left - (b:typing_ctx.col - b:typing_ctx.startcol) == pum_pos.col + 1
-    " 未偏转
-    return v:false
-  else
-    " 发生了偏转
-    return v:true
-  endif
-endfunction
-
 function easycomplete#ShowCompleteInfo(info)
   call s:ShowCompleteInfo(a:info)
 endfunction
@@ -1272,10 +1271,6 @@ function! easycomplete#SetMenuInfo(name, info, menu_flag)
   endfor
 endfunction
 
-function! s:RememberCtx()
-  let b:typing_ctx = easycomplete#context()
-endfunction
-
 function! easycomplete#CleverTab()
   if !easycomplete#ok('g:easycomplete_enable')
     return "\<Tab>"
@@ -1286,7 +1281,7 @@ function! easycomplete#CleverTab()
   elseif g:env_is_nvim && easycomplete#pum#visible()
     call s:zizz()
     call easycomplete#pum#next()
-    call timer_start(5, { -> s:RememberCtx()})
+    call timer_start(5, { -> s:SnapShoot()})
     return easycomplete#pum#SetWordBySelecting()
   else
     if easycomplete#tabnine#SnippetReady()
@@ -1353,7 +1348,7 @@ function! easycomplete#CleverShiftTab()
   else
     if easycomplete#pum#visible()
       call easycomplete#pum#prev()
-      call timer_start(5, { -> s:RememberCtx()})
+      call timer_start(5, { -> s:SnapShoot()})
       return easycomplete#pum#SetWordBySelecting()
     else
       return ""
@@ -1462,8 +1457,6 @@ function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)
   let cursor_line = getcurpos()[1] - backline
   let cursor_row = a:start_row
   " call cursor(cursor_line, cursor_row)
-  " ignore here
-  call s:console(backline, cursor_line, cursor_row)
 endfunction
 
 function! s:CursorExpandableSnipBackword(back)
@@ -2073,7 +2066,7 @@ function! s:flush()
   call s:ResetCompleteCache()
   call s:ResetCompleteTaskQueue()
   let g:easycomplete_firstcomplete_ctx = {}
-  let b:typing_ctx = easycomplete#context()
+  " call s:SnapShoot()
   let g:easycomplete_completechanged_event = {}
   if s:first_render_timer > 0
     call timer_stop(s:first_render_timer)
@@ -2405,6 +2398,7 @@ function! easycomplete#TextChangedP()
     if s:BackChecking()
       let g:easycomplete_backing = 1
       call s:BackingCompleteHandler()
+      call s:SnapShoot()
     else
       let g:easycomplete_backing = 0
       " 首次激发不走这里的逻辑，走 Textchangedi 里的逻辑
@@ -2431,6 +2425,7 @@ function! easycomplete#TextChangedP()
       return
     endif
     if s:OrigionalPosition() || g:easycomplete_first_complete_hit != 1
+      call s:SnapShoot()
       return
     endif
     let g:easycomplete_start = reltime()
@@ -2461,7 +2456,7 @@ function! easycomplete#BufLeave()
 endfunction
 
 function! easycomplete#InsertEnter()
-  let b:typing_ctx = easycomplete#context()
+  call s:SnapShoot()
   call easycomplete#sign#DiagHoverFlush()
 endfunction
 

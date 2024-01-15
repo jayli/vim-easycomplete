@@ -524,7 +524,7 @@ augroup easycomplete#NormalBinding
   autocmd CursorMoved * call easycomplete#CursorMoved()
   autocmd BufEnter * call easycomplete#BufEnter()
   " FirstComplete Entry
-  autocmd TextChangedI * : call easycomplete#TextChangedI()
+  autocmd TextChangedI * call easycomplete#TextChangedI()
   autocmd TextChanged * call easycomplete#Textchanged()
   autocmd InsertEnter * call easycomplete#InsertEnter()
   autocmd ExitPre * call easycomplete#finish()
