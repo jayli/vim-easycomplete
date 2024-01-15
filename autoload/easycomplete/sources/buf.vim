@@ -116,7 +116,10 @@ function! s:GetBufKeywordsList(typing)
     " lua 53377→9748   0.028384
     " vim 53377→9748   0.010808
     " let keyword_list = s:lua_toolkit.matchfuzzy(tmpkeywords, a:typing)
-    let keyword_list = matchfuzzy(tmpkeywords, a:typing, {"limit": 1000})
+    " call easycomplete#util#StartRecord()
+    let keyword_list = matchfuzzy(tmpkeywords, a:typing)
+    let keyword_list = filter(keyword_list, 'stridx(v:val, "' . a:typing[0] . '") < 4')
+    " call easycomplete#util#StopRecord('matchfuzzy ' . len(tmpkeywords) . '→' . len(keyword_list))
   else
     call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
     let keyword_list = tmpkeywords
