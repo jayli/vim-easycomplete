@@ -1523,6 +1523,10 @@ function! easycomplete#util#GetLspItem(vim_item)
   return lsp_item
 endfunction " }}}
 
+function! s:filetype()
+  return getbufvar(bufnr(), "&filetype")
+endfunction
+
 " {{{ BadBoy
 " 对 lsp response 的过滤，这个过滤本来应该 lsp 给做掉，但实际 lsp
 " 偷懒都给过来了, 导致渲染很慢, v:true === isBad

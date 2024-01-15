@@ -331,7 +331,7 @@ function! s:popup(info)
     endif
     return
   endif
-  call s:InitBuf(info, 'popup', &filetype)
+  call s:InitBuf(info, 'popup',  getbufvar(bufnr(), "&filetype"))
   let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width, 'popup') - 1
   let opt = {
@@ -408,7 +408,10 @@ endfunction
 " buftype: float/popup
 " ft: filetype
 function! s:InitBuf(info, buftype, ft)
-  let ft = empty(a:ft) ? &filetype : a:ft
+  let ft = empty(a:ft) ?  getbufvar(bufnr(), "&filetype") : a:ft
+  if empty(ft)
+    let ft = "txt"
+  endif
   if !s:buf[a:buftype]
     if s:is_vim
       noa let s:buf[a:buftype] = bufadd('')
