@@ -421,6 +421,27 @@ function! easycomplete#util#FuzzySearch(needle, haystack)
 endfunction
 
 function! s:FuzzySearchRegx(needle, haystack)
+  " Lua 和 VIM 的实现 matchfuzzy 做性能对比：
+  "
+  " lua 和 vim 的只做 matchfuzzy 速度对比，vim 更快
+  "    单词数→匹配出的结果个数
+  " lua 53377→9748   0.028384
+  " vim 53377→9748   0.010808
+  "
+  " vim 中 matchfuzzy 和 filter 的速度对比，filter 比 matchfuzzy 更慢
+  "            单词数→匹配出的结果个数
+  "  matchfuzzy 58422→21372 0.018895
+  "  filter，   21372→15633 0.027022
+  "
+  " lua 和 vim 做 matchfuzzy 和 filter 一起的速度对比
+  " lua 中两个函数放一起不影响时间复杂度，基本上和单个 matchfuzzy 性能一致
+  " vim 中必须把 matchfuzzy 和 filter 分开写，多一次全局遍历，表现更慢
+  "                          单词数→匹配出的结果个数
+  " lua matchfuzzy_and_filter 58422→18010   0.024128
+  " vim matchfuzzy_and_filter 58422→18010   0.040463
+  "
+  " 结论：如果需要同时使用 filter 和 matchfuzzy 的时候优先使用 lua 做 matchfuzzy
+  "
   " if easycomplete#util#HasLua()
   "   let s:lua_toolkit = v:lua.require("easycomplete")
   "   return s:lua_toolkit.fuzzy_search(a:needle, a:haystack)

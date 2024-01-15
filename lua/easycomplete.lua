@@ -164,7 +164,7 @@ function EasyComplete.fuzzy_search(needle, haystack)
   local middle_regx = "[0-9a-z#_]*"
   local needle_ls_regx = string.gsub(needle, "(.)", "%1" .. middle_regx)
   local idx = string.find(haystack, needle_ls_regx)
-  if idx ~= nil and idx <= 5 then
+  if idx ~= nil and idx <= 2 then
     return true
   else
     return false
@@ -176,6 +176,20 @@ function EasyComplete.matchfuzzy_and_filter(match_list, needle)
   local result = {}
   for _, item in ipairs(match_list) do
     if EasyComplete.fuzzy_search(needle, item) then
+      table.insert(result, item)
+    end
+  end
+  return result
+end
+
+function EasyComplete.filter(match_list, needle)
+  local result = {}
+  for _, item in ipairs(match_list) do
+    if #item < #needle then
+      -- pass
+    elseif item == needle then
+      -- pass
+    elseif string.find(string.lower(item), "^" .. string.lower(needle)) ~= nil then
       table.insert(result, item)
     end
   end
