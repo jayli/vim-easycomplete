@@ -43,7 +43,7 @@ let s:has_scrollbar = 0
 " easycomplete#pum#CompleteInfo() 的返回和 complete_info() 保持一致
 let s:selected_i = 0
 let s:curr_items = []
-" 类似 b:typing_ctx，为了避免干扰，这里只给 pum 使用
+" 类似 g:easycomplete_typing_ctx，为了避免干扰，这里只给 pum 使用
 let s:original_ctx = {}
 " 当前编辑窗口的原始配置
 let s:original_opt = {}
@@ -136,11 +136,11 @@ function! s:OpenPum(startcol, lines)
     let winid = s:OpenFloatWindow(s:pum_buffer, pum_opts, hl)
     let s:pum_window = winid
     call s:hl()
-    let s:original_ctx = deepcopy(b:typing_ctx)
+    let s:original_ctx = deepcopy(g:easycomplete_typing_ctx)
   else
     " 已经存在的 windowid 用 nvim_win_set_config
     call nvim_win_set_config(s:pum_window, pum_opts)
-    let s:original_ctx = deepcopy(b:typing_ctx)
+    let s:original_ctx = deepcopy(g:easycomplete_typing_ctx)
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
@@ -174,8 +174,8 @@ function! easycomplete#pum#WinScrolled()
 endfunction
 
 function! s:TabNineHLNormalize(menu_items)
-  if empty(b:typing_ctx) | return a:menu_items | endif
-  let typing_word = get(b:typing_ctx, "typing", "")
+  if empty(g:easycomplete_typing_ctx) | return a:menu_items | endif
+  let typing_word = get(g:easycomplete_typing_ctx, "typing", "")
   let count_o = min([len(a:menu_items), 5])
   for k in range(count_o)
     let item = a:menu_items[k]
