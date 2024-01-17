@@ -187,11 +187,16 @@ function EasyComplete.filter(match_list, needle)
   for _, item in ipairs(match_list) do
     if #item < #needle then
       -- pass
+      goto continue
     elseif item == needle then
       -- pass
-    elseif string.find(string.lower(item), "^" .. string.lower(needle)) ~= nil then
+      goto continue
+    end
+    local idx = string.find(string.lower(item), "" .. string.lower(needle))
+    if type(idx) == type(2) and idx <= 3 then
       table.insert(result, item)
     end
+    ::continue::
   end
   return result
 end
