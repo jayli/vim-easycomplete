@@ -27,7 +27,7 @@ It contains these features:
 
 Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.6.0 or higher is required.
 
-Vim config via vim-plug with vimscript:
+Vimscript config with vim-plug:
 
 ```vim
 Plug 'jayli/vim-easycomplete'
@@ -35,14 +35,14 @@ Plug 'SirVer/ultisnips'
 ```
 Run `:PlugInstall`.
 
-Nvim config via Packer.nvim with lua:
+Lua config with Packer.nvim:
 
 ```lua
 use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 ```
 Run `:PackerInstall`
 
-[Full configuration](custom-config.md) in lua.
+[Full configuration example](custom-config.md).
 
 ## Commands
 
@@ -72,7 +72,7 @@ All commands:
 
 The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](./custom-config.md)). Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
-Example configuration with lua:
+Lua configuration:
 
 ```lua
 -- Highlight the symbol when holding the cursor if you need it
@@ -87,7 +87,7 @@ vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 ```
 
-Example configuration with vim script:
+Vimscript configuration:
 
 ```vim
 " Highlight the symbol when holding the cursor
@@ -104,13 +104,13 @@ noremap gb :BackToOriginalBuffer<CR>
 
 `set updatetime=300` (in lua `vim.opt.updatetime = 300`) is highly recommended.
 
-Global configurations
+Global configurations:
 
 | Global Configure                     | Default       | Description                                                   |
 |--------------------------------------|---------------|---------------------------------------------------------------|
 | `g:easycomplete_nerd_font`           | 0             | Using nerdfont for lsp icons                                  |
-| `g:easycomplete_menu_skin`           | `{}`          | Menu skin. [Examples](beautify-menu-items.md)                 |
-| `g:easycomplete_sign_text`           | `{}`          | Sign icons. [Examples](beautify-menu-items.md)                |
+| `g:easycomplete_menu_skin`           | `{}`          | Menu skin.                                                    |
+| `g:easycomplete_sign_text`           | `{}`          | Sign icons.                                                   |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp icons configuration                                       |
 | `g:easycomplete_tabnine_suggestion`  | 1             | Tabnine inline suggestion(for nvim only)                      |
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
@@ -273,7 +273,9 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
 - `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
 
-More examples here: [full custom config](custom-config.md)
+More examples here: [full config example](custom-config.md)
+
+My custom config:[my-custom-config](my-custom-config.md)
 
 ![截屏2023-12-30 20 25 06](https://github.com/jayli/vim-easycomplete/assets/188244/597db686-d4fe-4b25-8c39-d9b90db184cb)
 

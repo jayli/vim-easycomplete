@@ -1,6 +1,7 @@
-Full config in lua script:
+Full config in lua script with Packer.nvim:
 
 ```lua
+-- Packer.nvim
 use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 
 -- Enable the plugin. Default is on.
@@ -58,12 +59,20 @@ vim.g.easycomplete_kind_icons = {
 vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 
 -- Define highlight group for fuzzy matched charactors.
+-- All customizable highlight name:
+--  EasyPmenu
+--  EasyPmenuKind
+--  EasyPmenuExtra
+--  EasyFunction
+--  EasySnippet
+--  EasyTabNine
+--  EasySnippets
 vim.cmd[[
-    hi EasyFuzzyMatch guifg=lightblue
+  hi EasyFuzzyMatch guifg=lightblue
 ]]
 
 -- Enable Tabnine, default is on, install tabnine lsp via `:InstallLspServer tn`
-vim.g.easycomplete_tabnine_enable
+vim.g.easycomplete_tabnine_enable = 1
 -- Enable Tabnine suggestion, default is on
 vim.g.easycomplete_tabnine_suggestion = 1
 
