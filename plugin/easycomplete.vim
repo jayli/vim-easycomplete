@@ -243,9 +243,9 @@ augroup easycomplete#PluginRegister
           \ 'name': 'tn',
           \ 'whitelist': ['*'],
           \ 'completor': function('easycomplete#sources#tn#completor'),
-          \ 'constructor' :function('easycomplete#sources#tn#constructor'),
+          \ 'constructor': function('easycomplete#sources#tn#constructor'),
           \ 'command': 'TabNine',
-          \  })
+          \ })
   endif
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
