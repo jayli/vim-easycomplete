@@ -123,6 +123,9 @@ endif
 if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
 endif
+if !exists("g:easycomplete_snips_enable")
+  let g:easycomplete_snips_enable = has('python3') && exists('*UltiSnips#SnippetsInCurrentScope')
+endif
 if !exists("g:easycomplete_filetypes")
   let g:easycomplete_filetypes = {"r": {
         \ "whitelist": []
