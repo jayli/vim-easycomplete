@@ -1,12 +1,8 @@
 # Vim-EasyComplete
 
-> A Fast and Minimalism Style Completion Plugin for vim/nvim.
+It's a Fast and Minimalism Style Completion Plugin for vim/nvim. There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate AI coding assistants as well.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg?style=flat-square) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg?style=flat-square) ![](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI?style=flat-square)
-
-## Why
-
-There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate an AI coding assistant as well.
 
 ## What
 
@@ -102,7 +98,10 @@ noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
 ```
 
-`set updatetime=300` (in lua `vim.opt.updatetime = 300`) is highly recommended.
+Other optional configurations:
+
+- `set updatetime=300` (lua: `vim.opt.updatetime = 300`) is highly recommended.
+- Menu noselected by default: `setlocal completeopt+=noselect`, (lua: `vim.cmd('setlocal completeopt+=noselect')`)
 
 Global configurations:
 
