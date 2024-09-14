@@ -129,6 +129,14 @@ Global configurations:
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 
+For most of vim's default configurations, noselect is not included in completeopt, which will result in the first item of the matching menu being selected by default. To avoid this, it can add this command in your vimrc `setlocal completeopt+=noselect`. Or add this code to your `init.lua` file:
+
+```lua
+vim.cmd([[
+  setlocal completeopt+=noselect
+]])
+```
+
 Typing `:h easycomplete` for help.
 
 ## Language Support
