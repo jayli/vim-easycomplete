@@ -2021,15 +2021,7 @@ function! easycomplete#SnipSupports()
 endfunction
 
 function! s:SnipSupports()
-  if !has("python3")
-    return v:false
-  endif
-  try
-    call funcref("UltiSnips#SnippetsInCurrentScope")
-  catch /700/
-    return v:false
-  endtry
-  return v:true
+  return g:easycomplete_snips_enable ? v:true : v:false
 endfunction
 
 function! s:SnippetsInit()
