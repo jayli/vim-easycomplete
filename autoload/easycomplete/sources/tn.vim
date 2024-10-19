@@ -97,7 +97,7 @@ function! easycomplete#sources#tn#VimColonTyping(typed)
 
 endfunction
 
-function! easycomplete#sources#tn#GetGlboalSoucresItems()
+function! easycomplete#sources#tn#GetGlobalSourceItems()
   return g:easycomplete_source[s:name].complete_result
 endfunction
 
