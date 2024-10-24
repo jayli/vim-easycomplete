@@ -78,7 +78,7 @@ if g:easycomplete_nerd_font == 1
 endif
 
 if !exists("g:easycomplete_pum_format")
-  let g:easycomplete_pum_format = ["abbr", "kind", "menu"]
+  let g:easycomplete_pum_format = ["kind", "abbr", "menu"]
 endif
 
 if !exists("g:easycomplete_menu_skin")
@@ -122,6 +122,9 @@ if !exists("g:easycomplete_directory_enable")
 endif
 if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
+endif
+if !exists("g:easycomplete_snips_enable")
+  let g:easycomplete_snips_enable = has('python3') && exists('*UltiSnips#SnippetsInCurrentScope')
 endif
 if !exists("g:easycomplete_filetypes")
   let g:easycomplete_filetypes = {"r": {

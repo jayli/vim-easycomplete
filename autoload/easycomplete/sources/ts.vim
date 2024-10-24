@@ -575,8 +575,62 @@ function! easycomplete#sources#ts#CompleteCallback(item)
   call s:DoComplete(easycomplete#context(), l:easycomplete_menu_list)
 endfunction
 
+" #302
+function! s:filter(matches)
+  let ctx = easycomplete#context()
+  let matches = a:matches
+  let matches = copy(matches)
+  if ctx['typed'] =~ '\(\w\+\.\)\{-1,}$'
+    call filter(matches, function("s:TsHack_S_DotFilter"))
+  endif
+  let matches = map(copy(matches), function("s:TsHack_A_DotMap"))
+  return matches
+endfunction
+
+function! s:TsHack_S_DotFilter(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let ts_typing_word = s:TsHack_GetTsTypingWord()
+    return stridx(get(a:val, "word"), ts_typing_word) == 0
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:TsHack_A_DotMap(key, val)
+  if has_key(a:val, "abbr") && has_key(a:val, "word")
+        \ && stridx(get(a:val, "word"), ".") > 0
+    let ctx = easycomplete#context()
+    let ts_typing_word_for_map = s:TsHack_GetTsTypingWord()
+    if ctx["char"] == "."
+      let a:val.word = substitute(get(a:val, "word"), "^" . ts_typing_word_for_map, "", "g")
+      let a:val.abbr = a:val.word
+    else
+      let word = easycomplete#util#GetTypingWord()
+      let a:val.word = substitute(get(a:val, "word"), "^" . ts_typing_word_for_map[:-1 * ( 1 + strlen(word))], "", "g")
+      let a:val.abbr = a:val.word
+    endif
+    let ts_typing_word_for_map = s:TsHack_GetTsTypingWord()
+  endif
+  return a:val
+endfunction
+
+function! s:TsHack_GetTsTypingWord()
+  let start = col('.') - 1
+  let line = getline('.')
+  let width = 0
+  let regx = '[a-zA-Z0-9_.]'
+  while start > 0 && line[start - 1] =~ regx
+    let start = start - 1
+    let width = width + 1
+  endwhile
+  let word = strpart(line, start, width)
+  return word
+endfunction
+
 function! s:DoComplete(ctx, menu_list)
-  call easycomplete#complete(s:opt['name'], a:ctx, a:ctx['startcol'], a:menu_list)
+  let l:menu_list = s:filter(a:menu_list)
+  call easycomplete#complete(s:opt['name'], a:ctx, a:ctx['startcol'], l:menu_list)
 endfunction
 
 " 获取 keyword 的 More Info，menulist 是需要获取 Info 的 item 数组

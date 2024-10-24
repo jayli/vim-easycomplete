@@ -26,7 +26,7 @@ endfunction
 
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(typing)
-  " 性能测试，3万个单词两级
+  " 性能测试，3万个单词量级
   " lua: 0.0644
   " vim: 0.2573
   let bufkeyword_list = s:GetBufKeywordsList(a:typing)
@@ -112,10 +112,20 @@ function! s:GetBufKeywordsList(typing)
   endfor
   " call easycomplete#util#StartRecord()
   if easycomplete#util#HasLua()
+    " 匹配首字符
     " 58424 → 3623   0.010739
+    " 匹配前三个起始字符
+    " 53378 → 4781   0.006533
+    " 53378 → 4781   0.006361
+    " lua 的实现选择匹配前三个字符
     let keyword_list = s:lua_toolkit.filter(tmpkeywords, a:typing)
   else
+    " 匹配首字符
     " 58424 → 3623   0.082437
+    " 匹配前三个起始字符
+    " 53378 → 4781   0.102643
+    " 53378 → 4781   0.101672
+    " vim 的实现还是应该性能优先，只匹配首字符
     call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
     let keyword_list = tmpkeywords
   endif
