@@ -796,7 +796,7 @@ function! easycomplete#typing()
 
   if !easycomplete#FireCondition()
     " tabnine
-    if easycomplete#sources#tn#available() && easycomplete#sources#tn#FireCondition()
+    if s:TabnineSupports() && easycomplete#sources#tn#FireCondition()
       call s:flush()
       call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
     endif
@@ -1108,7 +1108,7 @@ function! s:CompleteMatchAction()
     call s:StopZizz()
     let ctx = easycomplete#context()
     " tabnine
-    if easycomplete#sources#tn#available()
+    if s:TabnineSupports()
       call easycomplete#sources#tn#refresh()
     endif
     let l:vim_word = s:GetTypingWordByGtx()
@@ -2016,6 +2016,10 @@ function! s:LetCompleteTaskQueueAllDone()
   endfor
 endfunction
 
+function! s:TabnineSupports() abort
+  return g:easycomplete_tabnine_enable && easycomplete#sources#tn#available()
+endfunction
+
 function! easycomplete#SnipSupports()
   return s:SnipSupports()
 endfunction
@@ -2403,7 +2407,7 @@ function! easycomplete#TextChangedP()
     let b:old_changedtick = b:changedtick
   elseif g:env_is_vim && pumvisible() && !s:zizzing()
     " tabnine, 空格 trigger 出的 tabnine menu 敲入字母后的逻辑
-    if len(easycomplete#GetStuntMenuItems()) == 0 && easycomplete#sources#tn#available()
+    if len(easycomplete#GetStuntMenuItems()) == 0 && s:TabnineSupports()
       " nvim 中的 paste text 行为异常，空格弹出 pum 后直接 paste 时，c-y 会把
       " 菜单关掉的同时也把 pasted text 清空，应该是nvim的bug，这里用c-x,c-z 代替
       if has('nvim') && empty(g:easycomplete_insert_char)
