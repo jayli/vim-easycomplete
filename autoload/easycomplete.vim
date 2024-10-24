@@ -291,7 +291,7 @@ endfunction
 " 这里调用是异步回来，需要记录上一次 complete 的 start_pos
 function! easycomplete#TabNineCompleteRendering()
   let current_items = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
-  let tabnine_result = easycomplete#sources#tn#GetGlboalSoucresItems()
+  let tabnine_result = easycomplete#sources#tn#GetGlobalSourceItems()
   let result = tabnine_result + current_items
   let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(s:GetTypingWord()) : s:easycomplete_start_pos
   call s:SecondCompleteRendering(start_pos, result)
@@ -320,7 +320,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
     let result = easycomplete#util#uniq(result)
   endif
   " 防止抖动
-  let result_all = easycomplete#sources#tn#GetGlboalSoucresItems() + result
+  let result_all = (easycomplete#sources#tn#available() ? easycomplete#sources#tn#GetGlobalSourceItems() : []) + result
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
@@ -1737,7 +1737,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 
       " tabnine
       if easycomplete#sources#tn#available()
-        let tabnine_result = easycomplete#sources#tn#GetGlboalSoucresItems()
+        let tabnine_result = easycomplete#sources#tn#GetGlobalSourceItems()
         let result = tabnine_result + copy(result)
       endif
 
