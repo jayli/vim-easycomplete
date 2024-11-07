@@ -2046,7 +2046,19 @@ function! s:SnipSupports()
   return g:easycomplete_snips_enable ? v:true : v:false
 endfunction
 
+function! s:UltiSnipsPluginInstalled()
+  try
+    call UltiSnips#SnippetsInCurrentScope()
+  catch /.*/
+    return v:false
+  endtry
+  return v:true
+endfunction
+
 function! s:SnippetsInit()
+  if !exists("g:easycomplete_snips_enable")
+    let g:easycomplete_snips_enable = has('python3') && s:UltiSnipsPluginInstalled()
+  endif
   try
     if s:SnipSupports()
       let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()

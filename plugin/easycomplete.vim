@@ -124,7 +124,7 @@ if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
 endif
 if !exists("g:easycomplete_snips_enable")
-  let g:easycomplete_snips_enable = has('python3') && exists('*UltiSnips#SnippetsInCurrentScope')
+  " 为了防止代码阻塞，在主函数中定义
 endif
 if !exists("g:easycomplete_filetypes")
   let g:easycomplete_filetypes = {"r": {
