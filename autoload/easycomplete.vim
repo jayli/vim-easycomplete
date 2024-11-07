@@ -541,6 +541,24 @@ function! easycomplete#Down()
   return "\<Down>"
 endfunction
 
+function! easycomplete#Left()
+  if g:env_is_vim
+    " do nothing
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call timer_start(5, { -> easycomplete#pum#close() })
+  endif
+  return "\<Left>"
+endfunction
+
+function! easycomplete#Right()
+  if g:env_is_vim
+    " do nothing
+  elseif g:env_is_nvim && easycomplete#pum#visible()
+    call timer_start(5, { -> easycomplete#pum#close() })
+  endif
+  return "\<Right>"
+endfunction
+
 " 参考 asynccomplete 并做了扩充
 function! easycomplete#context() abort
   let l:ret = {
