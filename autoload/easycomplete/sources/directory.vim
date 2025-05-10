@@ -162,6 +162,8 @@ function! s:TypingAPath(ctx)
   " 因为如果输入'//'紧跟<Tab>不应该出<C-X><C-U><C-N>出补全菜单
   if len(fpath) == 0 || match(prefx,"\\(\\/\\/\\|\\/\\*\\)") >= 0
     let pathDict.isPath = 0
+  elseif fpath == "/"
+    let pathDict.isPath = 0
   else
     let pathDict.isPath = 1
   endif
