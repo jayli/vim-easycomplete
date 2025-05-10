@@ -2385,6 +2385,12 @@ function! easycomplete#TextChangedI()
       call easycomplete#action#signature#LazyRunHandle()
     endif
     let b:old_changedtick = b:changedtick
+    " bugfix：有选中的情况时进行回退，pum 的弹出时机会显得错乱
+    if s:BackChecking()
+      let g:easycomplete_backing = 1
+      " call s:BackingCompleteHandler()
+      call s:SnapShoot()
+    endif
     return ""
   endif
 endfunction
