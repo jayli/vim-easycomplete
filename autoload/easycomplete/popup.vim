@@ -122,6 +122,50 @@ function! easycomplete#popup#test()
   call easycomplete#popup#float(content, 'ErrorMsg', 0, "python", [0,0], 'signature')
 endfunction
 
+function! s:GetLineNumberWidth()
+  let max_line = line('$') " 获取最后一行的行号
+  let width = strlen(max_line) " 计算最大行号的字符长度
+  return max([width, &numberwidth]) " 返回两者中的较大值，确保至少为 numberwidth 设定的值
+endfunction
+
+function! s:GetSignColumnWidth()
+  if &signcolumn == 'no'
+    return 0
+  elseif &signcolumn == 'yes' || &signcolumn == 'auto'
+    " 默认情况下，sign 列的宽度是 2（包括一个空格）
+    return 2
+  else
+    " 如果设置了具体的宽度值，则返回该值
+    return str2nr(&signcolumn)
+  endif
+endfunction
+
+function! s:lint(content, hl, ft)
+  call s:InitBuf(a:content, 'float', a:ft)
+  let screen_col_enc = win_screenpos(win_getid())[1] - 1
+  let screen_row_enc = win_screenpos(win_getid())[0] - 1
+  call s:log(screen_col_enc, screen_col_enc)
+  let p_row = screen_row_enc + winline() - 1
+  let p_col = screen_col_enc + col("$") - 1
+  let p_width = 10
+  let p_height = 1
+  let opt = extend({
+        \   'relative':'editor',
+        \   'focusable': v:true,
+        \   'style':'minimal',
+        \   'filetype': empty(a:ft) ? "help" : a:ft
+        \ },
+        \ {
+        \   'width': p_width,
+        \   'height': p_height,
+        \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth(),
+        \   'row': p_row
+        \ })
+  " 判断右侧是否有足够的空间
+  call easycomplete#popup#close("float")
+  call s:NVimShow(opt, "float", 'lint')
+endfunction
+
 " content, hl, direction: 0, 向下，1，向上
 " ft, 文件类型
 " offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
@@ -137,6 +181,8 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     return
   endif
   if a:float_type == "lint"
+    " call s:lint(a:content, a:hl, a:ft)
+    " return
     let float_maxwidth = g:easycomplete_lint_float_width
   endif
   if a:float_type == "signature"
