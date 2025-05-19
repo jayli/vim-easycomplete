@@ -114,6 +114,7 @@ function! easycomplete#_enable()
   endif
   call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
   call timer_start(400, { -> s:SnippetsInit()})
+  exec "hi EasyLintStyle guifg=NONE"
 endfunction
 
 function! s:SetCompleteOption()
