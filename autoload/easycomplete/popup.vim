@@ -158,7 +158,7 @@ function! s:lint(content, hl, ft)
   let distance = s:GetCurrentLineLastCharToWindowRightEdgeDistance()
   try
     if distance < 5
-      call s:log(a:content)
+      echo a:content[0]
       return
     endif
     let l:content = [easycomplete#util#lintTrim(a:content[0], distance, 2)]
