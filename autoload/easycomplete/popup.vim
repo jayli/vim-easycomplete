@@ -168,32 +168,40 @@ function! s:GetCurrentLineLastCharToWindowRightEdgeDistance()
 endfunction
 
 function! s:lint(content, hl, ft)
-  " echom s:GetCurrentLineLastCharToWindowRightEdgeDistance()
-  " return
-  call s:InitBuf(a:content, 'float', a:ft)
-  let screen_col_enc = win_screenpos(win_getid())[1] - 1
-  let screen_row_enc = win_screenpos(win_getid())[0] - 1
-  call s:log(screen_col_enc, screen_col_enc)
-  let p_row = screen_row_enc + winline() - 1
-  let p_col = screen_col_enc + col("$") - 1
-  let p_width = 10
-  let p_height = 1
-  let p_offset_right = 3
-  let opt = extend({
-        \   'relative':'editor',
-        \   'focusable': v:true,
-        \   'style':'minimal',
-        \   'filetype': empty(a:ft) ? "help" : a:ft
-        \ },
-        \ {
-        \   'width': p_width,
-        \   'height': p_height,
-        \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth() + p_offset_right,
-        \   'row': p_row
-        \ })
-  " 判断右侧是否有足够的空间
-  call easycomplete#popup#close("float")
-  call s:NVimShow(opt, "float", 'lint')
+  let distance = s:GetCurrentLineLastCharToWindowRightEdgeDistance()
+  try
+    if distance < 5
+      return
+    endif
+    let l:content = [easycomplete#util#lintTrim(a:content[0], distance, 2)]
+    call s:InitBuf(l:content, 'float', a:ft)
+    let screen_col_enc = win_screenpos(win_getid())[1] - 1
+    let screen_row_enc = win_screenpos(win_getid())[0] - 1
+    let p_row = screen_row_enc + winline() - 1
+    let p_col = screen_col_enc + col("$") - 1
+    let p_width = distance
+    let p_height = 1
+    let p_offset_right = 0
+
+    let opt = extend({
+          \   'relative':'editor',
+          \   'focusable': v:true,
+          \   'style':'minimal',
+          \   'filetype': empty(a:ft) ? "help" : a:ft
+          \ },
+          \ {
+          \   'width': p_width,
+          \   'height': p_height,
+          \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth() + p_offset_right,
+          \   'row': p_row
+          \ })
+    " 判断右侧是否有足够的空间
+    call easycomplete#popup#close("float")
+    call s:NVimShow(opt, "float", 'lint')
+  catch /.*/
+    echom v:exception
+  endtry
+
 endfunction
 
 " content, hl, direction: 0, 向下，1，向上
@@ -211,8 +219,8 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     return
   endif
   if a:float_type == "lint"
-    " call s:lint(a:content, a:hl, a:ft)
-    " return
+    call s:lint(a:content, a:hl, a:ft)
+    return
     let float_maxwidth = g:easycomplete_lint_float_width
   endif
   if a:float_type == "signature"

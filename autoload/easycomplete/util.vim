@@ -1884,6 +1884,17 @@ endfunction
 
 " }}}
 
+" lint trim()
+function! easycomplete#util#lintTrim(line_str, width, offset)
+  let real_width = a:width - a:offset
+  let line_str = a:line_str
+  if strlen(line_str) > real_width
+    return repeat(" ", a:offset) . strpart(line_str, 0, real_width)
+  else
+    return repeat(" ", real_width - strlen(line_str) + a:offset) . line_str
+  endif
+endfunction
+
 " fullfill {{{
 " "2"   -> "002"
 " "13"  -> "013"
