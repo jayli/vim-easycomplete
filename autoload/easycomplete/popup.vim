@@ -615,10 +615,16 @@ function! s:NVimShow(opt, windowtype, float_type)
   endif
   silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
-  let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
-  let fgcolor = s:GetSignGuifgAtCurrentLine()
-  call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
-  call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
+  if a:windowtype == "popup" || (a:windowtype == "float" && a:float_type == "signature")
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  elseif a:windowtype == "float" && a:float_type == "lint"
+    let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
+    let fgcolor = s:GetSignGuifgAtCurrentLine()
+    call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
+  else
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  endif
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)
