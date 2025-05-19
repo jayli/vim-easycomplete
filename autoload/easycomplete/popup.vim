@@ -576,7 +576,7 @@ endfunction
 
 function! s:GetSignGuifgAtCurrentLine()
   let l:current_line = line('.')
-  let l:signs = sign_getplaced('.', {'group': 'g999'})
+  let l:signs = sign_getplaced(bufnr(), {'group': 'g999'})
   if empty(l:signs[0]['signs'])
     return "NONE"
   endif
