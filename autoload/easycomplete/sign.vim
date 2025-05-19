@@ -498,7 +498,7 @@ function! s:PopupMsg(diagnostics_info)
   let g:easycomplete_diagnostics_popup = 1
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")
-  let showing = s:MsgNormalize(a:diagnostics_info, msg)
+  let showing = s:LintMsgNormalize(a:diagnostics_info, msg)
   let g:easycomplete_diagnostics_last_popup = showing
   let style = s:GetPopupStyle(a:diagnostics_info["severity"])
   call easycomplete#popup#float(showing, style, 0, "txt", [0,0], 'lint')
@@ -516,12 +516,14 @@ function! s:GetPopupStyle(severity)
   return style
 endfunction
 
-function! s:MsgNormalize(diagnostics_info, msg)
+function! s:LintMsgNormalize(diagnostics_info, msg)
   let tmsg = printf('[%s] (%s,%s) ',
         \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
         \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
         \ get(a:diagnostics_info, 'range')['start']['character'] + 1
         \ )
+  " 语法检查的提示语放在行末，不用那么多冗余信息，格式简化
+  let tmsg = "■ "
   if type(a:msg) == type([])
     let tmsg = tmsg . a:msg[0]
     if len(a:msg) >= 2
@@ -569,7 +571,7 @@ function! s:ShowDiagMsg(diagnostics_info)
   let g:easycomplete_diagnostics_hint = 1
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]
-  let showing = s:MsgNormalize(a:diagnostics_info, msg)
+  let showing = s:LintMsgNormalize(a:diagnostics_info, msg)
   let g:easycomplete_diagnostics_last_msg = showing
 
   " offset 的目的是确保不折行

@@ -1891,7 +1891,8 @@ function! easycomplete#util#lintTrim(line_str, width, offset)
   if strlen(line_str) > real_width
     return repeat(" ", a:offset) . strpart(line_str, 0, real_width)
   else
-    return repeat(" ", real_width - strlen(line_str) + a:offset) . line_str
+    " return repeat(" ", real_width - strlen(line_str) + a:offset) . line_str
+    return repeat(" ", a:offset) . line_str . repeat(" ", real_width - strlen(line_str))
   endif
 endfunction
 

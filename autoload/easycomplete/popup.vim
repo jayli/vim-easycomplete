@@ -141,29 +141,16 @@ function! s:GetSignColumnWidth()
 endfunction
 
 function! s:GetCurrentLineLastCharToWindowRightEdgeDistance()
-  " 获取当前行的文本
   let line = getline('.')
-
-  " 计算当前行最后一个字符的列号（包括多字节字符）
   let last_col = strchars(line)
-
-  " 获取窗口宽度
   let win_width = winwidth(0)
-
-  " 获取窗口左边缘相对于文本开头的偏移量（即窗口已经向右滚动了多少）
   let win_left_col = virtcol('$') - col('$')
-
-  " 计算最后一个字符相对于当前窗口的水平位置
   let relative_pos = last_col - win_left_col
-
-  " 如果相对位置小于窗口宽度，则直接用窗口宽度减去相对位置得到距离
-  " 否则，说明最后一个字符已经超出窗口右侧边界
   if relative_pos < win_width
     let distance = win_width - relative_pos
   else
     let distance = 0 " 或者可以设置为负值表示超出的距离
   endif
-
   return distance - (s:GetLineNumberWidth() + s:GetSignColumnWidth())
 endfunction
 
@@ -171,6 +158,7 @@ function! s:lint(content, hl, ft)
   let distance = s:GetCurrentLineLastCharToWindowRightEdgeDistance()
   try
     if distance < 5
+      call s:log(a:content)
       return
     endif
     let l:content = [easycomplete#util#lintTrim(a:content[0], distance, 2)]
@@ -586,6 +574,34 @@ function! s:VimShow(opt, windowtype, float_type)
   endif
 endfunction
 
+function! s:GetSignGuifgAtCurrentLine()
+  let l:current_line = line('.')
+  let l:signs = sign_getplaced('.', {'group': 'g999'})
+  if empty(l:signs[0]['signs'])
+    return "NONE"
+  endif
+
+  let l:find_ln = 0
+  " 四种：errro warnning information hint
+  let l:text_hl = ""
+  for item in l:signs[0]['signs']
+    if item["lnum"] == l:current_line
+      let l:find_ln = item["lnum"]
+      let l:text_hl = item["name"]
+      break
+    endif
+  endfor
+
+  if l:find_ln == 0
+    return "NONE"
+  endif
+
+  let real_name = substitute(l:text_hl,"_holder","","g")
+  let group_style = get(g:easycomplete_diagnostics_config, real_name, {"fg_color":"NONE"})
+  let fgcolor = get(group_style, "fg_color")
+  return fgcolor
+endfunction
+
 function! s:NVimShow(opt, windowtype, float_type)
   if s:is_vim | return | endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
@@ -599,7 +615,10 @@ function! s:NVimShow(opt, windowtype, float_type)
   endif
   silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
   let g:easycomplete_popup_win[a:windowtype] = winid
-  call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+  let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
+  let fgcolor = s:GetSignGuifgAtCurrentLine()
+  call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
+  call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)
