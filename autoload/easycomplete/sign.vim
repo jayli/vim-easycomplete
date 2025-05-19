@@ -517,13 +517,13 @@ function! s:GetPopupStyle(severity)
 endfunction
 
 function! s:LintMsgNormalize(diagnostics_info, msg)
-  let tmsg = printf('[%s] (%s,%s) ',
-        \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
-        \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
-        \ get(a:diagnostics_info, 'range')['start']['character'] + 1
-        \ )
+  " let tmsg = printf('[%s] (%s,%s) ',
+  "       \ toupper(get(a:diagnostics_info, 'source', 'lsp')),
+  "       \ get(a:diagnostics_info, 'range')['start']['line'] + 1,
+  "       \ get(a:diagnostics_info, 'range')['start']['character'] + 1
+  "       \ )
   " 语法检查的提示语放在行末，不用那么多冗余信息，格式简化
-  let tmsg = "■ "
+  let tmsg = "▪ "
   if type(a:msg) == type([])
     let tmsg = tmsg . a:msg[0]
     if len(a:msg) >= 2
