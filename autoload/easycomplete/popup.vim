@@ -140,7 +140,36 @@ function! s:GetSignColumnWidth()
   endif
 endfunction
 
+function! s:GetCurrentLineLastCharToWindowRightEdgeDistance()
+  " 获取当前行的文本
+  let line = getline('.')
+
+  " 计算当前行最后一个字符的列号（包括多字节字符）
+  let last_col = strchars(line)
+
+  " 获取窗口宽度
+  let win_width = winwidth(0)
+
+  " 获取窗口左边缘相对于文本开头的偏移量（即窗口已经向右滚动了多少）
+  let win_left_col = virtcol('$') - col('$')
+
+  " 计算最后一个字符相对于当前窗口的水平位置
+  let relative_pos = last_col - win_left_col
+
+  " 如果相对位置小于窗口宽度，则直接用窗口宽度减去相对位置得到距离
+  " 否则，说明最后一个字符已经超出窗口右侧边界
+  if relative_pos < win_width
+    let distance = win_width - relative_pos
+  else
+    let distance = 0 " 或者可以设置为负值表示超出的距离
+  endif
+
+  return distance - (s:GetLineNumberWidth() + s:GetSignColumnWidth())
+endfunction
+
 function! s:lint(content, hl, ft)
+  " echom s:GetCurrentLineLastCharToWindowRightEdgeDistance()
+  " return
   call s:InitBuf(a:content, 'float', a:ft)
   let screen_col_enc = win_screenpos(win_getid())[1] - 1
   let screen_row_enc = win_screenpos(win_getid())[0] - 1
@@ -149,6 +178,7 @@ function! s:lint(content, hl, ft)
   let p_col = screen_col_enc + col("$") - 1
   let p_width = 10
   let p_height = 1
+  let p_offset_right = 3
   let opt = extend({
         \   'relative':'editor',
         \   'focusable': v:true,
@@ -158,7 +188,7 @@ function! s:lint(content, hl, ft)
         \ {
         \   'width': p_width,
         \   'height': p_height,
-        \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth(),
+        \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth() + p_offset_right,
         \   'row': p_row
         \ })
   " 判断右侧是否有足够的空间
