@@ -2058,7 +2058,7 @@ endfunction
 
 function! s:SnippetsInit()
   if !exists("g:easycomplete_snips_enable")
-    let g:easycomplete_snips_enable = has('python3') && s:UltiSnipsPluginInstalled()
+    let g:easycomplete_snips_enable = exists("g:UltiSnipsDebugServerEnable")
   endif
   try
     if s:SnipSupports()
