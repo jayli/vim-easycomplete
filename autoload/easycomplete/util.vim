@@ -1599,6 +1599,16 @@ function! s:BadBoy.Dart(item, typing_word)
 endfunction
 " }}}
 
+function! easycomplete#util#IsCursorNextToLeftParen()
+  let line = getline('.')
+  let col = col('.') 
+  if col > strlen(line)
+    return v:false
+  endif
+  let next_char = line[col - 1]
+  return next_char == '('
+endfunction
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
