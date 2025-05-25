@@ -20,6 +20,7 @@ augroup easycomplete#sources#ts#InitLocalVars
   let s:locs = v:null
   let s:menu_flag = "[TS]"
   let s:rename_text = ""
+  let s:next_to_left_paren = v:false
   let s:file_extensions = ["js","jsx","ts","tsx","mjs","ejs","ets"]
   " 三种提示默认支持，和coc默认配置保持一致:
   " syntaxDiag/semanticDiag/suggestionDiag
@@ -561,9 +562,11 @@ function! easycomplete#sources#ts#CompleteCallback(item)
     return
   endif
 
+  let s:next_to_left_paren = easycomplete#util#IsCursorNextToLeftParen()
   let l:easycomplete_menu_list = map(filter(sort(copy(l:raw_list),
         \                       "s:SortTextComparator"), 'v:val.kind != "warning"'),
         \ function("s:CompleteMenuMap"))
+  let s:next_to_left_paren = v:false
   let s:request_queue_ctx = l:ctx
   if !easycomplete#SameBeginning(l:ctx, easycomplete#context())
     return
@@ -665,13 +668,13 @@ function! s:CompleteMenuMap(key, val)
         \ }
 
   if is_func
-    let ret['word'] = val_name . "()"
+    let ret['word'] = val_name . (s:next_to_left_paren ? "" : "()")
     let ret['abbr'] = val_name . "~"
     let ret['user_data'] = json_encode({
-          \ 'custom_expand': 1,
-          \ 'expandable': 1,
-          \ 'placeholder_position': strlen(val_name) + 1,
-          \ 'cursor_backing_steps': 1
+          \ 'custom_expand': (s:next_to_left_paren ? 0 : 1),
+          \ 'expandable': (s:next_to_left_paren ? 0 : 1),
+          \ 'placeholder_position': (s:next_to_left_paren ? strlen(val_name) : strlen(val_name) + 1),
+          \ 'cursor_backing_steps': (s:next_to_left_paren ? 0 : 1)
           \ })
   endif
   return ret

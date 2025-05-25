@@ -1437,6 +1437,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
   let kind_number = exists('a:val.kind_number') ? a:val.kind_number : 0
   let user_data = exists('a:val.user_data') ? a:val.user_data : ""
   let user_data_json = exists('a:val.user_data_json') ? a:val.user_data_json : {}
+  let next_to_left_paren = easycomplete#util#IsCursorNextToLeftParen()
   let ret = {
         \ "abbr":      abbr,
         \ "dup":       1,
@@ -1452,13 +1453,13 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
         \ }
   if is_func
     if stridx(word,"(") <= 0
-      let ret["word"] = word . "()"
+      let ret["word"] = word . (next_to_left_paren ? "" : "()")
       let ret['abbr'] = word . "~"
       let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
-            \ 'expandable': 1,
-            \ 'custom_expand': 1,
-            \ 'placeholder_position': strlen(word) + 1,
-            \ 'cursor_backing_steps': 1
+            \ 'expandable': (next_to_left_paren ? 0 : 1),
+            \ 'custom_expand': (next_to_left_paren ? 0 : 1),
+            \ 'placeholder_position': (next_to_left_paren ? strlen(word) : strlen(word) + 1),
+            \ 'cursor_backing_steps': (next_to_left_paren ? 0 : 1)
             \ })
       let ret['user_data'] = json_encode(user_data_json_f)
       let ret['user_data_json'] = user_data_json_f
@@ -1601,7 +1602,7 @@ endfunction
 
 function! easycomplete#util#IsCursorNextToLeftParen()
   let line = getline('.')
-  let col = col('.') 
+  let col = col('.')
   if col > strlen(line)
     return v:false
   endif
