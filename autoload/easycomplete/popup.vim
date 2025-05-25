@@ -122,40 +122,17 @@ function! easycomplete#popup#test()
   call easycomplete#popup#float(content, 'ErrorMsg', 0, "python", [0,0], 'signature')
 endfunction
 
-function! s:GetLineNumberWidth()
-  let max_line = line('$') " 获取最后一行的行号
-  let width = strlen(max_line) " 计算最大行号的字符长度
-  return max([width, &numberwidth]) " 返回两者中的较大值，确保至少为 numberwidth 设定的值
-endfunction
-
-function! s:GetSignColumnWidth()
-  if &signcolumn == 'no'
-    return 0
-  elseif &signcolumn == 'yes' || &signcolumn == 'auto'
-    " 默认情况下，sign 列的宽度是 2（包括一个空格）
-    return 2
-  else
-    " 如果设置了具体的宽度值，则返回该值
-    return str2nr(&signcolumn)
-  endif
-endfunction
-
 function! s:GetCurrentLineLastCharToWindowRightEdgeDistance()
-  let line = getline('.')
-  let last_col = strchars(line)
-  let win_width = winwidth(0)
-  let win_left_col = virtcol('$') - col('$')
-  let relative_pos = last_col - win_left_col
-  if relative_pos < win_width
-    let distance = win_width - relative_pos
-  else
-    let distance = 0 " 或者可以设置为负值表示超出的距离
-  endif
-  return distance - (s:GetLineNumberWidth() + s:GetSignColumnWidth())
+  return winwidth(0) - wincol() - s:GetCusorToLineRightEdgeDistance() + 1
+endfunction
+
+function! s:GetCusorToLineRightEdgeDistance()
+  return strchars(getline('.')) - virtcol('.') + 1
 endfunction
 
 function! s:lint(content, hl, ft)
   let distance = s:GetCurrentLineLastCharToWindowRightEdgeDistance()
+  let lensleft = s:GetCusorToLineRightEdgeDistance()
   try
     if distance < 5
       echo a:content[0]
@@ -166,7 +143,7 @@ function! s:lint(content, hl, ft)
     let screen_col_enc = win_screenpos(win_getid())[1] - 1
     let screen_row_enc = win_screenpos(win_getid())[0] - 1
     let p_row = screen_row_enc + winline() - 1
-    let p_col = screen_col_enc + col("$") - 1
+    let p_col = screen_col_enc + wincol() - 1
     let p_width = distance
     let p_height = 1
     let p_offset_right = 0
@@ -180,7 +157,7 @@ function! s:lint(content, hl, ft)
           \ {
           \   'width': p_width,
           \   'height': p_height,
-          \   'col': p_col + s:GetLineNumberWidth() + s:GetSignColumnWidth() + p_offset_right,
+          \   'col': p_col + lensleft + p_offset_right,
           \   'row': p_row
           \ })
     " 判断右侧是否有足够的空间
