@@ -475,20 +475,22 @@ function! easycomplete#sign#LintPopup()
   let ctx = easycomplete#context()
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
   if empty(diagnostics_info)
-    call easycomplete#sign#DiagHoverFlush()
-    return
-  else
-    if type(g:easycomplete_diagnostics_last_popup) == type([]) && !empty(g:easycomplete_diagnostics_last_popup)
-      let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup[0]
-    else
-      let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup
-    endif
-    if g:easycomplete_diagnostics_last_msg != g_easycomplete_diagnostics_last_popup
+    let diagnostics_info = s:GetDiagnosticsInfoByLine(ctx["lnum"])
+    if empty(diagnostics_info)
       call easycomplete#sign#DiagHoverFlush()
+      return
     endif
-    call s:StopAsyncRun()
-    call s:AsyncRun(function("s:PopupMsg"), [diagnostics_info], 100)
   endif
+  if type(g:easycomplete_diagnostics_last_popup) == type([]) && !empty(g:easycomplete_diagnostics_last_popup)
+    let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup[0]
+  else
+    let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup
+  endif
+  if g:easycomplete_diagnostics_last_msg != g_easycomplete_diagnostics_last_popup
+    call easycomplete#sign#DiagHoverFlush()
+  endif
+  call s:StopAsyncRun()
+  call s:AsyncRun(function("s:PopupMsg"), [diagnostics_info], 50)
 endfunction
 
 function! s:PopupMsg(diagnostics_info)
@@ -546,7 +548,8 @@ function! easycomplete#sign#LintCurrentLine()
     return
   endif
   let ctx = easycomplete#context()
-  let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
+  " let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
+  let diagnostics_info = s:GetDiagnosticsInfoByLine(ctx["lnum"])
   if empty(diagnostics_info) && g:easycomplete_diagnostics_hint == 1
     if g:easycomplete_diagnostics_popup == 1
       call easycomplete#sign#DiagHoverFlush()
@@ -593,6 +596,22 @@ function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)
     let info_col_start = item.range.start.character + 1
     let info_col_end= item.range.end.character + 1
     if info_line == a:line && (a:colnr >= info_col_start && a:colnr <= info_col_end)
+      let ret = item
+      break
+    endif
+    let l:count += 1
+  endwhile
+  return ret
+endfunction
+
+function! s:GetDiagnosticsInfoByLine(line)
+  let lint_list = easycomplete#sign#GetCurrentDiagnostics()
+  let l:count = 0
+  let ret = {}
+  while l:count < len(lint_list)
+    let item = lint_list[l:count]
+    let info_line = item.range.start.line + 1
+    if info_line == a:line
       let ret = item
       break
     endif
