@@ -497,12 +497,15 @@ function! easycomplete#sign#LintPopup()
     call timer_stop(s:lint_popup_timer)
   endif
   let s:lint_popup_timer = timer_start(10,
-        \ { -> easycomplete#util#call(function("s:PopupMsg"), [diagnostics_info]) })
+        \ { -> easycomplete#util#call(function("s:PopupMsg"), [diagnostics_info, ctx["lnum"]]) })
 endfunction
 
-function! s:PopupMsg(diagnostics_info)
+function! s:PopupMsg(diagnostics_info, lnum)
   let s:lint_popup_timer = 0
   if g:easycomplete_diagnostics_hint == 1 && g:easycomplete_diagnostics_popup == 1
+    return
+  endif
+  if line('.') != a:lnum
     return
   endif
   let g:easycomplete_diagnostics_popup = 1
