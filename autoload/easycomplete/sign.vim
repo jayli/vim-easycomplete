@@ -11,6 +11,8 @@ let s:waring_text      = get(g:easycomplete_sign_text, "warning", ">>")
 let s:infermation_text = get(g:easycomplete_sign_text, "information", "M")
 let s:hint_text        = get(g:easycomplete_sign_text, "hint", "H")
 
+let s:lint_popup_timer = 0
+
 let g:easycomplete_diagnostics_config = {
       \ 'error':
       \ {'type': 1, 'prompt_text': s:error_text,      'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
@@ -79,7 +81,7 @@ endfunction
 
 " 只清空当前buf的diagnostics
 function! easycomplete#sign#flush()
-  call easycomplete#sign#DiagHoverFlush()
+  " call easycomplete#sign#DiagHoverFlush()
   if !exists("g:easycomplete_diagnostics_cache")
     let g:easycomplete_diagnostics_cache = {}
   endif
@@ -351,7 +353,7 @@ function! easycomplete#sign#cache(response)
   let g:easycomplete_diagnostics_cache[l:key] = a:response
   let diagnostics = easycomplete#sign#GetCurrentDiagnostics()
   let diagnostics_result = easycomplete#sign#SetDiagnosticsIndexes(diagnostics)
-  call easycomplete#sign#DiagHoverFlush()
+  " call easycomplete#sign#DiagHoverFlush()
   if !empty(diagnostics_result)
     call sort(diagnostics_result, 'easycomplete#sign#sort')
     let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] = diagnostics_result
@@ -489,11 +491,17 @@ function! easycomplete#sign#LintPopup()
   if g:easycomplete_diagnostics_last_msg != g_easycomplete_diagnostics_last_popup
     call easycomplete#sign#DiagHoverFlush()
   endif
-  call s:StopAsyncRun()
-  call s:AsyncRun(function("s:PopupMsg"), [diagnostics_info], 50)
+  " call s:StopAsyncRun()
+  " call s:AsyncRun(function("s:PopupMsg"), [diagnostics_info], 50)
+  if s:lint_popup_timer > 0
+    call timer_stop(s:lint_popup_timer)
+  endif
+  let s:lint_popup_timer = timer_start(10,
+        \ { -> easycomplete#util#call(function("s:PopupMsg"), [diagnostics_info]) })
 endfunction
 
 function! s:PopupMsg(diagnostics_info)
+  let s:lint_popup_timer = 0
   if g:easycomplete_diagnostics_hint == 1 && g:easycomplete_diagnostics_popup == 1
     return
   endif
