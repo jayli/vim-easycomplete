@@ -100,7 +100,7 @@ noremap gb :BackToOriginalBuffer<CR>
 
 Other optional configurations:
 
-- `set updatetime=300` (lua: `vim.opt.updatetime = 300`) is highly recommended.
+- `set updatetime=150` (lua: `vim.opt.updatetime = 150`) is highly recommended.
 - Menu noselected by default: `setlocal completeopt+=noselect`, (lua: `vim.cmd('setlocal completeopt+=noselect')`)
 
 Global configurations:
