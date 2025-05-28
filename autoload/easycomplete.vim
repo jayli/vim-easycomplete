@@ -2277,7 +2277,8 @@ function! easycomplete#ok(str)
   if empty(bufname())
     return v:false
   endif
-  let varstr = substitute(a:str, "[abvgsl]:","","i")
+  " let varstr = substitute(a:str, "[abvgsl]:","","i")
+  let varstr = a:str[2:]
   let flag = 0
   let value = get(g:easycomplete_config, a:str, 0)
   if exists(a:str) && get(g:, varstr, 0) == 0

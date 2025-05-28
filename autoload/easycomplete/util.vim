@@ -344,7 +344,12 @@ endfunction " }}}
 
 " GetCurrentFullName {{{
 function! easycomplete#util#GetCurrentFullName()
-  return easycomplete#util#GetFullName(bufname("%"))
+  if exists("b:easycomplete_buf_fullname")
+    return b:easycomplete_buf_fullname
+  else
+    let b:easycomplete_buf_fullname = easycomplete#util#GetFullName(bufname("%"))
+    return b:easycomplete_buf_fullname
+  endif
 endfunction " }}}
 
 " TagBarExists {{{
