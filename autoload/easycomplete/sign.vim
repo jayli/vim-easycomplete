@@ -576,9 +576,8 @@ function! easycomplete#sign#LintCurrentLine()
     call easycomplete#sign#flush()
     return
   endif
-  let ctx = easycomplete#context()
-  " let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
-  let diagnostics_info = s:GetDiagnosticsInfoByLine(ctx["lnum"])
+  let current_line = line('.')
+  let diagnostics_info = s:GetDiagnosticsInfoByLine(current_line)
   if empty(diagnostics_info) && g:easycomplete_diagnostics_hint == 1
     if g:easycomplete_diagnostics_popup == 1
       call easycomplete#sign#DiagHoverFlush()
@@ -593,11 +592,11 @@ function! easycomplete#sign#LintCurrentLine()
     call easycomplete#nill()
     return
   else
-    " Use AsyncRun for #91 bugfix
-    if ctx["lnum"] != g:easycomplete_diagnostics_last_ln
+    if current_line != g:easycomplete_diagnostics_last_ln
       call easycomplete#sign#DiagHoverFlush()
       call easycomplete#nill()
     endif
+    " Use AsyncRun for #91 bugfix
     call s:StopAsyncRun()
     call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 10)
   endif
