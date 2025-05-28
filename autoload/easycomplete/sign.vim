@@ -3,8 +3,12 @@
 let g:easycomplete_diagnostics_cache = {}
 let g:easycomplete_diagnostics_hint = 1
 let g:easycomplete_diagnostics_popup = 0
+" 用作显示的单行文本，只是字符串
 let g:easycomplete_diagnostics_last_msg= ""
+" lint所需的全部完整文本，多行的话就是数组
 let g:easycomplete_diagnostics_last_popup = ""
+" 上一次 lint 所在的行号
+let g:easycomplete_diagnostics_last_ln = 0
 
 let s:error_text       = get(g:easycomplete_sign_text, "error", ">>")
 let s:waring_text      = get(g:easycomplete_sign_text, "warning", ">>")
@@ -77,6 +81,7 @@ function! easycomplete#sign#DiagHoverFlush()
       let g:easycomplete_diagnostics_popup = 0
     endif
   endif
+  let g:easycomplete_diagnostics_last_ln = 0
 endfunction
 
 " 只清空当前buf的diagnostics
@@ -469,12 +474,27 @@ function! s:GetSignStyle(severity)
   return style
 endfunction
 
+function! s:GetDiagnosticsLastPopup()
+  if type(g:easycomplete_diagnostics_last_popup) == type([]) && !empty(g:easycomplete_diagnostics_last_popup)
+    return g:easycomplete_diagnostics_last_popup[0]
+  else
+    return g:easycomplete_diagnostics_last_popup
+  endif
+endfunction
+
 function! easycomplete#sign#LintPopup()
   if !easycomplete#ok('g:easycomplete_diagnostics_hover')
     call easycomplete#sign#DiagHoverFlush()
     return
   endif
   let ctx = easycomplete#context()
+  " 换行则先清空
+  if g:easycomplete_diagnostics_last_ln != ctx["lnum"]
+    call easycomplete#sign#DiagHoverFlush()
+  endif
+  
+
+  " 如果当前行没有 lintinfo, 则清空后直接返回
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
   if empty(diagnostics_info)
     let diagnostics_info = s:GetDiagnosticsInfoByLine(ctx["lnum"])
@@ -483,11 +503,8 @@ function! easycomplete#sign#LintPopup()
       return
     endif
   endif
-  if type(g:easycomplete_diagnostics_last_popup) == type([]) && !empty(g:easycomplete_diagnostics_last_popup)
-    let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup[0]
-  else
-    let g_easycomplete_diagnostics_last_popup = g:easycomplete_diagnostics_last_popup
-  endif
+  " 不是原有的 lintinfo 则先清空
+  let g_easycomplete_diagnostics_last_popup = s:GetDiagnosticsLastPopup()
   if g:easycomplete_diagnostics_last_msg != g_easycomplete_diagnostics_last_popup
     call easycomplete#sign#DiagHoverFlush()
   endif
@@ -513,6 +530,7 @@ function! s:PopupMsg(diagnostics_info, lnum)
   let msg = split(msg, "\\n")
   let showing = s:LintMsgNormalize(a:diagnostics_info, msg)
   let g:easycomplete_diagnostics_last_popup = showing
+  let g:easycomplete_diagnostics_last_ln = a:lnum
   let style = s:GetPopupStyle(a:diagnostics_info["severity"])
   call easycomplete#popup#float(showing, style, 0, "txt", [0,0], 'lint')
 endfunction
@@ -576,8 +594,12 @@ function! easycomplete#sign#LintCurrentLine()
     return
   else
     " Use AsyncRun for #91 bugfix
+    if ctx["lnum"] != g:easycomplete_diagnostics_last_ln
+      call easycomplete#sign#DiagHoverFlush()
+      call easycomplete#nill()
+    endif
     call s:StopAsyncRun()
-    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 1)
+    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 10)
   endif
 endfunction
 
