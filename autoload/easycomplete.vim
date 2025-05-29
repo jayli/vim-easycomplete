@@ -73,6 +73,7 @@ let g:easycomplete_first_render_delay = 500
 let g:easycomplete_lint_float_width = 180
 " 控制是否触发tabnine suggest的timer
 let g:easycomplete_tabnine_suggest_timer = 0
+let s:easycomplete_cursor_move_timer = 0
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -2311,7 +2312,12 @@ endfunction
 function! easycomplete#CursorMoved()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
         \ && easycomplete#util#NormalMode()
-    call easycomplete#sign#LintCurrentLine()
+    " 防止快速换行时的密集调用带来的卡顿
+    if s:easycomplete_cursor_move_timer > 0
+      call timer_stop(s:easycomplete_cursor_move_timer)
+      let s:easycomplete_cursor_move_timer = 0
+    endif
+    let s:easycomplete_cursor_move_timer = timer_start(35, { -> easycomplete#sign#LintCurrentLine() })
   endif
 endfunction
 
