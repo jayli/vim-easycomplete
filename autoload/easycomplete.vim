@@ -1183,7 +1183,7 @@ function! easycomplete#CompleteChanged()
   " call s:SnapShoot()
   " 改成异步，避免按住tab时连续触发completechanged会频繁大量调用
   call s:StopAsyncRun()
-  call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 5)
+  call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 50)
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " Hack 所有异步获取 document 时，需要暂存 event
   let g:easycomplete_completechanged_event = deepcopy(l:event)

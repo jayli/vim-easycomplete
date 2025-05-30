@@ -17,7 +17,6 @@
 " popup window 最大高度
 let s:popup_max_height = 50
 let s:float_max_height = 15
-let s:synmaxcol = &synmaxcol
 " 超过 perf_lines 行时，重设一下 &synmaxcol，避免卡顿
 let s:perf_max_lines = 1300
 let s:is_vim = !has('nvim')
@@ -452,7 +451,7 @@ function! s:popup(info)
     call easycomplete#popup#close("popup")
     call s:NVimShow(opt, "popup", '')
     if line("$") > s:perf_max_lines
-      setlocal synmaxcol=120
+      " setlocal synmaxcol=120
     endif
   elseif s:is_vim
     call s:VimShow(opt, "popup", '')
@@ -665,7 +664,7 @@ function! easycomplete#popup#close(...)
     let s:float_type = ""
   endif
   if line("$") > s:perf_max_lines
-    exec "setlocal synmaxcol=" . s:synmaxcol
+    " exec "setlocal synmaxcol=" . s:synmaxcol
   endif
   if windowtype == "float" &&
         \ bufnr() != expand("<abuf>") &&
