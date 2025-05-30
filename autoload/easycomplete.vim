@@ -241,6 +241,9 @@ function! s:CompleteTypingMatch(...)
   if (empty(v:completed_item) && s:zizzing()) && !(s:VimColonTyping() || s:VimDotTyping())
     return
   endif
+  if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
+    return
+  endif
   let l:char = easycomplete#context()["char"]
   " 非 ASCII 码时终止
   if char2nr(l:char) < 33
@@ -1126,7 +1129,7 @@ endfunction
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
-    let ctx = easycomplete#context()
+    " let ctx = easycomplete#context()
     " tabnine
     if s:TabnineSupports()
       call easycomplete#sources#tn#refresh()
@@ -1143,7 +1146,7 @@ function! s:CompleteMatchAction()
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)
-    call s:SnapShoot(ctx)
+    call s:SnapShoot()
   catch
     call s:log('[CompleteMatchAction]', v:exception)
     call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
@@ -1152,16 +1155,12 @@ endfunction
 
 function! s:SnapShoot(...)
   if empty(a:000)
-    let ctx = easycomplete#context()
+    let l:ctx = easycomplete#context()
   else
-    let ctx = a:1
+    let l:ctx = a:1
   endif
-  let ctx = easycomplete#context()
-  call s:SetTypingCtx(ctx)
-endfunction
-
-function! s:SetTypingCtx(ctx)
-  let g:easycomplete_typing_ctx = deepcopy(a:ctx)
+  " let l:ctx = easycomplete#context()
+  let g:easycomplete_typing_ctx = deepcopy(l:ctx)
 endfunction
 
 function! easycomplete#SnapShoot(...)
@@ -1368,7 +1367,7 @@ function! easycomplete#CleverShiftTab()
   else
     if easycomplete#pum#visible()
       call easycomplete#pum#prev()
-      call timer_start(5, { -> s:SnapShoot()})
+      " call timer_start(5, { -> s:SnapShoot()})
       return easycomplete#pum#SetWordBySelecting()
     else
       return ""
@@ -2380,8 +2379,8 @@ function! easycomplete#TextChangedI()
     " nvim pum 在 tab select 过程中会触发 TextchangedI，原生 pum 不应当触发
     " 这里加一个逻辑，阻止掉 tab selecting 过程中的 textchangedp和textchangedi
     " 事件, vim 中的逻辑不受影响
-    if easycomplete#pum#InsertZizzing()
-      call easycomplete#pum#InsertAwake()
+    if easycomplete#pum#IsInsertingWord()
+      " call easycomplete#pum#InsertAwake()
     else
       doautocmd <nomodeline> User easycomplete_pum_textchanged_p
     endif
@@ -2413,6 +2412,13 @@ function! easycomplete#TextChangedP()
   endif
 
   if g:env_is_nvim && b:old_changedtick == b:changedtick
+    return
+  endif
+
+  " for #313，当判断是通过 tab 来插入word时，是不应该发生 textchangedp
+  " 事件的，但当文件很大或者很卡时，neovim 有可能会误触
+  " textchangedI，这是不应该的，这里做一层拦截
+  if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
     return
   endif
 

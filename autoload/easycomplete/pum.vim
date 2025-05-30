@@ -427,7 +427,7 @@ function! easycomplete#pum#SetWordBySelecting()
   let backing_count = cursor_left - pum_pos.pos[1] - 2 
   let oprator_str = repeat("\<bs>", backing_count)
   let word = get(s:curr_items[s:selected_i - 1], "word", "")
-  call s:insert_zizz()
+  call s:InsertingWordZizz()
   if !easycomplete#pum#CompleteCursored()
     return oprator_str . get(s:original_ctx, "typing", "")
   else
@@ -442,13 +442,13 @@ function! easycomplete#pum#SetWordBySelecting()
     " 时的重回。这里暂时加上了异步调用的 Stop，避免异常 CompleteDone。
     " 卡顿的问题无法解决。
     " 当关闭 Treesitter 和 syntax off 后始终很流畅
-    if exists("b:insert_word_timer") && b:easy_insert_word_timer > 0
+    if exists("b:easy_insert_word_timer") && b:easy_insert_word_timer > 0
       call timer_stop(b:easy_insert_word_timer)
       let b:easy_insert_word_timer = 0
     endif
-    let b:easy_insert_word_timer = timer_start(2, { -> s:InsertWord(word) })
+    let l:t_lazy = 5
+    let b:easy_insert_word_timer = timer_start(l:t_lazy, { -> s:InsertWord(word) })
     return ""
-    " return oprator_str . get(s:curr_items[s:selected_i - 1], "word", "")
   endif
 endfunction
 
@@ -461,29 +461,34 @@ function! s:InsertWord(word)
     noa setl textwidth=0
     call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
   endif
-  call s:insert_zizz()
+  call s:InsertingWordZizz()
   silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
   silent! noa call complete(startcol, [])
   call easycomplete#SnapShoot()
   execute 'noa set completeopt='.saved_completeopt
 endfunction
 
-function! s:insert_zizz()
-  if easycomplete#pum#InsertZizzing()
+function! s:InsertingWordZizz()
+  if easycomplete#pum#IsInsertingWord()
     call timer_stop(s:pum_insert_word_timer)
   endif
-  let s:pum_insert_word_timer = timer_start(500, { -> s:insert_awake() })
+  let s:pum_insert_word_timer = timer_start(200, { -> s:InsertAwake() })
 endfunction
 
-function! s:insert_awake()
+function! s:InsertAwake()
   let s:pum_insert_word_timer = 0
 endfunction
 
 function! easycomplete#pum#InsertAwake()
-  call s:insert_awake()
+  call s:InsertAwake()
 endfunction
 
-function! easycomplete#pum#InsertZizzing()
+" 通过 tab 来选择匹配词时需要插入单词，但插入单词时有时会触发 textchangedI
+" 事件，插入单词我用的 silent noa call complete，是不应该触发 textchangedI
+" 事件的，当开启treesitter或者大文件时，操作变慢，有时会误触发，所以这里加
+" 上一个判断，在 textchangedI 中判断如果是 pum 在 inserting word 时，就丢弃。
+" 这样就不会错误的触发 typingmatch 的动作了
+function! easycomplete#pum#IsInsertingWord()
   return s:pum_insert_word_timer > 0
 endfunction
 
