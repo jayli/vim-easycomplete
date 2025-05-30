@@ -127,7 +127,9 @@ function! s:OpenPum(startcol, lines)
   " call add(a:lines, "`sdf`,|sdfsdf|, ^sdfsfs^ s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
-  let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
+  let full_pum_pos = s:ComputePumPos(a:startcol, buffer_size)
+  let pum_pos_t = get(full_pum_pos, "opt")
+  let pum_pos = s:SetWinBorder(pum_pos_t, get(full_pum_pos, "pum_direction"))
   let pum_opts = deepcopy(s:default_pum_pot)
   call extend(pum_opts, pum_pos)
   if empty(s:pum_window)
@@ -158,7 +160,7 @@ function! easycomplete#pum#WinScrolled()
     let new_startcol = getcurpos()[2] - strlen(typing_word)
     let lines = getbufline(s:pum_buffer, 1, "$")
     let buffer_size = s:GetBufSize(lines)
-    let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
+    let pum_pos = get(s:ComputePumPos(new_startcol, buffer_size), "opt")
     let opts = deepcopy(s:default_pum_pot)
     call extend(opts, pum_pos)
     call nvim_win_set_config(s:pum_window, opts)
@@ -736,11 +738,19 @@ function! s:ComputePumPos(startcol, buffer_size)
   if right_space < l:width
     let l:width = right_space
   endif
-  return {"row": l:row, "col": realcol - 2,
+  return { "opt": {"row": l:row, "col": realcol - 2,
         \ "width":  l:width,
         \ "height": l:height
-        \ }
+        \ }, "pum_direction": pum_direction}
 endfunction
+
+function! s:SetWinBorder(opt, pum_direction)
+  return extend(a:opt, {
+        \ "border": ["╔", "═" ,"╗", "║", "╝", "═", "╚", "║"]
+        \ })
+endfunction
+
+
 
 " secondcomplete 过程中有可能手动移动了 pum 的 cursor，继续 typing
 " 时需要reset一下状态 
