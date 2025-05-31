@@ -582,7 +582,8 @@ function! s:NVimShow(opt, windowtype, float_type)
   " let hl_str = 'Normal:Pmenu,NormalNC:Pmenu'
   let opt = a:opt
   if g:easycomplete_winborder && (a:windowtype != "float")
-    let opt.border = ["┌", "─" ,"┐", "│", "┘", "─", "└", "│"]
+    let opt.border = "single"
+    " let opt.borderhl = "Pmenu"
   endif
   " let winargs = [s:buf[a:windowtype], 0, opt]
   if has_key(opt, "filetype")

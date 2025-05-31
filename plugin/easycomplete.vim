@@ -120,7 +120,7 @@ endif
 if !exists("g:easycomplete_winborder")
   let g:easycomplete_winborder = 0
 endif
-if g:env_is_vim
+if g:env_is_vim || !has('nvim-0.11.0')
   let g:easycomplete_winborder = 0
 endif
 if !exists("g:easycomplete_directory_enable")

@@ -833,7 +833,7 @@ function! s:SetWinBorder(opt, pum_direction)
         \ "width": l:width + (s:has_scrollbar ? 1 : 0),
         \ "row": l:row,
         \ "col": l:col,
-        \ "border": ["┌", "─" ,"┐", "│", "┘", "─", "└", "│"]
+        \ "border": "rounded"
         \ })
 endfunction
 
