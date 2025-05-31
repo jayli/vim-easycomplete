@@ -439,9 +439,7 @@ function! s:popup(info)
   else
     " 菜单向上展开
     let opt.row = l:screen_line - opt.height - 1
-    if s:is_nvim
-      let opt.row += 0
-    endif
+    let opt.row -= (g:easycomplete_winborder ? 2 : 0)
   endif
 
   if s:is_nvim
