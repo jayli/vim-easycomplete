@@ -144,13 +144,13 @@ function! s:OpenPum(startcol, lines)
     doautocmd <nomodeline> User easycomplete_pum_completechanged
   endif
   call s:reset()
-  call s:RenderScrollThumb()
-  if g:easycomplete_winborder
-    " do nothing
-  else
-    call s:RenderScrollBar()
-  endif
   call nvim_win_set_cursor(s:pum_window, [1, 0])
+  call s:RenderScrollBar()
+  if g:easycomplete_winborder
+    call timer_start(20, { -> s:RenderScrollThumb() })
+  else
+    call s:RenderScrollThumb()
+  endif
 endfunction
 
 function! easycomplete#pum#WinScrolled()
@@ -580,7 +580,6 @@ function! s:CloseScrollBar()
   let s:scrollbar_window = 0
 endfunction
 
-" TODO here
 function! s:RenderScrollThumb()
   if !s:pumvisible() || !s:HasScrollbar()
     call s:CloseScrollThumb()
@@ -610,11 +609,14 @@ endfunction
 
 function! s:ComputeScrollBarPos()
   let pum_pos = s:PumPosition()
-
   let c = pum_pos.pos[1] + pum_pos.width - 1
   let r = pum_pos.pos[0]
   let w = 1
   let h = pum_pos.height
+  if g:easycomplete_winborder
+    let c = c + 1
+    let r = r + 1 + (s:pum_direction == "above" ? 2 : 0)
+  endif
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
@@ -626,6 +628,9 @@ function! s:ComputeScrollThumbPos()
   " ---- 计算 scrollbar 的高度 ----
   let buf_h = len(s:curr_items)
   let pum_h = pum_pos.height
+  if g:easycomplete_winborder
+    let pum_h = pum_h
+  endif
   let scroll_h = float2nr(floor(pum_h * pum_h * 1.0 / buf_h))
   if scroll_h >= pum_h
     let scroll_h = pum_h
@@ -656,6 +661,9 @@ function! s:ComputeScrollThumbPos()
     let r = pum_pos.pos[0] + r_position
   endif
 
+  let c = c + (g:easycomplete_winborder ? 1 : 0)
+  let r = r + (g:easycomplete_winborder ? 1 : 0)
+
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
 
@@ -670,6 +678,7 @@ function! s:HasScrollbar()
   return s:has_scrollbar == 1 ? v:true : v:false
 endfunction
 
+" PumPosition 是获得原始window信息，包括了window border
 function! s:PumPosition()
   if s:pumvisible()
     let pos = nvim_win_get_position(s:pum_window)
@@ -688,7 +697,7 @@ function! s:PumDirection(buffer_height)
   
   " 如果底部空间不够
   if buffer_height > below_space
-    if below_space < 6 " 底部空间太小，小于 6，一律在上部展示
+    if below_space < 8 " 底部空间太小，小于 6，一律在上部展示
       return "above"
     elseif below_space >= 10 " 底部空间大于等于10，一律在底部展示
       return "below"
@@ -814,7 +823,7 @@ function! s:SetWinBorder(opt, pum_direction)
   endif
   return extend(a:opt, {
         \ "height": l:height,
-        \ "width": l:width,
+        \ "width": l:width + (s:has_scrollbar ? 1 : 0),
         \ "row": l:row,
         \ "col": l:col,
         \ "border": ["┌", "─" ,"┐", "│", "┘", "─", "└", "│"]
