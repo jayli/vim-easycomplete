@@ -770,8 +770,11 @@ function! s:ComputePumPos(startcol, buffer_size)
   let realcol = s:CursorLeft() - offset
   " 如果触碰到右壁，默认缩短，和 vim 保持一致，永远和字符对齐
   let right_space = &columns - (realcol - 2)
-  if right_space < l:width
-    let l:width = right_space
+  if right_space < l:width + (g:easycomplete_winborder ? 2 : 0)
+    let l:width = right_space - (g:easycomplete_winborder ? 2 : 0)
+    if g:easycomplete_winborder && s:has_scrollbar == 1
+      let s:has_scrollbar = 0
+    endif
   endif
   let pum_origin_opt = {"row": l:row, "col": realcol - 2,
         \ "width":  l:width,
