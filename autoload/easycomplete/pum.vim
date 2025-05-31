@@ -127,9 +127,7 @@ function! s:OpenPum(startcol, lines)
   " call add(a:lines, "`sdf`,|sdfsdf|, ^sdfsfs^ s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
-  let full_pum_pos = s:ComputePumPos(a:startcol, buffer_size)
-  let pum_pos_t = get(full_pum_pos, "opt")
-  let pum_pos = s:SetWinBorder(pum_pos_t, get(full_pum_pos, "pum_direction"))
+  let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
   let pum_opts = deepcopy(s:default_pum_pot)
   call extend(pum_opts, pum_pos)
   if empty(s:pum_window)
@@ -147,7 +145,11 @@ function! s:OpenPum(startcol, lines)
   endif
   call s:reset()
   call s:RenderScrollThumb()
-  call s:RenderScrollBar()
+  if g:easycomplete_winborder
+    " do nothing
+  else
+    call s:RenderScrollBar()
+  endif
   call nvim_win_set_cursor(s:pum_window, [1, 0])
 endfunction
 
@@ -160,7 +162,7 @@ function! easycomplete#pum#WinScrolled()
     let new_startcol = getcurpos()[2] - strlen(typing_word)
     let lines = getbufline(s:pum_buffer, 1, "$")
     let buffer_size = s:GetBufSize(lines)
-    let pum_pos = get(s:ComputePumPos(new_startcol, buffer_size), "opt")
+    let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
     let opts = deepcopy(s:default_pum_pot)
     call extend(opts, pum_pos)
     call nvim_win_set_config(s:pum_window, opts)
@@ -578,6 +580,7 @@ function! s:CloseScrollBar()
   let s:scrollbar_window = 0
 endfunction
 
+" TODO here
 function! s:RenderScrollThumb()
   if !s:pumvisible() || !s:HasScrollbar()
     call s:CloseScrollThumb()
@@ -607,6 +610,7 @@ endfunction
 
 function! s:ComputeScrollBarPos()
   let pum_pos = s:PumPosition()
+
   let c = pum_pos.pos[1] + pum_pos.width - 1
   let r = pum_pos.pos[0]
   let w = 1
@@ -705,8 +709,9 @@ function! s:ComputePumPos(startcol, buffer_size)
   let l:height = 0
   let l:width = a:buffer_size.width
   let l:row = 0
+  let below_space = s:CursorBottom() - 1
+  let above_space = s:CursorTop() - 1
   if pum_direction == "below"
-    let below_space = s:CursorBottom() - 1
     if a:buffer_size.height >= below_space " 需要滚动
       let l:height = below_space
     else
@@ -715,7 +720,6 @@ function! s:ComputePumPos(startcol, buffer_size)
     let l:row = s:CursorTop()
   endif
   if pum_direction == "above"
-    let above_space = s:CursorTop() - 1
     if a:buffer_size.height >= above_space " 需要滚动
       let l:height = above_space
     else
@@ -723,12 +727,30 @@ function! s:ComputePumPos(startcol, buffer_size)
     endif
     let l:row = s:CursorTop() - l:height - 1
   endif
-  if l:height < a:buffer_size.height
-    " 判断是否应该出现 scrollbar
-    let s:has_scrollbar = 1
-    let l:width = a:buffer_size.width + 1
+  if g:easycomplete_winborder
+    if pum_direction == "below"
+      if a:buffer_size.height <= below_space - 2 " 无需滚动
+        let s:has_scrollbar = 0
+      else
+        " 需要滚动
+        let s:has_scrollbar = 1
+      endif
+    elseif pum_direction == "above"
+      if a:buffer_size.height <= above_space - 2 " 无需滚动
+        let s:has_scrollbar = 0
+      else
+        " 需要滚动
+        let s:has_scrollbar = 1
+      endif
+    endif
   else
-    let s:has_scrollbar = 0
+    if l:height < a:buffer_size.height
+      " 判断是否应该出现 scrollbar
+      let s:has_scrollbar = 1
+      let l:width = a:buffer_size.width + 1
+    else
+      let s:has_scrollbar = 0
+    endif
   endif
   " 计算相对于 editor 的 startcol
   let offset = col('.') - a:startcol
@@ -738,15 +760,64 @@ function! s:ComputePumPos(startcol, buffer_size)
   if right_space < l:width
     let l:width = right_space
   endif
-  return { "opt": {"row": l:row, "col": realcol - 2,
+  let pum_origin_opt = {"row": l:row, "col": realcol - 2,
         \ "width":  l:width,
         \ "height": l:height
-        \ }, "pum_direction": pum_direction}
+        \ }
+  if g:easycomplete_winborder
+    let l:pum_pos = s:SetWinBorder(pum_origin_opt, pum_direction)
+  else
+    let l:pum_pos = pum_origin_opt
+  endif
+  return l:pum_pos
 endfunction
 
 function! s:SetWinBorder(opt, pum_direction)
+  if a:pum_direction == "below"
+    let l:row = a:opt.row
+    let l:col = a:opt.col
+    let l:width = a:opt.width
+    let l:below_space = s:CursorBottom() - 1
+    if a:opt.height + 2 <= l:below_space
+      " 向下远没有触底
+      let l:height = a:opt.height
+    elseif a:opt.height + 1 == l:below_space
+      " 向下+1后触底
+      let l:height = a:opt.height - 1
+    elseif a:opt.height + 2 == l:below_space
+      " 向下+2后触底
+      let l:height = a:opt.height - 2
+    else
+      " 超过触底，一般不会走到这里
+      let l:height = a:opt.height - 2
+    endif
+  elseif a:pum_direction == "above"
+    let l:row = a:opt.row - 2
+    let l:col = a:opt.col
+    let l:above_space = s:CursorTop() - 1
+    let l:height = a:opt.height
+    let l:width = a:opt.width
+
+    if a:opt.height + 2 <= l:above_space
+      " 向上远没有触顶
+      let l:height = a:opt.height
+    elseif a:opt.height + 1 == l:above_space
+      " 向上+1后触顶
+      let l:height = a:opt.height - 1
+    elseif a:opt.height + 2 == l:above_space
+      " 向上+2后触顶
+      let l:height = a:opt.height - 2
+    else
+      " 超过触顶，一般不会走到这里
+      let l:height = a:opt.height - 2
+    endif
+  endif
   return extend(a:opt, {
-        \ "border": ["╔", "═" ,"╗", "║", "╝", "═", "╚", "║"]
+        \ "height": l:height,
+        \ "width": l:width,
+        \ "row": l:row,
+        \ "col": l:col,
+        \ "border": ["┌", "─" ,"┐", "│", "┘", "─", "└", "│"]
         \ })
 endfunction
 
