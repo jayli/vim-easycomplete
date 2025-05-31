@@ -357,8 +357,6 @@ function! s:popup(info)
     return
   endif
   if easycomplete#FirstSelectedWithOptDefaultSelected()
-    " do nothing
-    " call easycomplete#popup#close("popup")
     let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
     let s:event = l:event
     let s:last_event = l:event
@@ -381,7 +379,8 @@ function! s:popup(info)
     return
   endif
   call s:InitBuf(info, 'popup',  getbufvar(bufnr(), "&filetype"))
-  let prevw_width = easycomplete#popup#DisplayWidth(info, g:easycomplete_popup_width)
+  let prevw_width = easycomplete#popup#DisplayWidth(info,
+        \ g:easycomplete_popup_width)
   let prevw_height = easycomplete#popup#DisplayHeight(info, prevw_width, 'popup') - 1
   let opt = {
         \ 'focusable': v:true,
@@ -403,14 +402,13 @@ function! s:popup(info)
   endif
   let left_avail_col = pum_pos.col - 2
 
-  let right_avail = &co - right_avail_col
-  let left_avail = left_avail_col + 1
+  let right_avail = &co - right_avail_col - (g:easycomplete_winborder ? 2 : 0)
+  let left_avail = left_avail_col + 1 - (g:easycomplete_winborder ? 2 : 0)
 
-  if right_avail >= prevw_width
-    let opt.col = right_avail_col
-  elseif left_avail >= prevw_width
-    let opt.col = left_avail_col - prevw_width + 1
-
+  if right_avail >= prevw_width + (g:easycomplete_winborder ? 2 : 0)
+    let opt.col = right_avail_col + (g:easycomplete_winborder ? 2 : 0)
+  elseif left_avail >= prevw_width + (g:easycomplete_winborder ? 2 : 0)
+    let opt.col = left_avail_col - prevw_width + 1 - (g:easycomplete_winborder ? 2 : 0)
   else
     " 如果左右都没有正常空间可以展开
 
@@ -422,8 +420,9 @@ function! s:popup(info)
 
     if right_avail >= left_avail
       " 右侧空间较大
-      let opt.col = float2nr(right_avail_col)
-      let opt.width = float2nr(right_avail)
+      " let opt.col = float2nr(right_avail_col) + (g:easycomplete_winborder ? 2 : 0)
+      let opt.col = pum_pos.col + pum_pos.width + 1 + (g:easycomplete_winborder ? 2 : 0)
+      let opt.width = float2nr(right_avail) - (g:easycomplete_winborder ? 2 : 0)
     else
       " 左侧空间较大
       let opt.col = 0
@@ -583,14 +582,18 @@ function! s:NVimShow(opt, windowtype, float_type)
   if s:is_vim | return | endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   " let hl_str = 'Normal:Pmenu,NormalNC:Pmenu'
-  let winargs = [s:buf[a:windowtype], 0, a:opt]
-  if has_key(winargs[2], "filetype")
-    unlet winargs[2].filetype
+  let opt = a:opt
+  if g:easycomplete_winborder && (a:windowtype != "float")
+    let opt.border = ["┌", "─" ,"┐", "│", "┘", "─", "└", "│"]
   endif
-  if has_key(winargs[2], "highlight")
-    unlet winargs[2].highlight
+  " let winargs = [s:buf[a:windowtype], 0, opt]
+  if has_key(opt, "filetype")
+    unlet opt.filetype
   endif
-  silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, winargs[2])
+  if has_key(opt, "highlight")
+    unlet opt.highlight
+  endif
+  silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, opt)
   let g:easycomplete_popup_win[a:windowtype] = winid
   if a:windowtype == "popup" || (a:windowtype == "float" && a:float_type == "signature")
     call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')

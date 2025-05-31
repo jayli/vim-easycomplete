@@ -120,6 +120,9 @@ endif
 if !exists("g:easycomplete_winborder")
   let g:easycomplete_winborder = 0
 endif
+if g:env_is_vim
+  let g:easycomplete_winborder = 0
+endif
 if !exists("g:easycomplete_directory_enable")
   let g:easycomplete_directory_enable = 1
 endif
