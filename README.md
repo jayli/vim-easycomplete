@@ -1,6 +1,6 @@
 # Vim-EasyComplete
 
-It's a Fast and Minimalism Style Completion Plugin for vim/nvim. There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), [vim-lsp](https://github.com/prabirshrestha/vim-lsp), [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. However I still want a simpler plugin without any redundant configurations. And it's a good idea to incorporate AI coding assistants as well.
+It's a Fast and Minimalism Style Completion Plugin for vim/nvim. There are many excellent vim auto-completion plugins such as [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) and [coc.nvim](https://github.com/neoclide/coc.nvim) etc. But I want a simpler plugin without any redundant configurations.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg?style=flat-square) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg?style=flat-square) ![](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI?style=flat-square)
 
@@ -12,7 +12,7 @@ https://github.com/jayli/vim-easycomplete/assets/188244/5fdef6cb-ef1d-4428-960e-
 
 It contains these features:
 
-- AI coding assistant via [tabnine](#TabNine-Support). (Highly Recommend!)
+- AI coding assistant via [tabnine](#TabNine-Support).
 - Buffer Keywords/Directory support
 - LSP([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
 - Written in pure vim script for vim8 and neovim
@@ -23,6 +23,13 @@ It contains these features:
 
 Easycomplete requires Vim 8.2 or higher version with MacOS/Linux/FreeBSD. For neovim users, 0.6.0 or higher is required.
 
+Lua config with Packer.nvim:
+
+```lua
+use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
+```
+Run `:PackerInstall`
+
 Vimscript config with vim-plug:
 
 ```vim
@@ -30,13 +37,6 @@ Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
 ```
 Run `:PlugInstall`.
-
-Lua config with Packer.nvim:
-
-```lua
-use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
-```
-Run `:PackerInstall`
 
 [Full configuration example](custom-config.md).
 
@@ -66,13 +66,11 @@ All commands:
 
 ## Configuration
 
-The plugin is out of box and config nothing. (If you want full features, please refer to [my full configuration](./custom-config.md)). Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
+The plugin is out of box and config nothing. Use `Tab` to trigger the completion suggestions and select matched items. By default use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
-Lua configuration:
+Simple Lua configuration:
 
 ```lua
--- Highlight the symbol when holding the cursor if you need it
-vim.g.easycomplete_cursor_word_hl = 1
 -- Using nerdfont is highly recommended
 vim.g.easycomplete_nerd_font = 1
 
@@ -86,8 +84,6 @@ vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 Vimscript configuration:
 
 ```vim
-" Highlight the symbol when holding the cursor
-let g:easycomplete_cursor_word_hl = 1
 " Using nerdfont is highly recommended
 let g:easycomplete_nerd_font = 1
 
@@ -127,6 +123,7 @@ Global configurations:
 | `g:easycomplete_diagnostics_enable`  | 1             | Enable diagnostics                                            |
 | `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
+| `g:easycomplete_winborder`           | 1             | Add window border for pum                                     |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 
 Typing `:h easycomplete` for help.
@@ -144,7 +141,7 @@ Plug 'williamboman/nvim-lsp-installer'
 
 LSP Server will all be installed in `~/.config/vim-easycomplete/servers`.
 
-You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are avilable:
+You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are fine:
 
 - `:InstallLspServer`
 - `:InstallLspServer lua`
@@ -212,7 +209,7 @@ More info about semantic completion for each supported language:
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
 
-Add filetypes whitelist for specified language plugin:
+Add filetypes whitelist for specified language plugin. Most of the time, it is not necessary to do so:
 
 ```vim
 let g:easycomplete_filetypes = {
@@ -273,8 +270,6 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
 
 More examples here: [full config example](custom-config.md)
-
-My custom config:[my-custom-config](my-custom-config.md)
 
 ![截屏2023-12-30 20 25 06](https://github.com/jayli/vim-easycomplete/assets/188244/597db686-d4fe-4b25-8c39-d9b90db184cb)
 

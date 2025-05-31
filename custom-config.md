@@ -4,13 +4,16 @@ Full config in lua script with Packer.nvim:
 -- Packer.nvim
 use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 
--- Enable the plugin. Default is on.
+-- Enable the plugin. Default is on. Set `0` if you want to turn off the plugin.
 -- Install lsp via `:InstallLspServer`
 vim.g.easycomplete_enable = 1
 
+-- pum border. Default is on.
+vim.g.easycomplete_winborder = 0
+
 -- Highlight the symbol when holding the cursor if you need it.
 -- Default is off.
-vim.g.easycomplete_cursor_word_hl = 1
+vim.g.easycomplete_cursor_word_hl = 0
 
 -- GoTo code navigation
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
@@ -102,4 +105,7 @@ vim.g.easycomplete_diagnostics_enable = 1
 vim.g.easycomplete_signature_enable = 1
 -- Enable diagnostics via cursor hold event, default is 1
 vim.g.easycomplete_diagnostics_hover = 1
+
+-- recommended
+vim.opt.updatetime = 150
 ```
