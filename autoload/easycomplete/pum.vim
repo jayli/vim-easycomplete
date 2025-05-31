@@ -593,6 +593,10 @@ function! s:RenderScrollThumb()
   let pos = s:ComputeScrollThumbPos()
   let scrollthumb_opts = deepcopy(s:default_scroll_thumb_pot)
   call extend(scrollthumb_opts, pos)
+  if scrollthumb_opts.height == 0
+    call s:CloseScrollThumb()
+    return
+  endif
   if empty(s:scrollthumb_window)
     " create scrollthumb window
     let hl = "Normal:PmenuThumb,NormalNC:PmenuThumb,CursorLine:PmenuThumb"
