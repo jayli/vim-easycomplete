@@ -98,7 +98,7 @@ function! s:hl()
     let pmenu_kind_hl_group = s:HLExists("EasyPmenuKind") ? "EasyPmenuKind" : "PmenuKind"
     let pmenu_extra_hl_group = s:HLExists("EasyPmenuExtra") ? "EasyPmenuExtra" : "PmenuExtra"
     let function_hl_group = s:HLExists("EasyFunction") ? "EasyFunction" : "Conditional"
-    let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Number"
+    let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Keyword"
     let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
     let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
 

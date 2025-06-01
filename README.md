@@ -270,7 +270,7 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasyPmenuKind`: PmenuKind style. It links to "PmenuKind" by default.
 - `EasyPmenuExtra`: PmenuExtra style. It links to "PmenuExtra" by default.
 - `EasyFunction`: Function kind icon style. links to "Conditional" by default.
-- `EasySnippet`: Snippet kind icon style. links to "Number" by default.
+- `EasySnippet`: Snippet kind icon style. links to "Keyword" by default.
 - `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
 - `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
 
