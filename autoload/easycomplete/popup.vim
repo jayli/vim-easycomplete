@@ -211,35 +211,35 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   " handle height
   let screen_enc = (win_screenpos(win_getid())[0] - 1)
   if !a:direction " 正常向下
-    if winline() + prevw_height <= winheight(win_getid())
+    if winline() + prevw_height + (g:easycomplete_winborder ? 2 : 0) <= winheight(win_getid())
       " 菜单向下展开ok
       let opt.row = winline() + 1 + screen_enc
-    elseif winline() + prevw_height >= winheight(win_getid())
+    elseif winline() + prevw_height + (g:easycomplete_winborder ? 2 : 0) >= winheight(win_getid())
           \ && prevw_height >= 3
-          \ && winheight(win_getid()) - winline() >= 3
+          \ && winheight(win_getid()) - winline() >= 3 + (g:easycomplete_winborder ? 2 : 0)
       " 压缩float框向下展开
       let opt.height = winheight(win_getid()) - winline()
       let opt.row = winline() + 1 + screen_enc
     else
       " 菜单向上展开
-      let opt.row = winline() - prevw_height + screen_enc
+      let opt.row = winline() - prevw_height + screen_enc - (g:easycomplete_winborder ? 2 : 0)
     endif
   else " 正常向上
-    if winheight(win_getid()) - winline() + 1 + prevw_height <= winheight(win_getid())
+    if winheight(win_getid()) - winline() + 1 + prevw_height + (g:easycomplete_winborder ? 2 : 0) <= winheight(win_getid())
       " 单窗口内空间足够，菜单向上展开 ok
-      let opt.row = winline() - prevw_height + screen_enc
-    elseif winheight(win_getid()) - winline() + prevw_height + 1 > winheight(win_getid())
+      let opt.row = winline() - prevw_height + screen_enc + (g:easycomplete_winborder ? 2 : 0)
+    elseif winheight(win_getid()) - winline() + prevw_height + 1 + (g:easycomplete_winborder ? 2 : 0) > winheight(win_getid())
           \ && prevw_height >= 3
-          \ && winline() >= 4
+          \ && winline() >= 4 + (g:easycomplete_winborder ? 2 : 0)
       " 单窗口内向上展开所需空间不够，要判断窗口上方还有没有多余空间
       let t_pos = screen_enc + ((winline() - prevw_height) -1)
       if t_pos >= 0
         " 占用顶部空间全部展开
         let opt.height = prevw_height
-        let opt.row = t_pos + 1
+        let opt.row = t_pos + 1 - (g:easycomplete_winborder ? 2 : 0)
       else
         " 占用顶部空间也不够展示，则向上压缩展开
-        let opt.height = prevw_height + t_pos
+        let opt.height = prevw_height + t_pos - (g:easycomplete_winborder ? 2 : 0)
         let opt.row = 1
       endif
     else  " 单窗口内向下展开
@@ -271,6 +271,10 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
 
   if !empty(a:hl)
     let opt.highlight = a:hl
+  endif
+
+  if g:easycomplete_winborder && a:float_type == "signature"
+
   endif
 
   if s:is_nvim
@@ -576,16 +580,22 @@ function! s:GetSignGuifgAtCurrentLine()
   return fgcolor
 endfunction
 
+" windowtype 有两类：
+" 1. float: 函数参数说明 alert(I) 和 lint。通过 float_type 来区分 （lint，signature）
+" 2. popup：用来显示 pum 的 info
 function! s:NVimShow(opt, windowtype, float_type)
   if s:is_vim | return | endif
   let l:filetype = &filetype == "lua" ? "help" : &filetype
   " let hl_str = 'Normal:Pmenu,NormalNC:Pmenu'
   let opt = a:opt
-  if g:easycomplete_winborder && (a:windowtype != "float")
+  " pum info
+  if g:easycomplete_winborder && (a:windowtype == "popup")
     let opt.border = "single"
-    " let opt.borderhl = "Pmenu"
   endif
-  " let winargs = [s:buf[a:windowtype], 0, opt]
+  " signature
+  if g:easycomplete_winborder && (a:windowtype == "float" && a:float_type == "signature")
+    let opt.border = "single"
+  endif
   if has_key(opt, "filetype")
     unlet opt.filetype
   endif
