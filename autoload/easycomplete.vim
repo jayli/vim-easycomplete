@@ -328,7 +328,11 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
     let result = easycomplete#util#uniq(result)
   endif
   " 防止抖动
-  let result_all = (easycomplete#sources#tn#available() ? easycomplete#sources#tn#GetGlobalSourceItems() : []) + result
+  if easycomplete#sources#tn#available()
+    let result_all = easycomplete#sources#tn#GetGlobalSourceItems() + result
+  else
+    let result_all = [] + result
+  endif
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
