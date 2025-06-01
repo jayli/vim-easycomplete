@@ -705,7 +705,8 @@ function! s:PumDirection(buffer_height)
       return "above"
     elseif below_space >= 10 " 底部空间大于等于10，一律在底部展示
       return "below"
-    elseif buffer_height - below_space <= 5 " 底部空间只藏了5个及以内的item，可以在底部展示
+    elseif buffer_height - below_space <= 5 - (g:easycomplete_winborder ? 2 : 0)
+      " 底部空间只藏了5个及以内的item，可以在底部展示
       return "below"
     else " 底部空间不够且溢出5个以上的 item，就展示在上部
       return "above"
