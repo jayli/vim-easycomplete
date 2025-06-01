@@ -77,6 +77,8 @@ Run `:PlugInstall`.
 
 Use `Tab` to trigger the completion suggestions and select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
 
+Use `Ctrl-N`/`Shift-Ctrl-N` to jump to the next/previous diagnostic position.
+
 Other optional configurations:
 
 - `set updatetime=150` (lua: `vim.opt.updatetime = 150`) is highly recommended.
