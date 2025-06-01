@@ -147,6 +147,12 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
   endif
 endfunction
 
+function! easycomplete#ui#HiFloatBorder()
+  let l:bg = easycomplete#ui#GetBgColor("Normal")
+  call easycomplete#ui#hi("Pmenu", "", l:bg, {})
+  call easycomplete#ui#hi("FloatBorder", "", l:bg, {})
+endfunction
+
 function! s:IsSearchWord()
   let current_word = expand('<cword>')
   let search_word = histget("search")
