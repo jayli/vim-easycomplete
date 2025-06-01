@@ -8,7 +8,7 @@ It's a Fast and Minimalism Style Completion Plugin for vim/nvim.
 
 Vim-easycomplete is a fast and minimalism style completion plugin for both vim and nvim. It aims to be available out of the box on linux and mac. It is implemented in pure VimScript and is extremely simple to configure without installing Node and a bunch of Node modules. Thank [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) and [coc.nvim](https://github.com/neoclide/coc.nvim). They inspired me a lot.
 
-https://github.com/jayli/vim-easycomplete/assets/188244/5fdef6cb-ef1d-4428-960e-d9802cbc2a84
+https://github.com/user-attachments/assets/d26de08e-eb7f-4f2a-880b-5aacb0ae48b8
 
 It contains these features:
 
