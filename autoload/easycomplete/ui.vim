@@ -152,6 +152,8 @@ function! easycomplete#ui#HiFloatBorder()
   call easycomplete#ui#hi("Pmenu", "", l:bg, {})
   call easycomplete#ui#hi("FloatBorder", "", l:bg, {})
   call easycomplete#ui#hi("PmenuSBar", "", l:bg, {})
+  call easycomplete#ui#hi("PmenuExtra", "", l:bg, {})
+  call easycomplete#ui#hi("PmenuKind", "", l:bg, {})
 endfunction
 
 function! s:IsSearchWord()
