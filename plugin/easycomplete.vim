@@ -106,7 +106,7 @@ if !exists("g:easycomplete_fuzzymatch_hlgroup")
   let g:easycomplete_fuzzymatch_hlgroup = ""
 endif
 if !exists("g:easycomplete_tabnine_suggestion")
-  let g:easycomplete_tabnine_suggestion = 1
+  let g:easycomplete_tabnine_suggestion = 0
 endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1

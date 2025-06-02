@@ -31,8 +31,8 @@ use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 -- Tabnine aicoding support, default is 1
 -- You should install tabnine first by ":InstallLspServer tabnine"
 vim.g.easycomplete_tabnine_enable = 1
--- Tabnine coding suggestion, default is 1
-vim.g.easycomplete_tabnine_suggestion = 1
+-- Tabnine coding suggestion, default is 0
+vim.g.easycomplete_tabnine_suggestion = 0
 -- Using nerdfont for lsp icons, default is 0
 vim.g.easycomplete_nerd_font = 1
 -- Add window border for pum, default is 1 (for nvim 0.11 or higher)
@@ -56,8 +56,8 @@ Plug 'SirVer/ultisnips'
 " Tabnine aicoding support, default is 1
 " You should install tabnine first by ":InstallLspServer tabnine"
 let g:easycomplete_tabnine_enable = 1
-" Tabnine coding suggestion, default is 1
-let g:easycomplete_tabnine_suggestion = 1
+" Tabnine coding suggestion, default is 0
+let g:easycomplete_tabnine_suggestion = 0
 " Using nerdfont for lsp icons, default is 0
 let g:easycomplete_nerd_font = 1
 " Add window border for pum, default is 1 (for nvim 0.11 or higher)
@@ -117,7 +117,7 @@ Global configurations:
 | `g:easycomplete_menu_skin`           | `{}`          | Menu skin.                                                    |
 | `g:easycomplete_sign_text`           | `{}`          | Sign icons.                                                   |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp icons configuration                                       |
-| `g:easycomplete_tabnine_suggestion`  | 1             | Tabnine inline suggestion(for nvim only)                      |
+| `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine inline suggestion(for nvim only)                      |
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
 | `g:easycomplete_directory_enable`    | 1             | Directory complete                                            |
@@ -254,7 +254,7 @@ let g:easycomplete_tabnine_config = {
 
 TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
 
-Disable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 0`.
+Enable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 1`.
 
 ---------------------
 
