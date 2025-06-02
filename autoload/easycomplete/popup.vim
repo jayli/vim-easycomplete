@@ -609,6 +609,9 @@ function! s:NVimShow(opt, windowtype, float_type)
   elseif a:windowtype == "float" && a:float_type == "lint"
     let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
     let fgcolor = s:GetSignGuifgAtCurrentLine()
+    if fgcolor == "NONE"
+      let fgcolor = easycomplete#ui#GetFgColor("Comment")
+    endif
     call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
     call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
   else
