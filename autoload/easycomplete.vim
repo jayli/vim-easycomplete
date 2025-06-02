@@ -2339,6 +2339,12 @@ function! easycomplete#CursorMovedI()
   endif
 endfunction
 
+function! easycomplete#ColorScheme()
+  if g:easycomplete_winborder
+    call easycomplete#ui#HiFloatBorder()
+  endif
+endfunction
+
 function! easycomplete#defination()
   call easycomplete#action#defination#do()
 endfunction
