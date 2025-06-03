@@ -240,7 +240,7 @@ Vim-EasyComplete does not integration snippets by default. If you want snippet s
 
 In addition to associating AI matching words in the complete menu, there are multiple options for AI coding suggestions.
 
-#### 1）Tabnine
+### 1）Tabnine
 
 Vim-easycomplete integrates Tabnine built-in.Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
@@ -262,11 +262,11 @@ TabNine works well without APIKey. If you have a Tabnine's Pro API key or purcha
 
 Enable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 1`.
 
-#### 2) [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/)
+### 2) [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/)
 
 Vim-easycomplete is working well with [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/).
 
-#### 3) Aone-Copilot.nvim
+### 3) Aone-Copilot.nvim
 
 If you are an Alibaba engineer, then Aone-copilot is the best choice. 
 
