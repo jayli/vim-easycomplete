@@ -234,16 +234,22 @@ Vim-EasyComplete does not integration snippets by default. If you want snippet s
 
 > [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
 
-## AI Coding via TabNine Support
 
-Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
+
+## AI Coding Suggestions
+
+In addition to associating AI matching words in the complete menu, there are multiple options for AI coding suggestions.
+
+#### 1）Tabnine
+
+Vim-easycomplete integrates Tabnine built-in.Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
 
 <img src="https://gw.alicdn.com/imgextra/i2/O1CN01Qjk2tV2A20Ss9jtcq_!!6000000008144-0-tps-792-470.jpg" width="500px" />
 
-Set `let g:easycomplete_tabnine_enable = 0` to disable TabNine. You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
+You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
 
 - *line_limit*: The number of lines before and after the cursor to send to TabNine. If the option is smaller, the performance may be improved. (default: 1000)
-- *max_num_result*: Max results from TabNine. (default: 3)
+- *max_num_result*: Max results from TabNine showing in the complete menu. (default: 3)
 
 ```vim
 let g:easycomplete_tabnine_config = {
@@ -255,6 +261,14 @@ let g:easycomplete_tabnine_config = {
 TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
 
 Enable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 1`.
+
+#### 2) [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/)
+
+Vim-easycomplete is working well with [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/).
+
+#### 3) Aone-Copilot.nvim
+
+If you are an Alibaba engineer, then Aone-copilot is the best choice. 
 
 ---------------------
 
