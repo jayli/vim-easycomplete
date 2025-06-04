@@ -201,4 +201,49 @@ function EasyComplete.filter(match_list, needle)
   return result
 end
 
+-- 假设 s:GetItemWord(item) 在 Lua 中对应 item.word
+local function get_item_word(item)
+  return item.word or ""
+end
+
+function EasyComplete.distinct_keywords(menu_list)
+  if not menu_list or #menu_list == 0 then
+    return {}
+  end
+
+  local result_items = vim.deepcopy(menu_list)
+  local buf_list = {}
+
+  -- 第一步：收集所有来自 'buf' 的 word
+  for _, item in ipairs(menu_list) do
+    local plugin_name = item.plugin_name or ""
+    if plugin_name == "buf" then
+      table.insert(buf_list, item.word)
+    end
+  end
+
+  -- 第二步：如果 word 被 buf 包含，且是 buf 类型，则从结果中移除
+  for _, item in ipairs(menu_list) do
+    local plugin_name = item.plugin_name or ""
+    if plugin_name == "buf" or plugin_name == "snips" then
+      goto continue
+    end
+
+    local word = get_item_word(item)
+    if vim.tbl_contains(buf_list, word) then
+      -- 过滤掉 result_items 中 plugin_name == "buf" 且 word 相同的项
+      for i = #result_items, 1, -1 do
+        local it = result_items[i]
+        if (it.plugin_name == "buf") and (it.word == word) then
+          table.remove(result_items, i)
+        end
+      end
+    end
+
+    ::continue::
+  end
+
+  return result_items
+end
+
 return EasyComplete

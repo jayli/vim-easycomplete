@@ -1,5 +1,6 @@
 """ 常用的工具函数
 scriptencoding utf-8
+let s:lua_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 
 " get file extention {{{
 function! easycomplete#util#extention()
@@ -903,6 +904,10 @@ endfunction
 "popup 菜单内关键词去重，只做buff、dict和lsp里的keyword去重
 "snippet 不去重
 function! easycomplete#util#distinct(menu_list)
+  if g:env_is_nvim
+    let result_items = s:lua_toolkit.distinct_keywords(a:menu_list)
+    return result_items
+  endif
   if empty(a:menu_list) || len(a:menu_list) == 0
     return []
   endif

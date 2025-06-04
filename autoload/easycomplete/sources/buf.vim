@@ -98,7 +98,7 @@ function! s:GetBufKeywordsList(typing)
       " 性能测试：分检出 84238 个单词
       " lua: 0.021
       " vim: 0.147
-      if easycomplete#util#HasLua()
+      if g:env_is_nvim
         let local_kwlist = s:lua_toolkit.get_buf_keywords(lines)
       else
         for line in lines
@@ -111,7 +111,7 @@ function! s:GetBufKeywordsList(typing)
     endif
   endfor
   " call easycomplete#util#StartRecord()
-  if easycomplete#util#HasLua()
+  if g:env_is_nvim
     " 匹配首字符
     " 58424 → 3623   0.010739
     " 匹配前三个起始字符
