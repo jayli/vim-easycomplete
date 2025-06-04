@@ -15,6 +15,13 @@ function! easycomplete#sources#py#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["py", "pyi"])
 endfunction
 
+function! easycomplete#sources#py#filter(matches)
+  let ctx = easycomplete#context()
+  let matches = a:matches
+  let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
+  return matches
+endfunction
+
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction

@@ -1473,6 +1473,17 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
             \ })
       let ret['user_data'] = json_encode(user_data_json_f)
       let ret['user_data_json'] = user_data_json_f
+    elseif next_to_left_paren && word[-2:] == "()"
+      let ret["word"] = word[0:-3]
+      let ret['abbr'] = ret["abbr"]
+      let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
+            \ 'expandable': 0,
+            \ 'custom_expand': 0,
+            \ 'placeholder_position': strlen(word),
+            \ 'cursor_backing_steps': 0
+            \ })
+      let ret['user_data'] = json_encode(user_data_json_f)
+      let ret['user_data_json'] = user_data_json_f
     endif
   endif
   return ret
