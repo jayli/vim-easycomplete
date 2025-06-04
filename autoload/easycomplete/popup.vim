@@ -126,8 +126,20 @@ function! s:GetCurrentLineLastCharToWindowRightEdgeDistance()
   return winwidth(0) - wincol() - s:GetCusorToLineRightEdgeDistance() + 1
 endfunction
 
+function! s:CurrCharIsChinese()
+  let offset = 0
+  let l_len = strwidth(strpart(getline('.'), col('.')-1, 3))
+  if l_len == 2
+    let offset = 1 " 是中文字符
+  else
+    let offset = 0 " 不是中文字符
+  endif
+  return offset
+endfunction
+
 function! s:GetCusorToLineRightEdgeDistance()
-  return strchars(getline('.')) - virtcol('.') + 1
+  let offset = s:CurrCharIsChinese()
+  return strwidth(getline('.')) - virtcol('.') + 1 + offset
 endfunction
 
 function! s:lint(content, hl, ft)
@@ -192,7 +204,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     let float_maxwidth = g:easycomplete_popup_width
   endif
   let content = easycomplete#util#ModifyInfoByMaxwidth(content, float_maxwidth)
-  if len(content) == 1 && strlen(content[0]) == 0
+  if len(content) == 1 && strwidth(content[0]) == 0
     return
   endif
   let prevw_width = easycomplete#popup#DisplayWidth(content, float_maxwidth)
