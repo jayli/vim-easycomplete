@@ -713,7 +713,9 @@ function! s:PumDirection(buffer_height)
     endif
   elseif g:easycomplete_winborder && below_space <= 4 && buffer_height > below_space - 2
     return "above"
-  elseif buffer_height == below_space && g:easycomplete_winborder
+  elseif buffer_height == below_space && g:easycomplete_winborder && below_space <= 7
+    return "above"
+  elseif buffer_height == below_space && !g:easycomplete_winborder && below_space <= 6
     return "above"
   else " 如果底部空间足够
     return "below"
