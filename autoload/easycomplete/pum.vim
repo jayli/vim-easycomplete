@@ -711,6 +711,10 @@ function! s:PumDirection(buffer_height)
     else " 底部空间不够且溢出5个以上的 item，就展示在上部
       return "above"
     endif
+  elseif g:easycomplete_winborder && below_space <= 4 && buffer_height > below_space - 2
+    return "above"
+  elseif buffer_height == below_space && g:easycomplete_winborder
+    return "above"
   else " 如果底部空间足够
     return "below"
   endif
