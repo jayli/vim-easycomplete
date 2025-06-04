@@ -218,7 +218,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
           \ && prevw_height >= 3
           \ && winheight(win_getid()) - winline() >= 3 + (g:easycomplete_winborder ? 2 : 0)
       " 压缩float框向下展开
-      let opt.height = winheight(win_getid()) - winline()
+      let opt.height = winheight(win_getid()) - winline() - (g:easycomplete_winborder ? 1 : 0)
       let opt.row = winline() + 1 + screen_enc
     else
       " 菜单向上展开
