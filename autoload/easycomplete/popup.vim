@@ -138,8 +138,11 @@ function! s:CurrCharIsChinese()
 endfunction
 
 function! s:GetCusorToLineRightEdgeDistance()
-  let offset = s:CurrCharIsChinese()
-  return strwidth(getline('.')) - virtcol('.') + 1 + offset
+  let l:chinese_offset = s:CurrCharIsChinese()
+  " 要计算当前行的 \t 的数量，根据&tabstop长度补上差的宽度
+  let l:ts_nr = len(substitute(getline('.'), '[^\t]', '', 'g'))
+  let l:offset = (&tabstop - 1) * l:ts_nr
+  return strwidth(getline('.')) + l:offset - virtcol('.') + 1 + l:chinese_offset
 endfunction
 
 function! s:lint(content, hl, ft)
