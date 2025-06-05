@@ -239,11 +239,39 @@ function EasyComplete.distinct_keywords(menu_list)
         end
       end
     end
-
     ::continue::
   end
-
   return result_items
+end
+
+-- 判断 diagnostics 中是否已经包含 item（根据 sortNumber）
+function EasyComplete.has(diagnostics, item)
+  local item_sort = item.sortNumber
+  if not item_sort then return false end
+
+  for _, elem in ipairs(diagnostics) do
+    if elem.sortNumber == item_sort then
+      return true
+    end
+  end
+
+  return false
+end
+
+-- 对 diagnostics 列表进行去重
+function EasyComplete.sign_distinct(diagnostics)
+  if not diagnostics or #diagnostics == 0 then
+    return {}
+  end
+
+  local ret = {}
+  for _, item in ipairs(diagnostics) do
+    if not EasyComplete.has(ret, item) then
+      table.insert(ret, item)
+    end
+  end
+
+  return ret
 end
 
 return EasyComplete

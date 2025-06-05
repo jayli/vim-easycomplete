@@ -9,6 +9,7 @@ let g:easycomplete_diagnostics_last_msg= ""
 let g:easycomplete_diagnostics_last_popup = ""
 " 上一次 lint 所在的行号
 let g:easycomplete_diagnostics_last_ln = 0
+let s:lua_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 
 let s:error_text       = get(g:easycomplete_sign_text, "error", ">>")
 let s:waring_text      = get(g:easycomplete_sign_text, "warning", ">>")
@@ -363,8 +364,9 @@ function! easycomplete#sign#cache(response)
     call sort(diagnostics_result, 'easycomplete#sign#sort')
     let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] = diagnostics_result
     let tmp_diagnostics = g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics']
-    let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] =
-          \ easycomplete#sign#distinct(tmp_diagnostics)
+    let l:tmp_diagnostics_l = g:env_is_nvim ?
+          \ s:lua_toolkit.sign_distinct(tmp_diagnostics) : easycomplete#sign#distinct(tmp_diagnostics)
+    let g:easycomplete_diagnostics_cache[l:key]['params']['diagnostics'] = l:tmp_diagnostics_l
   endif
 endfunction
 
