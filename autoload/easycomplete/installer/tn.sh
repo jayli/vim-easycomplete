@@ -4,7 +4,10 @@
 # Download latest TabNine binaries
 set -e
 
-version=${version:-$(curl -sS https://update.tabnine.com/bundles/version)}
+#version=${version:-$(curl -sS https://update.tabnine.com/bundles/version)}
+#4.280.0
+
+version="4.254.0"
 
 case $(uname -s) in
 "Darwin")
