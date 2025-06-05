@@ -117,6 +117,9 @@ endif
 if !exists("g:easycomplete_tabnine_enable")
   let g:easycomplete_tabnine_enable = 1
 endif
+if !exists("g:easycomplete_ghost_text")
+  let g:easycomplete_ghost_text = 1
+endif
 if !exists("g:easycomplete_winborder")
   let g:easycomplete_winborder = 0
 endif
@@ -192,6 +195,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_menuflag_tabnine':   g:easycomplete_menuflag_tabnine,
       \ 'g:easycomplete_lsp_type_font':      g:easycomplete_lsp_type_font,
       \ 'g:easycomplete_tabnine_config':     g:easycomplete_tabnine_config,
+      \ 'g:easycomplete_ghost_text':         g:easycomplete_ghost_text,
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
       \ 'g:easycomplete_signature_offset':   g:easycomplete_signature_offset,
       \ 'g:easycomplete_directory_enable':   g:easycomplete_directory_enable,
