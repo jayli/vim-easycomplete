@@ -1,6 +1,17 @@
 """ 常用的工具函数
 scriptencoding utf-8
-let s:lua_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
+let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
+let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
+
+function! easycomplete#util#ShowHint(text)
+  if g:env_is_vim | return | endif
+  call s:tabnine_toolkit.show_hint([a:text])
+endfunction
+
+function! easycomplete#util#DeleteHint()
+  if g:env_is_vim | return | endif
+  call s:tabnine_toolkit.delete_hint()
+endfunction
 
 " get file extention {{{
 function! easycomplete#util#extention()
@@ -449,8 +460,8 @@ function! s:FuzzySearchRegx(needle, haystack)
   " 结论：如果需要同时使用 filter 和 matchfuzzy 的时候优先使用 lua 做 matchfuzzy
   "
   " if easycomplete#util#HasLua()
-  "   let s:lua_toolkit = v:lua.require("easycomplete")
-  "   return s:lua_toolkit.fuzzy_search(a:needle, a:haystack)
+  "   let s:easycomplete_toolkit = v:lua.require("easycomplete")
+  "   return s:easycomplete_toolkit.fuzzy_search(a:needle, a:haystack)
   " else
   let tlen = strlen(a:haystack)
   let qlen = strlen(a:needle)
@@ -905,7 +916,7 @@ endfunction
 "snippet 不去重
 function! easycomplete#util#distinct(menu_list)
   if g:env_is_nvim
-    let result_items = s:lua_toolkit.distinct_keywords(a:menu_list)
+    let result_items = s:easycomplete_toolkit.distinct_keywords(a:menu_list)
   else
     let result_items = s:distinct_keywords(a:menu_list)
   endif

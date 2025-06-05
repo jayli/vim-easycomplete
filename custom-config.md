@@ -9,7 +9,7 @@ use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 vim.g.easycomplete_enable = 1
 
 -- pum border. Default is on.
-vim.g.easycomplete_winborder = 0
+vim.g.easycomplete_winborder = 1
 
 -- Highlight the symbol when holding the cursor if you need it.
 -- Default is off.
@@ -76,8 +76,8 @@ vim.cmd[[
 
 -- Enable Tabnine, default is on, install tabnine lsp via `:InstallLspServer tn`
 vim.g.easycomplete_tabnine_enable = 1
--- Enable Tabnine suggestion, default is on
-vim.g.easycomplete_tabnine_suggestion = 1
+-- Enable Tabnine suggestion, default is off
+vim.g.easycomplete_tabnine_suggestion = 0
 
 -- Enable directory complete. Default is on
 vim.g.easycomplete_directory_enable = 1
@@ -88,6 +88,9 @@ vim.g.easycomplete_filetypes = {
     whitelist = vim.fn["easycomplete#FileTypes"]("vim", {"vim","vimrc","nvim"})
   }
 }
+
+-- Enable ghost text support, default is on
+vim.g.easycomplete_ghost_text = 1
 
 -- Change the default complete trigger to another keymap
 -- Default is "<tab>"
@@ -108,4 +111,8 @@ vim.g.easycomplete_diagnostics_hover = 1
 
 -- recommended
 vim.opt.updatetime = 150
+
+-- Do not select first matched item
+-- "set completeopt-=noselect" to automatically select first matched item
+vim.cmd('set completeopt+=noselect')
 ```

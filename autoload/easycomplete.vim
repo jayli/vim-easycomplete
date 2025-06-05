@@ -74,7 +74,7 @@ let g:easycomplete_lint_float_width = 180
 " 控制是否触发tabnine suggest的timer
 let g:easycomplete_tabnine_suggest_timer = 0
 let s:easycomplete_cursor_move_timer = 0
-let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
+let s:easycomplete_ghost_text_str = ""
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -245,6 +245,11 @@ function! s:CompleteTypingMatch(...)
   if (empty(v:completed_item) && s:zizzing()) && !(s:VimColonTyping() || s:VimDotTyping())
     return
   endif
+
+  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    call easycomplete#util#DeleteHint()
+  endif
+
   if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
     return
   endif
@@ -345,6 +350,10 @@ function! easycomplete#CompleteDone()
   " hack for nvim
   " 正常情况下回退会触发 completedone，进而导致popup_close，nvim
   " 中也遵循这个逻辑，需要手动再打开一下
+  if g:env_is_nvim && !easycomplete#pum#visible()
+    call easycomplete#util#DeleteHint()
+    let s:easycomplete_ghost_text_str = ""
+  endif
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
     call s:ShowCompleteInfoWithoutTimer()
@@ -758,6 +767,12 @@ function! s:BackingCompleteHandler()
   let g:easycomplete_stunt_menuitems = []
   call s:zizz()
   let ctx = easycomplete#context()
+
+  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    call easycomplete#util#DeleteHint()
+    let s:easycomplete_ghost_text_str = ""
+  endif
+
   if empty(ctx["typing"]) || empty(ctx['char'])
         \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
     noa call s:CloseCompletionMenu()
@@ -770,6 +785,11 @@ function! s:BackingCompleteHandler()
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
       if g:env_is_nvim
         noa call easycomplete#pum#complete(start_pos, result)
+        if g:easycomplete_ghost_text && len(result) > 0
+          let ghost_text = s:GetGhostText(start_pos, result[0]["word"])
+          call easycomplete#util#ShowHint(ghost_text)
+          let s:easycomplete_ghost_text_str = ghost_text
+        endif
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件
         if !empty(result)
@@ -1181,6 +1201,14 @@ function! easycomplete#CompleteChanged()
   " 是不会触发 showinfo 的动作的
   " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
+  if g:easycomplete_ghost_text
+    if easycomplete#CompleteCursored()
+      call easycomplete#util#DeleteHint()
+    elseif !empty(s:easycomplete_ghost_text_str)
+      call easycomplete#util#DeleteHint()
+      call easycomplete#util#ShowHint(s:easycomplete_ghost_text_str)
+    endif
+  endif
   let item = deepcopy(easycomplete#GetCursordItem())
   call easycomplete#SetCompletedItem(item)
   if empty(item)
@@ -1768,8 +1796,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
         let result = tabnine_result + copy(result)
       endif
 
-      " call s:console(result[0]["word"], s:GetGhostText(a:start_pos, result[0]["word"]))
-
       " Info: 调用 complete 有两种方法
       "    第一种是直接执行 complete, complete(a:start_pos, result)
       "    第二种是通过<Plug>Complete,easycomplete#_complete(a:start_pos, result)
@@ -1783,6 +1809,11 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       call easycomplete#tabnine#flush()
       noa call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
+      if g:easycomplete_ghost_text
+        let ghost_text = s:GetGhostText(a:start_pos, result[0]["word"])
+        call easycomplete#util#ShowHint(ghost_text)
+        let s:easycomplete_ghost_text_str = ghost_text
+      endif
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
     if s:first_render_timer > 0
@@ -1799,7 +1830,7 @@ function! s:GetGhostText(start_pos, first_complete_word)
   let curr_col = col('.')
   let span = curr_col - a:start_pos
   let prefix = strpart(getline('.'), a:start_pos - 1, span)
-  if prefix == a:first_complete_word[0:span - 1]
+  if prefix ==# a:first_complete_word[0:span - 1]
     return a:first_complete_word[span:]
   else
     return ""
@@ -1849,6 +1880,11 @@ function! easycomplete#_complete(start, items)
         let should_fire_pum_show = v:true
       endif
       call easycomplete#pum#complete(a:start, a:items)
+      if g:easycomplete_ghost_text
+        let ghost_text = s:GetGhostText(a:start, a:items[0]["word"])
+        call easycomplete#util#ShowHint(ghost_text)
+        let s:easycomplete_ghost_text_str = ghost_text
+      endif
     else
       let should_fire_pum_show = v:false
       if !pumvisible() && !empty(a:item)
