@@ -211,7 +211,7 @@ function EasyComplete.distinct_keywords(menu_list)
     return {}
   end
 
-  local result_items = vim.deepcopy(menu_list)
+  local result_items = menu_list
   local buf_list = {}
 
   -- 第一步：收集所有来自 'buf' 的 word

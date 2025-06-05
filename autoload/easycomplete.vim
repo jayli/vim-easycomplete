@@ -74,6 +74,7 @@ let g:easycomplete_lint_float_width = 180
 " 控制是否触发tabnine suggest的timer
 let g:easycomplete_tabnine_suggest_timer = 0
 let s:easycomplete_cursor_move_timer = 0
+let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -1767,6 +1768,8 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
         let result = tabnine_result + copy(result)
       endif
 
+      " call s:console(result[0]["word"], s:GetGhostText(a:start_pos, result[0]["word"]))
+
       " Info: 调用 complete 有两种方法
       "    第一种是直接执行 complete, complete(a:start_pos, result)
       "    第二种是通过<Plug>Complete,easycomplete#_complete(a:start_pos, result)
@@ -1790,6 +1793,17 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   catch
     call s:errlog('[ERR]', 'FirstCompleteRendering', v:exception)
   endtry
+endfunction
+
+function! s:GetGhostText(start_pos, first_complete_word)
+  let curr_col = col('.')
+  let span = curr_col - a:start_pos
+  let prefix = strpart(getline('.'), a:start_pos - 1, span)
+  if prefix == a:first_complete_word[0:span - 1]
+    return a:first_complete_word[span:]
+  else
+    return ""
+  endif
 endfunction
 
 function! easycomplete#refresh(...)

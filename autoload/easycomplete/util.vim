@@ -906,12 +906,17 @@ endfunction
 function! easycomplete#util#distinct(menu_list)
   if g:env_is_nvim
     let result_items = s:lua_toolkit.distinct_keywords(a:menu_list)
-    return result_items
+  else
+    let result_items = s:distinct_keywords(a:menu_list)
   endif
+  return result_items
+endfunction
+
+function! s:distinct_keywords(menu_list)
   if empty(a:menu_list) || len(a:menu_list) == 0
     return []
   endif
-  let result_items = deepcopy(a:menu_list)
+  let result_items = a:menu_list
   let buf_list = []
   for item in a:menu_list
     " if item.menu == g:easycomplete_menuflag_buf || item.menu == g:easycomplete_menuflag_dict
