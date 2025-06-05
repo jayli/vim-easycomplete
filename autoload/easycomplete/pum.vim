@@ -466,14 +466,14 @@ function! s:InsertWord(word)
     call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
   endif
   call s:InsertingWordZizz()
-  silent! noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-  silent! noa call complete(startcol, [])
+  noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
+  noa call complete(startcol, [])
   call easycomplete#SnapShoot()
   execute 'noa set completeopt='.saved_completeopt
 endfunction
 
 function! s:InsertingWordZizz()
-  if easycomplete#pum#IsInsertingWord()
+  if easycomplete#pum#IsInsertingWord() && s:pum_insert_word_timer > 0
     call timer_stop(s:pum_insert_word_timer)
   endif
   let s:pum_insert_word_timer = timer_start(200, { -> s:InsertAwake() })

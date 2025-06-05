@@ -1022,7 +1022,7 @@ endfunction
 
 function! s:SaveTmp(file_name)
   let tmpfile = s:GetTmpFile(a:file_name)
-  silent! call writefile(getbufline(a:file_name, 1, '$'), tmpfile)
+  noa call writefile(getbufline(a:file_name, 1, '$'), tmpfile)
   return 1
 endfunction
 

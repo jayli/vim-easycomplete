@@ -617,7 +617,7 @@ function! s:NVimShow(opt, windowtype, float_type)
   if has_key(opt, "highlight")
     unlet opt.highlight
   endif
-  silent! noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, opt)
+  noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, opt)
   let g:easycomplete_popup_win[a:windowtype] = winid
   if a:windowtype == "popup" || (a:windowtype == "float" && a:float_type == "signature")
     call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')

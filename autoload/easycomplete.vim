@@ -156,8 +156,8 @@ function! s:BindingTypingCommandOnce()
   catch
     " do nothing
   endtry
-  exec "inoremap <silent><expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
-  exec "inoremap <silent><expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
+  exec "inoremap <expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
+  exec "inoremap <expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
   try
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_next . " :EasyCompleteNextDiagnostic<CR>"
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_prev . " :EasyCompletePreviousDiagnostic<CR>"
@@ -759,7 +759,7 @@ function! s:BackingCompleteHandler()
   let ctx = easycomplete#context()
   if empty(ctx["typing"]) || empty(ctx['char'])
         \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
-    silent! noa call s:CloseCompletionMenu()
+    noa call s:CloseCompletionMenu()
     call s:flush()
   else
     let g:easycomplete_stunt_menuitems = []
@@ -768,7 +768,7 @@ function! s:BackingCompleteHandler()
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
       if g:env_is_nvim
-        noa silent! call easycomplete#pum#complete(start_pos, result)
+        noa call easycomplete#pum#complete(start_pos, result)
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件
         if !empty(result)
@@ -1778,7 +1778,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 的 CmdlineEnter 和 CmdlineLeave，带来 statusline 闪烁。
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
       call easycomplete#tabnine#flush()
-      silent! noa call s:complete(a:start_pos, result)
+      noa call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
@@ -1819,7 +1819,7 @@ function! s:complete(start, context) abort
       call s:ShowCompleteInfoInSecondRendering()
     endif
   endif
-  noa silent! call easycomplete#popup#overlay()
+  noa call easycomplete#popup#overlay()
 endfunction
 
 " Alias of complete()
