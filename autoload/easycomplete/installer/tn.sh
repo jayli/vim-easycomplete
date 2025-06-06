@@ -7,9 +7,11 @@ set -e
 #version=${version:-$(curl -sS https://update.tabnine.com/bundles/version)}
 #4.280.0
 
-version="4.251.0"
-version="3.3.34"
 version="3.3.126"
+version="4.4.223"
+version="3.3.34"
+version="4.277.1"
+version="4.251.0"
 
 case $(uname -s) in
 "Darwin")
@@ -27,6 +29,7 @@ esac
 # we want the binary to reside inside our plugin's dir
 cd $(pwd)
 path=$version/$platform
+echo $path
 
 curl https://update.tabnine.com/bundles/${path}/TabNine.zip --create-dirs -o binaries/${path}/TabNine.zip
 unzip -o binaries/${path}/TabNine.zip -d binaries/${path}
@@ -45,6 +48,11 @@ $version
 EOF
 
 touch tabnine.log
+
+mkdir binaries/0.0.1
+mkdir binaries/0.0.1/$platform
+touch binaries/0.0.1/$platform/bundles.lock
+touch binaries/0.0.1/$platform/TabNine.zip
 
 chmod +x TabNine
 

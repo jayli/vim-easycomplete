@@ -235,12 +235,50 @@ function! easycomplete#sources#tn#SimpleTabNineRequest(...)
   endif
 endfunction
 
+" 删除指定目录下除 "0.0.1" 和 "4.251.0" 以外的所有子目录
+" TODO here jayli
+function! s:DeleteAllDirsExceptTow(dir) abort
+  call s:log(a:dir)
+  let items = glob(a:dir . '/*', 0, 0, 1)
+  call s:log('---',items)
+  for item in items
+    let l:dir_name = fnamemodify(item, ':t')
+    call s:log('...',item, '|',l:dir_name)
+    if l:dir_name ==# "0.0.1" || l:dir_name ==# "4.251.0"
+      continue
+    endif
+    if isdirectory(item)
+      call s:DD(item)
+    endif
+  endfor
+endfunction
+
+" 递归删除目录中的文件和空目录
+function! s:DD(dir) abort
+  " 获取所有子项（文件 + 目录）
+  let items = glob(a:dir . '/*', 0, 0, 1)
+  for item in items
+    if isdirectory(item)
+      " 如果是目录，递归处理
+      call s:DD(item)
+    else
+      " 如果是文件，直接删除
+      call delete(item)
+    endif
+  endfor
+  " 最后删除当前目录（此时应为空）
+  call delete(a:dir, 'd')
+endfunction
+
 function! s:StartTabNine()
   if empty(s:name)
     return
   endif
   let name = s:name
   let l:tabnine_path = easycomplete#installer#GetCommand(name)
+  let l:tabnine_root_path = fnameescape(fnamemodify(l:tabnine_path, ':p:h'))
+  call s:log(l:tabnine_root_path)
+  call s:DeleteAllDirsExceptTow(l:tabnine_root_path . "/binaries")
   let l:log_file = fnameescape(fnamemodify(l:tabnine_path, ':p:h')) . '/tabnine.log'
   let l:cmd = [
         \   l:tabnine_path,
