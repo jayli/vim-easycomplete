@@ -306,8 +306,10 @@ endfunction
 function! easycomplete#TabNineCompleteRendering()
   let current_items = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
   let tabnine_result = easycomplete#sources#tn#GetGlobalSourceItems()
+  if empty(tabnine_result) | return | endif
   let result = tabnine_result + current_items
   let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(s:GetTypingWord()) : s:easycomplete_start_pos
+  " call s:trace()
   call s:SecondCompleteRendering(start_pos, result)
 endfunction
 
@@ -336,8 +338,6 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   " 防止抖动
   if easycomplete#sources#tn#available()
     let result_all = easycomplete#sources#tn#GetGlobalSourceItems() + result
-  else
-    let result_all = [] + result
   endif
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
@@ -401,7 +401,11 @@ function! s:LazyTabNineFire(delay)
 endfunction
 
 function! easycomplete#WinScrolled()
-  call easycomplete#pum#WinScrolled()
+  if empty(v:event) | return | endif
+  let l:winid = win_getid()
+  if has_key(v:event, l:winid) || has_key(v:event, easycomplete#pum#PumWinid())
+    call easycomplete#pum#WinScrolled()
+  endif
 endfunction
 
 " 有时候 pum_done 事件执行的比 PumClose 要快，这时判断 pumvisible 应该为 false

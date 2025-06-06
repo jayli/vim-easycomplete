@@ -11,14 +11,14 @@ let s:default_pum_pot = {
 let s:default_scroll_thumb_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
-        \ "zindex": 52,
+        \ "zindex": 70,
         \ "bufpos": [0,0]
         \ }
 " Scrollbar 默认属性
 let s:default_scroll_bar_pot = {
         \ "relative": "editor",
         \ "focusable": v:false,
-        \ "zindex": 51,
+        \ "zindex": 60,
         \ "bufpos": [0,0]
         \ }
 let s:pum_window = 0
@@ -124,7 +124,6 @@ function! s:hl()
 endfunction
 
 function! s:OpenPum(startcol, lines)
-  " call add(a:lines, "`sdf`,|sdfsdf|, ^sdfsfs^ s df")
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
@@ -147,7 +146,8 @@ function! s:OpenPum(startcol, lines)
   call nvim_win_set_cursor(s:pum_window, [1, 0])
   call s:RenderScrollBar()
   if g:easycomplete_winborder
-    call timer_start(20, { -> s:RenderScrollThumb() })
+    " call timer_start(0, { -> s:RenderScrollThumb() })
+    call s:RenderScrollThumb()
   else
     call s:RenderScrollThumb()
   endif
@@ -606,6 +606,13 @@ function! s:RenderScrollThumb()
     let s:scrollthumb_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollthumb_opts, hl)
   else
     " update scrollthumb window
+
+    " if get(scrollthumb_opts, "row") == -1 && g:easycomplete_winborder
+    "   let scrollthumb_opts["row"] = 100
+    " endif
+    " if get(scrollthumb_opts, "row") == 0 && g:easycomplete_winborder
+    "   let scrollthumb_opts["row"] = 101
+    " endif
     call nvim_win_set_config(s:scrollthumb_window, scrollthumb_opts)
   endif
 endfunction
@@ -622,7 +629,7 @@ function! s:ComputeScrollBarPos()
   let h = pum_pos.height
   if g:easycomplete_winborder
     let c = c + 1
-    let r = r + 1 + (s:pum_direction == "above" ? 2 : 0)
+    let r = r + 1 " + (s:pum_direction == "above" ? 2 : 0)
   endif
   return { "col": c, "row": r, "width": w, "height": h }
 endfunction
@@ -798,6 +805,10 @@ function! s:ComputePumPos(startcol, buffer_size)
   return l:pum_pos
 endfunction
 
+function! easycomplete#pum#PumWinid()
+  return s:pum_window
+endfunction
+
 function! s:SetWinBorder(opt, pum_direction)
   if a:pum_direction == "below"
     let l:row = a:opt.row
@@ -830,12 +841,15 @@ function! s:SetWinBorder(opt, pum_direction)
     elseif a:opt.height + 1 == l:above_space
       " 向上+1后触顶
       let l:height = a:opt.height - 1
+      let l:row = 0
     elseif a:opt.height + 2 == l:above_space
       " 向上+2后触顶
       let l:height = a:opt.height - 2
+      let l:row = 0
     else
       " 超过触顶，一般不会走到这里
       let l:height = a:opt.height - 2
+      let l:row = 0
     endif
   endif
   return extend(a:opt, {

@@ -212,8 +212,9 @@ function! easycomplete#util#GetSha256(item) " {{{
 endfunction " }}}
 
 function! easycomplete#util#GetUserData(item) " {{{
-  if has_key(a:item, "user_data_json")
-    return get(a:item, "user_data_json", {})
+  let ret = get(a:item, "user_data_json", {})
+  if !empty(ret)
+    return ret
   endif
   let user_data_str = get(a:item, 'user_data', "")
   if empty(user_data_str)
