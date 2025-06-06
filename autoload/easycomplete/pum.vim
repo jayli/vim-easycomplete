@@ -467,7 +467,8 @@ function! s:InsertWord(word)
   endif
   call s:InsertingWordZizz()
   noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-  noa call complete(startcol, [])
+  " call complete(startcol, [])
+  call feedkeys("\<C-y>", 'n')
   call easycomplete#SnapShoot()
   execute 'noa set completeopt='.saved_completeopt
 endfunction
