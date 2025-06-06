@@ -8,6 +8,8 @@ set -e
 #4.280.0
 
 version="4.251.0"
+version="3.3.34"
+version="3.3.126"
 
 case $(uname -s) in
 "Darwin")
