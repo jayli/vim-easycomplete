@@ -1830,7 +1830,7 @@ function! s:GetGhostText(start_pos, first_complete_word)
   let curr_col = col('.')
   let span = curr_col - a:start_pos
   let prefix = strpart(getline('.'), a:start_pos - 1, span)
-  if prefix ==# a:first_complete_word[0:span - 1]
+  if prefix == a:first_complete_word[0:span - 1]
     return a:first_complete_word[span:]
   else
     return ""
