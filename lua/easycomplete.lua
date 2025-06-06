@@ -20,19 +20,6 @@ local function test()
   console(Util.get(current_lsp_ctx, "lsp_name"))
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
-
-  -- vim.cmd([[
-  --   autocmd TextChangedI * lua require("easycomplete").typing()
-  -- ]])
-  -- console(1,1,2,9, "sdf")
-  -- console('------------------------')
-  -- console('xcv')
-  -- console(table)
-  -- foo()
-  -- console("=================================")
-  -- vim.cmd([[
-  --   autocmd CompleteChanged * lua require("easycomplete").complete_changed()
-  -- ]])
 end
 
 -- all in all 入口

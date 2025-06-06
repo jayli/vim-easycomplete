@@ -41,7 +41,7 @@ if g:easycomplete_nerd_font == 1
         \      "menu":"Dict",
         \    },
         \   "tabnine": {
-        \      "kind":get(kind_icons, "tabnine", "󱙺"),
+        \      "kind":get(kind_icons, "tabnine", "󰕃"),
         \      "menu":"𝘛𝘕"
         \    }
         \ }
