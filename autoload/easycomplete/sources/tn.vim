@@ -116,7 +116,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
 endfunction
 
 function! s:GetTabNineParams()
-  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 700)
+  let l:line_limit = get(g:easycomplete_tabnine_config, 'line_limit', 1000)
   let l:max_num_result = get(g:easycomplete_tabnine_config, 'max_num_result', 3)
   let l:pos = getpos('.')
   let l:last_line = line('$')
@@ -236,14 +236,10 @@ function! easycomplete#sources#tn#SimpleTabNineRequest(...)
 endfunction
 
 " 删除指定目录下除 "0.0.1" 和 "4.251.0" 以外的所有子目录
-" TODO here jayli
 function! s:DeleteAllDirsExceptTow(dir) abort
-  call s:log(a:dir)
-  let items = glob(a:dir . '/*', 0, 0, 1)
-  call s:log('---',items)
-  for item in items
+  let l:items = split(glob(a:dir . '/*', 0, 0, 1), "\n")
+  for item in l:items
     let l:dir_name = fnamemodify(item, ':t')
-    call s:log('...',item, '|',l:dir_name)
     if l:dir_name ==# "0.0.1" || l:dir_name ==# "4.251.0"
       continue
     endif
@@ -256,7 +252,7 @@ endfunction
 " 递归删除目录中的文件和空目录
 function! s:DD(dir) abort
   " 获取所有子项（文件 + 目录）
-  let items = glob(a:dir . '/*', 0, 0, 1)
+  let items = split(glob(a:dir . '/*', 0, 0, 1), "\n")
   for item in items
     if isdirectory(item)
       " 如果是目录，递归处理
