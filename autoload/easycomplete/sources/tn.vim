@@ -273,7 +273,6 @@ function! s:StartTabNine()
   let name = s:name
   let l:tabnine_path = easycomplete#installer#GetCommand(name)
   let l:tabnine_root_path = fnameescape(fnamemodify(l:tabnine_path, ':p:h'))
-  call s:log(l:tabnine_root_path)
   call s:DeleteAllDirsExceptTow(l:tabnine_root_path . "/binaries")
   let l:log_file = fnameescape(fnamemodify(l:tabnine_path, ':p:h')) . '/tabnine.log'
   let l:cmd = [
