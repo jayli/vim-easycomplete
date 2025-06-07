@@ -42,7 +42,7 @@ if g:easycomplete_nerd_font == 1
         \    },
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󰕃"),
-        \      "menu":"𝘈𝘐"
+        \      "menu":"𝘛𝘕"
         \    }
         \ }
   let g:easycomplete_sign_text = {
