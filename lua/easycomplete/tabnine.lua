@@ -79,7 +79,7 @@ function Export.show_hint(code_block)
 
   vim.api.nvim_buf_set_extmark(0, tabnine_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, {
     id = 1,
-    virt_text_pos = "overlay",
+    virt_text_pos = "inline",
     virt_text = virt_text,
     virt_lines = virt_lines
   })

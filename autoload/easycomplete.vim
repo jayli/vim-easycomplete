@@ -246,14 +246,29 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
-  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-    call easycomplete#util#DeleteHint()
-  endif
 
   if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
+    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+      call easycomplete#util#DeleteHint()
+    endif
     return
   endif
-  let l:char = easycomplete#context()["char"]
+  " let l:char = easycomplete#context()["char"]
+  let l:char = strpart(getline('.'), col('.') - 2, 1)
+
+  " 先处理 Ghost text
+  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
+    if ghost_text_first_char == l:char
+      if strlen(s:easycomplete_ghost_text_str) >= 2
+        let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
+        " call s:console('before complete()', new_ghost_text)
+        call easycomplete#util#ShowHint(new_ghost_text)
+      else
+        call easycomplete#util#DeleteHint()
+      endif
+    endif
+  endif
   " 非 ASCII 码时终止
   if char2nr(l:char) < 33
     call s:CloseCompletionMenu()
@@ -1830,15 +1845,34 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   endtry
 endfunction
 
+function! s:RemovePrefixIgnoreCase(str, prefix) abort
+  if a:prefix ==# ''
+    return ''
+  endif
+  " 构造正则表达式：忽略大小写匹配前缀，并只匹配开头部分
+  let pattern = '\c^' . escape(a:prefix, '\/.*$^~[]')
+  " 判断是否匹配
+  if a:str =~ pattern
+    " 匹配则返回去掉前缀的部分
+    return substitute(a:str, pattern, '', '')
+  else
+    " 不匹配则返回空字符串
+    return ''
+  endif
+endfunction
+
+" TODO here jayli ，再多测试一下
 function! s:GetGhostText(start_pos, first_complete_word)
   let curr_col = col('.')
   let span = curr_col - a:start_pos
+  " call s:console('getghosttext', "{{")
   let prefix = strpart(getline('.'), a:start_pos - 1, span)
-  if prefix == a:first_complete_word[0:span - 1]
-    return a:first_complete_word[span:]
-  else
-    return ""
-  endif
+  let ghost_text = s:RemovePrefixIgnoreCase(a:first_complete_word, prefix)
+  " call s:console('单词', a:first_complete_word)
+  " call s:console('前缀', prefix)
+  " call s:console('后缀', ghost_text)
+  " call s:console('}}')
+  return ghost_text
 endfunction
 
 function! easycomplete#refresh(...)
@@ -1885,8 +1919,10 @@ function! easycomplete#_complete(start, items)
       endif
       call easycomplete#pum#complete(a:start, a:items)
       if g:easycomplete_ghost_text
-        let ghost_text = s:GetGhostText(a:start, a:items[0]["word"])
+        " call s:console('complete时传入的 items[0]', a:items[0]["abbr"])
+        let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
         call easycomplete#util#ShowHint(ghost_text)
+        " call s:console('after complet()',ghost_text)
         let s:easycomplete_ghost_text_str = ghost_text
       endif
     else
