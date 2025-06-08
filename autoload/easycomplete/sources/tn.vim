@@ -6,6 +6,10 @@ let s:tn_ready = v:false
 " TabNine 第一次匹配需要大量算法运算，比较耗时，完成第一次之后速度比较快
 let b:module_building = v:false
 let s:tn_render_timer = 0
+let b:tn_timer_start = 0
+let b:tn_timer_end = 0
+" tn 运算较慢，为了更快的跟指动作，这里加一个超时，TN返回超时后就直接丢弃结果了
+let s:tn_timeout = 30
 let s:version = ''
 " 只用作空格、等号、逗号这些情况强制触发 Tabnine complete 的标志位
 " 0: 触发条件一律遵循 easycomplete#condition() 条件，和 FirstComplete 混合在一
@@ -39,6 +43,10 @@ function! s:flush()
   let global_opt = get(g:easycomplete_source, s:name, {})
   let global_opt.complete_result = []
   let s:force_complete = 0
+  if s:tn_render_timer > 0
+    call timer_stop(s:tn_render_timer)
+  endif
+  let s:tn_render_timer = 0
 endfunction
 
 function! s:ResetForceCompleteFlag()
@@ -211,7 +219,16 @@ function! s:TabNineRequest(name, param, ctx) abort
     return
   endtry
   let s:ctx = a:ctx
+  if s:tn_render_timer > 0
+    call timer_stop(s:tn_render_timer)
+    let s:tn_render_timer = 0
+  endif
+  let s:tn_render_timer = timer_start(s:tn_timeout, { -> s:timeout() })
   call easycomplete#job#send(s:tn_job, l:buffer)
+endfunction
+
+function! s:timeout()
+  let s:tn_render_timer = 0
 endfunction
 
 " 可以传参 ctx, 也可以留空
@@ -380,7 +397,12 @@ function! s:CompleteHandler(res)
     else
       if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
         " First Complete
-        call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
+        if s:tn_render_timer == 0
+          " tn 的返回已经超时了，为了防止pum抖动，结果直接丢弃
+        else
+          call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
+          let s:tn_render_timer = 0
+        endif
       else
         " Second Complete
         if !easycomplete#CompleteCursored() && &completeopt =~ "noselect"
