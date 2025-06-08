@@ -2510,6 +2510,7 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
+  if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
     call timer_stop(b:easycomplete_typing_timer)
     let b:easycomplete_typing_timer = 0
