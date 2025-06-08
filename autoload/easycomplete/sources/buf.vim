@@ -21,6 +21,8 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
   call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+
+  " call timer_start(1, { -> s:CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol']) })
   return v:true
 endfunction
 

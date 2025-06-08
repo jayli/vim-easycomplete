@@ -837,7 +837,7 @@ endfunction
 function! easycomplete#typing()
   let g:xxx1 = reltime()
   let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('typing start, 50 ms 的lazytype延时实际消耗了', ts)
+  call s:console('easycomplete#typing(), 50 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
@@ -978,7 +978,7 @@ function! s:DoComplete(immediately)
   " 执行 DoComplete
   " call s:StopAsyncRun()
   " call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
-  call s:CompleteHandler()
+  call s:MainCompleteHandler()
   return v:null
 endfunction
 
@@ -1614,7 +1614,8 @@ function! s:CloseCompletionMenu()
   call s:ResetCompletedItem()
 endfunction
 
-function! s:CompleteHandler()
+function! s:MainCompleteHandler()
+  call s:console('为什么会执行好多次')
   call s:StopAsyncRun()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
@@ -1781,10 +1782,11 @@ function! easycomplete#GetPlugNameByCommand(cmd)
   return plug_name
 endfunction
 
+" TODO here jayli ，这里没用了，要删掉
 function! s:HackForVimFirstComplete()
   let l:first_render_delay = s:easycomplete_first_render_delay
   let s:easycomplete_first_render_delay = 50
-  call s:CompleteHandler()
+  call s:MainCompleteHandler()
   let s:easycomplete_first_render_delay = l:first_render_delay
 endfunction
 
@@ -1806,7 +1808,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let source_result = a:menuitems
       " vimls 在文件过大时，按键很快时跟不上，这里加一个补救动作
       if &filetype == "vim" && empty(source_result)
-        call s:HackForVimFirstComplete()
+        " call s:HackForVimFirstComplete()
         return
       endif
     elseif !empty(typing_word) && easycomplete#context()["typed"] =~ "[a-zA-Z0-9#]$"
@@ -1816,7 +1818,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
       " vimlsp 比较慢，文件超过 1000 行后就跟不上敲击动作了
       if &filetype == "vim" && empty(source_result)
-        call s:HackForVimFirstComplete()
+        " call s:HackForVimFirstComplete()
         return
       endif
     else
@@ -2547,6 +2549,7 @@ function! s:LazyFireTyping()
   let gtmp = reltime()
   let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
   call s:console('从按键到 typing 执行之前的耗时，这个应该很短', ts)
+  " TODO here 为什么 50 的延时会体感这么久
   let l:lazy_time = 50
   if g:env_is_nvim
     call s:lua_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
