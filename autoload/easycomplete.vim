@@ -850,7 +850,9 @@ function! easycomplete#typing()
   endif
   if g:env_is_nvim && back_checking
     let g:easycomplete_backing = 1
+    call s:BackingCompleteHandler()
     " 回退不能激发 complete
+    call s:SnapShoot()
     return ""
   endif
 
@@ -2501,7 +2503,7 @@ function! easycomplete#TextChangedI()
     if s:BackChecking()
       let g:easycomplete_backing = 1
       " call s:BackingCompleteHandler()
-      call s:SnapShoot()
+      " call s:SnapShoot()
     endif
     return ""
   endif
