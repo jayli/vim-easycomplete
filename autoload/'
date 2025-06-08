@@ -76,7 +76,6 @@ let g:easycomplete_tabnine_suggest_timer = 0
 let s:easycomplete_cursor_move_timer = 0
 let s:easycomplete_ghost_text_str = ""
 let b:easycomplete_typing_timer = 0
-let s:lua_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -835,9 +834,6 @@ endfunction
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
-  let g:xxx1 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('typing start, 50 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
@@ -908,9 +904,6 @@ endfunction
 " immediately: 是否立即执行 complete()
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
-  let g:xxx2 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx2) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('Docomplete', ts)
   let l:ctx = easycomplete#context()
   " 过滤不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -1064,9 +1057,6 @@ endfunction
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCallingAtFirstComplete(ctx)
-  let g:xxx3 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompletorCallingAtFirstComplete', ts)
   let l:ctx = a:ctx
   call s:ResetCompleteTaskQueue()
   if s:first_render_timer > 0
@@ -1106,11 +1096,10 @@ function! s:CompletorCallingAtFirstComplete(ctx)
       let item = source_names[l:count]
       let l:count += 1
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
-        let x1 = reltime()
+        call s:console(item)
+        call easycomplete#util#StartRecord()
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
-        let x2 = reltime()
-        let ts = float2nr((reltimefloat(x2) - reltimefloat(x1)) * 1000)
-        call s:console(item, ts)
+        call easycomplete#util#Stopecord()
         if l:cprst == v:true " true: 继续
           continue
         else
@@ -1659,10 +1648,7 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
-  let g:ttt = reltime()
-  let ts = float2nr((reltimefloat(g:ttt) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompleteAdd',a:plugin_name, ts)
-  if !s:CheckCompleteTaskQueueAllDone()
+  if !s:CheckCompleteTastQueueAllDone()
     if s:zizzing() | return | endif
   endif
   if s:NotInsertMode() | return |endif
@@ -1675,7 +1661,7 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   endif
 
   if type(a:menu_list) != type([]) || empty(a:menu_list)
-    if s:CheckCompleteTaskQueueAllDone()
+    if s:CheckCompleteTastQueueAllDone()
       " continue
     else
       return
@@ -1750,10 +1736,7 @@ endfunction
 
 function! s:FirstComplete(start_pos, menuitems)
   if s:zizzing() | return | endif
-  if s:CheckCompleteTaskQueueAllDone()
-    let g:xxx3 = reltime()
-    let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-    call s:console('CompleteTaskQueueAllDone', ts)
+  if s:CheckCompleteTastQueueAllDone()
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
 endfunction
@@ -2019,7 +2002,7 @@ function! s:NormalizeSortVIM(items)
 endfunction
 
 function! s:NormalizeSortLua(items)
-  return s:lua_toolkit.normalize_sort(a:items)
+  return v:lua.require("easycomplete").normalize_sort(a:items)
 endfunction
 
 function! s:NormalizeSortPY(...)
@@ -2137,7 +2120,7 @@ function! s:SetCompleteTaskQueue(name, ctx, condition, done)
         \ })
 endfunction
 
-function! s:CheckCompleteTaskQueueAllDone()
+function! s:CheckCompleteTastQueueAllDone()
   let flag = v:true
   for item in g:easycomplete_complete_taskqueue
     if item.condition == 1 && item.done == 0
@@ -2149,7 +2132,7 @@ function! s:CheckCompleteTaskQueueAllDone()
 endfunction
 
 function! s:complete_check()
-  return !s:CheckCompleteTaskQueueAllDone()
+  return !s:CheckCompleteTastQueueAllDone()
 endfunction
 
 function! s:LetCompleteTaskQueueAllDone()
@@ -2533,27 +2516,12 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
-  call s:console('easycomplete#TextChangedI-------------')
-  let g:xxx0 = reltime()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
-    if g:env_is_nvim
-      call s:lua_toolkit.global_timer_stop()
-    else
-      call timer_stop(b:easycomplete_typing_timer)
-    endif
+    call timer_stop(b:easycomplete_typing_timer)
     let b:easycomplete_typing_timer = 0
   endif
-  let gtmp = reltime()
-  let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('从按键到 typing 执行之前的耗时，这个应该很短', ts)
-  let l:lazy_time = 50
-  if g:env_is_nvim
-    call s:lua_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
-    let b:easycomplete_typing_timer = reltime()[0]
-  else
-    let b:easycomplete_typing_timer = timer_start(l:lazy_time, { -> easycomplete#typing() })
-  endif
+  let b:easycomplete_typing_timer = timer_start(50, { -> easycomplete#typing() })
 endfunction
 
 function! easycomplete#TextChangedP()

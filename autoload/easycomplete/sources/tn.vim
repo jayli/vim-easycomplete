@@ -398,6 +398,7 @@ function! s:CompleteHandler(res)
       if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
         " First Complete
         if s:tn_render_timer == 0
+          call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
           " tn 的返回已经超时了，为了防止pum抖动，结果直接丢弃
         else
           call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)

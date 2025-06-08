@@ -5,6 +5,8 @@ local AutoLoad = require "easycomplete.autoload"
 local TabNine = require "easycomplete.tabnine"
 local console = Util.console
 local log = Util.log
+local global_timer = vim.loop.new_timer()
+local global_timer_counter = 1
 
 local function test()
   console(vim.inspect(Util))
@@ -277,6 +279,18 @@ function EasyComplete.replacement(abbr, positions, wrap_char)
   local res_o = table.concat(letters)
   local res_r = string.gsub(res_o, "%" .. wrap_char .. "%" .. wrap_char, "")
   return res_r
+end
+
+function EasyComplete.global_timer_start(function_name, timeout)
+  global_timer:start(timeout, 0, function()
+    vim.schedule(function()
+      vim.fn[function_name]()
+    end)
+  end)
+end
+
+function EasyComplete.global_timer_stop()
+  global_timer:stop()
 end
 
 return EasyComplete
