@@ -75,6 +75,7 @@ let g:easycomplete_lint_float_width = 180
 let g:easycomplete_tabnine_suggest_timer = 0
 let s:easycomplete_cursor_move_timer = 0
 let s:easycomplete_ghost_text_str = ""
+let b:easycomplete_typing_timer = 0
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -2489,7 +2490,8 @@ function! easycomplete#TextChangedI()
     endif
   else
     " TextChangedI
-    call easycomplete#typing()
+    " call easycomplete#typing()
+    call s:LazyFireTyping()
     if easycomplete#ok('g:easycomplete_signature_enable')
       " hack for #281
       call easycomplete#action#signature#LazyRunHandle()
@@ -2503,6 +2505,14 @@ function! easycomplete#TextChangedI()
     endif
     return ""
   endif
+endfunction
+
+function! s:LazyFireTyping()
+  if b:easycomplete_typing_timer > 0
+    call timer_stop(b:easycomplete_typing_timer)
+    let b:easycomplete_typing_timer = 0
+  endif
+  let b:easycomplete_typing_timer = timer_start(50, { -> easycomplete#typing() })
 endfunction
 
 function! easycomplete#TextChangedP()
