@@ -354,6 +354,8 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   " 防止抖动
   if easycomplete#sources#tn#available()
     let result_all = easycomplete#sources#tn#GetGlobalSourceItems() + result
+  else
+    let result_all = [] + result
   endif
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
