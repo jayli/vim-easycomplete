@@ -261,4 +261,22 @@ function EasyComplete.sign_distinct(diagnostics)
   return ret
 end
 
+function EasyComplete.replacement(abbr, positions, wrap_char)
+  -- 转换为字符数组（字符串 -> 字符表）
+  local letters = {}
+  for i = 1, #abbr do
+    letters[i] = abbr:sub(i, i)
+  end
+  -- 对每个位置进行包裹处理
+  for _, idx in ipairs(positions) do
+    if idx >= 0 and idx < #letters then
+      letters[idx+1] = wrap_char .. letters[idx+1] .. wrap_char
+    end
+  end
+  -- 合并成新字符串
+  local res_o = table.concat(letters)
+  local res_r = string.gsub(res_o, "%" .. wrap_char .. "%" .. wrap_char, "")
+  return res_r
+end
+
 return EasyComplete
