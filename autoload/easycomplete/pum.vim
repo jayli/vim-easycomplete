@@ -717,7 +717,9 @@ function! s:PumDirection(buffer_height)
   if buffer_height > below_space
     if below_space < 6 + (g:easycomplete_winborder ? 2 : 0) " 底部空间太小，小于 6，一律在上部展示
       return "above"
-    elseif below_space >= 10 " 底部空间大于等于10，一律在底部展示
+    elseif below_space >= 10 && !g:easycomplete_winborder " 无边框时底部空间大于等于10，一律在底部展示
+      return "below"
+    elseif below_space >= 12 && g:easycomplete_winborder " 有边框时底部空间大于等于12，一律在底部显示
       return "below"
     elseif buffer_height - (below_space - (g:easycomplete_winborder ? 2 : 0)) <= 3
       " 底部空间只藏了5个及以内的item，可以在底部展示
