@@ -47,6 +47,7 @@ let s:curr_items = []
 let s:original_ctx = {}
 " 当前编辑窗口的原始配置
 let s:original_opt = {}
+let s:contains_shortmess = stridx(&shortmess,"c") >= 0 ? 1 : 0
 
 " 几个常用尺寸的计算
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
@@ -70,6 +71,9 @@ function! easycomplete#pum#complete(startcol, items)
   endif
   let s:curr_items = deepcopy(items)
   call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
+  if !s:contains_shortmess
+    set shortmess+=c
+  endif
 endfunction
 
 function! s:HLExists(group)
@@ -897,6 +901,9 @@ function! s:flush()
   let g:easycomplete_match_id = 0
   if should_fire_pum_done
     doautocmd <nomodeline> User easycomplete_pum_done
+  endif
+  if !s:contains_shortmess
+    set shortmess-=c
   endif
 endfunction
 

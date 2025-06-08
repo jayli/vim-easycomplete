@@ -68,7 +68,7 @@ let g:easycomplete_backing_or_cr = 0
 " 用作 FirstComplete TaskQueue 回调的定时器
 let s:first_render_timer = 0
 " FirstCompleteRendering 中 LSP 的超时时间
-let g:easycomplete_first_render_delay = 500
+let s:easycomplete_first_render_delay = 500
 " lint 中 FloatWidth
 let g:easycomplete_lint_float_width = 180
 " 控制是否触发tabnine suggest的timer
@@ -911,7 +911,7 @@ function! s:DoComplete(immediately)
   endif
 
   " sh #!<tab> hack, bugfix #12
-  if &filetype == "sh" && easycomplete#context()['typed'] == "#!"
+  if &filetype == "sh" && l:ctx['typed'] == "#!"
     call s:AsyncRun(function('s:CompleteHandler'), [], 0)
     return v:null
   endif
@@ -955,8 +955,8 @@ function! s:DoComplete(immediately)
 
   " 检查模糊匹配 fuzzy match 条件
   if !empty(g:easycomplete_menuitems)
-        \ && !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx)
-        \ && s:SameBeginning(g:easycomplete_firstcomplete_ctx, easycomplete#context())
+        \ && !s:SameCtx(l:ctx, g:easycomplete_firstcomplete_ctx)
+        \ && s:SameBeginning(g:easycomplete_firstcomplete_ctx, l:ctx)
     call s:CompleteTypingMatch()
     return v:null
   endif
@@ -967,8 +967,9 @@ function! s:DoComplete(immediately)
   endif
 
   " 执行 DoComplete
-  call s:StopAsyncRun()
-  call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
+  " call s:StopAsyncRun()
+  " call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
+  call s:CompleteHandler()
   return v:null
 endfunction
 
@@ -1053,13 +1054,13 @@ endfunction
 
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
-function! s:CompletorCallingAtFirstComplete(...)
-  let l:ctx = easycomplete#context()
+function! s:CompletorCallingAtFirstComplete(ctx)
+  let l:ctx = a:ctx
   call s:ResetCompleteTaskQueue()
   if s:first_render_timer > 0
     call timer_stop(s:first_render_timer)
   endif
-  let s:first_render_timer = timer_start(g:easycomplete_first_render_delay,
+  let s:first_render_timer = timer_start(s:easycomplete_first_render_delay,
         \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
         \          [
         \            s:GetCompleteCache(l:ctx['typing'])['start_pos'],
@@ -1614,7 +1615,7 @@ function! s:CompleteHandler()
   " 否则不应该在后续链路做 Hack 了
   call s:flush()
   call s:CompleteInit()
-  call s:CompletorCallingAtFirstComplete()
+  call s:CompletorCallingAtFirstComplete(l:ctx)
   " 记录 g:easycomplete_firstcomplete_ctx 的时机，最早就是这里
   let g:easycomplete_firstcomplete_ctx = easycomplete#context()
 endfunction
@@ -1759,10 +1760,10 @@ function! easycomplete#GetPlugNameByCommand(cmd)
 endfunction
 
 function! s:HackForVimFirstComplete()
-  let l:first_render_delay = g:easycomplete_first_render_delay
-  let g:easycomplete_first_render_delay = 50
+  let l:first_render_delay = s:easycomplete_first_render_delay
+  let s:easycomplete_first_render_delay = 50
   call s:CompleteHandler()
-  let g:easycomplete_first_render_delay = l:first_render_delay
+  let s:easycomplete_first_render_delay = l:first_render_delay
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
