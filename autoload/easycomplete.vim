@@ -977,7 +977,7 @@ function! s:DoComplete(immediately)
 
   " 执行 DoComplete
   " call s:StopAsyncRun()
-  " call s:AsyncRun(function('s:CompleteHandler'), [], word_first_type_delay)
+  " call s:AsyncRun(function('s:MainCompleteHandler'), [], word_first_type_delay)
   call s:MainCompleteHandler()
   return v:null
 endfunction
@@ -1110,7 +1110,6 @@ function! s:CompletorCallingAtFirstComplete(ctx)
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
         let x2 = reltime()
         let ts = float2nr((reltimefloat(x2) - reltimefloat(x1)) * 1000)
-        call s:console(item, ts)
         if l:cprst == v:true " true: 继续
           continue
         else
@@ -1196,7 +1195,6 @@ endfunction
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
-    " let ctx = easycomplete#context()
     " tabnine
     if s:TabnineSupports()
       call easycomplete#sources#tn#refresh()
@@ -1226,7 +1224,6 @@ function! s:SnapShoot(...)
   else
     let l:ctx = a:1
   endif
-  " let l:ctx = easycomplete#context()
   let g:easycomplete_typing_ctx = deepcopy(l:ctx)
 endfunction
 
@@ -1615,7 +1612,6 @@ function! s:CloseCompletionMenu()
 endfunction
 
 function! s:MainCompleteHandler()
-  call s:console('为什么会执行好多次')
   call s:StopAsyncRun()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
