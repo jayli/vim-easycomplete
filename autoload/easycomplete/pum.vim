@@ -70,7 +70,12 @@ function! easycomplete#pum#complete(startcol, items)
     let items = a:items
   endif
   let s:curr_items = deepcopy(items)
+  """""""""""""""""""""""""
+  let g:pum_complete_time1 = reltime()
   call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
+  let g:pum_complete_time2 = reltime()
+  let ts = float2nr((reltimefloat(g:pum_complete_time2) - reltimefloat(g:pum_complete_time1)) * 1000)
+  call s:console('PumOpen', ts)
   if !s:contains_shortmess
     set shortmess+=c
   endif

@@ -2,6 +2,7 @@
 scriptencoding utf-8
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
+let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#util#ShowHint(text)
   if g:env_is_vim | return | endif
@@ -46,7 +47,12 @@ function! easycomplete#util#AsyncRun(...)
   let Method = a:1
   let args = exists('a:2') ? a:2 : []
   let delay = exists('a:3') ? a:3 : 0
-  let g:easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(Method, args)})
+  if g:env_is_nvim
+    " Method 如果是字符串的话不能是 s:xxx 这类临时函数
+    let g:easycomplete_popup_timer = s:util_toolkit.async_run(Method, args, delay)
+  else
+    let g:easycomplete_popup_timer = timer_start(delay, { -> easycomplete#util#call(Method, args)})
+  endif
   return g:easycomplete_popup_timer
 endfunction " }}}
 
@@ -60,8 +66,13 @@ endfunction " }}}
 " StopAsyncRun {{{
 function! easycomplete#util#StopAsyncRun()
   if exists('g:easycomplete_popup_timer') && g:easycomplete_popup_timer > 0
-    call timer_stop(g:easycomplete_popup_timer)
+    if g:env_is_nvim
+      call s:util_toolkit.stop_async_run()
+    else
+      call timer_stop(g:easycomplete_popup_timer)
+    endif
   endif
+  let g:easycomplete_popup_timer = 0
 endfunction " }}}
 
 " function calling {{{

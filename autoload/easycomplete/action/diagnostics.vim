@@ -12,7 +12,7 @@ function! easycomplete#action#diagnostics#do()
   call easycomplete#lsp#notify_diagnostics_update()
   let s:response_ready = 0
   call easycomplete#lsp#ensure_flush_all()
-  call s:AsyncRun(function('easycomplete#action#diagnostics#render'),
+  call s:AsyncRun('easycomplete#action#diagnostics#render',
         \ [], g:easycomplete_diagnostics_render_delay)
 endfunction
 

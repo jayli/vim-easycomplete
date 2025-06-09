@@ -112,7 +112,7 @@ function! easycomplete#_enable()
   endif
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#sign#init()
-    call s:AsyncRun(function('easycomplete#lsp#diagnostics_enable'),[
+    call s:AsyncRun('easycomplete#lsp#diagnostics_enable',[
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
@@ -248,7 +248,6 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
-
   if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
     if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
       call easycomplete#util#DeleteHint()
@@ -296,7 +295,7 @@ function! s:CompleteTypingMatch(...)
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
     if has('nvim')
-      call s:AsyncRun(function('s:CloseCompletionMenu'),[], 0)
+      call s:CloseCompletionMenu()
       call s:CloseCompleteInfo()
     else
       call s:CloseCompletionMenu()
@@ -334,14 +333,15 @@ function! s:SecondCompleteRendering(start_pos, result)
   if g:env_is_iterm
     call s:StopAsyncRun()
     if len(g:easycomplete_stunt_menuitems) < 40
-      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 5)
+      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 10)
       " call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 5)
     else
-      call s:AsyncRun(function('easycomplete#_complete'), [a:start_pos, a:result], 5)
+      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 30)
     endif
   else
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+    " call s:StopAsyncRun()
+    " call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+    call s:complete(a:start_pos, a:result)
   endif
 endfunction
 
@@ -781,7 +781,11 @@ function! easycomplete#InsertCharPre()
   let g:easycomplete_insert_char = v:char
 endfunction
 
-function! s:ResetInsertChar()
+function! s:GetCurrentChar()
+  return strpart(getline('.'), getcurpos()[2]-2, 1)
+endfunction
+
+function! easycomplete#ResetInsertChar()
   let g:easycomplete_insert_char = ""
 endfunction
 
@@ -865,7 +869,7 @@ function! easycomplete#typing()
   let g:easycomplete_backing = 0
 
   " 判断是否是 C-V 粘贴
-  call s:AsyncRun(function('s:ResetInsertChar'), [], 30)
+  call s:AsyncRun('easycomplete#ResetInsertChar', [], 30)
   if empty(g:easycomplete_insert_char)
     return ""
   endif
@@ -921,7 +925,8 @@ function! s:DoComplete(immediately)
 
   " sh #!<tab> hack, bugfix #12
   if &filetype == "sh" && l:ctx['typed'] == "#!"
-    call s:AsyncRun(function('s:CompleteHandler'), [], 0)
+    " call s:AsyncRun(function('s:MainCompleteHandler'), [], 0)
+    call s:MainCompleteHandler()
     return v:null
   endif
 
@@ -1254,7 +1259,7 @@ function! easycomplete#CompleteChanged()
   " call s:SnapShoot()
   " 改成异步，避免按住tab时连续触发completechanged会频繁大量调用
   call s:StopAsyncRun()
-  call s:AsyncRun(function("easycomplete#ShowCompleteInfoByItem"), [item], 50)
+  call s:AsyncRun("easycomplete#ShowCompleteInfoByItem", [item], 50)
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   " Hack 所有异步获取 document 时，需要暂存 event
   let g:easycomplete_completechanged_event = deepcopy(l:event)
@@ -2139,6 +2144,7 @@ function! s:CheckCompleteTaskQueueAllDone()
   let flag = v:true
   for item in g:easycomplete_complete_taskqueue
     if item.condition == 1 && item.done == 0
+      call s:console('CheckCompleteTaskQueue', item.name, '没有完成')
       let flag = v:false
       break
     endif
@@ -2236,6 +2242,7 @@ function! s:flush()
   endif
   let s:easycomplete_start_pos = 0
   let b:old_changedtick = 0
+  let b:easycomplete_old_char = ""
 endfunction
 
 function! s:ResetCompletedItem()
@@ -2531,7 +2538,7 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
-  call s:console('easycomplete#TextChangedI-------------')
+  call s:console('easycomplete#TextChangedI-------------', strpart(getline('.'), getcurpos()[2]-2, 1))
   let g:xxx0 = reltime()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
@@ -2542,11 +2549,29 @@ function! s:LazyFireTyping()
     endif
     let b:easycomplete_typing_timer = 0
   endif
+  " TODO here 为什么 50 的延时会体感这么久
+
+  " 判断连续输入的两次字符是否是同一个
+  " 如果是则有可能是连续按键，加上延迟，防止连续输入时粘连
+  " 如果不是则立即触发，提高响应速度
+  if !exists("b:easycomplete_old_char")
+    let b:easycomplete_old_char = ""
+  endif
+  let l:easycomplete_curr_char = s:GetCurrentChar()
+  if b:easycomplete_old_char ==# l:easycomplete_curr_char
+    let l:lazy_time = 70
+  else
+    let l:lazy_time = 1
+  endif
+  let b:easycomplete_old_char = l:easycomplete_curr_char
+
   let gtmp = reltime()
   let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('从按键到 typing 执行之前的耗时，这个应该很短', ts)
-  " TODO here 为什么 50 的延时会体感这么久
-  let l:lazy_time = 50
+  call s:console('从按键到 typing 执行之前的耗时，这个应该很短, 耗时', ts, ",lazyfiretyping(",
+        \ b:easycomplete_old_char,
+        \ l:easycomplete_curr_char,
+        \ ") 延迟:", l:lazy_time)
+
   if g:env_is_nvim
     call s:lua_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
     let b:easycomplete_typing_timer = reltime()[0]

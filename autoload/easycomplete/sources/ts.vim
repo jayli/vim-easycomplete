@@ -269,7 +269,7 @@ function! easycomplete#sources#ts#DiagnosticsCallback(item)
   call s:HandleDiagnosticResponse(a:item)
 endfunction
 
-function! s:DiagnosticsRender()
+function! easycomplete#sources#ts#DiagnosticsRender()
   try
     let response = s:GetWrappedDiagnosticsCache()
   catch
@@ -325,7 +325,7 @@ function! s:HandleDiagnosticResponse(item)
   if get(a:item, "event", "") == "requestCompleted"
         \ && s:request_seq - 1 == get(a:item, "body")["request_seq"]
     call s:StopAsyncRun()
-    call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
+    call s:AsyncRun("easycomplete#sources#ts#DiagnosticsRender", [], 100)
     return
   endif
   try
@@ -354,7 +354,7 @@ function! s:HandleDiagnosticResponse(item)
   endfor
   let b:diagnostics_cache["cache"][a:item['event']] = lsp_diagnostics
   call s:StopAsyncRun()
-  call s:AsyncRun(function("s:DiagnosticsRender"), [], 100)
+  call s:AsyncRun("easycomplete#sources#ts#DiagnosticsRender", [], 100)
 endfunction
 
 function! s:GetSeverity(category)
@@ -454,12 +454,16 @@ function! easycomplete#sources#ts#CompleteChanged()
   else
     " 异步执行，避免快速移动光标的闪烁
     call easycomplete#util#StopAsyncRun()
-    call easycomplete#util#AsyncRun(function('s:DoFetchEntryDetails'),
+    call easycomplete#util#AsyncRun("easycomplete#sources#ts#DoFetchEntryDetails",
           \ [s:request_queue_ctx, [l:item]],
           \ 40)
     " TODO: 这里的实现仅为保存 event 全局对象，和 popup 有耦合，需要重构
     let g:easycomplete_completechanged_event = deepcopy(l:event)
   endif
+endfunction
+
+function! easycomplete#sources#ts#DoFetchEntryDetails(queue_ctx, items)
+  call s:DoFetchEntryDetails(a:queue_ctx, a:items)
 endfunction
 
 function! easycomplete#sources#ts#reference()
@@ -749,11 +753,11 @@ function! easycomplete#sources#ts#lint()
     return
   endif
   let l:files = [easycomplete#util#GetCurrentFullName()]
-  call s:AsyncRun(function("s:TsserverReload"), [], 80)
-  call s:AsyncRun(function("s:Geterr"), [l:files, 100], 90)
+  call s:AsyncRun("easycomplete#sources#ts#TsserverReload", [], 80)
+  call s:AsyncRun("easycomplete#sources#ts#Geterr", [l:files, 100], 90)
 endfunction
 
-function! s:Geterr(files, delay)
+function! easycomplete#sources#ts#Geterr(files, delay)
   if !s:TsServerIsRunning()
     return
   endif
@@ -1007,6 +1011,10 @@ function! s:TsServerOpenedFileAlready()
   else
     return v:false
   endif
+endfunction
+
+function! easycomplete#sources#ts#TsserverReload()
+  call s:TsserverReload()
 endfunction
 
 function! s:TsserverReload()

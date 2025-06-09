@@ -600,11 +600,11 @@ function! easycomplete#sign#LintCurrentLine()
     endif
     " Use AsyncRun for #91 bugfix
     call s:StopAsyncRun()
-    call s:AsyncRun(function("s:ShowDiagMsg"), [diagnostics_info], 10)
+    call s:AsyncRun("easycomplete#sign#ShowDiagMsg", [diagnostics_info], 10)
   endif
 endfunction
 
-function! s:ShowDiagMsg(diagnostics_info)
+function! easycomplete#sign#ShowDiagMsg(diagnostics_info)
   let g:easycomplete_diagnostics_hint = 1
   let msg = get(a:diagnostics_info, 'message', '')
   let msg = split(msg, "\\n")[0]

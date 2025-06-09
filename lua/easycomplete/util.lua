@@ -1,4 +1,6 @@
 local Util = {}
+local async_timer = vim.loop.new_timer()
+local async_timer_counter = 0
 
 function Util.get_servers()
   if not Util.nvim_installer_installed() then
@@ -192,6 +194,35 @@ function Util.easy_lsp_installed()
   else
     return false
   end
+end
+
+function Util.async_run(func, args, timeout)
+  async_timer:start(timeout, 0, function()
+    -- print('------------', vim.inspect(func), args, timeout)
+    vim.schedule(function()
+      if type(func) == "string" then
+        -- 如果是字符串，则作为全局函数名调用
+        local f = vim.fn[func]
+        if type(f) == "function" then
+          pcall(f, unpack(args))
+        else
+          vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
+        end
+      elseif type(func) == "function" then
+        -- 如果是函数对象，直接调用
+        pcall(func, unpack(args))
+      else
+        print('------------', vim.inspect(func), args, timeout)
+        vim.notify("async_run: 无效的函数类型", vim.log.levels.ERROR)
+      end
+    end)
+  end)
+  return async_timer_counter + 1
+end
+
+function Util.stop_async_run()
+  async_timer:stop()
+  async_timer_counter = 0
 end
 
 return Util

@@ -353,7 +353,7 @@ endfunction
 
 function! easycomplete#popup#DoPopup(info, delay)
   call s:StopVisualAsyncRun()
-  call s:StartPopupAsyncRun("s:popup", [a:info], a:delay)
+  call s:StartPopupAsyncRun(function("s:popup"), [a:info], a:delay)
 endfunction
 
 " s:popup 代替 popup_info 方法，只给 completion 使用

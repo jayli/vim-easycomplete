@@ -19,7 +19,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
   " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing,
   "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
-  call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
+  call easycomplete#util#AsyncRun("easycomplete#sources#buf#CompleteHandler",
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
 
   " call timer_start(1, { -> s:CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol']) })
@@ -65,7 +65,7 @@ function! s:GetKeywords(typing)
   return ret_list
 endfunction
 
-function! s:CompleteHandler(typing, name, ctx, startcol)
+function! easycomplete#sources#buf#CompleteHandler(typing, name, ctx, startcol)
   try
     let keywords_result = s:GetKeywords(a:typing)
   catch

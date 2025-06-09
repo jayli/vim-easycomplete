@@ -13,14 +13,15 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
-  call easycomplete#util#AsyncRun(function('s:CompleteHandler'),
-        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+  call timer_start(10, {
+        \ -> easycomplete#sources#snips#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
+        \ })
   " #133
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
 endfunction
 
-function! s:CompleteHandler(typing, name, ctx, startcol)
+function! easycomplete#sources#snips#CompleteHandler(typing, name, ctx, startcol)
   let suggestions = []
   " 0.010s for these two function call
   let snippets = UltiSnips#SnippetsInCurrentScope()
