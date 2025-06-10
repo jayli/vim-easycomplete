@@ -232,8 +232,6 @@ let g:easycomplete_filetypes = {
 
 ### 代码片段支持
 
-Vim-EasyComplete does not integration snippets by default. If you want snippet support, please install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete. UltiSnips required python3 installed.
-
 Vim-Easycomplete 没有自带代码片段，但做了对`ultisnips`的兼容，参照文档[UltiSnips](https://github.com/SirVer/ultisnips)。
 
 > [关于 "E319: No python3 provider found" (neovim 0.4.4 ) 安装 ultisnips 的错误的解决方案](https://github.com/jayli/vim-easycomplete/issues/171)
