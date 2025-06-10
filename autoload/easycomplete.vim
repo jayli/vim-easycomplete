@@ -76,7 +76,8 @@ let g:easycomplete_tabnine_suggest_timer = 0
 let s:easycomplete_cursor_move_timer = 0
 let s:easycomplete_ghost_text_str = ""
 let b:easycomplete_typing_timer = 0
-let s:lua_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
+let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
+let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -881,7 +882,11 @@ function! easycomplete#typing()
     " tabnine
     if s:TabnineSupports() && easycomplete#sources#tn#FireCondition()
       call s:flush()
-      call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
+      if g:env_is_nvim
+        call s:util_toolkit.defer_fn("easycomplete#sources#tn#refresh", [v:true], 20)
+      else
+        call timer_start(20, { -> easycomplete#sources#tn#refresh(v:true) })
+      endif
     endif
     return ""
   endif
@@ -907,6 +912,10 @@ function! easycomplete#typing()
   call s:StopAsyncRun()
   call s:DoComplete(v:false)
   return ""
+endfunction
+
+function! easycomplete#DoComplete(immediately)
+  call s:DoComplete(a:immediately)
 endfunction
 
 " immediately: 是否立即执行 complete()
@@ -1023,7 +1032,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     let l:not_defined_msg = 'Plugin command name is not defined.'
     " Bugfix for #83
     if g:env_is_nvim
-      call s:AsyncRun(function("easycomplete#util#info"), [l:not_defined_msg], 1)
+      call s:AsyncRun("easycomplete#util#info", [l:not_defined_msg], 1)
     else
       call easycomplete#util#info(l:not_defined_msg)
     endif
@@ -1034,7 +1043,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     let l:lsp_installing_msg = "'". cmd ."' is not avilable. Do ':InstallLspServer'"
     if g:easycomplete_lsp_checking
       if g:env_is_nvim
-          call s:AsyncRun(function("easycomplete#util#info"), [l:lsp_installing_msg], 1)
+          call s:AsyncRun("easycomplete#util#info", [l:lsp_installing_msg], 1)
       else
         call easycomplete#util#info(l:lsp_installing_msg)
       endif
@@ -1212,7 +1221,11 @@ function! s:CompleteMatchAction()
       call s:StopZizz()
       " 这里的 timer 要比 tabnine 的触发慢 20ms 以上才能正常激活 
       let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
-      call timer_start(local_delay, { -> easycomplete#typing() })
+      if g:env_is_nvim
+        call s:util_toolkit.defer_fn("easycomplete#typing", [], local_delay)
+      else
+        call timer_start(local_delay, { -> easycomplete#typing() })
+      endif
       return
     endif
     call s:CompleteTypingMatch(l:vim_word)
@@ -1324,7 +1337,7 @@ function! s:ShowCompleteInfoWithoutTimer()
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
-    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [item], 1)
+    call s:AsyncRun('easycomplete#action#documentation#LspRequest', [item], 2)
   else
     if type(info) == type("")
       let info = [info]
@@ -1382,7 +1395,7 @@ function! easycomplete#CleverTab()
   else
     if easycomplete#tabnine#SnippetReady()
       " call easycomplete#tabnine#insert()
-      call s:AsyncRun(function('easycomplete#tabnine#insert'), [], 5)
+      call s:AsyncRun('easycomplete#tabnine#insert', [], 5)
       return ""
     endif
   endif
@@ -1480,7 +1493,7 @@ function! easycomplete#TypeEnterWithPUM()
   if (g:env_is_vim && pumvisible()) || (g:env_is_nvim && easycomplete#pum#visible())
     " 选中目录
     if (!empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
-      call s:AsyncRun(function('s:DoComplete'), [v:true], 60)
+      call s:AsyncRun("easycomplete#DoComplete", [v:true], 60)
       return s:CtrlY()
     endif
     " 选中 snippet
@@ -2022,7 +2035,7 @@ function! s:NormalizeSortVIM(items)
 endfunction
 
 function! s:NormalizeSortLua(items)
-  return s:lua_toolkit.normalize_sort(a:items)
+  return s:easycomplete_toolkit.normalize_sort(a:items)
 endfunction
 
 function! s:NormalizeSortPY(...)
@@ -2543,7 +2556,7 @@ function! s:LazyFireTyping()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
     if g:env_is_nvim
-      call s:lua_toolkit.global_timer_stop()
+      call s:easycomplete_toolkit.global_timer_stop()
     else
       call timer_stop(b:easycomplete_typing_timer)
     endif
@@ -2573,7 +2586,7 @@ function! s:LazyFireTyping()
         \ ") 延迟:", l:lazy_time)
 
   if g:env_is_nvim
-    call s:lua_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
+    call s:easycomplete_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
     let b:easycomplete_typing_timer = reltime()[0]
   else
     let b:easycomplete_typing_timer = timer_start(l:lazy_time, { -> easycomplete#typing() })

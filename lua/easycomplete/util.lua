@@ -199,23 +199,25 @@ end
 function Util.async_run(func, args, timeout)
   async_timer:start(timeout, 0, function()
     -- print('------------', vim.inspect(func), args, timeout)
-    vim.schedule(function()
-      if type(func) == "string" then
-        -- 如果是字符串，则作为全局函数名调用
-        local f = vim.fn[func]
-        if type(f) == "function" then
+    if type(func) == "string" then
+      -- 如果是字符串，则作为全局函数名调用
+      local f = vim.fn[func]
+      if type(f) == "function" then
+        vim.schedule(function()
           pcall(f, unpack(args))
-        else
-          vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
-        end
-      elseif type(func) == "function" then
-        -- 如果是函数对象，直接调用
-        pcall(func, unpack(args))
+        end)
       else
-        print('------------', vim.inspect(func), args, timeout)
-        vim.notify("async_run: 无效的函数类型", vim.log.levels.ERROR)
+        vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
       end
-    end)
+    elseif type(func) == "function" then
+      -- 如果是函数对象，直接调用
+      vim.schedule(function()
+        pcall(func, unpack(args))
+      end)
+    else
+      print('------------', vim.inspect(func), args, timeout)
+      vim.notify("async_run: 无效的函数类型", vim.log.levels.ERROR)
+    end
   end)
   return async_timer_counter + 1
 end
@@ -223,6 +225,28 @@ end
 function Util.stop_async_run()
   async_timer:stop()
   async_timer_counter = 0
+end
+
+function Util.defer_fn(func, args, timeout)
+  if type(func) == "string" then
+    -- 如果是字符串，则作为全局函数名调用
+    local f = vim.fn[func]
+    if type(f) == "function" then
+      vim.defer_fn(vim.schedule(function()
+        pcall(f, unpack(args))
+      end), timeout)
+    else
+      vim.notify("defer_fn: 全局函数不存在或不是函数: " .. func, timeout,vim.log.levels.ERROR)
+    end
+  elseif type(func) == "function" then
+    -- 如果是函数对象，直接调用
+    vim.defer_fn(vim.schedule(function()
+      pcall(func, unpack(args))
+    end), timeout)
+  else
+    print('------------', vim.inspect(func), args, timeout)
+    vim.notify("defer_fn: 无效的函数类型", vim.log.levels.ERROR)
+  end
 end
 
 return Util
