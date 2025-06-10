@@ -204,7 +204,10 @@ function Util.async_run(func, args, timeout)
       local f = vim.fn[func]
       if type(f) == "function" then
         vim.schedule(function()
-          pcall(f, unpack(args))
+          local ok,err = pcall(f, unpack(args))
+          if not ok then
+            print("async_run调用失败:", err)
+          end
         end)
       else
         vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
@@ -212,7 +215,10 @@ function Util.async_run(func, args, timeout)
     elseif type(func) == "function" then
       -- 如果是函数对象，直接调用
       vim.schedule(function()
-        pcall(func, unpack(args))
+        local ok,err = pcall(func, unpack(args))
+        if not ok then
+          print("async_run调用失败:", err)
+        end
       end)
     else
       print('------------', vim.inspect(func), args, timeout)
@@ -227,25 +233,24 @@ function Util.stop_async_run()
   async_timer_counter = 0
 end
 
-function Util.defer_fn(func, args, timeout)
-  if type(func) == "string" then
+function Util.defer_fn(func_name, args, timeout)
+  if type(func_name) == "string" then
     -- 如果是字符串，则作为全局函数名调用
-    local f = vim.fn[func]
+    local f = vim.fn[func_name]
     if type(f) == "function" then
-      vim.defer_fn(vim.schedule(function()
-        pcall(f, unpack(args))
-      end), timeout)
+      vim.defer_fn(function()
+        vim.schedule(function()
+          local ok, err = pcall(f, unpack(args))
+          if not ok then
+            print("defer_fn调用失败:", err)
+          end
+        end)
+      end, timeout)
     else
-      vim.notify("defer_fn: 全局函数不存在或不是函数: " .. func, timeout,vim.log.levels.ERROR)
+      vim.notify("defer_fn: 全局函数不存在或不是函数: " .. func_name, timeout, vim.log.levels.ERROR)
     end
-  elseif type(func) == "function" then
-    -- 如果是函数对象，直接调用
-    vim.defer_fn(vim.schedule(function()
-      pcall(func, unpack(args))
-    end), timeout)
   else
-    print('------------', vim.inspect(func), args, timeout)
-    vim.notify("defer_fn: 无效的函数类型", vim.log.levels.ERROR)
+    vim.notify("defer_fn: 传入参数不是字符串", vim.log.levels.ERROR)
   end
 end
 
