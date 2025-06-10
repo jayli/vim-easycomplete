@@ -1097,6 +1097,19 @@ function! easycomplete#util#MatchFuzzy(array, word, ...)
   endif
 endfunction " }}}
 
+" function_name 必须是一个全局函数字符串
+" 保持和 AscynRun 参数顺序一致
+function! easycomplete#util#timer_start(function_name, args, timeout)
+  if g:env_is_nvim
+    call s:log('util#timer_start call', a:function_name, a:args, a:timeout)
+    call s:util_toolkit.defer_fn(a:function_name, a:args, a:timeout)
+  else
+    call timer_start(a:timeout, {
+          \ -> call(function(a:function_name), a:args)
+          \ })
+  endif
+endfunction
+
 function! s:ReplaceMent(abbr, positions, wrap_char) " {{{
   if g:env_is_nvim
     return s:easycomplete_toolkit.replacement(a:abbr, a:positions,  a:wrap_char)

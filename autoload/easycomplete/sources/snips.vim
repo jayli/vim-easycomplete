@@ -13,9 +13,13 @@ function! easycomplete#sources#snips#completor(opt, ctx)
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
-  call timer_start(10, {
-        \ -> easycomplete#sources#snips#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
-        \ })
+  " call timer_start(10, {
+  "       \ -> easycomplete#sources#snips#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
+  "       \ })
+  call easycomplete#util#timer_start(
+        \ "easycomplete#sources#snips#CompleteHandler",
+        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']],
+        \ 10)
   " #133
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true

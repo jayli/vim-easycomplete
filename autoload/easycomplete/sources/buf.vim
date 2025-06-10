@@ -1,5 +1,6 @@
 
 let s:lua_toolkit = easycomplete#util#HasLua() ? v:lua.require("easycomplete") : v:null
+let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#sources#buf#completor(opt, ctx)
   let l:typing = a:ctx['typing']
@@ -19,10 +20,17 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
   " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing,
   "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
-  call easycomplete#util#AsyncRun("easycomplete#sources#buf#CompleteHandler",
+
+  call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
 
-  " call timer_start(1, { -> s:CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol']) })
+  " if g:env_is_nvim
+  "   call s:util_toolkit.defer_fn("easycomplete#sources#buf#CompleteHandler",
+  "       \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+  " else
+  "   call timer_start(1, { -> easycomplete#sources#buf#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol']) })
+  " endif
+
   return v:true
 endfunction
 

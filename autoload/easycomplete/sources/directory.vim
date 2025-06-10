@@ -5,14 +5,18 @@ function! easycomplete#sources#directory#completor(opt, ctx)
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
-  call easycomplete#util#AsyncRun(
-        \ function('s:CompleteHandler'),
+  call easycomplete#util#timer_start(
+        \ "easycomplete#sources#directory#CompleteHandler",
         \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path],
         \ 10 )
   " 展开目录时，中断其他complete逻辑
   " 中断其他 complete 逻辑，设计上的问题，这里要用异步调
   " easycomplete#complete()
   return v:false
+endfunction
+
+function! easycomplete#sources#directory#CompleteHandler(...)
+  return call(function("s:CompleteHandler"), a:000)
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)

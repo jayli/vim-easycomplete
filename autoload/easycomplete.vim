@@ -334,15 +334,13 @@ function! s:SecondCompleteRendering(start_pos, result)
   if g:env_is_iterm
     call s:StopAsyncRun()
     if len(g:easycomplete_stunt_menuitems) < 40
-      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 10)
-      " call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 5)
+      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 5)
     else
       call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 30)
     endif
   else
-    " call s:StopAsyncRun()
-    " call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
-    call s:complete(a:start_pos, a:result)
+    call s:StopAsyncRun()
+    call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
   endif
 endfunction
 
@@ -396,7 +394,7 @@ function! easycomplete#CompleteDone()
   if g:env_is_nvim
     " 触发 tabnine suggest
     if !easycomplete#pum#visible() && !easycomplete#IsBacking() && easycomplete#tabnine#ready() 
-      call s:LazyTabNineFire(500)
+      call s:LazyTabNineSuggestFire(500)
     endif
     "TODO v:complete_item 是否是必须的，还需再测试一下
     if easycomplete#pum#visible() || (g:easycomplete_first_complete_hit != 1)
@@ -412,7 +410,10 @@ function! easycomplete#CompleteDone()
   call s:flush()
 endfunction
 
-function! s:LazyTabNineFire(delay)
+function! s:LazyTabNineSuggestFire(delay)
+  if g:easycomplete_tabnine_suggestion <= 0
+    return
+  endif
   if g:easycomplete_tabnine_suggest_timer > 0
     call timer_stop(g:easycomplete_tabnine_suggest_timer)
     let g:easycomplete_tabnine_suggest_timer = 0
@@ -844,6 +845,11 @@ function! easycomplete#typing()
   let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
   call s:console('easycomplete#typing(), 50 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
+    return
+  endif
+
+  if s:GetCurrentChar() == " "
+    call s:flush()
     return
   endif
 
@@ -2505,7 +2511,7 @@ function! easycomplete#CursorHoldI()
   if easycomplete#IsBacking()
     " do nothting
   elseif easycomplete#tabnine#ready()
-    call s:LazyTabNineFire(30)
+    call s:LazyTabNineSuggestFire(30)
   endif
 endfunction
 
@@ -2580,10 +2586,7 @@ function! s:LazyFireTyping()
 
   let gtmp = reltime()
   let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('从按键到 typing 执行之前的耗时，这个应该很短, 耗时', ts, ",lazyfiretyping(",
-        \ b:easycomplete_old_char,
-        \ l:easycomplete_curr_char,
-        \ ") 延迟:", l:lazy_time)
+  call s:console('从按键到 easycomplete#typing 之前耗时，应该很短, 耗时', ts, ",延时 flazyfiretyping 延迟:", l:lazy_time)
 
   if g:env_is_nvim
     call s:easycomplete_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
