@@ -300,40 +300,6 @@ More examples here: [full config example](custom-config.md)
 
 → [add custom completion plugin](add-custom-plugin.md)
 
-## More Examples:
-
-TabNine snippets inline suggestion
-
-<img src="https://gw.alicdn.com/imgextra/i2/O1CN01vESZ6G1h3j5u4hmN4_!!6000000004222-1-tps-1189-606.gif" width="600" />
-
-Update Deno Cache via `:DenoCache`
-
-<img src="https://img.alicdn.com/imgextra/i4/O1CN01kjPu4M1FVNbRKVrUD_!!6000000000492-1-tps-943-607.gif" width=600 />
-
-Directory selecting:
-
-<img src="https://img.alicdn.com/imgextra/i2/O1CN01FciC1Q1WHV4HJ79qn_!!6000000002763-1-tps-1027-663.gif" width=600 />
-
-Handle backsapce typing
-
-<img src="https://img.alicdn.com/imgextra/i3/O1CN01obuQnJ1tIAoUNv8Up_!!6000000005878-1-tps-880-689.gif" width=600 />
-
-Snip Support
-
-<img src="https://img.alicdn.com/imgextra/i3/O1CN01dGIJZW204A0MpESbI_!!6000000006795-1-tps-750-477.gif" width=600 />
-
-Diagnostics jumping
-
-<img src="https://img.alicdn.com/imgextra/i1/O1CN01g7PWjZ1q7EVKVpxno_!!6000000005448-1-tps-902-188.gif" width=600 />
-
-Signature
-
-<img src="https://img.alicdn.com/imgextra/i4/O1CN01kNd19n1k7nINy4SQT_!!6000000004637-1-tps-862-228.gif" width=600 />
-
-TabNine supporting:
-
-<img src="https://img.alicdn.com/imgextra/i3/O1CN013nBG6n1WjRE8rgMNi_!!6000000002824-1-tps-933-364.gif" width=600 />
-
 ### License
 
 MIT
