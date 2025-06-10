@@ -597,6 +597,6 @@ endif
 " inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap  <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>
-inoremap  <Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
+inoremap  <silent><Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 inoremap  <Plug>EasycompleteNill <C-r>=easycomplete#nill()<CR>
 inoremap  <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>

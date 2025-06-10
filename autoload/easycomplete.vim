@@ -338,8 +338,7 @@ function! s:SecondCompleteRendering(start_pos, result)
       call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 30)
     endif
   else
-    call s:StopAsyncRun()
-    call s:AsyncRun(function('s:complete'), [a:start_pos, a:result], 0)
+    call s:complete(a:start_pos, a:result)
   endif
 endfunction
 
@@ -1942,7 +1941,7 @@ function! s:complete(start, context) abort
       noa silent! call complete(a:start, a:context)
     endif
     if should_fire_pum_show
-      doautocmd <nomodeline> User easycomplete_pum_show
+      silent doautocmd <nomodeline> User easycomplete_pum_show
     else
       call s:ShowCompleteInfoInSecondRendering()
     endif
@@ -1978,7 +1977,7 @@ function! easycomplete#_complete(start, items)
       silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')
     endif
     if should_fire_pum_show
-      doautocmd <nomodeline> User easycomplete_pum_show
+      silent doautocmd <nomodeline> User easycomplete_pum_show
     else
       call s:ShowCompleteInfoInSecondRendering()
     endif
