@@ -163,7 +163,7 @@ function! easycomplete#sources#ts#rename(old_name, new_name)
         \ 'findInString'  : v:true,
         \ }
   let s:rename_text = a:new_name
-  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['rename',  l:args], 10)
+  call timer_start(20, { -> s:SendCommandAsyncResponse('rename',  l:args) })
 endfunction
 
 function! s:HasExternalFiles(changes)
@@ -472,7 +472,7 @@ function! easycomplete#sources#ts#reference()
   let offset = ctx['col']
   let file = ctx['filepath']
   let l:args = {'file': file, 'line': line("."), 'offset': offset}
-  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['references',  l:args], 18)
+  call timer_start(20, { -> s:SendCommandAsyncResponse('references',  l:args) })
 endfunction
 
 function! easycomplete#sources#ts#ReferenceCallback(data)
@@ -511,7 +511,10 @@ function! easycomplete#sources#ts#signature()
   let offset = ctx['col']
   let file = ctx['filepath']
   let l:args = {'file': file, 'line': line("."), 'offset': offset}
-  call s:AsyncRun(function('s:SendCommandAsyncResponse'), ['signatureHelp',  l:args], 18)
+  call timer_start(20,
+        \ {
+        \    -> s:SendCommandAsyncResponse('signatureHelp',  l:args)
+        \ })
 endfunction
 
 function! easycomplete#sources#ts#SignatureCallback(response)
