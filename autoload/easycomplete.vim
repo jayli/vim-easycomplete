@@ -442,9 +442,6 @@ function! easycomplete#InsertLeave()
     call easycomplete#sign#LintCurrentLine()
   endif
   call easycomplete#tabnine#flush()
-  if s:zizzing()
-    return
-  endif
   call s:flush()
 endfunction
 
@@ -2518,6 +2515,7 @@ function! easycomplete#TextChangedI()
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
+  if s:zizzing() | return | endif " 点击回车选中item后不直接complete()
   if exists('b:easycomplete_enable') && empty(b:easycomplete_enable)
     return
   endif
