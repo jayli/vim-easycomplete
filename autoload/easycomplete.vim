@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -836,9 +836,9 @@ endfunction
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
-  let g:xxx1 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('easycomplete#typing(), 70 ms 的lazytype延时实际消耗了', ts)
+  " let g:xxx1 = reltime()
+  " let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
+  " call s:console('easycomplete#typing(), 70 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
@@ -922,9 +922,9 @@ endfunction
 " immediately: 是否立即执行 complete()
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
-  let g:xxx2 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx2) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('DoComplete, 从 typing() →', ts)
+  " let g:xxx2 = reltime()
+  " let ts = float2nr((reltimefloat(g:xxx2) - reltimefloat(g:xxx1)) * 1000)
+  " call s:console('DoComplete, 从 typing() →', ts)
   let l:ctx = easycomplete#context()
   " 过滤不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -1076,9 +1076,9 @@ endfunction
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCallingAtFirstComplete(ctx)
-  let g:xxx3 = reltime()
-  let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompletorCallingAtFirstComplete, 从 typing() → ', ts)
+  " let g:xxx3 = reltime()
+  " let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
+  " call s:console('CompletorCallingAtFirstComplete, 从 typing() → ', ts)
   let l:ctx = a:ctx
   call s:ResetCompleteTaskQueue()
   if s:first_render_timer > 0
@@ -1672,9 +1672,9 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
-  let g:ttt = reltime()
-  let ts = float2nr((reltimefloat(g:ttt) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompleteAdd', a:plugin_name, '从 typing() →',ts)
+  " let g:ttt = reltime()
+  " let ts = float2nr((reltimefloat(g:ttt) - reltimefloat(g:xxx1)) * 1000)
+  " call s:console('CompleteAdd', a:plugin_name, '从 typing() →',ts)
   if !s:CheckCompleteTaskQueueAllDone()
     if s:zizzing() | return | endif
   endif
@@ -1764,9 +1764,9 @@ endfunction
 function! s:FirstComplete(start_pos, menuitems)
   if s:zizzing() | return | endif
   if s:CheckCompleteTaskQueueAllDone()
-    let g:xxx3 = reltime()
-    let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-    call s:console('CompleteTaskQueueAllDone', '从 typing() →', ts)
+    " let g:xxx3 = reltime()
+    " let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
+    " call s:console('CompleteTaskQueueAllDone', '从 typing() →', ts)
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
 endfunction
@@ -1867,8 +1867,8 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
       call easycomplete#tabnine#flush()
 
-      let ts = float2nr((reltimefloat(reltime()) - reltimefloat(g:xxx1)) * 1000)
-      call s:console('FirstCompleteRendering, 数据准备工作完成，接下来执行complete()', '从 typing() →', ts)
+      " let ts = float2nr((reltimefloat(reltime()) - reltimefloat(g:xxx1)) * 1000)
+      " call s:console('FirstCompleteRendering, 数据准备工作完成，接下来执行complete()', '从 typing() →', ts)
       noa call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       if g:easycomplete_ghost_text
@@ -1908,13 +1908,8 @@ endfunction
 function! s:GetGhostText(start_pos, first_complete_word)
   let curr_col = col('.')
   let span = curr_col - a:start_pos
-  " call s:console('getghosttext', "{{")
   let prefix = strpart(getline('.'), a:start_pos - 1, span)
   let ghost_text = s:RemovePrefixIgnoreCase(a:first_complete_word, prefix)
-  " call s:console('单词', a:first_complete_word)
-  " call s:console('前缀', prefix)
-  " call s:console('后缀', ghost_text)
-  " call s:console('}}')
   return ghost_text
 endfunction
 
@@ -1963,10 +1958,8 @@ function! easycomplete#_complete(start, items)
       endif
       call easycomplete#pum#complete(a:start, a:items)
       if g:easycomplete_ghost_text
-        " call s:console('complete时传入的 items[0]', a:items[0]["abbr"])
         let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
         call easycomplete#util#ShowHint(ghost_text)
-        " call s:console('after complet()',ghost_text)
         let s:easycomplete_ghost_text_str = ghost_text
       endif
     else
@@ -2553,8 +2546,8 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
-  call s:console('easycomplete#TextChangedI------begin-------', strpart(getline('.'), getcurpos()[2]-2, 1))
-  let g:xxx0 = reltime()
+  " call s:console('easycomplete#TextChangedI------begin-------', strpart(getline('.'), getcurpos()[2]-2, 1))
+  " let g:xxx0 = reltime()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
     if g:env_is_nvim
@@ -2580,9 +2573,9 @@ function! s:LazyFireTyping()
   endif
   let b:easycomplete_old_char = l:easycomplete_curr_char
 
-  let gtmp = reltime()
-  let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('从按键到 easycomplete#typing timer 之前耗时，应该很短, 耗时', ts, ", flazyfiretyping 延迟:", l:lazy_time)
+  " let gtmp = reltime()
+  " let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
+  " call s:console('从按键到 easycomplete#typing timer 之前耗时，应该很短, 耗时', ts, ", flazyfiretyping 延迟:", l:lazy_time)
 
   if g:env_is_nvim
     call s:easycomplete_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)

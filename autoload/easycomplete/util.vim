@@ -4,15 +4,15 @@ let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:n
 let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
 let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
 
-function! easycomplete#util#ShowHint(text)
+function! easycomplete#util#ShowHint(text) " {{{
   if g:env_is_vim | return | endif
   call s:tabnine_toolkit.show_hint([a:text])
-endfunction
+endfunction " }}}
 
-function! easycomplete#util#DeleteHint()
+function! easycomplete#util#DeleteHint() " {{{
   if g:env_is_vim | return | endif
   call s:tabnine_toolkit.delete_hint()
-endfunction
+endfunction " }}}
 
 " get file extention {{{
 function! easycomplete#util#extention()
@@ -1099,7 +1099,7 @@ endfunction " }}}
 
 " function_name 必须是一个全局函数字符串
 " 保持和 AscynRun 参数顺序一致
-function! easycomplete#util#timer_start(function_name, args, timeout)
+function! easycomplete#util#timer_start(function_name, args, timeout) " {{{
   if g:env_is_nvim
     call s:util_toolkit.defer_fn(a:function_name, a:args, a:timeout)
   else
@@ -1107,7 +1107,7 @@ function! easycomplete#util#timer_start(function_name, args, timeout)
           \ -> call(function(a:function_name), a:args)
           \ })
   endif
-endfunction
+endfunction " }}}
 
 function! s:ReplaceMent(abbr, positions, wrap_char) " {{{
   if g:env_is_nvim
@@ -1865,7 +1865,7 @@ function! easycomplete#util#LspServerReady()
 endfunction
 " }}}
 
-" Find a nearest to a `path` parent filename `filename` by traversing the filesystem upwards {{{
+" 找到 path 最近的父目录里的文件 {{{
 function! easycomplete#util#FindNearestParentFile(path, filename) abort
   let l:relative_path = findfile(a:filename, a:path . ';')
   if empty(l:relative_path)
@@ -1960,17 +1960,16 @@ endfunction
 
 " }}}
 
-" lint trim()
+" lint trim() {{{
 function! easycomplete#util#lintTrim(line_str, width, offset)
   let real_width = a:width - a:offset
   let line_str = a:line_str
   if strlen(line_str) > real_width
     return repeat(" ", a:offset) . strpart(line_str, 0, real_width)
   else
-    " return repeat(" ", real_width - strlen(line_str) + a:offset) . line_str
     return repeat(" ", a:offset) . line_str . repeat(" ", real_width - strlen(line_str))
   endif
-endfunction
+endfunction " }}}
 
 " fullfill {{{
 " "2"   -> "002"

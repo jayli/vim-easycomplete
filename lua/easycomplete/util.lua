@@ -198,7 +198,6 @@ end
 
 function Util.async_run(func, args, timeout)
   async_timer:start(timeout, 0, function()
-    -- print('------------', vim.inspect(func), args, timeout)
     if type(func) == "string" then
       -- 如果是字符串，则作为全局函数名调用
       local f = vim.fn[func]
