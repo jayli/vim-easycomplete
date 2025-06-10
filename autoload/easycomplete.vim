@@ -1516,7 +1516,9 @@ function! easycomplete#TypeEnterWithPUM()
       let custom_expand = get(user_data, 'custom_expand', 0)
       if custom_expand
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-        call s:AsyncRun('easycomplete#CursorExpandableSnipBackword', [l:back], 15)
+        call timer_start(40, {
+              \ -> easycomplete#CursorExpandableSnipBackword(l:back)
+              \ })
       elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)

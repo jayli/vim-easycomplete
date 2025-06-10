@@ -1507,6 +1507,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
         \ }
   if is_func
     if stridx(word,"(") <= 0
+      " 不包含括号时，自动加上括号，考虑到右侧是否挨着左括号
       let ret["word"] = word . (next_to_left_paren ? "" : "()")
       let ret['abbr'] = word . "~"
       let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
@@ -1518,6 +1519,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
       let ret['user_data'] = json_encode(user_data_json_f)
       let ret['user_data_json'] = user_data_json_f
     elseif next_to_left_paren && word[-2:] == "()"
+      " 右侧挨着左括号
       let ret["word"] = word[0:-3]
       let ret['abbr'] = ret["abbr"]
       let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
@@ -1525,6 +1527,18 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
             \ 'custom_expand': 0,
             \ 'placeholder_position': strlen(word),
             \ 'cursor_backing_steps': 0
+            \ })
+      let ret['user_data'] = json_encode(user_data_json_f)
+      let ret['user_data_json'] = user_data_json_f
+    elseif !next_to_left_paren && stridx(word,"(") > 0
+      " 右侧没挨着左括号，且包含()
+      let ret["word"] = word
+      let ret['abbr'] = ret['abbr']
+      let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
+            \ 'expandable': 1,
+            \ 'custom_expand': 1,
+            \ 'placeholder_position': strlen(word) - 1,
+            \ 'cursor_backing_steps':1
             \ })
       let ret['user_data'] = json_encode(user_data_json_f)
       let ret['user_data_json'] = user_data_json_f
