@@ -1101,7 +1101,6 @@ endfunction " }}}
 " 保持和 AscynRun 参数顺序一致
 function! easycomplete#util#timer_start(function_name, args, timeout)
   if g:env_is_nvim
-    call s:log('util#timer_start call', a:function_name, a:args, a:timeout)
     call s:util_toolkit.defer_fn(a:function_name, a:args, a:timeout)
   else
     call timer_start(a:timeout, {

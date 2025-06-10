@@ -264,7 +264,6 @@ function! s:CompleteTypingMatch(...)
     if ghost_text_first_char == l:char
       if strlen(s:easycomplete_ghost_text_str) >= 2
         let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
-        " call s:console('before complete()', new_ghost_text)
         call easycomplete#util#ShowHint(new_ghost_text)
       else
         call easycomplete#util#DeleteHint()
@@ -843,7 +842,7 @@ endfunction
 function! easycomplete#typing()
   let g:xxx1 = reltime()
   let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('easycomplete#typing(), 50 ms 的lazytype延时实际消耗了', ts)
+  call s:console('easycomplete#typing(), 70 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
@@ -929,7 +928,7 @@ endfunction
 function! s:DoComplete(immediately)
   let g:xxx2 = reltime()
   let ts = float2nr((reltimefloat(g:xxx2) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('Docomplete', ts)
+  call s:console('DoComplete, 从 typing() →', ts)
   let l:ctx = easycomplete#context()
   " 过滤不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -940,7 +939,6 @@ function! s:DoComplete(immediately)
 
   " sh #!<tab> hack, bugfix #12
   if &filetype == "sh" && l:ctx['typed'] == "#!"
-    " call s:AsyncRun(function('s:MainCompleteHandler'), [], 0)
     call s:MainCompleteHandler()
     return v:null
   endif
@@ -996,8 +994,6 @@ function! s:DoComplete(immediately)
   endif
 
   " 执行 DoComplete
-  " call s:StopAsyncRun()
-  " call s:AsyncRun(function('s:MainCompleteHandler'), [], word_first_type_delay)
   call s:MainCompleteHandler()
   return v:null
 endfunction
@@ -1086,7 +1082,7 @@ endfunction
 function! s:CompletorCallingAtFirstComplete(ctx)
   let g:xxx3 = reltime()
   let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompletorCallingAtFirstComplete', ts)
+  call s:console('CompletorCallingAtFirstComplete, 从 typing() → ', ts)
   let l:ctx = a:ctx
   call s:ResetCompleteTaskQueue()
   if s:first_render_timer > 0
@@ -1309,7 +1305,7 @@ function! easycomplete#ShowCompleteInfoByItem(item)
   let async = empty(info) ? v:true : v:false
   if easycomplete#util#ItemIsFromLS(a:item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
-    call s:AsyncRun(function('easycomplete#action#documentation#LspRequest'), [a:item], 80)
+    call s:AsyncRun('easycomplete#action#documentation#LspRequest', [a:item], 80)
   else
     if type(info) == type("")
       let info = [info]
@@ -1445,7 +1441,7 @@ function! s:DoTabCompleteAction()
   if g:env_is_nvim
     " Hack nvim，nvim 中，在 DoComplete 中 mode() 会是 n，导致调用 flush()
     " nvim 中改用异步调用
-    call s:AsyncRun(function('s:DoComplete'), [v:true], 1)
+    call s:AsyncRun("easycomplete#DoComplete", [v:true], 1)
     call s:SendKeys( "\<ESC>a" )
   elseif g:env_is_vim
     call s:DoComplete(v:true)
@@ -1524,7 +1520,7 @@ function! easycomplete#TypeEnterWithPUM()
       let custom_expand = get(user_data, 'custom_expand', 0)
       if custom_expand
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
-        call s:AsyncRun(function('s:CursorExpandableSnipBackword'), [l:back], 15)
+        call s:AsyncRun('easycomplete#CursorExpandableSnipBackword', [l:back], 15)
       elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
@@ -1574,7 +1570,7 @@ function! s:CursorExpandableSnipPosition(start_line, start_row, insertText)
   " call cursor(cursor_line, cursor_row)
 endfunction
 
-function! s:CursorExpandableSnipBackword(back)
+function! easycomplete#CursorExpandableSnipBackword(back)
   call cursor(getcurpos()[1], getcurpos()[2] - a:back)
 endfunction
 
@@ -1682,7 +1678,7 @@ endfunction
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let g:ttt = reltime()
   let ts = float2nr((reltimefloat(g:ttt) - reltimefloat(g:xxx1)) * 1000)
-  call s:console('CompleteAdd',a:plugin_name, ts)
+  call s:console('CompleteAdd', a:plugin_name, '从 typing() →',ts)
   if !s:CheckCompleteTaskQueueAllDone()
     if s:zizzing() | return | endif
   endif
@@ -1774,7 +1770,7 @@ function! s:FirstComplete(start_pos, menuitems)
   if s:CheckCompleteTaskQueueAllDone()
     let g:xxx3 = reltime()
     let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-    call s:console('CompleteTaskQueueAllDone', ts)
+    call s:console('CompleteTaskQueueAllDone', '从 typing() →', ts)
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
 endfunction
@@ -1874,6 +1870,9 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 的 CmdlineEnter 和 CmdlineLeave，带来 statusline 闪烁。
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
       call easycomplete#tabnine#flush()
+
+      let ts = float2nr((reltimefloat(reltime()) - reltimefloat(g:xxx1)) * 1000)
+      call s:console('FirstCompleteRendering, 数据准备工作完成，接下来执行complete()', '从 typing() →', ts)
       noa call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       if g:easycomplete_ghost_text
@@ -1931,6 +1930,7 @@ function! easycomplete#refresh(...)
 endfunction
 
 function! s:complete(start, context) abort
+  let g:complete_start = reltime()
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
     if g:env_is_nvim
@@ -2163,7 +2163,6 @@ function! s:CheckCompleteTaskQueueAllDone()
   let flag = v:true
   for item in g:easycomplete_complete_taskqueue
     if item.condition == 1 && item.done == 0
-      call s:console('CheckCompleteTaskQueue', item.name, '没有完成')
       let flag = v:false
       break
     endif
@@ -2557,7 +2556,7 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
-  call s:console('easycomplete#TextChangedI-------------', strpart(getline('.'), getcurpos()[2]-2, 1))
+  call s:console('easycomplete#TextChangedI------begin-------', strpart(getline('.'), getcurpos()[2]-2, 1))
   let g:xxx0 = reltime()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
@@ -2586,7 +2585,7 @@ function! s:LazyFireTyping()
 
   let gtmp = reltime()
   let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  call s:console('从按键到 easycomplete#typing 之前耗时，应该很短, 耗时', ts, ",延时 flazyfiretyping 延迟:", l:lazy_time)
+  call s:console('从按键到 easycomplete#typing timer 之前耗时，应该很短, 耗时', ts, ", flazyfiretyping 延迟:", l:lazy_time)
 
   if g:env_is_nvim
     call s:easycomplete_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
@@ -2674,9 +2673,13 @@ function! easycomplete#TextChangedP()
     call s:StopAsyncRun()
     " 异步执行的目的是避免快速频繁输入字符时的complete渲染扎堆带来的视觉破损，
     " 不能杜绝，但能大大缓解
-    call s:AsyncRun(function('s:CompleteMatchAction'), [], delay)
+    call s:AsyncRun('easycomplete#CompleteMatchAction', [], delay)
     let b:old_changedtick = b:changedtick
   endif
+endfunction
+
+function! easycomplete#CompleteMatchAction()
+  call s:CompleteMatchAction()
 endfunction
 
 function! easycomplete#BackToOriginalBuffer()

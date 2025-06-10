@@ -210,7 +210,9 @@ function Util.async_run(func, args, timeout)
           end
         end)
       else
-        vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
+        vim.schedule(function()
+          vim.notify("async_run: 全局函数不存在或不是函数: " .. func, vim.log.levels.ERROR)
+        end)
       end
     elseif type(func) == "function" then
       -- 如果是函数对象，直接调用
@@ -221,8 +223,10 @@ function Util.async_run(func, args, timeout)
         end
       end)
     else
-      print('------------', vim.inspect(func), args, timeout)
-      vim.notify("async_run: 无效的函数类型", vim.log.levels.ERROR)
+      -- print('------------', vim.inspect(func), args, timeout)
+      vim.schedule(function()
+        vim.notify("async_run: 无效的函数类型", func, vim.log.levels.ERROR)
+      end)
     end
   end)
   return async_timer_counter + 1
@@ -247,10 +251,14 @@ function Util.defer_fn(func_name, args, timeout)
         end)
       end, timeout)
     else
-      vim.notify("defer_fn: 全局函数不存在或不是函数: " .. func_name, timeout, vim.log.levels.ERROR)
+      vim.schedule(function()
+        vim.notify("defer_fn: 全局函数不存在或不是函数: " .. func_name, timeout, vim.log.levels.ERROR)
+      end)
     end
   else
-    vim.notify("defer_fn: 传入参数不是字符串", vim.log.levels.ERROR)
+    vim.schedule(function()
+      vim.notify("defer_fn: 传入参数不是字符串", vim.log.levels.ERROR)
+    end)
   end
 end
 
