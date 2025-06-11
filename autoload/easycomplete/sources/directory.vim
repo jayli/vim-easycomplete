@@ -19,12 +19,6 @@ function! easycomplete#sources#directory#CompleteHandler(...)
   return call(function("s:CompleteHandler"), a:000)
 endfunction
 
-" ./abc → abc
-" ./abc/def/ghi.abc → ghi.abc
-function! s:GetBase(ctx)
-
-endfunction
-
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   if g:easycomplete_directory_enable == 0
     call easycomplete#complete(a:name, a:ctx, a:startcol, [])
@@ -100,21 +94,27 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
     return []
   endif
 
+  if a:base[-1:] == "."
+    let l:pfx = a:base
+  else
+    let l:pfx = ""
+  endif
+
   let result_with_kind = []
   for item in a:rlist
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(a:base):] . "/", "abbr":item, "menu" : "[Dir]"})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : "[Dir]"})
       else
-        call add(result_with_kind, {"word": item[strwidth(a:base):] . "/", "abbr":item,
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item,
               \ "menu" : "folder", "kind": "" })
       endif
     else
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(a:base):], "abbr":item,"menu" : "[File]"})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr":item,"menu" : "[File]"})
       else
-        call add(result_with_kind, {"word": item[strwidth(a:base):], "abbr": item,
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr": item,
               \ "menu" : "[file]",
               \ "kind": ""
               \ })
