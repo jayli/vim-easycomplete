@@ -2268,7 +2268,6 @@ function! s:flush()
   endif
   let s:easycomplete_start_pos = 0
   let b:old_changedtick = 0
-  let b:easycomplete_old_char = ""
 endfunction
 
 function! s:ResetCompletedItem()
