@@ -79,6 +79,7 @@ let b:easycomplete_typing_timer = 0
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
 let b:is_directory_complete = 0
+let b:fast_bs_timer = 0
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -831,7 +832,15 @@ function! s:BackingCompleteHandler()
 endfunction
 
 function! easycomplete#BackSpace()
+  if b:fast_bs_timer > 0
+    call timer_stop(b:fast_bs_timer)
+  endif
+  let b:fast_bs_timer = timer_start(70, { -> s:FastBSTimerReset()})
   return "\<C-H>"
+endfunction
+
+function! s:FastBSTimerReset()
+  let b:fast_bs_timer = 0
 endfunction
 
 " 正常输入和退格监听函数
@@ -2547,17 +2556,19 @@ function! easycomplete#TextChangedI()
   else
     " TextChangedI
     " call easycomplete#typing()
-    call s:LazyFireTyping()
+    if !b:fast_bs_timer
+      call s:LazyFireTyping()
+    endif
     if easycomplete#ok('g:easycomplete_signature_enable')
       " hack for #281
       call easycomplete#action#signature#LazyRunHandle()
     endif
     let b:old_changedtick = b:changedtick
-    " bugfix：有选中的情况时进行回退，pum 的弹出时机会显得错乱
-    if s:BackChecking()
+    " s:BackChecking() 比对文本差异判断是否回退，比较慢
+    " b:fast_bs_timer 只用作判断是否刚按下<bs>
+    "if s:BackChecking()
+    if b:fast_bs_timer
       let g:easycomplete_backing = 1
-      " call s:BackingCompleteHandler()
-      " call s:SnapShoot()
     endif
     return ""
   endif
