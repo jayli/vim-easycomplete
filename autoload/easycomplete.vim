@@ -2556,6 +2556,9 @@ function! easycomplete#TextChangedI()
   else
     " TextChangedI
     " call easycomplete#typing()
+    if !exists("b:fast_bs_timer")
+      let b:fast_bs_timer = 0
+    endif
     if !b:fast_bs_timer
       call s:LazyFireTyping()
     endif
