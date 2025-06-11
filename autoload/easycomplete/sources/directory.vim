@@ -19,6 +19,12 @@ function! easycomplete#sources#directory#CompleteHandler(...)
   return call(function("s:CompleteHandler"), a:000)
 endfunction
 
+" ./abc → abc
+" ./abc/def/ghi.abc → ghi.abc
+function! s:GetBase(ctx)
+
+endfunction
+
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   if g:easycomplete_directory_enable == 0
     call easycomplete#complete(a:name, a:ctx, a:startcol, [])
@@ -26,7 +32,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   endif
   let spath_start = a:typing_path.short_path_start
   try
-    let result = s:GetDirAndFiles(a:typing_path, a:ctx['typing'])
+    let result = s:GetDirAndFiles(a:typing_path, a:typing_path.fname)
   catch
     echom easycomplete#util#info('[Directory]', v:exception)
   endtry
@@ -70,8 +76,8 @@ function! s:GetDirAndFiles(typing_path, base)
   else
     let path = simplify(fpath)
   endif
-
-  if a:base == ""
+  let l:base = a:base
+  if l:base == ""
     " 查找目录下的文件和目录
     let result_list = easycomplete#util#ls(path)
   else
@@ -81,14 +87,15 @@ function! s:GetDirAndFiles(typing_path, base)
     " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
     " 只有首次点击<Tab>时能忽略大小写，
     " 应该在del跟随和tab时都忽略大小写才对
-    let result_list = filter(result_list, 'tolower(v:val) =~ "^'. tolower(a:base) . '"')
+    let result_list = filter(result_list,
+          \ 'tolower(v:val) =~ "^'. tolower(substitute(l:base, "\\.", "\\\\\\\\.", "g")) . '"')
   endif
-  return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path))
+  return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path), l:base)
 endfunction
 
 " 将某个目录下查找出的列表 List 的每项识别出目录和文件
 " 并转换成补全浮窗所需的展示格式
-function! s:GetWrappedFileAndDirsList(rlist, fpath)
+function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
   if len(a:rlist) == 0
     return []
   endif
@@ -98,16 +105,16 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath)
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item . "/", "abbr":item, "menu" : "[Dir]"})
+        call add(result_with_kind, {"word": item[strwidth(a:base):] . "/", "abbr":item, "menu" : "[Dir]"})
       else
-        call add(result_with_kind, {"word": item . "/", "abbr":item,
+        call add(result_with_kind, {"word": item[strwidth(a:base):] . "/", "abbr":item,
               \ "menu" : "folder", "kind": "" })
       endif
     else
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item, "abbr":item,"menu" : "[File]"})
+        call add(result_with_kind, {"word": item[strwidth(a:base):], "abbr":item,"menu" : "[File]"})
       else
-        call add(result_with_kind, {"word": item, "abbr": item,
+        call add(result_with_kind, {"word": item[strwidth(a:base):], "abbr": item,
               \ "menu" : "[file]",
               \ "kind": ""
               \ })
@@ -178,9 +185,7 @@ endfunction
 " 从一个完整的 path 串中得到 FileName
 " 输入的 Path 串可以带有文件名
 function! s:GetFileName(path)
-  let path  = simplify(a:path)
-  let fname = matchstr(path,"\\([\\/]\\)\\@<=[^\\/]\\+$")
-  return fname
+  return easycomplete#util#GetFileName(a:path)
 endfunction
 
 function! s:GetPathName(path)

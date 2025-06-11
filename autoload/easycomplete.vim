@@ -78,6 +78,7 @@ let s:easycomplete_ghost_text_str = ""
 let b:easycomplete_typing_timer = 0
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
+let b:is_directory_complete = 0
 
 function! easycomplete#Enable()
   call timer_start(800, { -> easycomplete#_enable() })
@@ -1713,8 +1714,16 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   call easycomplete#StoreCompleteSourceItems(a:plugin_name, a:menu_list)
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
-  let start_pos = col('.') - strwidth(typing_word)
   let filtered_menu = g_easycomplete_menuitems
+  let start_pos = col('.') - strwidth(typing_word)
+
+  if a:plugin_name == "directory"
+    " let typed = strpart(getline('.'), 0, col('.') - 1)
+    " let start_pos = strwidth(typed) - strwidth(fnamemodify(typed, ":t"))
+    let b:is_directory_complete = 1
+  else
+    let b:is_directory_complete = 0
+  endif
 
   try
     call s:FirstComplete(start_pos, filtered_menu)
@@ -1814,7 +1823,11 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     call s:flush()
     return
   endif
-  let typing_word = s:GetTypingWord()
+  let l:ctx = easycomplete#context()
+  let typing_word = l:ctx["typing"]
+  if b:is_directory_complete
+    let typing_word = easycomplete#util#GetFileName(l:ctx["typed"])
+  endif
   let should_stop_render = 0
   try
     if s:OrigionalPosition()
@@ -1825,7 +1838,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
         " call s:HackForVimFirstComplete()
         return
       endif
-    elseif !empty(typing_word) && easycomplete#context()["typed"] =~ "[a-zA-Z0-9#]$"
+    elseif !empty(typing_word) && l:ctx["typed"] =~ "[a-zA-Z0-9#]$"
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()，叠加之前请求 LSP 的返
       " 回值后进行重新过滤呈现
@@ -1842,7 +1855,11 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render && len(source_result) > 0
-      let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
+      if b:is_directory_complete
+        let filtered_menu = source_result
+      else
+        let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
+      endif
       let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
