@@ -2266,8 +2266,9 @@ function! s:flush()
   endfor
   let g:easycomplete_completedone_insert_mode = mode()
   if easycomplete#util#InsertMode() && complete_check()
-    call s:StopAsyncRun()
-    call s:AsyncRun(function("complete"),[col("."),[]], 50)
+    " call s:StopAsyncRun()
+    " call s:AsyncRun(function("complete"),[col("."),[]], 50)
+    call timer_start(50, { -> complete(col("."),[])})
   endif
   if g:easycomplete_showmode
     set showmode

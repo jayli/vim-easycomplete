@@ -98,7 +98,7 @@ function! easycomplete#sources#deno#cache()
 endfunction
 
 function! s:CachePost(job, code, ...) abort
-  call s:AsyncRun(function('easycomplete#util#info'), ['`deno cache` Finished!'], 10)
+  call s:AsyncRun('easycomplete#util#info', ['`deno cache` Finished!'], 10)
 endfunction
 
 function! easycomplete#sources#deno#filter(matches)
