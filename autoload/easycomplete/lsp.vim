@@ -479,6 +479,9 @@ function! s:ensure_init(buf, server_name, cb) abort
   else
     let l:capabilities = call(function('easycomplete#lsp#default_get_supported_capabilities'), [l:server_info])
   endif
+  if easycomplete#util#GetCurrentPluginName() == "go"
+    call remove(l:capabilities["textDocument"], "typeHierarchy")
+  endif
 
   let l:request = {
         \   'method': 'initialize',
