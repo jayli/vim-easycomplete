@@ -224,7 +224,7 @@ function Util.async_run(func, args, timeout)
     else
       -- print('------------', vim.inspect(func), args, timeout)
       vim.schedule(function()
-        vim.notify("async_run: 无效的函数类型", vim.inspect(args), func, vim.log.levels.ERROR)
+        vim.notify("async_run: 无效的函数类型", func, vim.log.levels.ERROR)
       end)
     end
   end)
