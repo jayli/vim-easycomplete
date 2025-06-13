@@ -1827,8 +1827,8 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     call s:flush()
     return
   endif
-  " 如果 aone_copilot 已经给了提示，那么就暂停展示 pum
-  if exists("g:aone_copilot_ready") && g:aone_copilot_ready && aone_copilot#copilot_snippet_ready()
+  " 如果 copilot.nvim 已经给了提示，那么就暂停展示 pum
+  if exists("g:copilot_ready") && g:copilot_ready && copilot#copilot_snippet_ready()
     call s:flush()
     return
   endif
