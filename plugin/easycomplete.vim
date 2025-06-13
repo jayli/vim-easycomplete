@@ -33,7 +33,7 @@ if g:easycomplete_nerd_font == 1
         \      "menu":"Text",
         \    },
         \   "snip": {
-        \      "kind":get(kind_icons, "snip", ""),
+        \      "kind":get(kind_icons, "snip", ""),
         \      "menu":"Code"
         \    },
         \   "dict": {
