@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -251,27 +251,8 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
-  if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
-    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-      call easycomplete#util#DeleteHint()
-    endif
-    return
-  endif
-  " let l:char = easycomplete#context()["char"]
   let l:char = strpart(getline('.'), col('.') - 2, 1)
 
-  " 先处理 Ghost text
-  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
-    if ghost_text_first_char == l:char
-      if strlen(s:easycomplete_ghost_text_str) >= 2
-        let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
-        call easycomplete#util#ShowHint(new_ghost_text)
-      else
-        call easycomplete#util#DeleteHint()
-      endif
-    endif
-  endif
   " 非 ASCII 码时终止
   if char2nr(l:char) < 33
     call s:CloseCompletionMenu()
@@ -1265,6 +1246,7 @@ function! easycomplete#CompleteChanged()
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
   if g:easycomplete_ghost_text
     if easycomplete#CompleteCursored()
+      " call s:console('----')
       call easycomplete#util#DeleteHint()
     elseif !empty(s:easycomplete_ghost_text_str)
       call easycomplete#util#DeleteHint()
@@ -1988,6 +1970,7 @@ function! easycomplete#_complete(start, items)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
         call easycomplete#util#ShowHint(ghost_text)
+        " call easycomplete#util#timer_start("easycomplete#util#ShowHint", [ghost_text], 1000)
         let s:easycomplete_ghost_text_str = ghost_text
       endif
     else
@@ -2621,6 +2604,34 @@ endfunction
 function! easycomplete#TextChangedP()
   if !easycomplete#ok('g:easycomplete_enable')
     return
+  endif
+
+  if !exists("b:fast_bs_timer")
+    let b:fast_bs_timer = 0
+  endif
+  if b:fast_bs_timer > 0
+    let g:easycomplete_backing = 1
+  else
+    " 预处理 ghost_text
+    let g:easycomplete_backing = 0
+    if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
+      if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+        call easycomplete#util#DeleteHint()
+      endif
+      return
+    endif
+    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+      let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
+      let l:char = strpart(getline('.'), col('.') - 2, 1)
+      if ghost_text_first_char == l:char
+        if strlen(s:easycomplete_ghost_text_str) >= 2
+          let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
+          call easycomplete#util#ShowHint(new_ghost_text)
+        else
+          call easycomplete#util#DeleteHint()
+        endif
+      endif
+    endif
   endif
 
   if g:easycomplete_enable == 0 || !exists('b:old_changedtick')
