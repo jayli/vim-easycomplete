@@ -599,9 +599,12 @@ endfunction
 
 function! s:TsHack_S_DotFilter(key, val)
   if has_key(a:val, "abbr") && has_key(a:val, "word")
-        \ && stridx(get(a:val, "word"), ".") > 0
-    let ts_typing_word = s:TsHack_GetTsTypingWord()
-    return stridx(get(a:val, "word"), ts_typing_word) == 0
+    if stridx(get(a:val, "word"), ".") > 0
+      let ts_typing_word = s:TsHack_GetTsTypingWord()
+      return stridx(get(a:val, "word"), ts_typing_word) == 0
+    else
+      return v:true
+    endif
   else
     return v:false
   endif

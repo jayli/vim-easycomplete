@@ -834,7 +834,8 @@ function! easycomplete#typing()
     return
   endif
 
-  if s:GetCurrentChar() == " "
+  let l:curr_char = s:GetCurrentChar()
+  if l:curr_char == " "
     call s:flush()
     return
   endif
@@ -884,7 +885,7 @@ function! easycomplete#typing()
   endif
 
   " hack for vim ':' typing
-  if &filetype == 'vim' && easycomplete#context()['char'] == ":"
+  if &filetype == 'vim' && l:curr_char == ":"
     if !s:VimColonTyping()
       return ""
     endif
@@ -1639,7 +1640,7 @@ function! s:MainCompleteHandler()
   call s:CompleteInit()
   call s:CompletorCallingAtFirstComplete(l:ctx)
   " 记录 g:easycomplete_firstcomplete_ctx 的时机，最早就是这里
-  let g:easycomplete_firstcomplete_ctx = easycomplete#context()
+  let g:easycomplete_firstcomplete_ctx = l:ctx
 endfunction
 
 function! s:CompleteInit(...)
