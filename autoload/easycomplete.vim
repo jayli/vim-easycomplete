@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -1246,7 +1246,6 @@ function! easycomplete#CompleteChanged()
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
   if g:easycomplete_ghost_text
     if easycomplete#CompleteCursored()
-      " call s:console('----')
       call easycomplete#util#DeleteHint()
     elseif !empty(s:easycomplete_ghost_text_str)
       call easycomplete#util#DeleteHint()
@@ -1970,7 +1969,6 @@ function! easycomplete#_complete(start, items)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
         call easycomplete#util#ShowHint(ghost_text)
-        " call easycomplete#util#timer_start("easycomplete#util#ShowHint", [ghost_text], 1000)
         let s:easycomplete_ghost_text_str = ghost_text
       endif
     else
@@ -2249,9 +2247,7 @@ function! s:flush()
   endfor
   let g:easycomplete_completedone_insert_mode = mode()
   if easycomplete#util#InsertMode() && complete_check()
-    " call s:StopAsyncRun()
-    " call s:AsyncRun(function("complete"),[col("."),[]], 50)
-    call timer_start(50, { -> complete(col("."),[])})
+    call timer_start(50, { -> s:HideComplete(col("."))})
   endif
   if g:easycomplete_showmode
     set showmode
@@ -2261,6 +2257,14 @@ function! s:flush()
   endif
   let s:easycomplete_start_pos = 0
   let b:old_changedtick = 0
+endfunction
+
+function! s:HideComplete(col)
+  try
+    silent noa call complete(a:col, [])
+  catch
+    " E785: complete() can only be used in Insert mode
+  endtry
 endfunction
 
 function! s:ResetCompletedItem()
@@ -2627,6 +2631,7 @@ function! easycomplete#TextChangedP()
         if strlen(s:easycomplete_ghost_text_str) >= 2
           let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
           call easycomplete#util#ShowHint(new_ghost_text)
+          let s:easycomplete_ghost_text_str = new_ghost_text
         else
           call easycomplete#util#DeleteHint()
         endif

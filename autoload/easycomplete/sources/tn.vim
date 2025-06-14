@@ -322,10 +322,9 @@ function! s:TabnineJobErr(job_id, data, event)
 endfunction
 
 function! s:TabnineExit(job_id, data, event)
-  " call s:log(a:job_id, a:data, a:event)
   if a:event == "exit"
-    call s:log('Restart Tabnine server')
-    call s:StartTabNine()
+    " call s:log('Restart Tabnine server')
+    " call s:StartTabNine()
   endif
 endfunction
 
