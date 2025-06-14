@@ -475,9 +475,13 @@ function! s:InsertWord(word)
     call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
   endif
   call s:InsertingWordZizz()
-  noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
-  if pumvisible()
-    noa call complete(startcol, [])
+  try
+    noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
+    if pumvisible()
+      noa call complete(startcol, [])
+    endif
+  catch /785/
+    " complete() 只能在插入模式下调用
   endif
   " call feedkeys("\<C-y>", 'n')
   call easycomplete#SnapShoot()
