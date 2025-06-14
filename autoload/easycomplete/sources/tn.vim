@@ -119,7 +119,11 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     " 防止 tabnine 初始模型构建时的 UI 阻塞
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   endif
-  call easycomplete#sources#tn#SimpleTabNineRequest(a:ctx)
+  if easycomplete#sources#tn#JobStatus() == "run"
+    call easycomplete#sources#tn#SimpleTabNineRequest(a:ctx)
+  else
+    call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+  endif
   return v:true
 endfunction
 
@@ -300,13 +304,32 @@ function! s:StartTabNine()
         \   l:log_file,
         \ ]
   let s:tn_job = easycomplete#job#start(l:cmd,
-        \ {'on_stdout': function('s:TabnineJobCallback')})
+        \ {
+        \    'on_stdout': function('s:TabnineJobCallback'),
+        \    'on_stderr': function('s:TabnineJobErr'),
+        \    'on_exit':   function('s:TabnineExit')
+        \ })
   if s:tn_job <= 0
     call s:log("[TabNine Error]:", "TabNine job start failed")
   else
     let s:tn_ready = v:true
   endif
   call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
+endfunction
+
+function! s:TabnineJobErr(job_id, data, event)
+  call s:log(a:job_id, a:data, a:event)
+endfunction
+
+function! s:TabnineExit(job_id, data, event)
+  call s:log(a:job_id, a:data, a:event)
+endfunction
+
+function! easycomplete#sources#tn#JobStatus()
+  if s:tn_job == v:null
+    return "v:null"
+  endif
+  return easycomplete#job#status(s:tn_job)
 endfunction
 
 function! s:TabnineJobCallback(job_id, data, event)
