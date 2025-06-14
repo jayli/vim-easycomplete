@@ -329,7 +329,12 @@ function! easycomplete#sources#tn#JobStatus()
   if s:tn_job == v:null
     return "v:null"
   endif
-  return easycomplete#job#status(s:tn_job)
+  try
+    let l:job_status = easycomplete#job#status(s:tn_job)
+  catch /900/
+    let l:job_status = "dead"
+  endtry
+  return l:job_status
 endfunction
 
 function! s:TabnineJobCallback(job_id, data, event)
