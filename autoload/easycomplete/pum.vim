@@ -482,7 +482,7 @@ function! s:InsertWord(word)
     endif
   catch /785/
     " complete() 只能在插入模式下调用
-  endif
+  endtry
   " call feedkeys("\<C-y>", 'n')
   call easycomplete#SnapShoot()
   execute 'noa set completeopt='.saved_completeopt
