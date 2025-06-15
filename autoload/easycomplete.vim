@@ -840,9 +840,6 @@ endfunction
 " 正常输入和退格监听函数
 " for firstcompele typing and back typing
 function! easycomplete#typing()
-  " let g:xxx1 = reltime()
-  " let ts = float2nr((reltimefloat(g:xxx1) - reltimefloat(g:xxx0)) * 1000)
-  " call s:console('easycomplete#typing(), 70 ms 的lazytype延时实际消耗了', ts)
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
@@ -927,9 +924,6 @@ endfunction
 " immediately: 是否立即执行 complete()
 " 在 '/' 或者 '.' 触发目录匹配时立即执行
 function! s:DoComplete(immediately)
-  " let g:xxx2 = reltime()
-  " let ts = float2nr((reltimefloat(g:xxx2) - reltimefloat(g:xxx1)) * 1000)
-  " call s:console('DoComplete, 从 typing() →', ts)
   let l:ctx = easycomplete#context()
   " 过滤不连续的 '.'
   if strlen(l:ctx['typed']) >= 2 && l:ctx['char'] ==# '.'
@@ -1081,9 +1075,6 @@ endfunction
 " 从注册的插件中依次调用每个 completor 函数，此函数只在 FirstComplete 时调用
 " 每个 completor 中给出匹配结果后回调给 CompleteAdd
 function! s:CompletorCallingAtFirstComplete(ctx)
-  " let g:xxx3 = reltime()
-  " let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-  " call s:console('CompletorCallingAtFirstComplete, 从 typing() → ', ts)
   let l:ctx = a:ctx
   call s:ResetCompleteTaskQueue()
   if s:first_render_timer > 0
@@ -1679,9 +1670,6 @@ function! s:CompleteMenuResetHandler(...)
 endfunction
 
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
-  " let g:ttt = reltime()
-  " let ts = float2nr((reltimefloat(g:ttt) - reltimefloat(g:xxx1)) * 1000)
-  " call s:console('CompleteAdd', a:plugin_name, '从 typing() →',ts)
   if !s:CheckCompleteTaskQueueAllDone()
     if s:zizzing() | return | endif
   endif
@@ -1776,12 +1764,11 @@ function! s:CombineAllMenuitems()
   return result
 endfunction
 
+" FirstComplete: 只做首次匹配
+" SecondComplete: 做二次匹配
 function! s:FirstComplete(start_pos, menuitems)
   if s:zizzing() | return | endif
   if s:CheckCompleteTaskQueueAllDone()
-    " let g:xxx3 = reltime()
-    " let ts = float2nr((reltimefloat(g:xxx3) - reltimefloat(g:xxx1)) * 1000)
-    " call s:console('CompleteTaskQueueAllDone', '从 typing() →', ts)
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
 endfunction
@@ -1890,9 +1877,8 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
       call easycomplete#tabnine#flush()
 
-      " let ts = float2nr((reltimefloat(reltime()) - reltimefloat(g:xxx1)) * 1000)
-      " call s:console('FirstCompleteRendering, 数据准备工作完成，接下来执行complete()', '从 typing() →', ts)
       noa call s:complete(a:start_pos, result)
+      call easycomplete#util#timer_start("easycomplete#ShowCompleteInfoInFirstRendering", [], 45)
       call s:SetFirstCompeleHit()
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start_pos, s:get(result,0,"word"))
@@ -1943,6 +1929,7 @@ function! easycomplete#refresh(...)
   return ''
 endfunction
 
+" FirstComplete 专用
 function! s:complete(start, context) abort
   let g:complete_start = reltime()
   if mode() =~# 'i' && &paste != 1
@@ -1967,7 +1954,7 @@ function! s:complete(start, context) abort
   noa call easycomplete#popup#overlay()
 endfunction
 
-" Alias of complete()
+" SecondComplete 专用
 function! easycomplete#_complete(start, items)
   let g:easycomplete_complete_ctx = {
         \ 'start': a:start,
@@ -2011,6 +1998,16 @@ endfunction
 
 " 这里只处理默认无 noselect 的情况
 function! s:ShowCompleteInfoInSecondRendering()
+  if !(&completeopt =~ "noselect")
+    call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
+    if easycomplete#util#GetCurrentPluginName() == "ts"
+      call timer_start(1, { -> easycomplete#sources#ts#CompleteChanged() })
+    endif
+  endif
+endfunction
+
+" 有时候能弹出，有时候弹不出，无所谓了
+function! easycomplete#ShowCompleteInfoInFirstRendering()
   if !(&completeopt =~ "noselect")
     call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
     if easycomplete#util#GetCurrentPluginName() == "ts"
@@ -2580,8 +2577,6 @@ function! easycomplete#TextChangedI()
 endfunction
 
 function! s:LazyFireTyping()
-  " call s:console('easycomplete#TextChangedI------begin-------', strpart(getline('.'), getcurpos()[2]-2, 1))
-  " let g:xxx0 = reltime()
   if !exists('b:easycomplete_typing_timer') | let b:easycomplete_typing_timer = 0 | endif
   if b:easycomplete_typing_timer > 0
     if g:env_is_nvim
@@ -2606,10 +2601,6 @@ function! s:LazyFireTyping()
     let l:lazy_time = 1
   endif
   let b:easycomplete_old_char = l:easycomplete_curr_char
-
-  " let gtmp = reltime()
-  " let ts = float2nr((reltimefloat(gtmp) - reltimefloat(g:xxx0)) * 1000)
-  " call s:console('从按键到 easycomplete#typing timer 之前耗时，应该很短, 耗时', ts, ", flazyfiretyping 延迟:", l:lazy_time)
 
   if g:env_is_nvim
     call s:easycomplete_toolkit.global_timer_start("easycomplete#typing", l:lazy_time)
