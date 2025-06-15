@@ -764,7 +764,7 @@ function! s:TrimAboveHeight(above_space)
   if g:easycomplete_winborder
     let l:real_above_space = a:above_space > h - 2 ? h - 2 : a:above_space
   else
-    let l:real_above_space = a:above_space > 20 ? 20 : a:above_space
+    let l:real_above_space = a:above_space > h ? h : a:above_space
   endif
   return l:real_above_space
 endfunction
@@ -869,30 +869,31 @@ function! s:SetWinBorder(opt, pum_direction)
       let l:height = a:opt.height - 2
     endif
   elseif a:pum_direction == "above"
-    let l:row = a:opt.row - 2
     let l:col = a:opt.col
     let l:above_space = s:CursorTop() - 1
     " TODO here jayli 要处理顶部高度----------------------
     " 不写这句好像就可以了，还需要再测试下
-    " let l:above_space = s:TrimAboveHeight(l:above_space)
+    let l:above_space = s:TrimAboveHeight(l:above_space)
+    let l:row_with_maxheight_computed = s:CursorTop() - l:above_space - 1
     let l:height = a:opt.height
     let l:width = a:opt.width
 
     if a:opt.height + 2 <= l:above_space
       " 向上远没有触顶
       let l:height = a:opt.height
+      let l:row = a:opt.row - 2
     elseif a:opt.height + 1 == l:above_space
       " 向上+1后触顶
       let l:height = a:opt.height - 1
-      let l:row = 0
+      let l:row = l:row_with_maxheight_computed > 0 ? l:row_with_maxheight_computed : 0
     elseif a:opt.height + 2 == l:above_space
       " 向上+2后触顶
       let l:height = a:opt.height - 2
-      let l:row = 0
+      let l:row = l:row_with_maxheight_computed > 0 ? l:row_with_maxheight_computed : 0
     else
       " 超过触顶，一般不会走到这里
       let l:height = a:opt.height - 2
-      let l:row = 0
+      let l:row = l:row_with_maxheight_computed > 0 ? l:row_with_maxheight_computed : 0
     endif
   endif
   return extend(a:opt, {
