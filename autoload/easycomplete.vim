@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -287,8 +287,9 @@ function! s:CompleteTypingMatch(...)
 
     " #317
     let cword = expand("<cword>")
-    if len(g:easycomplete_stunt_menuitems) == 1 && strlen(cword) > 1 && cword =~ "^[a-zA-Z_$]"
-      let local_delay = 10
+    if strlen(cword) > 1 && cword =~ "^[a-zA-Z_$]"
+      let local_delay = 50
+      call s:flush()
       call easycomplete#util#timer_start("easycomplete#typing", [], local_delay)
     endif
 
