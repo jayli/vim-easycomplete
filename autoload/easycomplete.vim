@@ -277,12 +277,21 @@ function! s:CompleteTypingMatch(...)
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
+    " 正常SecondComplete中无匹配词了就关掉 pum 了
     if has('nvim')
       call s:CloseCompletionMenu()
       call s:CloseCompleteInfo()
     else
       call s:CloseCompletionMenu()
     endif
+
+    " #317
+    let cword = expand("<cword>")
+    if len(g:easycomplete_stunt_menuitems) == 1 && strlen(cword) > 1 && cword =~ "^[a-zA-Z_$]"
+      let local_delay = 10
+      call easycomplete#util#timer_start("easycomplete#typing", [], local_delay)
+    endif
+
     let g:easycomplete_stunt_menuitems = []
     return
   endif
