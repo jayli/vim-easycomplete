@@ -405,9 +405,11 @@ endfunction
 function! s:HLCursordFuzzyChar(hl_group, prefix_length)
   if !empty(g:easycomplete_match_id)
     try
-      call matchdelete(g:easycomplete_match_id, s:pum_window)
-    catch
-      echom v:exception
+      if g:easycomplete_match_id != -1
+        call matchdelete(g:easycomplete_match_id, s:pum_window)
+      endif
+    catch /E802/
+      echom ">>" . g:easycomplete_match_id . " " . v:exception
     endtry
   endif
   if !easycomplete#pum#CompleteCursored()
