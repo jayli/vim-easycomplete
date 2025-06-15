@@ -1895,7 +1895,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       noa call s:complete(a:start_pos, result)
       call s:SetFirstCompeleHit()
       if g:easycomplete_ghost_text
-        let ghost_text = s:GetGhostText(a:start_pos, result[0]["word"])
+        let ghost_text = s:GetGhostText(a:start_pos, s:get(result,0,"word"))
         call easycomplete#util#ShowHint(ghost_text)
         let s:easycomplete_ghost_text_str = ghost_text
       endif
@@ -1913,7 +1913,7 @@ endfunction
 
 function! s:RemovePrefixIgnoreCase(str, prefix) abort
   if a:prefix ==# ''
-    return ''
+    return a:str
   endif
   " 构造正则表达式：忽略大小写匹配前缀，并只匹配开头部分
   let pattern = '\c^' . escape(a:prefix, '\/.*$^~[]')
