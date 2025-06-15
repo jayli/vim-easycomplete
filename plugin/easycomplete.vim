@@ -176,6 +176,9 @@ endif
 if !exists("g:easycomplete_diagnostics_hover")
   let g:easycomplete_diagnostics_hover = 1
 endif
+if !exists("g:easycomplete_pum_maxheight")
+  let g:easycomplete_pum_maxheight = 20
+endif
 
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  g:easycomplete_diagnostics_hover,
@@ -199,7 +202,8 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
       \ 'g:easycomplete_signature_offset':   g:easycomplete_signature_offset,
       \ 'g:easycomplete_directory_enable':   g:easycomplete_directory_enable,
-      \ 'g:easycomplete_winborder':          g:easycomplete_winborder
+      \ 'g:easycomplete_winborder':          g:easycomplete_winborder,
+      \ 'g:easycomplete_pum_maxheight':      g:easycomplete_pum_maxheight
       \ }
 
 " VIM 最低版本 8.2
