@@ -138,6 +138,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `g:easycomplete_diagnostics_hover`   | 1             | 光标停住所在行显示错误提醒                                  |
 | `g:easycomplete_winborder`           | 1             | 窗口边框 (支持 nvim 0.11 和更高版本)                        |
 | `g:easycomplete_ghost_text`          | 1             | 幽灵文本                                                    |
+| `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
 
 ## 语言支持

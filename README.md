@@ -137,6 +137,7 @@ Global configurations:
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
 | `g:easycomplete_winborder`           | 1             | Add window border for pum (for nvim 0.11 or higher)           |
 | `g:easycomplete_ghost_text`          | 1             | Ghost text                                                    |
+| `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 
 Typing `:h easycomplete` for help.
