@@ -747,6 +747,28 @@ function! s:PumDirection(buffer_height)
   endif
 endfunction
 
+function! s:TrimBelowHeight(below_space)
+  let l:real_below_space = a:below_space
+  let h = g:easycomplete_pum_maxheight
+  if g:easycomplete_winborder
+    let l:real_below_space = a:below_space > h - 2 ? h - 2 : a:below_space
+  else
+    let l:real_below_space = a:below_space > h ? h : a:below_space
+  endif
+  return l:real_below_space
+endfunction
+
+function! s:TrimAboveHeight(above_space)
+  let l:real_above_space = a:above_space
+  let h = g:easycomplete_pum_maxheight
+  if g:easycomplete_winborder
+    let l:real_above_space = a:above_space > h - 2 ? h - 2 : a:above_space
+  else
+    let l:real_above_space = a:above_space > 20 ? 20 : a:above_space
+  endif
+  return l:real_above_space
+endfunction
+
 " 根据起始位置和buffer的大小，计算Pum应该有的大小和位置，返回 options
 function! s:ComputePumPos(startcol, buffer_size)
   let pum_direction = s:PumDirection(a:buffer_size.height)
@@ -755,7 +777,9 @@ function! s:ComputePumPos(startcol, buffer_size)
   let l:width = a:buffer_size.width
   let l:row = 0
   let below_space = s:CursorBottom() - 1
+  let below_space = s:TrimBelowHeight(below_space)
   let above_space = s:CursorTop() - 1
+  let above_space = s:TrimAboveHeight(above_space)
   if pum_direction == "below"
     if a:buffer_size.height >= below_space " 需要滚动
       let l:height = below_space
@@ -830,6 +854,7 @@ function! s:SetWinBorder(opt, pum_direction)
     let l:col = a:opt.col
     let l:width = a:opt.width
     let l:below_space = s:CursorBottom() - 1
+    let l:below_space = s:TrimBelowHeight(l:below_space)
     if a:opt.height + 2 <= l:below_space
       " 向下远没有触底
       let l:height = a:opt.height
@@ -847,6 +872,9 @@ function! s:SetWinBorder(opt, pum_direction)
     let l:row = a:opt.row - 2
     let l:col = a:opt.col
     let l:above_space = s:CursorTop() - 1
+    " TODO here jayli 要处理顶部高度----------------------
+    " 不写这句好像就可以了，还需要再测试下
+    " let l:above_space = s:TrimAboveHeight(l:above_space)
     let l:height = a:opt.height
     let l:width = a:opt.width
 
@@ -875,8 +903,6 @@ function! s:SetWinBorder(opt, pum_direction)
         \ "border": "rounded"
         \ })
 endfunction
-
-
 
 " secondcomplete 过程中有可能手动移动了 pum 的 cursor，继续 typing
 " 时需要reset一下状态 
