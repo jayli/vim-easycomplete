@@ -813,6 +813,9 @@ function! s:BackingCompleteHandler()
 endfunction
 
 function! easycomplete#BackSpace()
+  if !exists("b:fast_bs_timer")
+    let b:fast_bs_timer = 0
+  endif
   if b:fast_bs_timer > 0
     call timer_stop(b:fast_bs_timer)
   endif
