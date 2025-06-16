@@ -798,12 +798,12 @@ function! s:BackingCompleteHandler()
       let start_pos = col('.') - strlen(s:GetTypingWordByGtx())
       let result = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
       if g:env_is_nvim
-        noa call easycomplete#pum#complete(start_pos, result)
         if g:easycomplete_ghost_text && len(result) > 0
           let ghost_text = s:GetGhostText(start_pos, result[0]["word"])
           call easycomplete#util#ShowHint(ghost_text)
           let s:easycomplete_ghost_text_str = ghost_text
         endif
+        noa call easycomplete#util#timer_start("easycomplete#pum#complete", [start_pos, result], 30)
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件
         if !empty(result)
@@ -828,17 +828,17 @@ function! easycomplete#BackSpace()
   endif
   let b:fast_bs_timer = timer_start(70, { -> s:FastBSTimerReset()})
   " 回退过程中先处理 ghost_text 防止闪烁
-  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
-    let l:char = strpart(getline('.'), col('.') - 2, 1)
-    if strlen(l:char) >= 1
-      let new_ghost_text = l:char . s:easycomplete_ghost_text_str
-      call easycomplete#util#ShowHint(new_ghost_text)
-    else
-      call easycomplete#util#DeleteHint()
-      let s:easycomplete_ghost_text_str = ""
-    endif
-  endif
+  " if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+  "   let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
+  "   let l:char = strpart(getline('.'), col('.') - 2, 1)
+  "   if strlen(l:char) >= 1
+  "     let new_ghost_text = l:char . s:easycomplete_ghost_text_str
+  "     " call easycomplete#util#ShowHint(new_ghost_text)
+  "   else
+  "     call easycomplete#util#DeleteHint()
+  "     let s:easycomplete_ghost_text_str = ""
+  "   endif
+  " endif
   return "\<C-H>"
 endfunction
 
@@ -1257,8 +1257,11 @@ function! easycomplete#CompleteChanged()
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
   if g:easycomplete_ghost_text
     if easycomplete#CompleteCursored()
-      call easycomplete#util#DeleteHint()
+      " 在快速输入时，避免频繁的 ghost_text 的闪现，配合 easycomplete#_complete()
+      " 的定时器避免闪烁，这里把 deleteHint 注释掉
+      " call easycomplete#util#DeleteHint()
     elseif !empty(s:easycomplete_ghost_text_str)
+      " 选择一圈后回到初始状态，未选中任何选项
       call easycomplete#util#DeleteHint()
       call easycomplete#util#ShowHint(s:easycomplete_ghost_text_str)
     endif
@@ -1958,8 +1961,18 @@ function! easycomplete#_complete(start, items)
       call easycomplete#pum#complete(a:start, a:items)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
-        call easycomplete#util#ShowHint(ghost_text)
         let s:easycomplete_ghost_text_str = ghost_text
+        if !exists("b:second_complete_hint_timer")
+          let b:second_complete_hint_timer = 0
+        endif
+        if b:second_complete_hint_timer > 0
+          call timer_stop(b:second_complete_hint_timer)
+          let b:second_complete_hint_timer = 0
+        endif
+        let b:second_complete_hint_timer = timer_start(100, {
+              \ -> easycomplete#util#ShowHint(ghost_text)
+              \ })
+        " call easycomplete#util#ShowHint(ghost_text)
       endif
     else
       let should_fire_pum_show = v:false
@@ -2618,16 +2631,13 @@ function! easycomplete#TextChangedP()
       return
     endif
     if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-      let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
       let l:char = strpart(getline('.'), col('.') - 2, 1)
-      if ghost_text_first_char == l:char
-        if strlen(s:easycomplete_ghost_text_str) >= 2
-          let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
-          call easycomplete#util#ShowHint(new_ghost_text)
-          let s:easycomplete_ghost_text_str = new_ghost_text
-        else
-          call easycomplete#util#DeleteHint()
-        endif
+      if strlen(s:easycomplete_ghost_text_str) >= 2
+        let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
+        call easycomplete#util#ShowHint(new_ghost_text)
+        let s:easycomplete_ghost_text_str = new_ghost_text
+      else
+        call easycomplete#util#DeleteHint()
       endif
     endif
   endif
