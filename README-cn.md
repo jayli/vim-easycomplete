@@ -286,7 +286,7 @@ You can add custom Pmenu styles by defining these highlight groups:
 
 补全菜单的样式定义：
 
-- `EasyFuzzyMatch`: 匹配字符高亮. 默认 link 到 "Constant"
+- `EasyFuzzyMatch`: 匹配字符高亮. 默认 link 到 "PmenuMatch"
 - `EasyPmenu`: Pmenu 菜单样式. 默认 link 到 "Pmenu".
 - `EasyPmenuKind`: PmenuKind 样式. 默认 link 到 "PmenuKind".
 - `EasyPmenuExtra`: PmenuExtra 样式. 默认link到 "PmenuExtra".

@@ -103,13 +103,35 @@ function! s:hl()
     else
       let dev = "cterm"
     endif
-    let fuzzymatch_hl_group = s:HLExists("EasyFuzzyMatch") ? "EasyFuzzyMatch" : "Constant"
+    let fuzzymatch_hl_group = s:HLExists("EasyFuzzyMatch") ? "EasyFuzzyMatch" : "PmenuMatch"
     let pmenu_kind_hl_group = s:HLExists("EasyPmenuKind") ? "EasyPmenuKind" : "PmenuKind"
     let pmenu_extra_hl_group = s:HLExists("EasyPmenuExtra") ? "EasyPmenuExtra" : "PmenuExtra"
     let function_hl_group = s:HLExists("EasyFunction") ? "EasyFunction" : "Conditional"
     let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Keyword"
     let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
     let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
+    let pmenu_cursor_has_reverse = s:HasReverseHighlight("PmenuSel")
+    let pmenu_cursor_hl_group_fg = pmenu_cursor_has_reverse ? s:bgcolor("PmenuSel") : s:fgcolor("PmenuSel")
+    let pmenu_cursor_hl_group_bg = pmenu_cursor_has_reverse ? s:fgcolor("PmenuSel") : s:bgcolor("PmenuSel")
+
+    if pmenu_cursor_hl_group_fg == "NONE"
+      let pmenu_cursor_hl_group_fg = pmenu_cursor_has_reverse ? s:bgcolor("Pmenu") : s:fgcolor("Pmenu")
+    endif
+    if pmenu_cursor_hl_group_bg == "NONE"
+      let pmenu_cursor_hl_group_bg = pmenu_cursor_has_reverse ? s:fgcolor("Pmenu") : s:bgcolor("Pmenu")
+    endif
+    if pmenu_cursor_hl_group_fg == "NONE"
+      let pmenu_cursor_hl_group_fg = pmenu_cursor_has_reverse ? s:bgcolor("Normal") : s:fgcolor("Normal")
+    endif
+    if pmenu_cursor_hl_group_bg == "NONE"
+      let pmenu_cursor_hl_group_bg = pmenu_cursor_has_reverse ? s:fgcolor("Normal") : s:bgcolor("Normal")
+    endif
+
+    let fuzzymatch_fg = pmenu_cursor_has_reverse ? s:bgcolor(fuzzymatch_hl_group) : s:fgcolor(fuzzymatch_hl_group)
+    if fuzzymatch_fg == "NONE"
+      call s:log('..')
+      let fuzzymatch_fg = pmenu_cursor_has_reverse ? s:bgcolor("Constant") : s:fgcolor("Constant")
+    endif
 
     let s:easycomplete_hl_exec_cmd = [
           \ 'syntax region CustomFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
@@ -119,7 +141,8 @@ function! s:hl()
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
           \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
-          \ "hi CustomFuzzyMatch " . dev . "fg=" . easycomplete#ui#GetFgColor(fuzzymatch_hl_group),
+          \ "hi CustomFuzzyMatch " . dev . "fg=" . fuzzymatch_fg,
+          \ "hi CustomPmenuSel " . dev . "fg=" . pmenu_cursor_hl_group_fg . " " . dev . "bg=" . pmenu_cursor_hl_group_bg,
           \ "hi link CustomKind     " . pmenu_kind_hl_group,
           \ "hi link CustomExtra    " . pmenu_extra_hl_group,
           \ "hi link CustomFunction " . function_hl_group,
@@ -132,6 +155,25 @@ function! s:hl()
   call win_execute(s:pum_window, join(s:easycomplete_hl_exec_cmd, "\n"))
 endfunction
 
+function! s:HasReverseHighlight(group_name)
+  let group_text = easycomplete#ui#HighlightArgs(a:group_name)
+
+  " 检查输出中是否包含 reverse（不区分大小写）
+  if group_text =~? 'reverse'
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:fgcolor(group)
+  return easycomplete#ui#GetFgColor(a:group)
+endfunction
+
+function! s:bgcolor(group)
+  return easycomplete#ui#GetBgColor(a:group)
+endfunction
+
 function! s:OpenPum(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
@@ -140,7 +182,7 @@ function! s:OpenPum(startcol, lines)
   call extend(pum_opts, pum_pos)
   if empty(s:pum_window)
     call s:CacheOpt()
-    let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:PmenuSel'
+    let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:CustomPmenuSel'
     let winid = s:OpenFloatWindow(s:pum_buffer, pum_opts, hl)
     let s:pum_window = winid
     call s:hl()

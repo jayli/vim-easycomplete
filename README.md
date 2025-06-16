@@ -284,7 +284,7 @@ If you want to customize the kind icon, you can modify the configuration with <h
 
 You can add custom Pmenu styles by defining these highlight groups:
 
-- `EasyFuzzyMatch`: highlight fuzzy matching character. It links to "Constant" by default if it's not defined.
+- `EasyFuzzyMatch`: highlight fuzzy matching character. It links to "PmenuMatch" by default.
 - `EasyPmenu`: Pmenu style. It links to "Pmenu" by default.
 - `EasyPmenuKind`: PmenuKind style. It links to "PmenuKind" by default.
 - `EasyPmenuExtra`: PmenuExtra style. It links to "PmenuExtra" by default.
