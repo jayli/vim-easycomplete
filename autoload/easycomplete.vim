@@ -787,11 +787,6 @@ function! s:BackingCompleteHandler()
   call s:zizz()
   let ctx = easycomplete#context()
 
-  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-    call easycomplete#util#DeleteHint()
-    let s:easycomplete_ghost_text_str = ""
-  endif
-
   if empty(ctx["typing"]) || empty(ctx['char'])
         \ || !s:SameBeginning(g:easycomplete_firstcomplete_ctx, ctx)
     noa call s:CloseCompletionMenu()
@@ -832,6 +827,18 @@ function! easycomplete#BackSpace()
     call timer_stop(b:fast_bs_timer)
   endif
   let b:fast_bs_timer = timer_start(70, { -> s:FastBSTimerReset()})
+  " 回退过程中先处理 ghost_text 防止闪烁
+  if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
+    let l:char = strpart(getline('.'), col('.') - 2, 1)
+    if strlen(l:char) >= 1
+      let new_ghost_text = l:char . s:easycomplete_ghost_text_str
+      call easycomplete#util#ShowHint(new_ghost_text)
+    else
+      call easycomplete#util#DeleteHint()
+      let s:easycomplete_ghost_text_str = ""
+    endif
+  endif
   return "\<C-H>"
 endfunction
 
