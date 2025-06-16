@@ -759,8 +759,8 @@ function! easycomplete#sources#ts#lint()
     return
   endif
   let l:files = [easycomplete#util#GetCurrentFullName()]
-  call s:AsyncRun("easycomplete#sources#ts#TsserverReload", [], 80)
-  call s:AsyncRun("easycomplete#sources#ts#Geterr", [l:files, 100], 90)
+  call easycomplete#util#timer_start("easycomplete#sources#ts#TsserverReload", [], 80)
+  call easycomplete#util#timer_start("easycomplete#sources#ts#Geterr", [l:files, 100], 90)
 endfunction
 
 function! easycomplete#sources#ts#Geterr(files, delay)
