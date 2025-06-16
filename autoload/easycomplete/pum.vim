@@ -481,7 +481,7 @@ endfunction
 function! easycomplete#pum#SetWordBySelecting()
   let pum_pos = s:PumPosition()
   let cursor_left = s:CursorLeft()
-  let backing_count = cursor_left - pum_pos.pos[1] - 2 
+  let backing_count = cursor_left - pum_pos.pos[1] - 2
   let oprator_str = repeat("\<bs>", backing_count)
   let word = get(s:curr_items[s:selected_i - 1], "word", "")
   call s:InsertingWordZizz()
