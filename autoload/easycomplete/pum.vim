@@ -48,6 +48,8 @@ let s:original_ctx = {}
 " 当前编辑窗口的原始配置
 let s:original_opt = {}
 let s:contains_shortmess = stridx(&shortmess,"c") >= 0 ? 1 : 0
+let s:textwidth = &textwidth
+let s:completeopt = &completeopt
 
 " 几个常用尺寸的计算
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
@@ -70,12 +72,7 @@ function! easycomplete#pum#complete(startcol, items)
     let items = a:items
   endif
   let s:curr_items = deepcopy(items)
-  " let g:pum_complete_time1 = reltime()
   call s:OpenPum(a:startcol, s:NormalizeItems(s:curr_items))
-  " let g:pum_complete_time2 = reltime()
-  " let ts1 = float2nr((reltimefloat(reltime()) - reltimefloat(g:complete_start)) * 1000)
-  " let ts2 = float2nr((reltimefloat(reltime()) - reltimefloat(g:xxx1)) * 1000)
-  " call s:console('PumOpen', 'PumOpen执行完毕','从 complete() →',ts1, '从 type() →', ts2)
   if !s:contains_shortmess
     set shortmess+=c
   endif
@@ -197,11 +194,12 @@ function! s:OpenPum(startcol, lines)
   call nvim_win_set_cursor(s:pum_window, [1, 0])
   call s:RenderScrollBar()
   if g:easycomplete_winborder
-    " call timer_start(0, { -> s:RenderScrollThumb() })
     call s:RenderScrollThumb()
   else
     call s:RenderScrollThumb()
   endif
+  noa setl textwidth=0
+  noa setl completeopt=menu
 endfunction
 
 function! easycomplete#pum#WinScrolled()
@@ -510,14 +508,7 @@ function! easycomplete#pum#SetWordBySelecting()
 endfunction
 
 function! s:InsertWord(word)
-  let saved_completeopt = &completeopt
   let startcol = s:original_ctx["startcol"]
-  noa set completeopt=menu
-  if &textwidth > 0
-    let textwidth = &textwidth
-    noa setl textwidth=0
-    call timer_start(0, { -> execute('noa setl textwidth='.textwidth)})
-  endif
   call s:InsertingWordZizz()
   try
     noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
@@ -527,9 +518,7 @@ function! s:InsertWord(word)
   catch /785/
     " complete() 只能在插入模式下调用
   endtry
-  " call feedkeys("\<C-y>", 'n')
   call easycomplete#SnapShoot()
-  execute 'noa set completeopt='.saved_completeopt
 endfunction
 
 function! s:InsertingWordZizz()
@@ -987,6 +976,8 @@ function! s:flush()
   if !s:contains_shortmess
     set shortmess-=c
   endif
+  call execute("noa setl textwidth=" . s:textwidth)
+  call execute("noa setl completeopt=" . s:completeopt)
 endfunction
 
 function! s:close()

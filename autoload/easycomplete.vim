@@ -82,7 +82,7 @@ let b:is_directory_complete = 0
 let b:fast_bs_timer = 0
 
 function! easycomplete#Enable()
-  call timer_start(800, { -> easycomplete#_enable() })
+  call easycomplete#util#timer_start("easycomplete#_enable", [], 800)
 endfunction
 
 " EasyComplete 入口函数
@@ -119,6 +119,7 @@ function! easycomplete#_enable()
           \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
           \ ], 150)
   endif
+  " 依次初始化字典和代码片段
   call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
   call timer_start(400, { -> s:SnippetsInit()})
   exec "hi EasyLintStyle guifg=NONE"
@@ -131,6 +132,7 @@ function! s:SetCompleteOption()
   setlocal completeopt-=menu
   setlocal completeopt+=noinsert
   setlocal completeopt+=menuone
+  " noselect 不作为默认选项，应当为可选配置
   " setlocal completeopt+=noselect
   setlocal completeopt-=popup
   setlocal completeopt-=preview
@@ -594,12 +596,12 @@ function! easycomplete#Right()
   return "\<Right>"
 endfunction
 
-" 参考 asynccomplete 并做了扩充
+" 当前文档状态的上下文
 function! easycomplete#context() abort
   let l:ret = {
         \ 'bufnr':bufnr('%'),
         \ 'curpos':getcurpos(),
-        \ 'changedtick':b:changedtick
+        \ 'changedtick': b:changedtick
         \ }
   let l:ret['lnum'] = l:ret['curpos'][1] " 行号
   let l:ret['col'] = l:ret['curpos'][2] " 列号
@@ -1114,10 +1116,7 @@ function! s:CompletorCallingAtFirstComplete(ctx)
       let item = source_names[l:count]
       let l:count += 1
       if s:CompleteSourceReady(item) && (s:NormalTrigger() || s:SemanticTriggerForPluginName(item))
-        let x1 = reltime()
         let l:cprst = s:CallCompeltorByName(item, l:ctx)
-        let x2 = reltime()
-        let ts = float2nr((reltimefloat(x2) - reltimefloat(x1)) * 1000)
         if l:cprst == v:true " true: 继续
           continue
         else
@@ -1797,14 +1796,6 @@ function! easycomplete#GetPlugNameByCommand(cmd)
   return plug_name
 endfunction
 
-" TODO here jayli ，这里没用了，要删掉
-function! s:HackForVimFirstComplete()
-  let l:first_render_delay = s:easycomplete_first_render_delay
-  let s:easycomplete_first_render_delay = 50
-  call s:MainCompleteHandler()
-  let s:easycomplete_first_render_delay = l:first_render_delay
-endfunction
-
 function! s:FirstCompleteRendering(start_pos, menuitems)
   if easycomplete#util#NotInsertMode()
     call s:flush()
@@ -1825,21 +1816,11 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     if s:OrigionalPosition()
       " 如果 LSP 结果返回时没有前进 typing，就返回结果过滤呈现即可
       let source_result = a:menuitems
-      " vimls 在文件过大时，按键很快时跟不上，这里加一个补救动作
-      if &filetype == "vim" && empty(source_result)
-        " call s:HackForVimFirstComplete()
-        return
-      endif
     elseif !empty(typing_word) && l:ctx["typed"] =~ "[a-zA-Z0-9#]$"
       " FirstTyping 已经发起 LSP Action，结果返回之前又前进 Typing，直接执行
       " easycomplete#typing() → s:CompleteTypingMatch()，叠加之前请求 LSP 的返
       " 回值后进行重新过滤呈现
       let source_result = a:menuitems + g:easycomplete_stunt_menuitems
-      " vimlsp 比较慢，文件超过 1000 行后就跟不上敲击动作了
-      if &filetype == "vim" && empty(source_result)
-        " call s:HackForVimFirstComplete()
-        return
-      endif
     else
       if (g:env_is_vim && !pumvisible()) || (g:env_is_nvim && !easycomplete#pum#visible())
         let should_stop_render = 1
@@ -2588,7 +2569,6 @@ function! s:LazyFireTyping()
     let b:easycomplete_typing_timer = 0
   endif
   " TODO here 为什么 50 的延时会体感这么久
-
   " 判断连续输入的两次字符是否是同一个
   " 如果是则有可能是连续按键，加上延迟，防止连续输入时粘连
   " 如果不是则立即触发，提高响应速度
