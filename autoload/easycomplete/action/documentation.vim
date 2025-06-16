@@ -4,6 +4,9 @@ let b:easycomplete_documentation_popup = 0
 function! easycomplete#action#documentation#LspRequest(item) abort
   let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
+    if !exists("b:easycomplete_documentation_popup")
+      let b:easycomplete_documentation_popup = 0
+    endif
     if b:easycomplete_documentation_popup > 0
       call timer_stop(b:easycomplete_documentation_popup)
     endif
