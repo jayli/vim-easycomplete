@@ -362,6 +362,10 @@ function! easycomplete#pum#CompleteCursored()
   return s:selected_i == 0 ? v:false : v:true
 endfunction
 
+function! easycomplete#pum#PumSelectedIndex()
+  return s:selected_i
+endfunction
+
 " 格式保持和 complete_info() 一致
 function! easycomplete#pum#CompleteInfo()
   let l:ret = {

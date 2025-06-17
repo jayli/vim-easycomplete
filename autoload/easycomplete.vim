@@ -38,8 +38,11 @@ let g:easycomplete_first_complete_hit = 0
 let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
+" 触发 lint 动作的延迟
 let g:easycomplete_diagnostics_render_delay = 200
+" 调用 popup 函数到弹出窗口的延迟
 let g:easycomplete_popup_delay = 170
+" 记录全局 showmode
 let g:easycomplete_showmode = &showmode
 " lsp server 是独占还是共享
 let g:easycomplete_shared_lsp_server = 1
@@ -61,6 +64,7 @@ let g:easycomplete_popup_width = 80
 " 当前敲入的字符所属的 ctx，主要用来判断光标前进还是后退
 let g:easycomplete_typing_ctx = {}
 let b:old_changedtick = 0
+" 通过文本判断正在输入还是删除字符
 let g:easycomplete_backing = 0
 " <BS> 或者 <CR>, 以及其他非 ASCII 字符时的标志位
 " zizz 标志位
@@ -73,8 +77,11 @@ let s:easycomplete_first_render_delay = 500
 let g:easycomplete_lint_float_width = 180
 " 控制是否触发tabnine suggest的timer
 let g:easycomplete_tabnine_suggest_timer = 0
+" 防止快速换行时的密集调用带来的卡顿
 let s:easycomplete_cursor_move_timer = 0
+" 幽灵文本
 let s:easycomplete_ghost_text_str = ""
+" 快速敲击字符的 timer，只在 LazyFireTyping 时使用
 let b:easycomplete_typing_timer = 0
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
@@ -279,6 +286,7 @@ function! s:CompleteTypingMatch(...)
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
+    call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
     " 正常SecondComplete中无匹配词了就关掉 pum 了
     if has('nvim')
       call s:CloseCompletionMenu()
@@ -1256,14 +1264,18 @@ function! easycomplete#CompleteChanged()
   " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
   if g:easycomplete_ghost_text
+    " 在快速输入时，避免频繁的 ghost_text 的闪现，配合 easycomplete#_complete()
+    " 的定时器避免闪烁，这里把 选中第一项和未选中时的 deleteHint 去掉
     if easycomplete#CompleteCursored()
-      " 在快速输入时，避免频繁的 ghost_text 的闪现，配合 easycomplete#_complete()
-      " 的定时器避免闪烁，这里把 deleteHint 注释掉
-      " call easycomplete#util#DeleteHint()
+      if easycomplete#IsBacking()
+        " Do Nothing
+      elseif easycomplete#pum#PumSelectedIndex() >= 1
+        call easycomplete#util#DeleteHint()
+      endif
     elseif !empty(s:easycomplete_ghost_text_str)
       " 选择一圈后回到初始状态，未选中任何选项
       call easycomplete#util#DeleteHint()
-      call easycomplete#util#ShowHint(s:easycomplete_ghost_text_str)
+      call easycomplete#util#timer_start("easycomplete#util#ShowHint", [s:easycomplete_ghost_text_str], 10)
     endif
   endif
   let item = deepcopy(easycomplete#GetCursordItem())
@@ -1868,7 +1880,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       " 的 CmdlineEnter 和 CmdlineLeave，带来 statusline 闪烁。
       " 因此在 FirstComplete 时采用方法一，SecondComplete 采用方法二
       call easycomplete#tabnine#flush()
-
       noa call s:complete(a:start_pos, result)
       call easycomplete#util#timer_start("easycomplete#ShowCompleteInfoInFirstRendering", [], 45)
       call s:SetFirstCompeleHit()
