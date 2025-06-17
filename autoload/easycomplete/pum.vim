@@ -516,6 +516,9 @@ function! s:InsertWord(word)
   call s:InsertingWordZizz()
   try
     noa call complete(startcol, [{ 'empty': v:true, 'word': a:word }])
+    if g:easycomplete_ghost_text && strlen(a:word) > 1
+      call easycomplete#util#DeleteHint()
+    endif
     if pumvisible()
       noa call complete(startcol, [])
     endif
