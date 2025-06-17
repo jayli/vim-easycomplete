@@ -286,7 +286,7 @@ function! s:CompleteTypingMatch(...)
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
   if len(filtered_menu) == 0
-    call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
+    " call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
     " 正常SecondComplete中无匹配词了就关掉 pum 了
     if has('nvim')
       call s:CloseCompletionMenu()
@@ -1269,7 +1269,7 @@ function! easycomplete#CompleteChanged()
     if easycomplete#CompleteCursored()
       if easycomplete#IsBacking()
         " Do Nothing
-      elseif easycomplete#pum#PumSelectedIndex() >= 1
+      elseif easycomplete#pum#PumSelectedIndex() > 1
         call easycomplete#util#DeleteHint()
       endif
     elseif !empty(s:easycomplete_ghost_text_str)
