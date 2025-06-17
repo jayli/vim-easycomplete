@@ -240,17 +240,17 @@ Vim-EasyComplete does not integration snippets by default. If you want snippet s
 
 
 
-## AI Coding Suggestions
+## AI Coding Inline Suggestion
 
-In addition to associating AI matching words in the complete menu, there are multiple options for AI coding suggestions.
+In addition to AI completion with pum, there are more inline AI coding completion tools.
 
-### 1）Tabnine
+### 1）Tabnine inline suggestion
 
-Vim-easycomplete integrates Tabnine built-in.Install TabNine: `:InstallLspServer tabnine`. Then restart your vim/nvim.
+Vim-easycomplete integrates Tabnine already. Install TabNine: `:InstallLspServer tabnine`.
 
-<img src="https://gw.alicdn.com/imgextra/i2/O1CN01Qjk2tV2A20Ss9jtcq_!!6000000008144-0-tps-792-470.jpg" width="500px" />
+<img src="https://gw.alicdn.com/imgextra/i2/O1CN01Qjk2tV2A20Ss9jtcq_!!6000000008144-0-tps-792-470.jpg" width="400px" />
 
-You can config TabNine by `g:easycomplete_tabnine_config` witch contains two properties:
+Config TabNine via `g:easycomplete_tabnine_config` witch contains two properties:
 
 - *line_limit*: The number of lines before and after the cursor to send to TabNine. If the option is smaller, the performance may be improved. (default: 1000)
 - *max_num_result*: Max results from TabNine showing in the complete menu. (default: 3)
@@ -262,17 +262,17 @@ let g:easycomplete_tabnine_config = {
     \ }
 ```
 
-TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands). Type `Tabnine::config` in insert mode to open the configuration panel.
+TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands) (Type `Tabnine::config` in insert mode) to open the configuration panel.
 
 Enable TabNine inline suggestion: `let g:easycomplete_tabnine_suggestion = 1`.
 
-### 2) [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/)
+### 2) [copilot.nvim](https://github.com/jayli/copilot.nvim/)
 
-Vim-easycomplete is working well with [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/).
+[Copilot.nvim](https://github.com/jayli/copilot.nvim/) plugin is a better choice. Vim-easycomplete is working well with copilot.nvim.
 
-### 3) Aone-Copilot.nvim
+### 3) Aone Copilot
 
-If you are an Alibaba engineer, then Aone-copilot is the best choice. 
+If you are an Alibaba engineer, then aone copilot is the best choice. You can find configuration guideline based on copilot.nvim on ATA.
 
 ---------------------
 
@@ -283,6 +283,8 @@ Set `g:easycomplete_nerd_font = 1` to enable default nerdfonts configuration.
 If you want to customize the kind icon, you can modify the configuration with <https://nerdfonts.com> installed. [Examples](custom-config.md).
 
 You can add custom Pmenu styles by defining these highlight groups:
+
+> In most cases, you don't need to do so.
 
 - `EasyFuzzyMatch`: highlight fuzzy matching character. It links to "PmenuMatch" by default.
 - `EasyPmenu`: Pmenu style. It links to "Pmenu" by default.

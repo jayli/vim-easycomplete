@@ -268,13 +268,13 @@ TabNine 不使用 APIKey 就可以运行。如果你是 Tabnine 的付费用户�
 
 启用 Tabnine 的行内补全: `let g:easycomplete_tabnine_suggestion = 1`.
 
-### 2) [deepseek-coder.nvim](https://github.com/jayli/deepseek-coder.nvim/)
+### 2) [copilot.nvim](https://github.com/jayli/copilot.nvim/)
 
 Tabnine 虽然运行速度快且稳定，但比较古老，行内补全推荐使用 [Copilot.nvim](https://github.com/jayli/copilot.nvim)
 
-### 3) Aone-Copilot.nvim
+### 3) Aone Copilot
 
-阿里巴巴工程师，无脑使用 Aone-Copilot.nvim，ATA 上搜一下就有。
+阿里巴巴工程师，无脑使用 Aone Copilot，速度和质量都很高，ATA 上搜一下就有用 copilot.nvim 的配置方法。
 
 ---------------------
 
