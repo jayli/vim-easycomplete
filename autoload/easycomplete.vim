@@ -778,10 +778,6 @@ function! s:VimDotTyping()
   endif
 endfunction
 
-function! easycomplete#InsertCharPre()
-  let g:easycomplete_insert_char = v:char
-endfunction
-
 function! s:GetCurrentChar()
   return strpart(getline('.'), getcurpos()[2]-2, 1)
 endfunction
@@ -2633,6 +2629,10 @@ function! s:LazyFireTyping()
   endif
 endfunction
 
+function! easycomplete#InsertCharPre()
+  let g:easycomplete_insert_char = v:char
+endfunction
+
 function! easycomplete#TextChangedP()
   if !easycomplete#ok('g:easycomplete_enable')
     return
@@ -2643,8 +2643,14 @@ function! easycomplete#TextChangedP()
   endif
   if b:fast_bs_timer > 0
     let g:easycomplete_backing = 1
+    " 预处理 ghost_text: 后退
+    if g:env_is_nvim && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+      let ghost_text = " " . s:easycomplete_ghost_text_str
+      call easycomplete#util#ShowHint(ghost_text)
+      let s:easycomplete_ghost_text_str = ghost_text
+    endif
   else
-    " 预处理 ghost_text
+    " 预处理 ghost_text: 前进
     let g:easycomplete_backing = 0
     if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
       if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
