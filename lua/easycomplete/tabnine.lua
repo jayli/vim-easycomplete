@@ -75,13 +75,40 @@ function Export.show_hint(code_block)
     virt_lines = nil
   end
 
-  vim.api.nvim_buf_set_extmark(0, tabnine_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, {
+  local opt = {
     id = 1,
     virt_text_pos = "inline",
     virt_text = virt_text,
     virt_lines = virt_lines,
-    -- virt_text_win_col = vim.fn.col('.') - 1
-  })
+  }
+  -- 用virt_text_win_col 来防止抖动
+  if Export.is_cursor_at_EOL() then
+    opt.virt_text_win_col = vim.fn.col('.') - 1
+  end
+
+  vim.api.nvim_buf_set_extmark(0, tabnine_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
+end
+
+function Export.is_cursor_at_EOL()
+  -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local row = cursor[1] - 1  -- 行号从0开始计数，所以减1
+  local col = cursor[2]
+
+  -- 获取当前行的文本
+  local lines = vim.api.nvim_buf_get_lines(0, row, row + 1, false)
+  if #lines == 0 then return true end  -- 如果没有获取到行，则认为是在行尾
+
+  local line = lines[1]
+
+  -- 检查光标位置是否等于或超过行的长度
+  if col >= #line then
+    -- 光标位于行末或者超出行末
+    return true
+  else
+    -- 光标不在行末
+    return false
+  end
 end
 
 function Export.loading_start()

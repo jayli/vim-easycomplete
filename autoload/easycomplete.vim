@@ -2655,6 +2655,11 @@ function! easycomplete#TextChangedP()
     if g:env_is_nvim && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
       if strlen(s:easycomplete_ghost_text_str) >= 2
         let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
+        " TODO
+        " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
+        " 这里重新showhint后，后续的字符回退一格，产生抖动
+        " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
+        " 但光标后有字符的情况下就避免不了了，不知道怎么解决
         call easycomplete#util#ShowHint(new_ghost_text)
         let s:easycomplete_ghost_text_str = new_ghost_text
       else
