@@ -8,8 +8,6 @@ local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
 function Export.nvim_init_tabnine_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
   local normal_bg = vim.fn["easycomplete#ui#GetBgColor"]("Normal")
-
-
   local linenr_fg = vim.fn["easycomplete#ui#GetFgColor"]("LineNr")
 
   local snippet_fg = ""
