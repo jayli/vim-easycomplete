@@ -154,7 +154,7 @@ function! easycomplete#GetBindingKeys()
   " 通用触发跟指匹配的字符绑定，所有文档类型生效
   " 另外每个插件可自定义触发按键，在插件的 semantic_triggers 中定义
   let l:key_liststr = 'abcdefghijklmnopqrstuvwxyz'.
-                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#/._'
+                    \ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#$/._'
   return l:key_liststr
 endfunction
 
@@ -863,6 +863,7 @@ function! easycomplete#typing()
   endif
 
   let l:curr_char = s:GetCurrentChar()
+
   if l:curr_char == " "
     call s:flush()
     return
@@ -2547,6 +2548,12 @@ function! easycomplete#CursorHoldI()
 endfunction
 
 function! easycomplete#TextChangedI()
+  " 如果输入的字符是非法字符，则终止
+  let cc = getcharstr(1)
+  if stridx(easycomplete#GetBindingKeys(), cc) == -1
+    return
+  endif
+
   if !easycomplete#ok('g:easycomplete_enable')
     return
   endif
