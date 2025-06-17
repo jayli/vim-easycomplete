@@ -537,7 +537,8 @@ function! s:BackChecking()
       " 单行后退非到达首字母的后退
       return v:true
     endif
-    if s:TrimEnd(curr_ctx['typed']) ==# s:TrimEnd(old_ctx['typed']) && strlen(curr_ctx['typed']) < strlen(old_ctx['typed'])
+    if s:TrimEnd(curr_ctx['typed']) ==# s:TrimEnd(old_ctx['typed'])
+          \ && strlen(curr_ctx['typed']) < strlen(old_ctx['typed'])
       " 单行回退只删除空格或者删除tab
       return v:true
     endif
@@ -968,7 +969,8 @@ function! s:DoComplete(immediately)
 
   " 连续两个 '.' 重新初始化 complete
   if l:ctx['char'] == '.' &&
-        \ (len(l:ctx['typed']) >= 2 && easycomplete#util#str2list(l:ctx['typed'])[-2] == char2nr('.'))
+        \ (len(l:ctx['typed']) >= 2 &&
+        \ easycomplete#util#str2list(l:ctx['typed'])[-2] == char2nr('.'))
     call s:CompleteInit()
     call s:ResetCompleteCache()
   endif
@@ -1275,7 +1277,8 @@ function! easycomplete#CompleteChanged()
     elseif !empty(s:easycomplete_ghost_text_str)
       " 选择一圈后回到初始状态，未选中任何选项
       call easycomplete#util#DeleteHint()
-      call easycomplete#util#timer_start("easycomplete#util#ShowHint", [s:easycomplete_ghost_text_str], 10)
+      call easycomplete#util#timer_start("easycomplete#util#ShowHint",
+                                      \ [s:easycomplete_ghost_text_str], 10)
     endif
   endif
   let item = deepcopy(easycomplete#GetCursordItem())
@@ -1316,7 +1319,8 @@ endfunction
 function! easycomplete#ShowCompleteInfoByItem(item)
   let info = easycomplete#util#GetInfoByCompleteItem(copy(a:item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
-  if easycomplete#util#ItemIsFromLS(a:item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
+  if easycomplete#util#ItemIsFromLS(a:item) &&
+        \ (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
     call s:AsyncRun('easycomplete#action#documentation#LspRequest', [a:item], 80)
   else
@@ -1350,7 +1354,8 @@ function! s:ShowCompleteInfoWithoutTimer()
   endif
   let info = easycomplete#util#GetInfoByCompleteItem(copy(item), g:easycomplete_menuitems)
   let async = empty(info) ? v:true : v:false
-  if easycomplete#util#ItemIsFromLS(item) && (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
+  if easycomplete#util#ItemIsFromLS(item) &&
+        \ (async || index(["rb"], easycomplete#util#GetLspPluginName()) >= 0)
     call s:StopAsyncRun()
     call s:AsyncRun('easycomplete#action#documentation#LspRequest', [item], 2)
   else
