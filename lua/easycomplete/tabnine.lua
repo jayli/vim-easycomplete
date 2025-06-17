@@ -80,7 +80,7 @@ function Export.show_hint(code_block)
     virt_text_pos = "inline",
     virt_text = virt_text,
     virt_lines = virt_lines,
-    virt_text_win_col = vim.fn.col('.') - 1
+    -- virt_text_win_col = vim.fn.col('.') - 1
   })
 end
 

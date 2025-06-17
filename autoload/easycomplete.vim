@@ -2640,8 +2640,7 @@ function! easycomplete#TextChangedP()
       endif
       return
     endif
-    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-      let l:char = strpart(getline('.'), col('.') - 2, 1)
+    if g:env_is_nvim && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
       if strlen(s:easycomplete_ghost_text_str) >= 2
         let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
         call easycomplete#util#ShowHint(new_ghost_text)
