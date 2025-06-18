@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -122,9 +122,11 @@ function! easycomplete#_enable()
   endif
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#sign#init()
-    call s:AsyncRun('easycomplete#lsp#diagnostics_enable',[
-          \ {'callback':function('easycomplete#action#diagnostics#HandleCallback')}
-          \ ], 150)
+    call timer_start(150, {
+          \  -> easycomplete#lsp#diagnostics_enable({
+          \        'callback':function('easycomplete#action#diagnostics#HandleCallback')
+          \     })
+          \ })
   endif
   " 依次初始化字典和代码片段
   call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
