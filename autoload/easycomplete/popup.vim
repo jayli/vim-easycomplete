@@ -177,7 +177,11 @@ function! s:lint(content, hl, ft)
           \ })
     " 判断右侧是否有足够的空间
     call easycomplete#popup#close("float")
-    call s:NVimShow(opt, "float", 'lint')
+    if g:env_is_nvim
+      call s:NVimShow(opt, "float", 'lint')
+    else
+      call s:VimShow(opt, "float", 'lint')
+    endif
   catch /.*/
     echom v:exception
   endtry
@@ -561,6 +565,17 @@ function! s:VimShow(opt, windowtype, float_type)
   if a:windowtype == 'popup' || (a:windowtype == "float" && a:float_type == "signature")
     call setbufvar(winbufnr(winid), '&filetype', opt.filetype)
     call easycomplete#ui#ApplyMarkdownSyntax(winid)
+  elseif a:windowtype == "float" && a:float_type == "lint"
+    let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
+    let fgcolor = s:GetSignGuifgAtCurrentLine()
+    if fgcolor == "NONE"
+      let fgcolor = easycomplete#ui#GetFgColor("Comment")
+    endif
+    call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
+    " call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
+    " call win_execute(winid, "set winhighlight=Normal:Pmenu,NormalNC:EasyLintStyle")
+    " TODO here
+    call setbufvar(winbufnr(winid), 'highlight', 'Normal:CursorLine,NormalNC:Cursorline')
   else
     " Lint
     call setbufvar(winbufnr(winid), '&filetype', 'txt')
