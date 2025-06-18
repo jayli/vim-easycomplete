@@ -2693,7 +2693,7 @@ function! easycomplete#TextChangedP()
 
   "当前输入的字符长度为1，并且没有回退过，说明是tab匹配到一个函数`abc()`后敲击字符
   "应该终止当前SecondComplete，而应当进入FirstComplete
-  if strlen(l:ctx["typing"]) == 1 && g:easycomplete_backing == 0
+  if strlen(l:ctx["typing"]) == 1 && l:ctx["typed"][-1:] == ")" && g:easycomplete_backing == 0
     call s:flush()
     call s:StopZizz()
     call timer_start(10, { -> s:LazyFireTyping() })
