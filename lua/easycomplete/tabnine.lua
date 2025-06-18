@@ -99,7 +99,7 @@ function Export.is_cursor_at_EOL()
   local lines = vim.api.nvim_buf_get_lines(0, row, row + 1, false)
   if #lines == 0 then return true end  -- 如果没有获取到行，则认为是在行尾
 
-  local line = lines[1]
+  local line = vim.fn.trim(lines[1])
 
   -- 检查光标位置是否等于或超过行的长度
   if col >= #line then
