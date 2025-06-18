@@ -572,10 +572,7 @@ function! s:VimShow(opt, windowtype, float_type)
       let fgcolor = easycomplete#ui#GetFgColor("Comment")
     endif
     call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
-    " call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
-    " call win_execute(winid, "set winhighlight=Normal:Pmenu,NormalNC:EasyLintStyle")
-    " TODO here
-    call setbufvar(winbufnr(winid), 'highlight', 'Normal:CursorLine,NormalNC:Cursorline')
+    call setwinvar(winid, '&wincolor', "EasyLintStyle")
   else
     " Lint
     call setbufvar(winbufnr(winid), '&filetype', 'txt')
