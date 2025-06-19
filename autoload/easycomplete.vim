@@ -1796,6 +1796,13 @@ endfunction
 function! s:FirstComplete(start_pos, menuitems)
   if s:zizzing() | return | endif
   if s:CheckCompleteTaskQueueAllDone()
+    if len(a:menuitems) == 1 &&
+          \ easycomplete#util#GetPluginNameFromUserData(a:menuitems[0]) ==# "buf"
+      if a:menuitems[0]["word"] == expand("<cword>")
+        call s:flush()
+        return
+      endif
+    endif
     call s:FirstCompleteRendering(a:start_pos, a:menuitems)
   endif
 endfunction
