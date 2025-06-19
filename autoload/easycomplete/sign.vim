@@ -586,7 +586,8 @@ function! easycomplete#sign#LintCurrentLine()
     endif
     call easycomplete#nill()
     if strlen(g:easycomplete_diagnostics_last_msg) != 0
-      echo ""
+      " 模拟 echo '' 的效果
+      redraw
     endif
     return
   elseif empty(diagnostics_info)
