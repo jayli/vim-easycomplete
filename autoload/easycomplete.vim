@@ -836,17 +836,20 @@ function! easycomplete#BackSpace()
   endif
   let b:fast_bs_timer = timer_start(70, { -> s:FastBSTimerReset()})
   " 回退过程中先处理 ghost_text 防止闪烁
-  " if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-  "   let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
-  "   let l:char = strpart(getline('.'), col('.') - 2, 1)
-  "   if strlen(l:char) >= 1
-  "     let new_ghost_text = l:char . s:easycomplete_ghost_text_str
-  "     " call easycomplete#util#ShowHint(new_ghost_text)
-  "   else
-  "     call easycomplete#util#DeleteHint()
-  "     let s:easycomplete_ghost_text_str = ""
-  "   endif
-  " endif
+  if g:env_is_nvim && g:easycomplete_ghost_text &&
+        \ easycomplete#pum#visible() &&
+        \ !empty(s:easycomplete_ghost_text_str)
+    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
+    let l:char = strpart(getline('.'), col('.') - 2, 1)
+    if strlen(l:char) >= 1
+      let new_ghost_text = l:char . s:easycomplete_ghost_text_str
+      call easycomplete#util#ShowHint(new_ghost_text)
+      let s:easycomplete_ghost_text_str = new_ghost_text
+    else
+      call easycomplete#util#DeleteHint()
+      let s:easycomplete_ghost_text_str = ""
+    endif
+  endif
   return "\<C-H>"
 endfunction
 
@@ -2576,41 +2579,6 @@ function! easycomplete#TextChangedI()
     if easycomplete#pum#IsInsertingWord()
       " call easycomplete#pum#InsertAwake()
     else
-      if !exists("b:fast_bs_timer")
-        let b:fast_bs_timer = 0
-      endif
-      if b:fast_bs_timer > 0
-        let g:easycomplete_backing = 1
-        " 预处理 ghost_text: 后退
-        if g:env_is_nvim && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-          let ghost_text = " " . s:easycomplete_ghost_text_str
-          call easycomplete#util#ShowHint(ghost_text)
-          let s:easycomplete_ghost_text_str = ghost_text
-        endif
-      else
-        " 预处理 ghost_text: 前进
-        let g:easycomplete_backing = 0
-        if g:env_is_nvim && easycomplete#pum#IsInsertingWord()
-          if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-            call easycomplete#util#DeleteHint()
-          endif
-          return
-        endif
-        if g:env_is_nvim && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-          if strlen(s:easycomplete_ghost_text_str) >= 2
-            let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
-            " TODO
-            " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
-            " 这里重新showhint后，后续的字符回退一格，产生抖动
-            " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
-            " 但光标后有字符的情况下就避免不了了，不知道怎么解决
-            call easycomplete#util#ShowHint(new_ghost_text)
-            let s:easycomplete_ghost_text_str = new_ghost_text
-          else
-            call easycomplete#util#DeleteHint()
-          endif
-        endif
-      endif
       " Fire easycomplete#TextChangedP()
       doautocmd <nomodeline> User easycomplete_pum_textchanged_p
     endif
@@ -2672,11 +2640,34 @@ function! s:LazyFireTyping()
 endfunction
 
 function! easycomplete#InsertCharPre()
+  " backspace不会走到这里
   let g:easycomplete_insert_char = v:char
+  if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#pum#IsInsertingWord()
+    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+      call easycomplete#util#DeleteHint()
+    endif
+    return
+  endif
+  if g:env_is_nvim && easycomplete#pum#visible() && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    if strlen(s:easycomplete_ghost_text_str) >= 2
+      let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
+      " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
+      " 这里重新showhint后，后续的字符回退一格，产生抖动
+      " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
+      " 但光标后有字符的情况下就避免不了了，放在insertcharpre里可以解决
+      call easycomplete#util#ShowHint(new_ghost_text)
+      let s:easycomplete_ghost_text_str = new_ghost_text
+    else
+      call easycomplete#util#DeleteHint()
+    endif
+  endif
 endfunction
 
 function! easycomplete#TextChangedP()
-  "----原处理Ghost_text 逻辑----位置
+  if b:fast_bs_timer > 0
+    let g:easycomplete_backing = 1
+  endif
+
   if g:easycomplete_enable == 0 || !exists('b:old_changedtick')
     return
   endif
