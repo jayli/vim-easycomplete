@@ -127,8 +127,14 @@ end
 function EasyComplete.get_buf_keywords(lines)
   local buf_keywords = {}
   for _, line in ipairs(lines) do
-    for word in line:gmatch("[0-9a-zA-Z_]+") do
-      table.insert(buf_keywords, word)
+    if vim.bo.filetype == "lua" then
+      for word in line:gmatch("[0-9a-zA-Z_]+") do
+        table.insert(buf_keywords, word)
+      end
+    else
+      for word in line:gmatch("[0-9a-zA-Z_#]+") do
+        table.insert(buf_keywords, word)
+      end
     end
   end
   return buf_keywords
