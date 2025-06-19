@@ -127,7 +127,7 @@ end
 function EasyComplete.get_buf_keywords(lines)
   local buf_keywords = {}
   for _, line in ipairs(lines) do
-    for word in line:gmatch("[0-9a-zA-Z_#]+") do
+    for word in line:gmatch("[0-9a-zA-Z_]+") do
       table.insert(buf_keywords, word)
     end
   end

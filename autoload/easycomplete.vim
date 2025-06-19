@@ -811,6 +811,7 @@ function! s:BackingCompleteHandler()
           let s:easycomplete_ghost_text_str = ghost_text
         endif
         noa call easycomplete#util#timer_start("easycomplete#pum#complete", [start_pos, result], 30)
+        call s:CloseCompleteInfo()
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件
         if !empty(result)
