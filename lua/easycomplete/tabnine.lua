@@ -100,7 +100,8 @@ function Export.is_cursor_at_EOL()
   local lines = vim.api.nvim_buf_get_lines(0, row, row + 1, false)
   if #lines == 0 then return true end  -- 如果没有获取到行，则认为是在行尾
 
-  local line = vim.fn.trim(lines[1])
+  local line = lines[1]
+  line = line:gsub("%s*$", "")
 
   -- 检查光标位置是否等于或超过行的长度
   if col >= #line then
@@ -110,38 +111,6 @@ function Export.is_cursor_at_EOL()
     -- 光标不在行末
     return false
   end
-end
-
-function Export.insert_spaces(n)
-  -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local row = cursor[1] - 1  -- 行号从0开始计数，所以减1
-  local col = cursor[2]
-
-  -- 获取当前行的文本
-  local line = vim.fn.getline(row + 1)  -- getline行号也是从1开始
-
-  -- 在光标位置后插入n个空格
-  local new_line = line:sub(1, col) .. string.rep(" ", n) .. line:sub(col + 1)
-
-  -- 更新当前行
-  vim.fn.setline(row + 1, new_line)
-end
-
-function Export.insert_backspaces(n)
-  -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local row = cursor[1] - 1  -- 行号从0开始计数，所以减1
-  local col = cursor[2]
-
-  -- 获取当前行的文本
-  local line = vim.fn.getline(row + 1)  -- getline行号也是从1开始
-
-  -- 在光标位置后插入n个空格
-  local new_line = line:sub(1, col) .. line:sub(col + 1 + n)
-
-  -- 更新当前行
-  vim.fn.setline(row + 1, new_line)
 end
 
 function Export.loading_start()
