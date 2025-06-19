@@ -50,6 +50,7 @@ let s:original_opt = {}
 let s:contains_shortmess = stridx(&shortmess,"c") >= 0 ? 1 : 0
 let s:textwidth = &textwidth
 let s:completeopt = &completeopt
+let s:lazyredraw = &lazyredraw
 
 " 几个常用尺寸的计算
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
@@ -200,6 +201,9 @@ function! s:OpenPum(startcol, lines)
   endif
   noa setl textwidth=0
   noa setl completeopt=menu
+  if g:easycomplete_ghost_text
+    noa setlocal lazyredraw
+  endif
 endfunction
 
 function! easycomplete#pum#WinScrolled()
@@ -985,6 +989,11 @@ function! s:flush()
   endif
   call execute("noa setl textwidth=" . s:textwidth)
   call execute("noa setl completeopt=" . s:completeopt)
+  if g:easycomplete_ghost_text
+    if !s:lazyredraw
+      noa setlocal nolazyredraw
+    endif
+  endif
 endfunction
 
 function! s:close()

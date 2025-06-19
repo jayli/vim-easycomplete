@@ -1975,7 +1975,7 @@ function! easycomplete#_complete(start, items)
       endif
       call easycomplete#pum#complete(a:start, a:items)
       if g:easycomplete_ghost_text
-        let ghost_text = s:GetGhostText(a:start, a:items[0]["abbr"])
+        let ghost_text = s:GetGhostText(a:start, a:items[0]["word"])
         let s:easycomplete_ghost_text_str = ghost_text
         if !exists("b:second_complete_hint_timer")
           let b:second_complete_hint_timer = 0
