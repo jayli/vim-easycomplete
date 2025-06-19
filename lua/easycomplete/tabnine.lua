@@ -80,11 +80,11 @@ function Export.show_hint(code_block)
     virt_text_pos = "inline",
     virt_text = virt_text,
     virt_lines = virt_lines,
-    -- virt_text_win_col = vim.fn.col('.') - 1
+    -- virt_text_win_col = vim.fn.virtcol('.') - 1
   }
   -- 用virt_text_win_col 来防止抖动
   if Export.is_cursor_at_EOL() then
-    opt.virt_text_win_col = vim.fn.col('.') - 1
+    opt.virt_text_win_col = vim.fn.virtcol('.') - 1
   end
 
   vim.api.nvim_buf_set_extmark(0, tabnine_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
