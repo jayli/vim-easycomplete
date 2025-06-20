@@ -25,8 +25,9 @@ local function test()
 end
 
 -- all in all 入口
+-- 每次进入 buf 时执行
 local function nvim_lsp_handler()
-  TabNine.init()
+  TabNine.init_once()
 
   if not Util.nvim_installer_installed() then
     return
@@ -76,8 +77,7 @@ function foo()
   console('>>---------------')
 end
 
--- for nvim only
-function EasyComplete.lsp_handler()
+function EasyComplete.init()
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
     test()

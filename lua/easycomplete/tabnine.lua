@@ -38,7 +38,8 @@ function Export.nvim_init_tabnine_hl()
   })
 end
 
-function Export.init()
+function Export.init_once()
+  -- exec once
   if vim.g.easycomplete_tmp_ready == 1 then
     return
   end

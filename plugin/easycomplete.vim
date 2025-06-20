@@ -247,7 +247,7 @@ augroup easycomplete#CustomAutocmd
 augroup END
 
 if g:env_is_nvim && has("nvim-0.5.0")
-  autocmd User easycomplete_after_constructor lua require('easycomplete').lsp_handler()
+  autocmd User easycomplete_after_constructor lua require('easycomplete').init()
 endif
 
 " Buildin Plugins
