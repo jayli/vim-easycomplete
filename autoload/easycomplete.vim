@@ -836,20 +836,7 @@ function! easycomplete#BackSpace()
   endif
   let b:fast_bs_timer = timer_start(70, { -> s:FastBSTimerReset()})
   " 回退过程中先处理 ghost_text 防止闪烁
-  if g:env_is_nvim && g:easycomplete_ghost_text &&
-        \ easycomplete#pum#visible() &&
-        \ !empty(s:easycomplete_ghost_text_str)
-    let ghost_text_first_char = strpart(s:easycomplete_ghost_text_str, 0, 1)
-    let l:char = strpart(getline('.'), col('.') - 2, 1)
-    if strlen(l:char) >= 1
-      let new_ghost_text = l:char . s:easycomplete_ghost_text_str
-      call easycomplete#util#timer_start("easycomplete#util#ShowHint", [new_ghost_text], 1)
-      let s:easycomplete_ghost_text_str = new_ghost_text
-    else
-      call easycomplete#util#DeleteHint()
-      let s:easycomplete_ghost_text_str = ""
-    endif
-  endif
+  " 在tabnine.lua 中的回退事件监听里处理了
   return "\<C-H>"
 endfunction
 
@@ -1269,8 +1256,7 @@ function! easycomplete#CompleteChanged()
   " 还有一种情况会触发CompleteChanged，就是 SecondCompleteRendering
   " 的时机，这时就要根据 noselect 配置来判断是否默认显示 info
   if g:easycomplete_ghost_text
-    " 在快速输入时，避免频繁的 ghost_text 的闪现，配合 easycomplete#_complete()
-    " 的定时器避免闪烁，这里把 选中第一项和未选中时的 deleteHint 去掉
+    " 选中第一项和未选中时的 deleteHint 去掉
     if easycomplete#CompleteCursored()
       if easycomplete#IsBacking()
         " Do Nothing
@@ -2642,24 +2628,12 @@ endfunction
 function! easycomplete#InsertCharPre()
   " backspace不会走到这里
   let g:easycomplete_insert_char = v:char
-  if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#pum#IsInsertingWord()
-    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-      call easycomplete#util#DeleteHint()
-    endif
-    return
-  endif
   if g:env_is_nvim && easycomplete#pum#visible() && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
-    if strlen(s:easycomplete_ghost_text_str) >= 2
-      let new_ghost_text = strpart(s:easycomplete_ghost_text_str, 1, 100)
-      " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
-      " 这里重新showhint后，后续的字符回退一格，产生抖动
-      " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
-      " 但光标后有字符的情况下就避免不了了，放在insertcharpre里可以解决
-      call easycomplete#util#timer_start("easycomplete#util#ShowHint", [new_ghost_text], 1)
-      let s:easycomplete_ghost_text_str = new_ghost_text
-    else
-      call easycomplete#util#DeleteHint()
-    endif
+    " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
+    " 这里重新showhint后，后续的字符回退一格，产生抖动
+    " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
+    " 但光标后有字符的情况下就避免不了了，放在insertcharpre也不行
+    " 现在是放在 lua 的事件监听中了
   endif
 endfunction
 
@@ -2673,6 +2647,13 @@ function! easycomplete#TextChangedP()
   endif
 
   if g:env_is_nvim && b:old_changedtick == b:changedtick
+    return
+  endif
+
+  if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#pum#IsInsertingWord()
+    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+      call easycomplete#util#DeleteHint()
+    endif
     return
   endif
 

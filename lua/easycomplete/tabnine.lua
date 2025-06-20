@@ -4,6 +4,7 @@ local log = Util.log
 local console = Util.console
 local Export = {}
 local tabnine_ns = vim.api.nvim_create_namespace('tabnine_ns')
+local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 
 function Export.nvim_init_tabnine_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
@@ -38,6 +39,10 @@ function Export.nvim_init_tabnine_hl()
 end
 
 function Export.init()
+  if vim.g.easycomplete_tmp_ready == 1 then
+    return
+  end
+  vim.g.easycomplete_tmp_ready = 1
   Export.nvim_init_tabnine_hl()
   vim.api.nvim_create_autocmd({"ColorScheme"}, {
     pattern = {"*"},
@@ -45,6 +50,7 @@ function Export.init()
       Export.nvim_init_tabnine_hl()
     end
   })
+  ghost_text_bind_event()
 end
 
 -- code_block 是一个字符串，有可能包含回车符
@@ -89,6 +95,85 @@ function Export.show_hint(code_block)
 
   vim.api.nvim_buf_set_extmark(0, tabnine_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
 end
+
+function ghost_text_bind_event()
+  if not vim.g.easycomplete_ghost_text then
+    return
+  end
+  local curr_key = nil
+  -- 注册按键监听器
+  vim.on_key(function(keys, _)
+    -- 将按键字节序列转换为字符串
+    local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
+    -- 更新 last_key 变量
+    curr_key = key_str
+  end)
+  vim.api.nvim_create_autocmd({"CursorMovedI"}, {
+      pattern = "*",
+      callback = function()
+        if vim.api.nvim_get_mode().mode ~= "i" then
+          return
+        end
+        if curr_key == nil or string.byte(curr_key) == nil then
+          return
+        end
+        if curr_key and string.find(normal_chars, curr_key, 1, true) then
+          -- 正常输入
+          if vim.fn["easycomplete#pum#visible"]() then
+            local ghost_text = get_current_extmark()
+            if ghost_text == "" or #ghost_text == 1 then
+              Export.delete_hint()
+              vim.cmd("let s:easycomplete_ghost_text_str = ''")
+            elseif #ghost_text >= 2 then
+              local new_ghost_text = string.sub(ghost_text, 2)
+              Export.show_hint({new_ghost_text})
+              vim.cmd("let s:easycomplete_ghost_text_str = '" .. new_ghost_text .. "'")
+            end
+          end
+          -- console(curr_key)
+        elseif curr_key and string.byte(curr_key) == 8 then
+          -- 退格键
+          if vim.fn["easycomplete#pum#visible"]() then
+            local ghost_text = get_current_extmark()
+            if ghost_text == "" then
+              -- Export.delete_hint()
+              vim.cmd("let s:easycomplete_ghost_text_str = ''")
+            elseif #ghost_text >= 1 then
+              local new_ghost_text = "a" .. ghost_text
+              Export.show_hint({new_ghost_text})
+              vim.cmd("let s:easycomplete_ghost_text_str = '" .. new_ghost_text .. "'")
+            end
+          else
+            Export.delete_hint()
+            vim.cmd("let s:easycomplete_ghost_text_str = ''")
+          end
+          -- console('<<')
+        else
+          -- 其他字符
+        end
+        curr_key = nil
+      end,
+    })
+end
+
+function get_current_extmark()
+  local row = vim.fn.line('.') - 1
+  local mks = vim.api.nvim_buf_get_extmarks(0, tabnine_ns, { row, 0 }, { row, -1 }, {
+    details = true,
+  })
+  local mk_text = ""
+  if not mks or #mks == 0 then
+    return ""
+  end
+  for _, mark in ipairs(mks) do
+    local info = mark[4]
+    if info.virt_text and #info.virt_text > 0 then
+      mk_text = info.virt_text[1][1]
+    end
+  end
+  return mk_text
+end
+
 
 function Export.is_cursor_at_EOL()
   -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
