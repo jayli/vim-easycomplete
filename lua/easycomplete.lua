@@ -3,6 +3,7 @@ local EasyComplete = {}
 local Util = require "easycomplete.util"
 local AutoLoad = require "easycomplete.autoload"
 local TabNine = require "easycomplete.tabnine"
+local GhostText = require "easycomplete.ghost_text"
 local console = Util.console
 local log = Util.log
 local global_timer = vim.loop.new_timer()
@@ -27,8 +28,6 @@ end
 -- all in all 入口
 -- 每次进入 buf 时执行
 local function nvim_lsp_handler()
-  TabNine.init_once()
-
   if not Util.nvim_installer_installed() then
     return
   end
@@ -66,18 +65,11 @@ function EasyComplete.typing(...)
   })
 end
 
-function foo()
-  vim.api.nvim_command("echom 123")
-  vim.fn["easycomplete#lua#api"]()
-  vim.fn["easycomplete#lua#test"]()
-  console(1,2,3,4,5,6)
-  for i=1,80 do
-    console(math.random())
-  end
-  console('>>---------------')
-end
-
+-- 初始化入口
 function EasyComplete.init()
+  TabNine.init_once()
+  GhostText.init_once()
+
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
     test()
