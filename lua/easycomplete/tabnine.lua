@@ -120,32 +120,42 @@ function ghost_text_bind_event()
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
           -- 正常输入
           if vim.fn["easycomplete#pum#visible"]() then
-            local ghost_text = get_current_extmark()
-            if ghost_text == "" or #ghost_text == 1 then
-              Export.delete_hint()
-              vim.cmd("let s:easycomplete_ghost_text_str = ''")
-            elseif #ghost_text >= 2 then
-              local new_ghost_text = string.sub(ghost_text, 2)
-              Export.show_hint({new_ghost_text})
-              vim.cmd("let s:easycomplete_ghost_text_str = '" .. new_ghost_text .. "'")
+            local ok, err = pcall(function()
+              local ghost_text = get_current_extmark()
+              if ghost_text == "" or #ghost_text == 1 then
+                Export.delete_hint()
+                vim.g.easycomplete_ghost_text_str = ""
+              elseif #ghost_text >= 2 then
+                local new_ghost_text = string.sub(ghost_text, 2)
+                Export.show_hint({new_ghost_text})
+                vim.g.easycomplete_ghost_text_str = new_ghost_text
+              end
+            end)
+            if not ok then
+              print("Ghost Text Error: " .. err)
             end
           end
           -- console(curr_key)
         elseif curr_key and string.byte(curr_key) == 8 then
           -- 退格键
           if vim.fn["easycomplete#pum#visible"]() then
-            local ghost_text = get_current_extmark()
-            if ghost_text == "" then
-              -- Export.delete_hint()
-              vim.cmd("let s:easycomplete_ghost_text_str = ''")
-            elseif #ghost_text >= 1 then
-              local new_ghost_text = "a" .. ghost_text
-              Export.show_hint({new_ghost_text})
-              vim.cmd("let s:easycomplete_ghost_text_str = '" .. new_ghost_text .. "'")
+            local ok, err = pcall(function()
+              local ghost_text = get_current_extmark()
+              if ghost_text == "" then
+                -- Export.delete_hint()
+                vim.g.easycomplete_ghost_text_str = ""
+              elseif #ghost_text >= 1 then
+                local new_ghost_text = "a" .. ghost_text
+                Export.show_hint({new_ghost_text})
+                vim.g.easycomplete_ghost_text_str = new_ghost_text
+              end
+            end)
+            if not ok then
+              print("Ghost Text Error BackSpace " .. err)
             end
           else
             Export.delete_hint()
-            vim.cmd("let s:easycomplete_ghost_text_str = ''")
+            vim.g.easycomplete_ghost_text_str = ""
           end
           -- console('<<')
         else

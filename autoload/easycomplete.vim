@@ -80,7 +80,7 @@ let g:easycomplete_tabnine_suggest_timer = 0
 " 防止快速换行时的密集调用带来的卡顿
 let s:easycomplete_cursor_move_timer = 0
 " 幽灵文本
-let s:easycomplete_ghost_text_str = ""
+let g:easycomplete_ghost_text_str = ""
 " 快速敲击字符的 timer，只在 LazyFireTyping 时使用
 let b:easycomplete_typing_timer = 0
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
@@ -373,7 +373,7 @@ function! easycomplete#CompleteDone()
   " 中也遵循这个逻辑，需要手动再打开一下
   if g:env_is_nvim && !easycomplete#pum#visible()
     call easycomplete#util#DeleteHint()
-    let s:easycomplete_ghost_text_str = ""
+    let g:easycomplete_ghost_text_str = ""
   endif
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#IsBacking()
         \ && easycomplete#FirstSelectedWithOptDefaultSelected()
@@ -808,7 +808,7 @@ function! s:BackingCompleteHandler()
         if g:easycomplete_ghost_text && len(result) > 0
           let ghost_text = s:GetGhostText(start_pos, result[0]["word"])
           call easycomplete#util#ShowHint(ghost_text)
-          let s:easycomplete_ghost_text_str = ghost_text
+          let g:easycomplete_ghost_text_str = ghost_text
         endif
         noa call easycomplete#util#timer_start("easycomplete#pum#complete", [start_pos, result], 30)
         call s:CloseCompleteInfo()
@@ -1263,10 +1263,10 @@ function! easycomplete#CompleteChanged()
       elseif easycomplete#pum#PumSelectedIndex() > 1
         call easycomplete#util#DeleteHint()
       endif
-    elseif !empty(s:easycomplete_ghost_text_str)
+    elseif !empty(g:easycomplete_ghost_text_str)
       " 选择一圈后回到初始状态，未选中任何选项
       call easycomplete#util#timer_start("easycomplete#util#ShowHint",
-                                      \ [s:easycomplete_ghost_text_str], 1)
+                                      \ [g:easycomplete_ghost_text_str], 1)
     endif
   endif
   let item = deepcopy(easycomplete#GetCursordItem())
@@ -1886,7 +1886,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start_pos, s:get(result,0,"word"))
         call easycomplete#util#ShowHint(ghost_text)
-        let s:easycomplete_ghost_text_str = ghost_text
+        let g:easycomplete_ghost_text_str = ghost_text
       endif
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
     endif
@@ -1972,7 +1972,7 @@ function! easycomplete#_complete(start, items)
       call easycomplete#pum#complete(a:start, a:items)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start, a:items[0]["word"])
-        let s:easycomplete_ghost_text_str = ghost_text
+        let g:easycomplete_ghost_text_str = ghost_text
         if !exists("b:second_complete_hint_timer")
           let b:second_complete_hint_timer = 0
         endif
@@ -2628,7 +2628,7 @@ endfunction
 function! easycomplete#InsertCharPre()
   " backspace不会走到这里
   let g:easycomplete_insert_char = v:char
-  if g:env_is_nvim && easycomplete#pum#visible() && g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+  if g:env_is_nvim && easycomplete#pum#visible() && g:easycomplete_ghost_text && !empty(g:easycomplete_ghost_text_str)
     " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
     " 这里重新showhint后，后续的字符回退一格，产生抖动
     " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
@@ -2651,7 +2651,7 @@ function! easycomplete#TextChangedP()
   endif
 
   if g:env_is_nvim && easycomplete#pum#visible() && easycomplete#pum#IsInsertingWord()
-    if g:easycomplete_ghost_text && !empty(s:easycomplete_ghost_text_str)
+    if g:easycomplete_ghost_text && !empty(g:easycomplete_ghost_text_str)
       call easycomplete#util#DeleteHint()
     endif
     return
