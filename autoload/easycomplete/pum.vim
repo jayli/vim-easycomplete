@@ -109,6 +109,11 @@ function! s:hl()
     let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
     let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
     let pmenu_cursor_has_reverse = s:HasReverseHighlight("PmenuSel")
+    if s:HLExists("EasyFuzzyMatch")
+      let fuzzymatch_bold_str = s:HasBold("EasyFuzzyMatch") ? "gui=bold" : ""
+    else
+      let fuzzymatch_bold_str = s:HasBold("PmenuMatch") ? "gui=bold" : ""
+    endif
     let pmenu_cursor_hl_group_fg = pmenu_cursor_has_reverse ? s:bgcolor("PmenuSel") : s:fgcolor("PmenuSel")
     let pmenu_cursor_hl_group_bg = pmenu_cursor_has_reverse ? s:fgcolor("PmenuSel") : s:bgcolor("PmenuSel")
 
@@ -127,7 +132,6 @@ function! s:hl()
 
     let fuzzymatch_fg = pmenu_cursor_has_reverse ? s:bgcolor(fuzzymatch_hl_group) : s:fgcolor(fuzzymatch_hl_group)
     if fuzzymatch_fg == "NONE"
-      call s:log('..')
       let fuzzymatch_fg = pmenu_cursor_has_reverse ? s:bgcolor("Constant") : s:fgcolor("Constant")
     endif
 
@@ -139,7 +143,7 @@ function! s:hl()
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/&\([^&]&\)\@=/  matchgroup=Conceal end=/\(&[^&]\)\@<=&/ concealends oneline',
           \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/:\([^:]:\)\@=/  matchgroup=Conceal end=/\(:[^:]\)\@<=:/ concealends oneline',
-          \ "hi CustomFuzzyMatch " . dev . "fg=" . fuzzymatch_fg,
+          \ "hi CustomFuzzyMatch " . dev . "fg=" . fuzzymatch_fg . " " . fuzzymatch_bold_str,
           \ "hi CustomPmenuSel " . dev . "fg=" . pmenu_cursor_hl_group_fg . " " . dev . "bg=" . pmenu_cursor_hl_group_bg,
           \ "hi link CustomKind     " . pmenu_kind_hl_group,
           \ "hi link CustomExtra    " . pmenu_extra_hl_group,
@@ -155,9 +159,17 @@ endfunction
 
 function! s:HasReverseHighlight(group_name)
   let group_text = easycomplete#ui#HighlightArgs(a:group_name)
-
   " 检查输出中是否包含 reverse（不区分大小写）
   if group_text =~? 'reverse'
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
+function! s:HasBold(group_name)
+  let group_text = easycomplete#ui#HighlightArgs(a:group_name)
+  if group_text =~? 'gui=bold'
     return v:true
   else
     return v:false
