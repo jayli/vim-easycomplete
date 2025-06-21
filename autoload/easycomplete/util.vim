@@ -1410,11 +1410,11 @@ function! easycomplete#util#TrimFileName(str)
   return substitute(a:str, "^file:\/\/", "", "i")
 endfunction " }}}
 
-function! easycomplete#util#GetFileName(path)
+function! easycomplete#util#GetFileName(path) " {{{
   let path  = simplify(a:path)
   let fname = fnamemodify(path, ":t")
   return fname
-endfunction
+endfunction " }}}
 
 " GetLspPlugin {{{
 " 一个补全插件可以携带多个 LSP Server 为其工作，比如 typescript 中可以有 ts 和
@@ -1612,9 +1612,9 @@ function! easycomplete#util#GetLspItem(vim_item)
   return lsp_item
 endfunction " }}}
 
-function! s:filetype()
+function! s:filetype() " {{{
   return getbufvar(bufnr(), "&filetype")
-endfunction
+endfunction " }}}
 
 " {{{ BadBoy
 " 对 lsp response 的过滤，这个过滤本来应该 lsp 给做掉，但实际 lsp
@@ -1688,7 +1688,7 @@ function! s:BadBoy.Dart(item, typing_word)
 endfunction
 " }}}
 
-function! easycomplete#util#IsCursorNextToLeftParen()
+function! easycomplete#util#IsCursorNextToLeftParen() " {{{
   let line = getline('.')
   let col = col('.')
   if col > strlen(line)
@@ -1696,7 +1696,7 @@ function! easycomplete#util#IsCursorNextToLeftParen()
   endif
   let next_char = line[col - 1]
   return next_char == '('
-endfunction
+endfunction " }}}
 
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
