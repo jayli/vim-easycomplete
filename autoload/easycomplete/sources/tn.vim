@@ -324,7 +324,7 @@ endfunction
 function! s:TabnineExit(job_id, data, event)
   if a:event == "exit"
     " call s:log('Restart Tabnine server')
-    call s:StartTabNine()
+    " call s:StartTabNine()
   endif
 endfunction
 
