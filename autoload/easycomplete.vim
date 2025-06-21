@@ -1134,7 +1134,7 @@ function! s:CompletorCallingAtFirstComplete(ctx)
       endif
     endwhile
   catch
-    call s:errlog("[ERR]", v:exception)
+    call s:errlog("[ERR] CompletorCallingAtFirstComplete", v:exception)
     call s:flush()
   endtry
 endfunction

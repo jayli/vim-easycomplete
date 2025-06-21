@@ -310,7 +310,7 @@ function! s:StartTabNine()
         \    'on_exit':   function('s:TabnineExit')
         \ })
   if s:tn_job <= 0
-    call s:log("[TabNine Error]:", "TabNine job start failed")
+    call s:errlog("[TabNine Error]:", "TabNine job start failed", expand("%:m:p"))
   else
     let s:tn_ready = v:true
   endif
@@ -324,6 +324,7 @@ endfunction
 function! s:TabnineExit(job_id, data, event)
   if a:event == "exit"
     " call s:log('Restart Tabnine server')
+    call s:errlog("[TabNine Error]:", "TabNine exit", expand("%:m:p"))
     " call s:StartTabNine()
   endif
 endfunction
@@ -575,4 +576,8 @@ endfunction
 
 function! s:trace(...)
   return call('easycomplete#util#trace', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction

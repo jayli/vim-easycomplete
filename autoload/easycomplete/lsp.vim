@@ -511,7 +511,7 @@ function! s:send_request(server_name, data) abort
     let l:data['on_notification'] = '---funcref---'
   endif
   return easycomplete#lsp#client#send_request(l:lsp_id, a:data)
-  call s:errlog('[LOG]', 'lsp request --->', l:lsp_id, a:server_name, l:data)
+  " call s:errlog('[LOG]', 'lsp request --->', l:lsp_id, a:server_name, l:data)
 endfunction
 
 function! s:throw_step_error(s) abort
@@ -536,7 +536,7 @@ function! s:ensure_changed(buf, server_name, cb) abort
   let l:buffers = l:server['buffers']
   if !has_key(l:buffers, l:path)
     let l:msg = s:new_rpc_success('file is not managed', { 'server_name': a:server_name, 'path': l:path })
-    call s:errlog("[ERR]", l:msg)
+    call s:errlog("[ERR]ensure_changed", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -546,7 +546,7 @@ function! s:ensure_changed(buf, server_name, cb) abort
 
   if l:buffer_info['changed_tick'] == l:changed_tick
     let l:msg = s:new_rpc_success('not dirty', { 'server_name': a:server_name, 'path': l:path })
-    call s:errlog("[ERR]", l:msg)
+    call s:errlog("[ERR]ensure_changed", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -839,7 +839,6 @@ function! s:ensure_conf(buf, server_name, cb) abort
           \ })
   endif
   let l:msg = s:new_rpc_success('configuration sent', { 'server_name': a:server_name })
-  call s:errlog("[LOG]", l:msg)
   call a:cb(l:msg)
 endfunction
 
@@ -848,7 +847,7 @@ function! s:ensure_start(buf, server_name, cb) abort
 
   if easycomplete#lsp#utils#is_remote_uri(l:path)
     let l:msg = s:new_rpc_error('ignoring start server due to remote uri', { 'server_name': a:server_name, 'uri': l:path})
-    call s:errlog("[ERR]", l:msg)
+    call s:errlog("[ERR]s:ensure_start", l:msg)
     call a:cb(l:msg)
     return
   endif
@@ -881,7 +880,7 @@ function! s:ensure_start(buf, server_name, cb) abort
 
     if empty(l:cmd)
       let l:msg = s:new_rpc_error('ignore server start since cmd is empty', { 'server_name': a:server_name })
-      call s:errlog("[ERR]", l:msg)
+      call s:errlog("[ERR]ignore server start since cmd is empty", l:msg)
       call a:cb(l:msg)
       return
     endif
@@ -899,11 +898,11 @@ function! s:ensure_start(buf, server_name, cb) abort
     let l:server['lsp_id'] = l:lsp_id
     let b:lsp_job_id = l:lsp_id
     let l:msg = s:new_rpc_success('started lsp server successfully', { 'server_name': a:server_name, 'lsp_id': l:lsp_id })
-    call s:errlog("[LOG]", l:msg)
+    " call s:errlog("[LOG]", l:msg)
     call a:cb(l:msg)
   else
     let l:msg = s:new_rpc_error('failed to start server', { 'server_name': a:server_name, 'cmd': l:cmd })
-    call s:errlog("[LOG]", l:msg)
+    " call s:errlog("[LOG]", l:msg)
     let b:lsp_job_id = 0
     call a:cb(l:msg)
   endif
@@ -940,7 +939,7 @@ endfunction
 function! s:send_response(server_name, data) abort
   let l:lsp_id = s:servers[a:server_name]['lsp_id']
   let l:data = copy(a:data)
-  call s:errlog("[LOG]", 'sendrequest --->', l:lsp_id, a:server_name, l:data)
+  " call s:errlog("[LOG]", 'sendrequest --->', l:lsp_id, a:server_name, l:data)
   call easycomplete#lsp#client#send_response(l:lsp_id, a:data)
 endfunction
 
@@ -993,7 +992,7 @@ endfunction
 
 function! s:on_notification(server_name, id, data, event) abort
   " echom '>>>> on_notification ' . string(a:data)
-  call s:errlog("[LOG]", 'lsp response <---', a:id, a:server_name)
+  " call s:errlog("[LOG]", 'lsp response <---', a:id, a:server_name)
   let l:response = a:data['response']
   let l:server = s:servers[a:server_name]
   let l:server_info = l:server['server_info']
@@ -1058,12 +1057,12 @@ function! s:send_notification(server_name, data) abort
   if has_key(l:data, 'on_notification')
     let l:data['on_notification'] = '---funcref---'
   endif
-  call s:errlog("[LOG]", 'notification --->', l:lsp_id, a:server_name)
+  " call s:errlog("[LOG]", 'notification --->', l:lsp_id, a:server_name)
   call easycomplete#lsp#client#send_notification(l:lsp_id, a:data)
 endfunction
 
 function! s:on_stderr(server_name, id, data, event) abort
-  call s:errlog("[ERR]", 'notification <---(stderr)', a:id, a:server_name, a:data)
+  " call s:errlog("[ERR]", 'notification <---(stderr)', a:id, a:server_name, a:data)
 endfunction
 
 function! s:on_exit(...) abort
