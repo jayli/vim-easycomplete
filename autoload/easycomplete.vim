@@ -1209,7 +1209,6 @@ endfunction
 function! s:CompleteMatchAction()
   try
     call s:StopZizz()
-    " tabnine
     if s:TabnineSupports()
       call easycomplete#sources#tn#refresh()
     endif
@@ -2566,11 +2565,11 @@ function! easycomplete#TextChangedI()
       " call easycomplete#pum#InsertAwake()
     else
       " Fire easycomplete#TextChangedP()
+      " 用事件队列比直接调用函数流畅度要更好
       doautocmd <nomodeline> User easycomplete_pum_textchanged_p
     endif
   else
     " TextChangedI
-    " call easycomplete#typing()
     if !exists("b:fast_bs_timer")
       let b:fast_bs_timer = 0
     endif
@@ -2628,13 +2627,6 @@ endfunction
 function! easycomplete#InsertCharPre()
   " backspace不会走到这里
   let g:easycomplete_insert_char = v:char
-  if g:env_is_nvim && easycomplete#pum#visible() && g:easycomplete_ghost_text && !empty(g:easycomplete_ghost_text_str)
-    " ghost_text 抖动的问题，先输入字符，inline的hint字符被推后
-    " 这里重新showhint后，后续的字符回退一格，产生抖动
-    " 当在空行敲字符时，设置virt_text_win_col来让hint字符决定对位，避免这个问题
-    " 但光标后有字符的情况下就避免不了了，放在insertcharpre也不行
-    " 现在是放在 lua 的事件监听中了
-  endif
 endfunction
 
 function! easycomplete#TextChangedP()

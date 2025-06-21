@@ -95,10 +95,18 @@ function ghost_text_bind_event()
   local curr_key = nil
   -- 注册按键监听器
   vim.on_key(function(keys, _)
+    -- 这里不论是否是插入模式，都会触发，需要过滤掉
+    if vim.api.nvim_get_mode().mode ~= "i" then
+      return
+    end
+    if vim.g.easycomplete_onkey_event == nil or vim.g.easycomplete_onkey_event == 0 then
+      return
+    end
     -- 将按键字节序列转换为字符串
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     -- 更新 last_key 变量
     curr_key = key_str
+    -- console('on_key', string.byte(curr_key))
   end)
   vim.api.nvim_create_autocmd({"CursorMovedI"}, {
       pattern = "*",
@@ -106,9 +114,13 @@ function ghost_text_bind_event()
         if vim.api.nvim_get_mode().mode ~= "i" then
           return
         end
+        if vim.g.easycomplete_onkey_event == nil or vim.g.easycomplete_onkey_event == 0 then
+          return
+        end
         if curr_key == nil or string.byte(curr_key) == nil then
           return
         end
+        -- console("输入字符" .. vim.inspect(string.byte(curr_key)))
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
           -- 正常输入
           if vim.fn["easycomplete#pum#visible"]() then

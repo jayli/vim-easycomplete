@@ -51,6 +51,7 @@ let s:contains_shortmess = stridx(&shortmess,"c") >= 0 ? 1 : 0
 let s:textwidth = &textwidth
 let s:completeopt = &completeopt
 let s:lazyredraw = &lazyredraw
+let g:easycomplete_onkey_event = 1
 
 " 几个常用尺寸的计算
 " window 内高度，不包含tabline和statusline: winheight(win_getid())
@@ -495,6 +496,15 @@ function! s:HLCursordFuzzyChar(hl_group, prefix_length)
   endtry
 endfunction
 
+function! s:PreventOnKeyEventFowNow()
+  let g:easycomplete_onkey_event = 0
+  call timer_start(20, { -> s:ResetOnKeyEvent() })
+endfunction
+
+function! s:ResetOnKeyEvent()
+  let g:easycomplete_onkey_event = 1
+endfunction
+
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
   let pum_pos = s:PumPosition()
@@ -504,6 +514,12 @@ function! easycomplete#pum#SetWordBySelecting()
   let word = get(s:curr_items[s:selected_i - 1], "word", "")
   call s:InsertingWordZizz()
   if !easycomplete#pum#CompleteCursored()
+    if g:easycomplete_ghost_text
+      " 因为ghost_text 对全局的 on_key 做了监听，这里返回的 operator_str
+      " 相当于触发了 on_key 回调，所以加上一个阻止 on_key 的标志位，即
+      " 所有 Tab 和 S-Tab 操作都不应该触发 on_key 回调
+      call s:PreventOnKeyEventFowNow()
+    endif
     return oprator_str . get(s:original_ctx, "typing", "")
   else
     " 正常情况下调用 InsertWord 是很流畅没问题的
