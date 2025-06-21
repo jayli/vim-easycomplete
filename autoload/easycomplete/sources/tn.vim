@@ -2,7 +2,7 @@ let s:tn_job = v:null
 let s:ctx = v:null
 let s:opt = v:null
 let s:name = ''
-let s:tn_ready = v:false
+let s:tn_init_ready = v:false
 " TabNine 第一次匹配需要大量算法运算，比较耗时，完成第一次之后速度比较快
 let b:module_building = v:false
 let s:tn_render_timer = 0
@@ -32,8 +32,9 @@ function! easycomplete#sources#tn#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#tn#available()
-  if easycomplete#ok('g:easycomplete_tabnine_enable')
-    return s:tn_ready
+  if easycomplete#ok('g:easycomplete_tabnine_enable') &&
+        \ easycomplete#sources#tn#JobStatus() == "run"
+    return s:tn_init_ready
   else
     return v:false
   endif
@@ -110,7 +111,7 @@ function! easycomplete#sources#tn#GetGlobalSourceItems()
 endfunction
 
 function! easycomplete#sources#tn#completor(opt, ctx) abort
-  if !s:tn_ready
+  if !s:tn_init_ready
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
@@ -123,6 +124,9 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     call easycomplete#sources#tn#SimpleTabNineRequest(a:ctx)
   else
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+    call timer_start(1000, {
+          \  -> s:StartTabNine()
+          \ })
   endif
   return v:true
 endfunction
@@ -208,7 +212,7 @@ function! s:TabNineCompleteKind(res_array)
 endfunction
 
 function! s:TabNineRequest(name, param, ctx) abort
-  if s:tn_job == v:null || !s:tn_ready
+  if s:tn_job == v:null || !s:tn_init_ready
     return
   endif
   let l:req = {
@@ -312,7 +316,7 @@ function! s:StartTabNine()
   if s:tn_job <= 0
     call s:errlog("[TabNine Error]:", "TabNine job start failed", expand("%:m:p"))
   else
-    let s:tn_ready = v:true
+    let s:tn_init_ready = v:true
   endif
   call timer_start(700, { -> easycomplete#sources#tn#GetTabNineVersion()})
 endfunction
