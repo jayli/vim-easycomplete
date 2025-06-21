@@ -127,6 +127,7 @@ function! easycomplete#sources#tn#completor(opt, ctx) abort
     call timer_start(1000, {
           \  -> s:StartTabNine()
           \ })
+    let s:tn_init_ready = v:false
   endif
   return v:true
 endfunction
