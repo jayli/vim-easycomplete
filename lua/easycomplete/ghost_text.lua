@@ -1,9 +1,9 @@
 local Util = require "easycomplete.util"
 local log = Util.log
 local console = Util.console
-local M = {}
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 local global_ghost_tx_ns = vim.api.nvim_create_namespace('global_ghost_tx_ns')
+local M = {}
 
 function M.nvim_init_ghost_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
@@ -88,6 +88,14 @@ function M.init_once()
   ghost_text_bind_event()
 end
 
+function onkey_event_prevented()
+  if vim.g.easycomplete_onkey_event == nil or vim.g.easycomplete_onkey_event == 0 then
+    return true
+  else
+    return false
+  end
+end
+
 function ghost_text_bind_event()
   if not vim.g.easycomplete_ghost_text then
     return
@@ -99,7 +107,7 @@ function ghost_text_bind_event()
     if vim.api.nvim_get_mode().mode ~= "i" then
       return
     end
-    if vim.g.easycomplete_onkey_event == nil or vim.g.easycomplete_onkey_event == 0 then
+    if onkey_event_prevented() then
       return
     end
     -- 将按键字节序列转换为字符串
@@ -114,7 +122,7 @@ function ghost_text_bind_event()
         if vim.api.nvim_get_mode().mode ~= "i" then
           return
         end
-        if vim.g.easycomplete_onkey_event == nil or vim.g.easycomplete_onkey_event == 0 then
+        if onkey_event_prevented() then
           return
         end
         if curr_key == nil or string.byte(curr_key) == nil then
@@ -139,7 +147,6 @@ function ghost_text_bind_event()
               print("Ghost Text Error: " .. err)
             end
           end
-          -- console(curr_key)
         elseif curr_key and string.byte(curr_key) == 8 then
           -- 退格键
           if vim.fn["easycomplete#pum#visible"]() then
@@ -161,7 +168,6 @@ function ghost_text_bind_event()
             M.delete_hint()
             vim.g.easycomplete_ghost_text_str = ""
           end
-          -- console('<<')
         else
           -- 其他字符
         end
