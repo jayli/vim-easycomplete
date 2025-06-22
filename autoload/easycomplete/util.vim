@@ -1142,7 +1142,8 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
   if exists('*matchfuzzy')
-    let original_matching = []
+    let fullmatch_result = [] " 完全匹配
+    let firstchar_result = [] " 首字母匹配
     let fuzzymatching = []
     let all_items = a:all_menu
     " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
@@ -1152,6 +1153,8 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let matching_res = all_items->matchfuzzypos(word, {'key': key_name})
     let fuzzymatching = matching_res[0]
     let fuzzy_position = matching_res[1]
+    let fuzzy_scores = matching_res[2]
+    let fuzzymatch_result = []
     if g:env_is_nvim && has("nvim-0.6.1")
       let count_i = 0
       while count_i < len(fuzzymatching)
@@ -1163,13 +1166,31 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
         let p = fuzzy_position[count_i]
         let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, p, "§")
         let fuzzymatching[count_i]["marked_position"] = p
+        let fuzzymatching[count_i]["score"] = fuzzy_scores[count_i]
+
+        " 进行初步分检
+        if stridx(toupper(fuzzymatching[count_i]["word"]), toupper(word)) == 0
+          " 完全匹配，放在fullmatch_result
+          call add(fullmatch_result, fuzzymatching[count_i])
+        elseif fuzzymatching[count_i]["word"][0] == word[0]
+          " 首字母匹配，放在firstchar_result
+          call add(firstchar_result, fuzzymatching[count_i])
+        else
+          " 否则就是fuzzymatch的结果，放在 fuzzymatch_result 中
+          call add(fuzzymatch_result, fuzzymatching[count_i])
+        endif
         let count_i += 1
       endwhile
+      if has('nvim-0.7')
+        " 对 fuzzymatch_result 进行排序，TODO 似乎没有必要
+        " call sort(fuzzymatch_result, {a, b -> b['score'] - a['score'] })
+      endif
     endif
     if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 1
-      call sort(fuzzymatching, "easycomplete#util#SortTextComparatorByLength")
+      " 对fuzzymatch_result 进行长度排序
+      call sort(fuzzymatch_result, "easycomplete#util#SortTextComparatorByLength")
     endif
-    let filtered_menu = original_matching + fuzzymatching
+    let filtered_menu = fullmatch_result + firstchar_result + fuzzymatch_result
     return filtered_menu
   else " for nvim(<=0.5.0)
     " 完整匹配
