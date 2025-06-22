@@ -1136,7 +1136,9 @@ endfunction " }}}
 function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   let word = a:word
   if strlen(word) == 0
-    return a:all_menu[0 : a:maxlength]
+    let l:result_menu = a:all_menu[0 : a:maxlength]
+    call sort(l:result_menu, "easycomplete#util#SortTextComparatorByLength")
+    return l:result_menu
   endif
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
