@@ -666,12 +666,13 @@ endfunction
 function! s:CompleteMenuMap(key, val)
   let is_func = (a:val.kind ==# "method" || a:val.kind ==# "function")
   let val_name = a:val.name
+  let lsp_type_obj = exists('a:val.kind') ? easycomplete#util#LspType(a:val.kind) : {}
   let ret = {
         \ "abbr": val_name,
         \ "dup": 1,
         \ "icase": 1,
-        \ "kind": exists('a:val.kind') ? easycomplete#util#LspType(a:val.kind) : "",
-        \ "menu": s:menu_flag,
+        \ "kind": exists('a:val.kind') ? get(lsp_type_obj, "symble") : "",
+        \ "menu": g:easycomplete_menu_abbr ? s:menu_flag : get(lsp_type_obj, "fullname", "typescript"),
         \ "word": val_name,
         \ "info": "",
         \ "equal":1

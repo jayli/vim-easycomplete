@@ -139,6 +139,7 @@ Global configurations:
 | `g:easycomplete_ghost_text`          | 1             | Ghost text                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
+| `g:easycomplete_menu_abbr`           | 1             | Show abbr(shortname) at pum `menu` position, or show fullname |
 
 Typing `:h easycomplete` for help.
 

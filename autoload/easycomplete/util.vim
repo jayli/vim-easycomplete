@@ -1459,6 +1459,11 @@ endfunction
 
 " LspType {{{
 " c_type is number
+" return → {
+"   'symble':'o',
+"   'fullname':  'method',
+"   'shortname': 'm'
+" }
 function! easycomplete#util#LspType(c_type)
   if string(a:c_type) =~ "^\\d\\{0,2}$"
     let l:kinds = [
@@ -1501,6 +1506,9 @@ function! easycomplete#util#LspType(c_type)
     endtry
   else
     let l:type_fullname = a:c_type
+    if l:type_fullname == "var"
+      let l:type_fullname = "variable"
+    endif
     let l:type_shortname = l:type_fullname[0]
   endif
   if has_key(g:easycomplete_lsp_type_font, l:type_fullname)
@@ -1508,7 +1516,11 @@ function! easycomplete#util#LspType(c_type)
   else
     let symble = get(g:easycomplete_lsp_type_font, l:type_shortname, l:type_shortname)
   endif
-  return symble
+  return {
+        \ 'symble': symble,
+        \ 'fullname': l:type_fullname,
+        \ 'shortname': l:type_shortname
+        \ }
 endfunction
 " }}}
 
@@ -1743,11 +1755,13 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     if s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
     if s:BadBoy.Dart(l:completion_item, typing_word) | continue | endif
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
+    let l:lsp_type_obj = easycomplete#util#LspType(get(l:completion_item, 'kind', 0))
+    let l:menu_str = g:easycomplete_menu_abbr ? "[". toupper(a:plugin_name) ."]" : l:lsp_type_obj["fullname"]
     let l:vim_complete_item = {
-          \ 'kind': easycomplete#util#LspType(get(l:completion_item, 'kind', 0)),
+          \ 'kind': get(l:lsp_type_obj, "symble"),
           \ 'dup': 1,
           \ 'kind_number': get(l:completion_item, 'kind', 0),
-          \ 'menu' : "[". toupper(a:plugin_name) ."]",
+          \ 'menu' : l:menu_str,
           \ 'empty': 1,
           \ 'icase': 1,
           \ 'lsp_item' : l:completion_item

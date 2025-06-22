@@ -86,6 +86,9 @@ vim.g.easycomplete_tabnine_suggestion = 0
 -- Enable directory complete. Default is on
 vim.g.easycomplete_directory_enable = 1
 
+-- Show abbr(shortname) at `menu` position in pum
+vim.g.easycomplete_menu_abbr = 1
+
 -- Custom lsp support for a specific filetype
 vim.g.easycomplete_filetypes = {
   vim = {

@@ -21,6 +21,9 @@ if !exists("g:easycomplete_nerd_font")
   let g:easycomplete_nerd_font = 0
 endif
 
+if !exists("g:easycomplete_menu_abbr")
+  let g:easycomplete_menu_abbr = 1
+endif
 if !exists("g:easycomplete_kind_icons")
   let g:easycomplete_kind_icons = {}
 endif
@@ -30,19 +33,19 @@ if g:easycomplete_nerd_font == 1
   let g:easycomplete_menu_skin = {
         \   "buf": {
         \      "kind":get(kind_icons, "buf", ""),
-        \      "menu":"Text",
+        \      "menu": g:easycomplete_menu_abbr ? "Text" : "text"
         \    },
         \   "snip": {
         \      "kind":get(kind_icons, "snip", ""),
-        \      "menu":"Code"
+        \      "menu": g:easycomplete_menu_abbr ? "Code" : "snippet"
         \    },
         \   "dict": {
         \      "kind":get(kind_icons, "dict", "󰈍"),
-        \      "menu":"Dict",
+        \      "menu": g:easycomplete_menu_abbr ? "Dict" : "dictionary"
         \    },
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󰕃"),
-        \      "menu":"𝘛𝘕"
+        \      "menu": g:easycomplete_menu_abbr ? "𝘛𝘕" : "tabnine"
         \    }
         \ }
   let g:easycomplete_sign_text = {
@@ -85,22 +88,31 @@ if !exists("g:easycomplete_menu_skin")
   let g:easycomplete_menu_skin = {}
 endif
 
-let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
-                                  \ "[B]" : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
 let g:easycomplete_kindflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "kind")) ?
-                                  \ ""    : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "kind")
-let g:easycomplete_menuflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")) ?
-                                  \ "[D]" : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
+                                  \ "b"    : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "kind")
 let g:easycomplete_kindflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "kind")) ?
-                                  \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "dict", "kind")
-let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")) ?
-                                  \ "[S]" : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
+                                  \ "d" :    easycomplete#util#get(g:easycomplete_menu_skin, "dict", "kind")
 let g:easycomplete_kindflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")) ?
                                   \ "s" :   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")
-let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
-                                  \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
+                                  \ "t" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
+if g:easycomplete_menu_abbr
+  let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
+                                    \ "[B]" : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
+  let g:easycomplete_menuflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")) ?
+                                    \ "[D]" : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
+  let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")) ?
+                                    \ "[S]" : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
+  let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
+                                    \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
+  let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
+else
+  let g:easycomplete_menuflag_buf = "text"
+  let g:easycomplete_menuflag_dict = "dictionary"
+  let g:easycomplete_menuflag_snip = "snippet"
+  let g:easycomplete_menuflag_tabnine = "tabnine"
+endif
 
 if !exists("g:easycomplete_fuzzymatch_hlgroup")
   let g:easycomplete_fuzzymatch_hlgroup = ""

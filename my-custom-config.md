@@ -29,6 +29,7 @@ With Lazy.nvim
     vim.g.easycomplete_tabnine_suggestion = 1
     vim.g.easycomplete_cursor_word_hl = 1
     vim.g.easycomplete_nerd_font = 1
+    vim.g.easycomplete_menu_abbr = 0
     vim.g.easycomplete_enable = 1
     vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
     vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')

@@ -140,6 +140,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `g:easycomplete_ghost_text`          | 1             | 幽灵文本                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
+| `g:easycomplete_menu_abbr`           | 1             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
 
 ## 语言支持
 
