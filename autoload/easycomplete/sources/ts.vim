@@ -407,7 +407,9 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
   let idx = 0
   for item in l:menu_details
     let l:info = s:NormalizeEntryDetail(item)
-    call easycomplete#SetMenuInfo(get(item, "name"), l:info, s:menu_flag)
+    let l:lsp_menu = g:easycomplete_menu_abbr ?
+          \ s:menu_flag : get(easycomplete#util#LspType(item["kind"]),"fullname","typescript")
+    call easycomplete#SetMenuInfo(get(item, "name"), l:info, l:lsp_menu)
     let idx = idx + 1
   endfor
 
