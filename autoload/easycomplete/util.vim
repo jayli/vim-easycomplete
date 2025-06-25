@@ -1600,7 +1600,8 @@ function easycomplete#util#ItemIsFromLS(item)
   endif
   let plugin_name = get(b:easycomplete_lsp_plugin, "name", "")
   if plugin_name == "tn" | return v:false | endif
-  if "[". toupper(plugin_name) ."]" ==# menu_str
+  let item_lsp_name = get(a:item, "plugin_name", "")
+  if toupper(item_lsp_name) == toupper(plugin_name)
     return v:true
   else
     return v:false

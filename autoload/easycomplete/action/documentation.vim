@@ -55,7 +55,11 @@ function! s:HandleLspCallback(server_name, data) abort
         let info = [info]
       endif
       call easycomplete#ShowCompleteInfo(info)
-      let menu_flag = "[" . toupper(b:easycomplete_lsp_plugin["name"]) . "]"
+      if g:easycomplete_menu_abbr == 1
+        let menu_flag = "[" . toupper(b:easycomplete_lsp_plugin["name"]) . "]"
+      else
+        let menu_flag = get(g:easycomplete_completed_item, "menu", "")
+      endif
       let menu_word = get(g:easycomplete_completed_item, "word", "")
       call easycomplete#SetMenuInfo(menu_word, info, menu_flag)
     endif
@@ -78,6 +82,7 @@ function! s:GetDocumentParams(item, server_name)
   let text_edit = s:TextEditParser(get(lsp_item, 'textEdit', {}))
   " TODO
   "  rust 依赖 position / textDocument 字段
+  "      \  'label' : substitute(a:item.word, '(.*)$', '', ''),
   let ret.completion_item = extend({
         \  'label' : a:item.word,
         \  'data' : extend({
