@@ -586,6 +586,12 @@ augroup easycomplete#NormalBinding
   autocmd User easycomplete_pum_completechanged noa call easycomplete#CompleteChanged()
 augroup END
 
+augroup EasycompleteQuickfixEnterHook
+  autocmd!
+  " 当文件类型为 qf (Quickfix) 时触发
+  autocmd FileType qf nnoremap <buffer> <CR> :call easycomplete#QuickfixEnter()<CR>
+augroup END
+
 command! -nargs=? EasyCompleteInstallServer :call easycomplete#installer#install(<q-args>)
 command! -nargs=? InstallLspServer :call easycomplete#installer#install(<q-args>)
 command! EasyCompleteGotoDefinition :call easycomplete#defination()
