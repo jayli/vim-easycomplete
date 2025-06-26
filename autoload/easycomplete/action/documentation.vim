@@ -27,7 +27,6 @@ function! easycomplete#action#documentation#LspRequest(item) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, data) abort
-  " call s:console('<---', a:data.response)
   if b:easycomplete_documentation_popup > 0
     call timer_stop(b:easycomplete_documentation_popup)
     let b:easycomplete_documentation_popup = 0
@@ -46,9 +45,13 @@ function! s:HandleLspCallback(server_name, data) abort
   try
     let info = a:data.response.result.documentation.value
     let oringal_name = a:data.response.result.label
+    let res_label = a:data.response.result.label
+    let origin_label = get(easycomplete#util#GetLspItem(g:easycomplete_completed_item),
+          \ "label",
+          \ g:easycomplete_completed_item["word"])
     if empty(info)
       call s:ClosePopup()
-    elseif oringal_name == get(g:easycomplete_completed_item, "word", "")
+    elseif res_label == origin_label
       " let info = substitute(info, '```', '', 'g')
       let info = easycomplete#util#NormalizeLspInfo(info)
       if type(info) == type("")
@@ -83,15 +86,33 @@ function! s:GetDocumentParams(item, server_name)
   " TODO
   "  rust 依赖 position / textDocument 字段
   "      \  'label' : substitute(a:item.word, '(.*)$', '', ''),
-  let ret.completion_item = extend({
-        \  'label' : a:item.word,
-        \  'data' : extend({
-        \     'name' : a:item.word,
-        \   }, s:GetExtendedParamData(get(lsp_item, 'data', {}))),
-        \  'kind' : kind_number,
-        \  'sortText' : get(lsp_item, 'sortText', ""),
-        \  'detail' : get(lsp_item, 'detail', ""),
-        \ },  {})
+  try
+    " PHP 中 输入 COM 的类名返回的 lsp_item 结构里的 data 是一个数字 'data': '5011873105707059'
+    " 而不是JSON，直接丢弃
+    if easycomplete#util#GetLspPluginName() == "php" && type(get(lsp_item, 'data', "")) != type({})
+      let param_data = {}
+    else
+      let param_data = s:GetExtendedParamData(get(lsp_item, 'data', {}))
+    endif
+    let ret.completion_item = extend({
+          \  'label' : get(lsp_item, "label", a:item.word),
+          \  'data' : extend({
+          \     'name' : get(lsp_item, "label", a:item.word),
+          \     'position' : {
+          \        'position' : easycomplete#lsp#get_position(),
+          \        'textDocument' : easycomplete#lsp#get_text_document_identifier()
+          \     },
+          \     'full_import_path': get(lsp_item, "label", a:item.word),
+          \     'imported_name' : get(lsp_item, "label", a:item.word),
+          \     'import_for_trait_assoc_item' : v:false,
+          \   }, param_data),
+          \  'kind' : kind_number,
+          \  'sortText' : get(lsp_item, 'sortText', ""),
+          \  'detail' : get(lsp_item, 'detail', ""),
+          \ },  {})
+  catch
+    " call s:log(v:exception)
+  endtry
   if !empty(text_edit)
     let ret.completion_item["textEdit"] = text_edit
   endif

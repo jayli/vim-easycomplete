@@ -1965,7 +1965,7 @@ function! easycomplete#_complete(start, items)
   if mode() =~# 'i' && &paste != 1
     let should_fire_pum_show = v:false
     if g:env_is_nvim
-      if !easycomplete#pum#visible() && !empty(a:item)
+      if !easycomplete#pum#visible() && !empty(a:items)
         let should_fire_pum_show = v:true
       endif
       call easycomplete#pum#complete(a:start, a:items)
@@ -1985,7 +1985,7 @@ function! easycomplete#_complete(start, items)
       endif
     else
       let should_fire_pum_show = v:false
-      if !pumvisible() && !empty(a:item)
+      if !pumvisible() && !empty(a:items)
         let should_fire_pum_show = v:true
       endif
       silent! noa call feedkeys("\<Plug>EasycompleteRefresh", 'i')

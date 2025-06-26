@@ -1299,7 +1299,8 @@ function! s:GetItemWord(item)
   endif
   let abbr = get(a:item, 'abbr', '')
   let word = get(a:item, 'word', '')
-  let t_str = empty(abbr) ? word : abbr
+  " let t_str = empty(abbr) ? word : abbr
+  let t_str = word
   let t_str = s:TrimWavyLine(t_str)
   let a:item['matching_word'] = t_str
   return t_str
@@ -1607,6 +1608,10 @@ function easycomplete#util#ItemIsFromLS(item)
     return v:false
   endif
 endfunction " }}}
+
+function! easycomplete#util#RemoveBracket(word)
+  return substitute(a:word, '(.*)$', '', '')
+endfunction
 
 " easycomplete#util#GetLspPluginName {{{
 function! easycomplete#util#GetLspPluginName(...)

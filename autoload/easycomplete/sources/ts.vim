@@ -405,24 +405,32 @@ function! easycomplete#sources#ts#EntryDetailsCallback(item)
     return
   endif
   let idx = 0
-  for item in l:menu_details
-    let l:info = s:NormalizeEntryDetail(item)
-    let l:lsp_menu = g:easycomplete_menu_abbr ?
-          \ s:menu_flag : get(easycomplete#util#LspType(item["kind"]),"fullname","typescript")
-    call easycomplete#SetMenuInfo(get(item, "name"), l:info, l:lsp_menu)
-    let idx = idx + 1
-  endfor
+  try
+    for item in l:menu_details
+      let l:info = s:NormalizeEntryDetail(item)
+      let l:lsp_menu = g:easycomplete_menu_abbr ?
+            \ s:menu_flag : get(easycomplete#util#LspType(item["kind"]),"fullname","typescript")
+      if item.kind == "function" || item.kind == "method"
+        call easycomplete#SetMenuInfo(get(item, "name") . "()", l:info, l:lsp_menu)
+      else
+        call easycomplete#SetMenuInfo(get(item, "name"), l:info, l:lsp_menu)
+      endif
+      let idx = idx + 1
+    endfor
 
-  if easycomplete#CompleteCursored()
-    if easycomplete#FirstSelectedWithOptDefaultSelected()
-      let l:item = easycomplete#GetCursordItem()
-    else
-      let l:item = easycomplete#GetCompletedItem()
+    if easycomplete#CompleteCursored()
+      if easycomplete#FirstSelectedWithOptDefaultSelected()
+        let l:item = easycomplete#GetCursordItem()
+      else
+        let l:item = easycomplete#GetCompletedItem()
+      endif
+      if !empty(l:item)
+        call easycomplete#ShowCompleteInfoByItem(l:item)
+      endif
     endif
-    if !empty(l:item)
-      call easycomplete#ShowCompleteInfoByItem(l:item)
-    endif
-  endif
+  catch
+    " Do nothing
+  endtry
 endfunction
 
 " 最初 Entry Details 的实现方式是跟随 CompleteCallback 来获取，跟随

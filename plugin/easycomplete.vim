@@ -41,7 +41,7 @@ if g:easycomplete_nerd_font == 1
         \    },
         \   "dict": {
         \      "kind":get(kind_icons, "dict", "󰈍"),
-        \      "menu": g:easycomplete_menu_abbr ? "Dict" : "dictionary"
+        \      "menu": g:easycomplete_menu_abbr ? "Dict" : "dict"
         \    },
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󰕃"),
