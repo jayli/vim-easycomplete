@@ -1192,7 +1192,11 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       " 对fuzzymatch_result 进行长度排序
       call sort(fuzzymatch_result, "easycomplete#util#SortTextComparatorByLength")
     endif
-    let filtered_menu = fullmatch_result + firstchar_result + fuzzymatch_result
+    if g:env_is_nvim
+      let filtered_menu = fullmatch_result + firstchar_result + fuzzymatch_result
+    else
+      let filtered_menu = fuzzymatching
+    endif
     return filtered_menu
   else " for nvim(<=0.5.0)
     " 完整匹配
