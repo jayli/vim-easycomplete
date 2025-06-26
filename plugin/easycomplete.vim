@@ -109,7 +109,7 @@ if g:easycomplete_menu_abbr
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 else
   let g:easycomplete_menuflag_buf = "text"
-  let g:easycomplete_menuflag_dict = "dictionary"
+  let g:easycomplete_menuflag_dict = "dict"
   let g:easycomplete_menuflag_snip = "snippet"
   let g:easycomplete_menuflag_tabnine = "tabnine"
 endif

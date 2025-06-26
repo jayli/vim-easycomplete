@@ -147,7 +147,7 @@ noremap gb :BackToOriginalBuffer<CR>
 两种方法安装 lsp 服务.
 
 1. 同时支持vim/nvim: `:InstallLspServer`.
-2. 只支持nvim: 基于 [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer)，命令 `:LspInstall`
+2. 只支持nvim: 基于 [mason.nvim](https://github.com/mason-org/mason.nvim), 执行 `:MasonInstall {lsp-server-name}`
 
 LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 
