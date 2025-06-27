@@ -22,7 +22,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
 
   call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
-        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
+        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
 
   " if g:env_is_nvim
   "   call s:util_toolkit.defer_fn("easycomplete#sources#buf#CompleteHandler",

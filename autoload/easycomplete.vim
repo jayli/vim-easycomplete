@@ -2612,7 +2612,7 @@ function! s:LazyFireTyping()
   if b:easycomplete_old_char ==# l:easycomplete_curr_char
     let l:lazy_time = 70
   else
-    let l:lazy_time = 1
+    let l:lazy_time = 0
   endif
   let b:easycomplete_old_char = l:easycomplete_curr_char
 
