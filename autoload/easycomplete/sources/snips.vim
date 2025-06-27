@@ -26,6 +26,15 @@ function! easycomplete#sources#snips#completor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#snips#CompleteHandler(typing, name, ctx, startcol)
+
+  "-----------------for lua snip
+  let result = v:lua.require("easycomplete.luasnip").get_snip_items(a:typing, a:name, a:ctx)
+  " call s:console(result)
+  call easycomplete#complete(a:name, a:ctx, a:startcol, result)
+  return
+  "-----------------for lua snip
+
+
   let suggestions = []
   " 0.010s for these two function call
   let snippets = UltiSnips#SnippetsInCurrentScope()

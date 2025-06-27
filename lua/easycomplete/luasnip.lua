@@ -1,0 +1,99 @@
+local M = {}
+local Util = require "easycomplete.util"
+local console = Util.console
+local snip_cache = {}
+
+function M.luasnip_installed()
+  if vim.g.easycomplete_lua_snip_enable == nil then
+    local ok, ls = pcall(function()
+      return require("luasnip")
+    end)
+    if not ok then
+      vim.g.easycomplete_lua_snip_enable = 0
+      return false
+    else
+      vim.g.easycomplete_lua_snip_enable = 1
+    end
+  end
+  return vim.g.easycomplete_lua_snip_enable
+end
+
+function M.init_once()
+  -- exec once
+  if vim.g.easycomplete_lua_snip_checkdone == 1 then
+    return
+  end
+  vim.g.easycomplete_lua_snip_checkdone = 1
+  if not M.luasnip_installed() then
+    return
+  end
+  console(vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]())
+  local snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
+  require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
+end
+
+function M.get_snip_items(typing, plugin_name, ctx)
+  if not M.luasnip_installed() then
+    return {}
+  end
+
+  local ls = require("luasnip")
+  local filetypes = require("luasnip.util.util").get_snippet_filetypes()
+  local items = {}
+  for i = 1, #filetypes do
+    local ft = filetypes[i]
+    if not snip_cache[ft] then
+      local ft_items = {}
+      local ft_table = ls.get_snippets(ft, {type = "snippets"})
+      local tab = ft_table
+      local auto = false
+      for j, snip in pairs(tab) do
+        if not snip.hidden and string.sub(string.lower(snip.trigger), 1, #typing) == string.lower(typing) then
+          local sha256 = vim.fn["easycomplete#util#Sha256"](snip.trigger)
+          sha256 = string.sub(sha256, 1, 16)
+          local user_data_json = {
+            plugin_name = plugin_name,
+            sha256 = sha256
+          }
+          local ok, user_data = pcall(vim.fn.json_encode, user_data_json)
+          if not ok then
+            console('>>' .. user_data)
+            return {}
+          end
+          -- \ 'word' : trigger,
+          -- \ 'abbr' : trigger . '~',
+          -- \ 'kind' : g:easycomplete_kindflag_snip,
+          -- \ 'menu' : g:easycomplete_menuflag_snip,
+          -- \ 'user_data': json_encode(user_data_json),
+          -- \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
+          -- \ 'user_data_json': user_data_json
+          ft_items[#ft_items + 1] = {
+            word = snip.trigger,
+            abbr = snip.trigger .. "~",
+            kind = vim.g.easycomplete_kindflag_snip,
+            menu = vim.g.easycomplete_menuflag_snip,
+            user_data = user_data,
+            info = {},
+            label = snip.trigger,
+            user_data_json = user_data_json,
+            data = {
+              priority = snip.effective_priority or 1000, -- Default priority is used for old luasnip versions
+              filetype = ft,
+              snip_id = snip.id,
+              show_condition = snip.show_condition,
+              auto = auto
+            },
+          }
+        end
+      end
+      table.sort(ft_items, function(a, b)
+        return a.data.priority > b.data.priority
+      end)
+      snip_cache[ft] = ft_items
+    end -- if
+    vim.list_extend(items, snip_cache[ft])
+  end
+  return items
+end
+
+return M

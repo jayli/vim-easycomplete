@@ -4,6 +4,7 @@ local Util = require "easycomplete.util"
 local AutoLoad = require "easycomplete.autoload"
 local TabNine = require "easycomplete.tabnine"
 local GhostText = require "easycomplete.ghost_text"
+local LuaSnip = require "easycomplete.luasnip"
 local console = Util.console
 local log = Util.log
 local global_timer = vim.loop.new_timer()
@@ -69,6 +70,7 @@ end
 function EasyComplete.init()
   TabNine.init_once()
   GhostText.init_once()
+  LuaSnip.init_once()
 
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then

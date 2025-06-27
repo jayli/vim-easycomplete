@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  " call s:console()
+  call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -89,7 +89,7 @@ let b:is_directory_complete = 0
 let b:fast_bs_timer = 0
 
 function! easycomplete#Enable()
-  call easycomplete#util#timer_start("easycomplete#_enable", [], 800)
+  call easycomplete#util#timer_start("easycomplete#_enable", [], 100)
 endfunction
 
 " EasyComplete 入口函数
@@ -639,7 +639,7 @@ function! s:OrigionalPosition()
 endfunction
 
 " 外部插件回调的 API
-function! easycomplete#complete(name, ctx, startcol, items, ...) abort
+function! easycomplete#complete(plugin_name, ctx, startcol, items, ...) abort
   if s:NotInsertMode()
     call s:flush()
     return
@@ -648,8 +648,8 @@ function! easycomplete#complete(name, ctx, startcol, items, ...) abort
   if !s:SameCtx(a:ctx, l:ctx)
     return
   endif
-  call s:SetCompleteTaskQueue(a:name, l:ctx, 1, 1)
-  call s:CompleteAdd(a:items, a:name)
+  call s:SetCompleteTaskQueue(a:plugin_name, l:ctx, 1, 1)
+  call s:CompleteAdd(a:items, a:plugin_name)
 endfunction
 
 function! s:CallConstructorByName(name, ctx)
