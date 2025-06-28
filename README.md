@@ -243,6 +243,8 @@ The snippet completion of Vim-EasyComplete relies on ultisnip or luasnip. They a
 
 [LuaSnip](https://github.com/L3MON4D3/LuaSnip) is better choice for nvim.
 
+You can add your own snippet directory to `&runtimepath`.
+
 ## AI Coding Inline Suggestion
 
 In addition to AI completion with pum, there are more inline AI coding completion tools.
