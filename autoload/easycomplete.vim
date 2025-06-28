@@ -1416,7 +1416,7 @@ function! easycomplete#CleverTab()
     " luasnip 中没有 Tab 触发展开的功能，这里只考虑 ultisnips 的情况
     call s:ExpandSnipManually("#!")
     return ""
-  elseif s:LuaSnipSupports() && luaeval("require('luasnip').jumpable(1)")
+  elseif s:LuaSnipSupports() && luaeval("require('luasnip').locally_jumpable(1)")
     " luasnip Tab Jump
     call s:zizz()
     call luaeval("require('luasnip').jump(1)")
@@ -1477,7 +1477,7 @@ function! easycomplete#CleverShiftTab()
       call easycomplete#pum#prev()
       " call timer_start(5, { -> s:SnapShoot()})
       return easycomplete#pum#SetWordBySelecting()
-    elseif mode() == "i" && s:LuaSnipSupports() && luaeval("require('luasnip').jumpable(-1)")
+    elseif mode() == "i" && s:LuaSnipSupports() && luaeval("require('luasnip').locally_jumpable(-1)")
       call luaeval("require('luasnip').jump(-1)")
       return ""
     else
@@ -1520,11 +1520,14 @@ function! easycomplete#close()
 endfunction
 
 function! s:ExpandLuaSnipManually(body)
-  let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
-  let operat_str = repeat("\<bs>", backing_count)
-  call s:SendKeys(operat_str)
+  " let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
+  " let operat_str = repeat("\<bs>", backing_count)
+  " call s:SendKeys(operat_str)
+  " call timer_start(10, {
+  "       \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
+  "       \ })
   call timer_start(10, {
-        \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
+        \ -> luaeval('require("luasnip").expand_or_jump()', [])
         \ })
 endfunction
 

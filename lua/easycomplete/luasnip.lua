@@ -4,6 +4,7 @@ local console = Util.console
 local snip_cache = {}
 
 function M.luasnip_installed()
+  -- do return true end
   if vim.g.easycomplete_lua_snip_enable == nil then
     local ok, ls = pcall(function()
       return require("luasnip")
@@ -52,6 +53,9 @@ function M.get_snip_items(typing, plugin_name, ctx)
   end
 
   local ls = require("luasnip")
+  if ls.in_snippet() then
+    return {}
+  end
   local filetypes = require("luasnip.util.util").get_snippet_filetypes()
   local all_items = {}
   local matched_items = {}
