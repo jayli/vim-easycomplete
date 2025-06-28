@@ -1,6 +1,6 @@
 
 function! easycomplete#sources#snips#completor(opt, ctx)
-  if !easycomplete#SnipSupports()
+  if !easycomplete#SnipSupports() && !easycomplete#LuaSnipSupports()
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
@@ -27,54 +27,53 @@ endfunction
 
 function! easycomplete#sources#snips#CompleteHandler(typing, name, ctx, startcol)
 
-  "-----------------for lua snip
-  let result = v:lua.require("easycomplete.luasnip").get_snip_items(a:typing, a:name, a:ctx)
-  " call s:console(result)
-  call easycomplete#complete(a:name, a:ctx, a:startcol, result)
-  return
-  "-----------------for lua snip
+  if easycomplete#LuaSnipSupports()
+    "-----------------for lua snip
+    let result = v:lua.require("easycomplete.luasnip").get_snip_items(a:typing, a:name, a:ctx)
+    call easycomplete#complete(a:name, a:ctx, a:startcol, result)
+    "-----------------for lua snip
+  elseif easycomplete#SnipSupports()
+    let suggestions = []
+    " 0.010s for these two function call
+    let snippets = UltiSnips#SnippetsInCurrentScope()
+    call UltiSnips#SnippetsInCurrentScope(1)
 
-
-  let suggestions = []
-  " 0.010s for these two function call
-  let snippets = UltiSnips#SnippetsInCurrentScope()
-  call UltiSnips#SnippetsInCurrentScope(1)
-
-  for trigger in keys(snippets)
-    try
-      let description = get(snippets, trigger, "")
-      let description = empty(description) ? "Snippet: " . trigger : description
-      let snip_object = s:GetSnipObject(trigger, g:current_ulti_dict_info)
-    catch /^Vim\%((\a\+)\)\=:E684/
-      " trigger 有可能是 i|n 这类包含特殊字符情况
-      continue
-    endtry
-    try
-      " Vim 性能比 Python 快五倍
-      let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
-    catch
-      if has("python3")
-        let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
-      else
+    for trigger in keys(snippets)
+      try
+        let description = get(snippets, trigger, "")
+        let description = empty(description) ? "Snippet: " . trigger : description
+        let snip_object = s:GetSnipObject(trigger, g:current_ulti_dict_info)
+      catch /^Vim\%((\a\+)\)\=:E684/
+        " trigger 有可能是 i|n 这类包含特殊字符情况
         continue
-      endif
-    endtry
-    let sha256_str = strpart(easycomplete#util#Sha256(trigger . string(code_info)), 0, 15)
-    let user_data_json = {
-          \     'plugin_name': a:name,
-          \     'sha256': sha256_str,
-          \   }
-    call add(suggestions, {
-          \ 'word' : trigger,
-          \ 'abbr' : trigger . '~',
-          \ 'kind' : g:easycomplete_kindflag_snip,
-          \ 'menu' : g:easycomplete_menuflag_snip,
-          \ 'user_data': json_encode(user_data_json),
-          \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
-          \ 'user_data_json': user_data_json
-          \ })
-  endfor
-  call easycomplete#complete(a:name, a:ctx, a:startcol, suggestions)
+      endtry
+      try
+        " Vim 性能比 Python 快五倍
+        let code_info = easycomplete#util#GetSnippetsCodeInfo(snip_object)
+      catch
+        if has("python3")
+          let code_info = easycomplete#python#GetSnippetsCodeInfo(snip_object)
+        else
+          continue
+        endif
+      endtry
+      let sha256_str = strpart(easycomplete#util#Sha256(trigger . string(code_info)), 0, 15)
+      let user_data_json = {
+            \     'plugin_name': a:name,
+            \     'sha256': sha256_str,
+            \   }
+      call add(suggestions, {
+            \ 'word' : trigger,
+            \ 'abbr' : trigger . '~',
+            \ 'kind' : g:easycomplete_kindflag_snip,
+            \ 'menu' : g:easycomplete_menuflag_snip,
+            \ 'user_data': json_encode(user_data_json),
+            \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
+            \ 'user_data_json': user_data_json
+            \ })
+    endfor
+    call easycomplete#complete(a:name, a:ctx, a:startcol, suggestions)
+  endif
 endfunction
 
 function! s:CodeInfoFilter(code_info)

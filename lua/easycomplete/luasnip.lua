@@ -32,6 +32,20 @@ function M.init_once()
   require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
 end
 
+function normalize_info(docstring)
+  if docstring == "" then
+    reutrn {}
+  end
+  local new_lines = {}
+  local snip_lines = vim.split(docstring, "\n")
+  for i, line_str in pairs(snip_lines) do
+    local subline = string.gsub(line_str, "%${[^{^}]-}", "")
+    local subline = string.gsub(subline, "%${[^{^}]-}", "")
+    new_lines[#new_lines + 1] = subline
+  end
+  return new_lines
+end
+
 function M.get_snip_items(typing, plugin_name, ctx)
   if not M.luasnip_installed() then
     return {}
@@ -39,7 +53,8 @@ function M.get_snip_items(typing, plugin_name, ctx)
 
   local ls = require("luasnip")
   local filetypes = require("luasnip.util.util").get_snippet_filetypes()
-  local items = {}
+  local all_items = {}
+  local matched_items = {}
   for i = 1, #filetypes do
     local ft = filetypes[i]
     if not snip_cache[ft] then
@@ -48,7 +63,7 @@ function M.get_snip_items(typing, plugin_name, ctx)
       local tab = ft_table
       local auto = false
       for j, snip in pairs(tab) do
-        if not snip.hidden and string.sub(string.lower(snip.trigger), 1, #typing) == string.lower(typing) then
+        if not snip.hidden then -- and string.sub(string.lower(snip.trigger), 1, #typing) == string.lower(typing) then
           local sha256 = vim.fn["easycomplete#util#Sha256"](snip.trigger)
           sha256 = string.sub(sha256, 1, 16)
           local user_data_json = {
@@ -57,7 +72,7 @@ function M.get_snip_items(typing, plugin_name, ctx)
           }
           local ok, user_data = pcall(vim.fn.json_encode, user_data_json)
           if not ok then
-            console('>>' .. user_data)
+            -- console('>>' .. user_data)
             return {}
           end
           -- \ 'word' : trigger,
@@ -67,13 +82,15 @@ function M.get_snip_items(typing, plugin_name, ctx)
           -- \ 'user_data': json_encode(user_data_json),
           -- \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
           -- \ 'user_data_json': user_data_json
+          -- console(vim.inspect(snip))
           ft_items[#ft_items + 1] = {
             word = snip.trigger,
             abbr = snip.trigger .. "~",
             kind = vim.g.easycomplete_kindflag_snip,
             menu = vim.g.easycomplete_menuflag_snip,
             user_data = user_data,
-            info = {},
+            info = vim.list_extend({"Snippet: " .. snip.trigger, "--------"}, normalize_info(snip.docstring)),
+            docstring = snip.docstring,
             label = snip.trigger,
             user_data_json = user_data_json,
             data = {
@@ -91,9 +108,14 @@ function M.get_snip_items(typing, plugin_name, ctx)
       end)
       snip_cache[ft] = ft_items
     end -- if
-    vim.list_extend(items, snip_cache[ft])
+    vim.list_extend(all_items, snip_cache[ft])
   end
-  return items
+  for _, item in pairs(all_items) do
+    if string.sub(string.lower(item.word), 1, #typing) == string.lower(typing) then
+      matched_items[#matched_items + 1] = item
+    end
+  end
+  return matched_items
 end
 
 return M

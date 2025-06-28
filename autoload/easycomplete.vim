@@ -1407,7 +1407,7 @@ function! easycomplete#CleverTab()
       return ""
     endif
   endif
-  if &filetype == "sh" && easycomplete#context()['typed'] == "#!"
+  if &filetype == "sh" && easycomplete#context()['typed'] == "#!" && s:SnipSupports()
     " sh #!<tab> hack, bugfix #12
     call s:ExpandSnipManually("#!")
     return ""
@@ -1416,6 +1416,10 @@ function! easycomplete#CleverTab()
     " call UltiSnips#JumpForwards()
     call s:zizz()
     call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
+    return ""
+  elseif s:LuaSnipSupports() && luaeval("require('luasnip').jumpable(1)")
+    call s:zizz()
+    call luaeval("require('luasnip').jump(1)")
     return ""
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
@@ -1438,8 +1442,9 @@ function! easycomplete#CleverTab()
     if &filetype == "none" && &buftype == "nofile"
       return ""
     endif
-    call s:DoTabCompleteAction()
-    return ""
+    " 插入模式下直接插入 Tab，不再作为激发键使用
+    " call s:DoTabCompleteAction()
+    return "\<Tab>"
   endif
 endfunction
 
@@ -1467,6 +1472,9 @@ function! easycomplete#CleverShiftTab()
       call easycomplete#pum#prev()
       " call timer_start(5, { -> s:SnapShoot()})
       return easycomplete#pum#SetWordBySelecting()
+    elseif mode() == "i" && s:LuaSnipSupports() && luaeval("require('luasnip').jumpable(-1)")
+      call luaeval("require('luasnip').jump(-1)")
+      return ""
     else
       return ""
     endif
@@ -1489,6 +1497,15 @@ function! easycomplete#CtlP()
   return ""
 endfunction
 
+function! s:ExpandLuaSnipManually(body)
+  let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
+  let operat_str = repeat("\<bs>", backing_count)
+  call s:SendKeys(operat_str)
+  call timer_start(10, {
+        \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
+        \ })
+endfunction
+
 " <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   if !(&completeopt =~ "noselect")
@@ -1505,14 +1522,23 @@ function! easycomplete#TypeEnterWithPUM()
       return s:CtrlY()
     endif
     " 选中 snippet
-    if (!empty(l:item) && s:SnipSupports() &&
-          \ easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
-      call timer_start(10, { -> s:ExpandSnipManually(get(l:item, "word")) })
-      call s:zizz()
-      return s:CtrlY()
+    if (!empty(l:item) && easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
+      if s:LuaSnipSupports()
+        call timer_start(10, {
+              \ -> s:ExpandLuaSnipManually(get(l:item, "docstring", ""))
+              \ })
+        call s:zizz()
+        return s:CtrlY()
+      elseif s:SnipSupports()
+        call timer_start(10, { 
+              \ -> s:ExpandSnipManually(get(l:item, "word"))
+              \ })
+        call s:zizz()
+        return s:CtrlY()
+      endif
     endif
     " 未选中任何单词，直接回车，直接关闭匹配菜单
-    if s:SnipSupports() && empty(l:item) && !s:zizzing()
+    if (s:SnipSupports() || s:LuaSnipSupports()) && empty(l:item) && !s:zizzing()
       call s:zizz()
       return s:CtrlY()
     endif
@@ -1757,16 +1783,6 @@ function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
     let sort_menu_list = s:NormalizeSort(norm_menu_list)
   endif
   let g:easycomplete_source[a:plugin_name].complete_result = deepcopy(sort_menu_list)
-endfunction
-
-function! s:EchoLspMenuItems()
-  let ret = []
-  for item in g:easycomplete_menuitems
-    if item.menu == "[TS]"
-      call add(ret, item.word)
-    endif
-  endfor
-  return ret
 endfunction
 
 function! s:CombineAllMenuitems()
@@ -2208,8 +2224,18 @@ function! easycomplete#SnipSupports()
   return s:SnipSupports()
 endfunction
 
+function! easycomplete#LuaSnipSupports()
+  return s:LuaSnipSupports()
+endfunction
+
 function! s:SnipSupports()
   return g:easycomplete_snips_enable ? v:true : v:false
+endfunction
+
+function! s:LuaSnipSupports()
+  if g:env_is_vim | return v:false | endif
+  let ls = v:lua.require("easycomplete.luasnip")
+  return ls.luasnip_installed()
 endfunction
 
 function! s:UltiSnipsPluginInstalled()
