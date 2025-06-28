@@ -29,7 +29,8 @@ Requires Vim 8.2 or higher version on MacOS/Linux/FreeBSD. Neovim 0.6.0 or highe
 Lua config with Packer.nvim:
 
 ```lua
-use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- For snippet support, 'SirVer/ultisnips' is an alternative option
 -- Tabnine aicoding support, default is 1
 -- You should install tabnine first by ":InstallLspServer tabnine"
 vim.g.easycomplete_tabnine_enable = 1
@@ -51,10 +52,13 @@ vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 Run `:PackerInstall`
 
 Vimscript config with vim-plug:
+SirVer/ultisnips
+L3MON4D3/LuaSnip
+
 
 ```vim
 Plug 'jayli/vim-easycomplete'
-Plug 'SirVer/ultisnips'
+Plug 'L3MON4D3/LuaSnip' " 'SirVer/ultisnips' is a backup option
 " Tabnine aicoding support, default is 1
 " You should install tabnine first by ":InstallLspServer tabnine"
 let g:easycomplete_tabnine_enable = 1
@@ -152,7 +156,7 @@ There are tow ways to install lsp server.
 
 LSP Server will all be installed in local path: `~/.config/vim-easycomplete/servers`.
 
-You can give a specified plugin name for `InstallLspServer` command. Both of the following useage are ok:
+`InstallLspServer` command: Both of the following useage are ok:
 
 - `:InstallLspServer`
 - `:InstallLspServer lua`
@@ -163,7 +167,7 @@ All supported languages:
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:-------------------------:|
 | directory   | directory | No Need                  | Integrated         | None         | -                         |
 | buf         | buf & dict| No Need                  | Integrated         | None         | -                         |
-| snips       | Snippets  | ultisnips                | Integrated         | python3      | -                         |
+| snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  | -                         |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
 | deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
 | tn          | TabNine   | TabNine                  | Yes                | None         | No                        |
@@ -235,11 +239,9 @@ let g:easycomplete_filetypes = {
 
 ### Snippet Support
 
-Vim-EasyComplete does not integration snippets by default. If you want snippet support, please install `ultisnips`. UltiSnips is compatible with Vim-EasyComplete. UltiSnips required python3 installed.
+The snippet completion of Vim-EasyComplete relies on ultisnip or luasnip. They are both compatible with Vim-EasyComplete by simply place it in the dependent field for nvim. UltiSnips required python3 installed.
 
-> [Solution of "E319: No python3 provider found" Error in neovim 0.4.4 with ultisnips](https://github.com/jayli/vim-easycomplete/issues/171)
-
-
+[LuaSnip](https://github.com/L3MON4D3/LuaSnip) is better choice for nvim.
 
 ## AI Coding Inline Suggestion
 

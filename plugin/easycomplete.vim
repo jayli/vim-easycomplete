@@ -616,6 +616,7 @@ inoremap <expr> <Down> easycomplete#Down()
 if g:env_is_nvim
   inoremap <expr> <C-N> easycomplete#CtlN()
   inoremap <expr> <C-P> easycomplete#CtlP()
+  inoremap <expr> <C-E> easycomplete#CtlE()
   inoremap <expr> <Left> easycomplete#Left()
   inoremap <expr> <Right> easycomplete#Right()
 endif

@@ -27,7 +27,7 @@ function M.init_once()
   if not M.luasnip_installed() then
     return
   end
-  console(vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]())
+  -- console(vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]())
   local snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
   require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
 end

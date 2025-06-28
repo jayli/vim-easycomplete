@@ -162,7 +162,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:-------------------------:|
 | directory   | directory | No Need                  | 内置               | 无           | -                         |
 | buf         | buf & dict| No Need                  | 内置               | 无           | -                         |
-| snips       | Snippets  | ultisnips                | 内置               | python3      | -                         |
+| snips       | Snippets  | ultisnips/LuaSnip        | 内置               | python3/lua  | -                         |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
 | deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
 | tn          | TabNine   | TabNine                  | Yes                | 无           | No                        |
@@ -232,12 +232,9 @@ let g:easycomplete_filetypes = {
       \ }
 ```
 
-### 代码片段支持
+### Snippets 代码片段支持
 
-Vim-Easycomplete 没有自带代码片段，但做了对`ultisnips`的兼容，参照文档[UltiSnips](https://github.com/SirVer/ultisnips)。
-
-> [关于 "E319: No python3 provider found" (neovim 0.4.4 ) 安装 ultisnips 的错误的解决方案](https://github.com/jayli/vim-easycomplete/issues/171)
-
+Vim-Easycomplete 的代码片段支持依赖 [ultisnips](https://github.com/SirVer/ultisnips) 或 [LuaSnip](https://github.com/L3MON4D3/LuaSnip)。只需在依赖字段中引用进来即可。性能考虑，推荐优先使用 `L3MON4D3/LuaSnip`（只支持 nvim），兼容考虑使用 `SirVer/ultisnips`（支持 vim/nvim）。
 
 ## AI 编程助手
 

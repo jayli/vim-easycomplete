@@ -9,7 +9,7 @@ endif
 let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
-  call s:console()
+  " call s:console()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -166,9 +166,13 @@ function! s:BindingTypingCommandOnce()
   endif
   let g:easycomplete_typing_binding_done = 1
   try
-    if s:SnipSupports() && g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
+    if s:LuaSnipSupports()
+      " Do nothing
+    elseif s:SnipSupports()
+      if g:UltiSnipsExpandTrigger ==? g:easycomplete_tab_trigger
       " Ultisnips 的默认 tab 键映射和 EasyComplete 冲突，需要先unmap掉
-      exec "iunmap " . g:easycomplete_tab_trigger
+        exec "iunmap " . g:easycomplete_tab_trigger
+      endif
     endif
   catch
     " do nothing
@@ -181,10 +185,10 @@ function! s:BindingTypingCommandOnce()
   catch /^Vim\%((\a\+)\)\=:E227/
     if g:easycomplete_lsp_checking != 0
       call easycomplete#util#log(
-            \ 'You should set Diagnostic jumping map-key manully. `:h easycomplete` for help'
+            \ '[Vim-Easycomplete Log] Diagnostic jumping map-key conflict'
             \ )
     endif
-    call s:errlog("[ERR]", 'You should set Diagnostic jumping map-key manully', v:exception)
+    call s:errlog("[ERR]", 'Diagnostic jumping map-key conflict', v:exception)
   endtry
 
   " TODO 不生效
@@ -1409,17 +1413,18 @@ function! easycomplete#CleverTab()
   endif
   if &filetype == "sh" && easycomplete#context()['typed'] == "#!" && s:SnipSupports()
     " sh #!<tab> hack, bugfix #12
+    " luasnip 中没有 Tab 触发展开的功能，这里只考虑 ultisnips 的情况
     call s:ExpandSnipManually("#!")
     return ""
-  elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
-    " 安装了 Ultisnips 后，用 Tab 来前跳
-    " call UltiSnips#JumpForwards()
-    call s:zizz()
-    call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
-    return ""
   elseif s:LuaSnipSupports() && luaeval("require('luasnip').jumpable(1)")
+    " luasnip Tab Jump
     call s:zizz()
     call luaeval("require('luasnip').jump(1)")
+    return ""
+  elseif s:SnipSupports() && UltiSnips#CanJumpForwards()
+    " ultisnips tab jump
+    call s:zizz()
+    call eval('feedkeys("\'. g:UltiSnipsJumpForwardTrigger .'")')
     return ""
   elseif  getline('.')[0 : col('.')-1]  =~ '^\s*$' ||
         \ getline('.')[col('.')-2 : col('.')-1] =~ '^\s$' ||
@@ -1440,7 +1445,7 @@ function! easycomplete#CleverTab()
     return "\<Tab>"
   else
     if &filetype == "none" && &buftype == "nofile"
-      return ""
+      return "\<Tab>"
     endif
     " 插入模式下直接插入 Tab，不再作为激发键使用
     " call s:DoTabCompleteAction()
@@ -1497,6 +1502,23 @@ function! easycomplete#CtlP()
   return ""
 endfunction
 
+" nvim only
+function! easycomplete#CtlE()
+  if easycomplete#pum#visible()
+    call s:CloseCompletionMenu()
+    call s:flush()
+    return ""
+  elseif pumvisible()
+    return "\<C-E>"
+  endif
+  call s:zizz()
+  return "\<C-E>"
+endfunction
+
+function! easycomplete#close()
+  call easycomplete#CtlE()
+endfunction
+
 function! s:ExpandLuaSnipManually(body)
   let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
   let operat_str = repeat("\<bs>", backing_count)
@@ -1524,13 +1546,13 @@ function! easycomplete#TypeEnterWithPUM()
     " 选中 snippet
     if (!empty(l:item) && easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
       if s:LuaSnipSupports()
-        call timer_start(10, {
+        call timer_start(20, {
               \ -> s:ExpandLuaSnipManually(get(l:item, "docstring", ""))
               \ })
         call s:zizz()
         return s:CtrlY()
       elseif s:SnipSupports()
-        call timer_start(10, { 
+        call timer_start(20, {
               \ -> s:ExpandSnipManually(get(l:item, "word"))
               \ })
         call s:zizz()
@@ -1555,6 +1577,10 @@ function! easycomplete#TypeEnterWithPUM()
         call timer_start(40, {
               \ -> easycomplete#CursorExpandableSnipBackword(l:back)
               \ })
+      elseif !empty(insert_text) && s:LuaSnipSupports()
+          call timer_start(20, {
+                \ -> s:ExpandLuaSnipManually(insert_text)
+                \ })
       elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
@@ -2229,27 +2255,31 @@ function! easycomplete#LuaSnipSupports()
 endfunction
 
 function! s:SnipSupports()
-  return g:easycomplete_snips_enable ? v:true : v:false
+  if g:easycomplete_snips_enable == 1 && exists("g:UltiSnipsDebugServerEnable")
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 function! s:LuaSnipSupports()
-  if g:env_is_vim | return v:false | endif
-  let ls = v:lua.require("easycomplete.luasnip")
-  return ls.luasnip_installed()
-endfunction
-
-function! s:UltiSnipsPluginInstalled()
-  try
-    call UltiSnips#SnippetsInCurrentScope()
-  catch /.*/
+  if !exists("g:easycomplete_snips_enable") ||
+        \ (exists("g:easycomplete_snips_enable") && g:easycomplete_snips_enable == 1)
+    if g:env_is_vim | return v:false | endif
+    let ls = v:lua.require("easycomplete.luasnip")
+    return ls.luasnip_installed()
+  else
     return v:false
-  endtry
-  return v:true
+  endif
 endfunction
 
 function! s:SnippetsInit()
   if !exists("g:easycomplete_snips_enable")
-    let g:easycomplete_snips_enable = exists("g:UltiSnipsDebugServerEnable")
+    if s:LuaSnipSupports()
+      let g:easycomplete_snips_enable = 1
+    else
+      let g:easycomplete_snips_enable = exists("g:UltiSnipsDebugServerEnable")
+    endif
   endif
   try
     if s:SnipSupports()
