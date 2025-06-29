@@ -37,7 +37,7 @@ snippet ifdef
 # if
 snippet #if
 	#if ${1:FOO}
-		${0}
+		${0://}
 	#endif
 # header include guard
 snippet once
@@ -45,7 +45,7 @@ snippet once
 
 	#define $1
 
-	${0}
+	${0://}
 
 	#endif /* end of include guard: $1 */
 ##
@@ -53,27 +53,27 @@ snippet once
 # if
 snippet if
 	if (${1:true}) {
-		${0}
+		${0://}
 	}
 snippet ife
 	if (${1:true}) {
-		${2}
+		${2://}
 	} else {
-		${0}
+		${0://}
 	}
 # else
 snippet el
 	else {
-		${0}
+		${0://}
 	}
 # else if
 snippet elif
 	else if (${1:true}) {
-		${0}
+		${0://}
 	}
 # ifi
 snippet ifi
-	if (${1:true}) ${0};
+	if (${1:true}) ${0:/* block */};
 # ternary
 snippet t
 	${1:/* condition */} ? ${2:a} : ${3:b}
@@ -81,58 +81,58 @@ snippet t
 snippet switch
 	switch (${1:/* variable */}) {
 		case ${2:/* variable case */}:
-			${3}
-			${4:break;}${5}
+			${3://}
+			${4:break;}
 		default:
-			${6}
+			${5://}
 	}
 # switch without default
 snippet switchndef
 	switch (${1:/* variable */}) {
 		case ${2:/* variable case */}:
-			${3}
-			${4:break;}${5}
+			${3://}
+			${4:break;}
 	}
 # case
 snippet case
 	case ${1:/* variable case */}:
-		${2}
+		${2://}
 		${3:break;}
 snippet ret
-	return ${0};
+	return ${0:/**/};
 ##
 ## Loops
 # for
 snippet for
 	for (${2:i} = 0; $2 < ${1:count}; $2${3:++}) {
-		${4}
+		${4://}
 	}
 # for (custom)
 snippet forr
 	for (${1:i} = ${2:0}; ${3:$1 < 10}; $1${4:++}) {
-		${5}
+		${5://}
 	}
 # while
 snippet wh
 	while (${1:/* condition */}) {
-		${2}
+		${2://}
 	}
 # do... while
 snippet do
 	do {
-		${2}
+		${2://}
 	} while (${1:/* condition */});
 ##
 ## Functions
 # function definition
 snippet fun
-	${1:void} ${2:function_name}(${3})
+	${1:void} ${2:function_name}(${3:param})
 	{
-		${4}
+		${4://}
 	}
 # function declaration
 snippet fund
-	${1:void} ${2:function_name}(${3});
+	${1:void} ${2:function_name}(${3:param});
 ##
 ## Types
 # typedef
@@ -150,7 +150,7 @@ snippet tds
 	} ${1:`vim_snippets#Filename('$1_t', 'name')`};
 
 snippet enum
-	enum ${1:name} { ${0} };
+	enum ${1:name} { ${0:/* code */} };
 # typedef enum
 snippet tde
 	typedef enum {
@@ -160,10 +160,10 @@ snippet tde
 ## Input/Output
 # printf
 snippet pr
-	printf("${1:%s}\n"${2});
+	printf("${1:%s}\n"${2:/* place_holder */});
 # fprintf (again, this isn't as nice as TextMate's version, but it works)
 snippet fpr
-	fprintf(${1:stderr}, "${2:%s}\n"${3});
+	fprintf(${1:stderr}, "${2:%s}\n"${3:/**/});
 # getopt
 snippet getopt
 	int choice;
@@ -176,7 +176,7 @@ snippet getopt
 			/* Argument styles: no_argument, required_argument, optional_argument */
 			{"version", no_argument,	0,	'v'},
 			{"help",	no_argument,	0,	'h'},
-			${1}
+			${1:/**/}
 			{0,0,0,0}
 		};
 
@@ -196,11 +196,11 @@ snippet getopt
 		switch( choice )
 		{
 			case 'v':
-				${2}
+				${2://}
 				break;
 
 			case 'h':
-				${3}
+				${3://}
 				break;
 
 			case '?':
@@ -218,11 +218,11 @@ snippet getopt
 	{
 		while ( optind < argc )
 		{
-			${0}
+			${0://}
 		}
 	}
 ##
 ## Miscellaneous
 # This is kind of convenient
 snippet .
-	[${1}]
+	[${1://}]
