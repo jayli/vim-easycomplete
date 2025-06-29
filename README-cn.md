@@ -141,6 +141,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
 | `g:easycomplete_menu_abbr`           | 1             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
+| `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 
 ## 语言支持
 
@@ -235,6 +236,12 @@ let g:easycomplete_filetypes = {
 ### Snippets 代码片段支持
 
 Vim-Easycomplete 的代码片段支持依赖 [ultisnips](https://github.com/SirVer/ultisnips) 或 [LuaSnip](https://github.com/L3MON4D3/LuaSnip)。只需在依赖字段中引用进来即可。性能考虑，推荐优先使用 `L3MON4D3/LuaSnip`（只支持 nvim），兼容考虑使用 `SirVer/ultisnips`（支持 vim/nvim）。 你可以增加 snippets 目录到 &runtimepath 中。
+
+你可以设置自己的 snippets 路径：
+
+```vim
+let g:easycomplete_custom_snippet = "./path/to/your/snippets"
+```
 
 ## AI 编程助手
 

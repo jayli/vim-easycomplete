@@ -167,6 +167,9 @@ endif
 if !exists("g:easycomplete_sign_text")
   let g:easycomplete_sign_text = {}
 endif
+if !exists("g:easycomplete_custom_snippet")
+  let g:easycomplete_custom_snippet = ""
+endif
 if !exists("g:easycomplete_cursor_word_hl")
   let g:easycomplete_cursor_word_hl = 0
 endif
@@ -425,7 +428,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'java',
-      \ 'whitelist': easycomplete#FileTypes("java", ["java"]),
+      \ 'whitelist': easycomplete#FileTypes("java", ["java","jsp"]),
       \ 'completor': 'easycomplete#sources#java#completor',
       \ 'constructor' :'easycomplete#sources#java#constructor',
       \ 'gotodefinition': 'easycomplete#sources#java#GotoDefinition',

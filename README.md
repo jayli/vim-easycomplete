@@ -144,6 +144,7 @@ Global configurations:
 | `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 | `g:easycomplete_menu_abbr`           | 1             | Show abbr(shortname) at pum `menu` position, or show fullname |
+| `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 
 Typing `:h easycomplete` for help.
 
@@ -239,7 +240,11 @@ let g:easycomplete_filetypes = {
 
 ### Snippet Support
 
-The snippet completion of Vim-EasyComplete relies on ultisnip or luasnip. They are both compatible with Vim-EasyComplete by simply place it in the dependent field for nvim. UltiSnips required python3 installed.
+The snippet completion of Vim-EasyComplete relies on ultisnip or luasnip. They are both compatible with Vim-EasyComplete by simply place it in the dependent field. UltiSnips required python3 installed. You can use your own snippets path to replace the default snippets.
+
+```vim
+let g:easycomplete_custom_snippet = "./path/to/your/snippets"
+```
 
 [LuaSnip](https://github.com/L3MON4D3/LuaSnip) is better choice for nvim.
 

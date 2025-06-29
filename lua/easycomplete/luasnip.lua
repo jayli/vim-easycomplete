@@ -4,7 +4,7 @@ local console = Util.console
 local snip_cache = {}
 
 function M.luasnip_installed()
-  -- do return true end
+  -- do return false end
   if vim.g.easycomplete_lua_snip_enable == nil then
     local ok, ls = pcall(function()
       return require("luasnip")
@@ -28,8 +28,11 @@ function M.init_once()
   if not M.luasnip_installed() then
     return
   end
-  -- console(vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]())
-  local snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
+  if vim.g.easycomplete_custom_snippet == "" then
+    local snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
+  else
+    local snip_path = vim.g.easycomplete_custom_snippet
+  end
   require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
 end
 

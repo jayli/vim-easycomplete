@@ -2,42 +2,28 @@
 
 # prototype
 snippet proto
-	${1:class_name}.prototype.${2:method_name} = function(${3}) {
-		${0}
+	${1:class_name}.prototype.${2:method_name} = function(${3:param}) {
+		${0://}
 	};
 # Function
 snippet fun
-	function ${1:function_name}(${2}) {
-		${0}
+	function ${1:function_name}(${2:param}) {
+		${0://}
 	}
 # Anonymous Function
 snippet f "" w
-	function(${1}) {
-		${0}
+	function(${1:param}) {
+		${0://}
 	}
 # Anonymous Function assigned to variable
 snippet vaf
-	var ${1:function_name} = function(${2}) {
-		${0}
+	var ${1:function_name} = function(${2:param}) {
+		${0://}
 	};
 # Function assigned to variable
 snippet vf
-	var ${1:function_name} = function $1(${2}) {
-		${0}
-	};
-# Immediate function
-snippet (f
-	(function(${1}) {
-		${0}
-	}(${2}));
-# self-defining function
-snippet sdf
-	var ${1:function_name} = function (${2:argument}) {
-		${3}
-
-		$1 = function ($2) {
-			${0}
-		};
+	var ${1:function_name} = function $1(${2:param}) {
+		${0://}
 	};
 
 # Flow control
@@ -45,14 +31,14 @@ snippet sdf
 # if
 snippet if
 	if (${1:true}) {
-		${0}
+		${0://}
 	}
 # if ... else
 snippet ife
 	if (${1:true}) {
-		${2}
+		${2://}
 	} else {
-		${0}
+		${0://}
 	}
 # tertiary conditional
 snippet ter
@@ -61,29 +47,29 @@ snippet ter
 snippet switch
 	switch (${1:expression}) {
 		case '${3:case}':
-			${4}
+			${4://}
 			break;
-		${0}
+		${0://}
 		default:
-			${2}
+			${2://}
 	}
 # case
 snippet case
 	case '${1:case}':
-		${2}
+		${2://}
 		break;
-	${0}
+	${0://}
 # try
 snippet try
 	try {
-		${1}
+		${1:}
 	} catch (${2:e}) {
 		${0:/* handle error */}
 	}
 # try finally
 snippet tryf
 	try {
-		${1}
+		${1://}
 	} catch (${2:e}) {
 		${0:/* handle error */}
 	} finally {
@@ -111,12 +97,12 @@ snippet forr
 # While loop
 snippet wh
 	while (${1:/* condition */}) {
-		${0}
+		${0://}
 	}
 # Do while loop
 snippet do
 	do {
-		${0}
+		${0://}
 	} while (${1:/* condition */});
 # For in loop
 snippet fori
@@ -129,11 +115,11 @@ snippet fori
 # Object Method
 snippet :f
 	${1:method_name}: function (${2:attribute}) {
-		${3}
+		${3://}
 	},
 # hasOwnProperty
 snippet has
-	hasOwnProperty(${0})
+	hasOwnProperty(${0:/* prarm */})
 # singleton
 snippet sing
 	function ${1:Singleton} (${2:argument}) {
@@ -154,7 +140,7 @@ snippet sing
 		// reset the constructor pointer
 		instance.constructor = $1;
 
-		${0}
+		${0://}
 
 		return instance;
 	}
@@ -228,10 +214,10 @@ snippet jsons
 
 # Get elements
 snippet get
-	getElementsBy${1:TagName}('${0}')
+	getElementsBy${1:TagName}('${0:name}')
 # Get element
 snippet gett
-	getElementBy${1:Id}('${0}')
+	getElementBy${1:Id}('${0:name}')
 # Elements by class
 snippet by.
 	${1:document}.getElementsByClassName('${0:class}')
@@ -278,4 +264,4 @@ snippet us
 
 # setTimeout function
 snippet timeout
-	setTimeout(function () {${0}}${2}, ${1:10});
+	setTimeout(function () {${0:/*func*/}}, ${1:10});

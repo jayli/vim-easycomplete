@@ -2280,16 +2280,23 @@ function! s:SnippetsInit()
   if !exists("g:easycomplete_snips_enable")
     if s:LuaSnipSupports()
       let g:easycomplete_snips_enable = 1
+    elseif s:SnipSupports()
+      let g:easycomplete_snips_enable = 1
     else
-      let g:easycomplete_snips_enable = exists("g:UltiSnipsDebugServerEnable")
+      let g:easycomplete_snips_enable = 0
     endif
   endif
   try
-    if s:SnipSupports()
-      let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
-      let g:UltiSnipsSnippetDirectories = [
-            \ easycomplete_root . "/snippets/ultisnips"
-            \ ]
+    if LuaSnipSupports()
+      " LuaSnip 的本地代码片段的载入在 require('easycomplete.luasnip').init_once() 中执行
+    elseif s:SnipSupports()
+      if g:easycomplete_custom_snippet == ""
+        let easycomplete_root = easycomplete#util#GetEasyCompleteRootDirectory()
+        let snip_path = easycomplete_root . "/snippets/ultisnips"
+      else
+        let snip_path = g:easycomplete_custom_snippet
+      endif
+      let g:UltiSnipsSnippetDirectories = [snip_path]
       " 在 &runtimepath 中搜寻 snippets
       " Ultisnips 只会查找`snippets`命名的目录，在目录中查找 SnipMate snippets
       " 默认是 1，这里会去查找 SnipMate 的 snippet.
