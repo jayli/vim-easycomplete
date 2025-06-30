@@ -12,11 +12,11 @@ snippet _
 snippet =
 	${1:Title}
 	=====${2:=}
-	${0}
+	${0:content}
 snippet -
 	${1:Title}
 	-----${2:-}
-	${0}
+	${0:content}
 #some directive
 snippet img:
 	.. |${0:alias}| image:: ${1:img}
@@ -60,10 +60,10 @@ snippet cau:
 snippet sid:
 	.. sidebar:: ${1:Title}
 
-		${0}
+		${0:content}
 snippet tod:
 	.. todo::
-		${0}
+		${0:content}
 snippet lis:
 	.. list-table:: ${0:Title}
 		:header-rows: 1
@@ -83,7 +83,7 @@ snippet toc:
 	.. toctree::
 		:maxdepth: 2
 
-		${0}
+		${0:content}
 snippet dow:
 	:download:`${0:text} <${1:path}>`
 snippet ref:

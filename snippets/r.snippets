@@ -12,31 +12,31 @@ snippet source
 # conditionals
 snippet if
 	if (${1:condition}) {
-		${0}
+		${0:#}
 	}
 snippet el
 	else {
-		${0}
+		${0:#}
 	}
 snippet ei
 	else if (${1:condition}) {
-		${0}
+		${0:#}
 	}
 
 # loops
 snippet wh
-	while(${1}) {
-		${2}
+	while(${1:condition}) {
+		${2:#}
 	}
 snippet for
 	for (${1:item} in ${2:list}) {
-		${3}
+		${3:#}
 	}
 
 # functions
 snippet fun
 	${1:name} <- function (${2:variables}) {
-		${0}
+		${0:#}
 	}
 snippet ret
 	return(${0})
@@ -110,7 +110,7 @@ snippet pl
 snippet ggp
 	ggplot(${1:data}, aes(${0:aesthetics}))
 snippet img
-	${1:(jpeg,bmp,png,tiff)}(filename = '${2:filename}', width = ${3}, height = ${4}, unit = '${5}')
+	${1:(jpeg,bmp,png,tiff)}(filename = '${2:filename}', width = ${3:100}, height = ${4:200}, unit = '${5:unit}')
 	${0:plot}
 	dev.off()
 

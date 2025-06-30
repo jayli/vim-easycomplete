@@ -5,23 +5,23 @@ snippet #!
 # New Block
 snippet =b
 	=begin rdoc
-		${0}
+		${0:block}
 	=end
 snippet prot
 	protected
 
-	${0}
+	${0:#}
 snippet priv
 	private
 
-	${0}
+	${0:#}
 snippet y
 	:yields: ${0:arguments}
 snippet rb
 	#!/usr/bin/env ruby -wKU
 snippet beg
 	begin
-		${0}
+		${0:#}
 	rescue ${1:Exception} => ${2:e}
 	end
 snippet req require

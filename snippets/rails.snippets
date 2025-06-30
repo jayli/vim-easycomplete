@@ -10,11 +10,11 @@ snippet artpp
 	assert_redirected_to ${0:model}s_path
 snippet asd
 	assert_difference '${1:Model}.${2:count}', ${3:1} do
-		${0}
+		${0:#}
 	end
 snippet asnd
 	assert_no_difference '${1:Model}.${2:count}' do
-		${0}
+		${0:#}
 	end
 snippet asre
 	assert_response :${1:success}, @response.body
@@ -22,7 +22,7 @@ snippet asrj
 	assert_rjs :${1:replace}, '${0:dom id}'
 snippet ass assert_select(..)
 	assert_select '${1:path}', ${2:text}: '${3:inner_html}' ${4:do}
-		${0}
+		${0:#}
 	end
 snippet ba
 	before_action :${0:method}
@@ -116,9 +116,9 @@ snippet dele delegate .. to .. prefix .. allow_nil
 snippet amc
 	alias_method_chain :${1:method_name}, :${0:feature}
 snippet flash
-	flash[:${1:notice}] = '${0}'
+	flash[:${1:notice}] = ${0:''}
 snippet habtm
-	has_and_belongs_to_many :${1:object}, join_table: '${2:table_name}', foreign_key: '${3}_id'
+	has_and_belongs_to_many :${1:object}, join_table: '${2:table_name}', foreign_key: '${3:fk}_id'
 snippet hm
 	has_many :${0:object}
 snippet hmd
@@ -134,9 +134,9 @@ snippet i18
 snippet ist
 	<%= image_submit_tag('${1:agree.png}', id: '${2:id}'${0}) %>
 snippet log
-	Rails.logger.${1:debug} ${0}
+	Rails.logger.${1:debug} ${0:""}
 snippet log2
-	RAILS_DEFAULT_LOGGER.${1:debug} ${0}
+	RAILS_DEFAULT_LOGGER.${1:debug} ${0:""}
 snippet logd
 	logger.debug { '${1:message}' }
 snippet loge
@@ -157,7 +157,7 @@ snippet maprs
 	${1:map}.resources :${0:resource}
 snippet mapwo
 	${1:map}.with_options ${2:controller}: '${3:thing}' do |$3|
-		${0}
+		${0:#}
 	end
 
 ###############################
@@ -204,7 +204,7 @@ snippet mard
 
 snippet mcht
 	change_table :${1:table_name} do |t|
-		${0}
+		${0:#}
 	end
 snippet mp
 	map(&:${0:id})
@@ -262,7 +262,7 @@ snippet rts
 	render text: '${1:text to render}', status: ${0:401}
 snippet ru
 	render :update do |${1:page}|
-		$1.${0}
+		$1.${0:proto}
 	end
 snippet rxml
 	render xml: '${0:text to render}'
@@ -311,7 +311,7 @@ snippet vp
 snippet vu
 	validates :${0:attribute}, uniqueness: true
 snippet format
-	format.${1:js|xml|html} { ${0} }
+	format.${1:js|xml|html} { ${0:""} }
 snippet wc
 	where(${1:'conditions'}${0:, bind_var})
 snippet wf
@@ -326,7 +326,7 @@ snippet xput
 	xhr :put, :${1:update}, id: ${2:1}, ${3:object}: ${4:object}
 snippet test
 	test 'should ${1:do something}' do
-		${0}
+		${0:#}
 	end
 ###########################
 #   migrations snippets   #
@@ -345,12 +345,12 @@ snippet mnc
 	t.${1:string} :${2:title}${3:, null: false}
 snippet mct
 	create_table :${1:table_name} do |t|
-		${0}
+		${0:#}
 	end
 snippet migration class .. < ActiveRecord::Migration .. def up .. def down .. end
 	class `substitute( substitute(vim_snippets#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
 		def up
-			${0}
+			${0:#}
 		end
 
 		def down
@@ -359,61 +359,61 @@ snippet migration class .. < ActiveRecord::Migration .. def up .. def down .. en
 snippet migration class .. < ActiveRecord::Migration .. def change .. end
 	class `substitute( substitute(vim_snippets#Filename(), '^\d\+_', '',''), '\(_\|^\)\(.\)', '\u\2', 'g')` < ActiveRecord::Migration
 		def change
-			${0}
+			${0:#}
 		end
 	end
 snippet trc
 	t.remove :${0:column}
 snippet tre
 	t.rename :${1:old_column_name}, :${2:new_column_name}
-	${0}
+	${0:#}
 snippet tref
 	t.references :${0:model}
 snippet tcb
 	t.boolean :${1:title}
-	${0}
+	${0:#}
 snippet tcbi
 	t.binary :${1:title}, limit: ${2:2}.megabytes
-	${0}
+	${0:#}
 snippet tcd
 	t.decimal :${1:title}, precision: ${2:10}, scale: ${3:2}
-	${0}
+	${0:#}
 snippet tcda
 	t.date :${1:title}
-	${0}
+	${0:#}
 snippet tcdt
 	t.datetime :${1:title}
-	${0}
+	${0:#}
 snippet tcf
 	t.float :${1:title}
-	${0}
+	${0:#}
 snippet tch
 	t.change :${1:name}, :${2:string}, ${3:limit}: ${4:80}
-	${0}
+	${0:#}
 snippet tci
 	t.integer :${1:title}
-	${0}
+	${0:#}
 snippet tcl
 	t.integer :lock_version, null: false, default: 0
-	${0}
+	${0:#}
 snippet tcr
 	t.references :${1:taggable}, polymorphic: { default: '${2:Photo}' }
-	${0}
+	${0:#}
 snippet tcs
 	t.string :${1:title}
-	${0}
+	${0:#}
 snippet tct
 	t.text :${1:title}
-	${0}
+	${0:#}
 snippet tcti
 	t.time :${1:title}
-	${0}
+	${0:#}
 snippet tcts
 	t.timestamp :${1:title}
-	${0}
+	${0:#}
 snippet tctss
 	t.timestamps
-	${0}
+	${0:#}
 ##########################
 #     Rspec snippets     #
 ##########################
@@ -475,7 +475,7 @@ snippet ishi
 snippet ishm
 	it { should have_many :${0} }
 snippet ishmt
-	it { should have_many(:${1}).through :${0} }
+	it { should have_many(:${1:feeds}).through :${0:start} }
 snippet isho
 	it { should have_one :${0} }
 snippet ishro
@@ -485,6 +485,6 @@ snippet iss
 snippet isres
 	it { should respond_to :${0} }
 snippet isresw
-	it { should respond_to(:${1}).with(${0}).arguments }
+	it { should respond_to(:${1:name}).with(${0:group}).arguments }
 snippet super_call
 	${1:super_class}.instance_method(:${0:method}).bind(self).call

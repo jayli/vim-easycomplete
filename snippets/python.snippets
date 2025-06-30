@@ -18,21 +18,21 @@ snippet docs
 	Author: `g:snips_author`
 	Email: `g:snips_email`
 	Github: `g:snips_github`
-	Description: ${0}
+	Description: ${0:discription}
 	"""
 
 snippet wh
 	while ${1:condition}:
-		${0}
+		${0:#}
 # dowh - does the same as do...while in other languages
 snippet dowh
 	while True:
-		${1}
+		${1:#}
 		if ${0:condition}:
 			break
 snippet with
 	with ${1:expr} as ${2:var}:
-		${0}
+		${0:#}
 # New Class
 snippet cl
 	class ${1:ClassName}(${2:object}):
@@ -40,19 +40,19 @@ snippet cl
 		def __init__(self, ${4:arg}):
 			${5:super($1, self).__init__()}
 			self.$4 = $4
-			${0}
+			${0:#}
 # New Function
 snippet def
 	def ${1:fname}(${2:`indent('.') ? 'self' : ''`}):
 		"""${3:docstring for $1}"""
-		${0}
+		${0:#}
 snippet deff
 	def ${1:fname}(${2:`indent('.') ? 'self' : ''`}):
-		${0}
+		${0:#}
 # New Method
 snippet defm
 	def ${1:mname}(self, ${2:arg}):
-		${0}
+		${0:#}
 # New Property
 snippet property
 	def ${1:foo}():
@@ -68,17 +68,17 @@ snippet property
 # Ifs
 snippet if
 	if ${1:condition}:
-		${0}
+		${0:#}
 snippet el
 	else:
-		${0}
+		${0:#}
 snippet ei
 	elif ${1:condition}:
-		${0}
+		${0:#}
 # For
 snippet for
 	for ${1:item} in ${2:items}:
-		${0}
+		${0:#}
 # Encodes
 snippet cutf8
 	# -*- coding: utf-8 -*-
@@ -93,32 +93,32 @@ snippet .
 	self.
 snippet try Try/Except
 	try:
-		${1}
+		${1:#}
 	except ${2:Exception}, ${3:e}:
 		${0:raise $3}
 snippet try Try/Except/Else
 	try:
-		${1}
+		${1:#}
 	except ${2:Exception}, ${3:e}:
 		${4:raise $3}
 	else:
-		${0}
+		${0:#}
 snippet try Try/Except/Finally
 	try:
-		${1}
+		${1:#}
 	except ${2:Exception}, ${3:e}:
 		${4:raise $3}
 	finally:
-		${0}
+		${0:#}
 snippet try Try/Except/Else/Finally
 	try:
-		${1}
+		${1:#}
 	except ${2:Exception}, ${3:e}:
 		${4:raise $3}
 	else:
-		${5}
+		${5:#}
 	finally:
-		${0}
+		${0:#}
 # if __name__ == '__main__':
 snippet ifmain
 	if __name__ == '__main__':
@@ -164,25 +164,25 @@ snippet nosetrace
 	set_trace()
 snippet pprint
 	import pprint
-	pprint.pprint(${1})
+	pprint.pprint(${1:""})
 snippet "
 	"""${0:doc}
 	"""
 # assertions
 snippet a=
-	self.assertEqual(${0}, ${1})
+	self.assertEqual(${0:v1}, ${1:v2})
 # test function/method
 snippet test
 	def test_${1:description}(${2:`indent('.') ? 'self' : ''`}):
-		${0}
+		${0:#}
 # test case
 snippet testcase
 	class ${1:ExampleCase}(unittest.TestCase):
 
 		def test_${2:description}(self):
-			${0}
+			${0:#}
 snippet fut
-	from __future__ import ${0}
+	from __future__ import ${0:moduleName}
 #getopt
 snippet getopt
 	try:
@@ -197,7 +197,7 @@ snippet getopt
 
 	for option, argument in opts:
 		if option in ("-h", "--help"):
-			${0}
+			${0:#}
 		elif option in ("-v", "--verbose"):
 			verbose = argument
 # logging
