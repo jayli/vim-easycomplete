@@ -24,45 +24,45 @@ snippet objc
 	@end
 
 	@implementation $1
-	${0}
+	${0://}
 	@end
 # Class Interface
 snippet int
 	@interface ${1:`vim_snippets#Filename('', 'someClass')`} : ${2:NSObject}
-	{${3}
+	{${3://}
 	}
-	${0}
+	${0://}
 	@end
 snippet @interface
 	@interface ${1:`vim_snippets#Filename('', 'someClass')`} : ${2:NSObject}
-	{${3}
+	{${3://}
 	}
-	${0}
+	${0://}
 	@end
 # Class Implementation
 snippet impl
 	@implementation ${1:`vim_snippets#Filename('', 'someClass')`}
-	${0}
+	${0://}
 	@end
 snippet @implementation
 	@implementation ${1:`vim_snippets#Filename('', 'someClass')`}
-	${0}
+	${0://}
 	@end
 # Protocol
 snippet pro
 	@protocol ${1:`vim_snippets#Filename('$1Delegate', 'MyProtocol')`} ${2:<NSObject>}
-	${0}
+	${0://}
 	@end
 snippet @protocol
 	@protocol ${1:`vim_snippets#Filename('$1Delegate', 'MyProtocol')`} ${2:<NSObject>}
-	${0}
+	${0://}
 	@end
 # init Definition
 snippet init
 	- (id)init
 	{
 		if (self = [super init]) {
-			${0}
+			${0://}
 		}
 		return self;
 	}
@@ -83,18 +83,18 @@ snippet cat
 	@end
 
 	@implementation $1 ($2)
-	${0}
+	${0://}
 	@end
 # Category Interface
 snippet cath
 	@interface ${1:`vim_snippets#Filename('$1', 'NSObject')`} (${2:MyCategory})
-	${0}
+	${0://}
 	@end
 # Method
 snippet m
 	- (${1:id})${2:method}
 	{
-		${0}
+		${0://}
 	}
 # Method declaration
 snippet md
@@ -106,13 +106,13 @@ snippet ibad
 snippet iba
 	- (IBAction)${1:method}:(${2:id})sender
 	{
-		${0}
+		${0://}
 	}
 # awakeFromNib method
 snippet wake
 	- (void)awakeFromNib
 	{
-		${0}
+		${0://}
 	}
 # Class Method
 snippet M
@@ -124,7 +124,7 @@ snippet M
 snippet sm
 	- (${1:id})${2:method}
 	{
-		[super $2];${0}
+		[super $2];${0://}
 		return self;
 	}
 # Accessor Methods For:
@@ -144,7 +144,7 @@ snippet objacc
 # for (object in array)
 snippet forin
 	for (${1:Class} *${2:some$1} in ${3:array}) {
-		${0}
+		${0://}
 	}
 snippet fore
 	for (${1:object} in ${2:array}) {
@@ -155,14 +155,14 @@ snippet forarray
 
 	for (unsigned int index = 0; index < $1Count; index++) {
 		${3:id} $1 = [$2 $1AtIndex:index];
-		${0}
+		${0://}
 	}
 snippet fora
 	unsigned int ${1:object}Count = [${2:array} count];
 
 	for (unsigned int index = 0; index < $1Count; index++) {
 		${3:id} $1 = [$2 $1AtIndex:index];
-		${0}
+		${0://}
 	}
 # Try / Catch Block
 snippet	@try
@@ -192,9 +192,9 @@ snippet syn
 	@synthesize ${1:property};
 # [[ alloc] init]
 snippet alloc
-	[[${1:foo} alloc] init${2}];
+	[[${1:foo} alloc] init${2:Val}];
 snippet a
-	[[${1:foo} alloc] init${2}];
+	[[${1:foo} alloc] init${2:Val}];
 # retain
 snippet ret
 	[${1:foo} retain];
@@ -207,13 +207,13 @@ snippet arel
 # autorelease pool
 snippet pool
 	NSAutoreleasePool *${1:pool} = [[NSAutoreleasePool alloc] init];
-	${0}
+	${0://}
 	[$1 drain];
 # Throw an exception
 snippet except
 	NSException *${1:badness};
 	$1 = [NSException exceptionWithName:@"${2:$1Name}"
-	                             reason:@"${0}"
+	                             reason:@"${0:sth}"
 	                           userInfo:nil];
 	[$1 raise];
 snippet prag

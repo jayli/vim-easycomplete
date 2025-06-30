@@ -74,13 +74,13 @@ snippet __
 snippet ===
 	`repeat('=', strlen(getline(line(".") - 1)) - strlen(getline('.')))`
 
-	${0}
+	${0:content}
 snippet -
-	-   ${0}
+	-   ${0:content}
 snippet ---
 	`repeat('-', strlen(getline(line(".") - 1)) - strlen(getline('.')))`
 
-	${0}
+	${0:content}
 
 snippet blockquote
 	{% blockquote %}
