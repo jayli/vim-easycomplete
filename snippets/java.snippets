@@ -9,7 +9,7 @@ snippet pr
 ## Annotations
 snippet before
 	@Before
-	static void ${1:intercept}(${2:args}) { ${0} }
+	static void ${1:intercept}(${2:args}) { ${0:/**/} }
 snippet mm
 	@ManyToMany
 	${0}
@@ -18,7 +18,7 @@ snippet mo
 	${0}
 snippet om
 	@OneToMany${1:(cascade=CascadeType.ALL)}
-	${0}
+	${0://}
 snippet oo
 	@OneToOne
 	${1}
@@ -39,9 +39,9 @@ snippet j.u
 ##
 ## Class
 snippet cl
-	class ${1:`vim_snippets#Filename("$1", "untitled")`} ${0}
+	class ${1:`vim_snippets#Filename("$1", "untitled")`} ${0:/**/}
 snippet pcl
-	public class ${1:`vim_snippets#Filename("$1", "untitled")`} ${0}
+	public class ${1:`vim_snippets#Filename("$1", "untitled")`} ${0:/**/}
 snippet in
 	interface ${1:`vim_snippets#Filename("$1", "untitled")`} ${2:extends Parent}
 snippet tc
@@ -61,31 +61,31 @@ snippet /*
 ##
 ## Constants
 snippet co
-	static public final ${1:String} ${2:var} = ${3};
+	static public final ${1:String} ${2:var} = ${3:value};
 snippet cos
-	static public final String ${1:var} = "${2}";
+	static public final String ${1:var} = "${2:string}";
 ##
 ## Control Statements
 snippet case
-	case ${1}:
-		${0}
+	case ${1:condition}:
+		${0://}
 snippet def
 	default:
-		${0}
+		${0://}
 snippet el
 	else
 snippet eif
-	else if (${1}) ${0}
+	else if (${1:condition}) ${0:do sth}
 snippet if
-	if (${1}) ${0}
+	if (${1:condition}) ${0:do_sth}
 snippet sw
-	switch (${1}) {
-		${0}
+	switch (${1:condition}) {
+		${0://}
 	}
 ##
 ## Create a Method
 snippet m
-	${1:void} ${2:method}(${3}) ${4:throws }
+	${1:void} ${2:method}(${3:param}) ${4:throws }
 ##
 ## Create a Variable
 snippet v
@@ -163,21 +163,21 @@ snippet ths
 	throws ${0}
 snippet try
 	try {
-		${0}
+		${0://}
 	} catch(${1:Exception} ${2:e}) {
 	}
 snippet tryf
 	try {
-		${0}
+		${0://}
 	} catch(${1:Exception} ${2:e}) {
 	} finally {
 	}
 ##
 ## Find Methods
 snippet findall
-	List<${1:listName}> ${2:items} = ${1}.findAll();
+	List<${1:listName}> ${2:items} = ${1:var}.findAll();
 snippet findbyid
-	${1:var} ${2:item} = ${1}.findById(${3});
+	${1:var} ${2:item} = ${3:var}.findById(${4:param});
 ##
 ## Javadocs
 snippet /**
@@ -207,16 +207,16 @@ snippet warn
 ##
 ## Loops
 snippet enfor
-	for (${1} : ${2}) ${0}
+	for (${1:int number} : ${2:numbers}) ${0:/**/}
 snippet for
-	for (${1}; ${2}; ${3}) ${0}
+	for (${1:int i = 1}; ${2:i <= 100}; ${3:i++}) ${0:/**/}
 snippet wh
-	while (${1}) ${0}
+	while (${1:condition}) ${0:/* do sth */}
 ##
 ## Main method
 snippet main
 	public static void main (String[] args) {
-		${0}
+		${0://}
 	}
 ##
 ## Print Methods
@@ -225,7 +225,7 @@ snippet print
 snippet printf
 	System.out.printf("${1:Message}", ${0:args});
 snippet println
-	System.out.println(${0});
+	System.out.println(${0:string});
 snippet printlna
 	System.out.println(Arrays.toString(${0}));
 ##
@@ -233,7 +233,7 @@ snippet printlna
 snippet ren
 	render(${1:param});
 snippet rena
-	renderArgs.put("${1}", ${2});
+	renderArgs.put("${1:section1}", ${2:section});
 snippet renb
 	renderBinary(${1:param});
 snippet renj
@@ -243,12 +243,12 @@ snippet renx
 ##
 ## Setter and Getter Methods
 snippet set
-	${1:public} void set${3:}(${2:String} ${0:}){
+	${1:public} void set${3:Val}(${2:String} ${0:str}){
 		this.$4 = $4;
 	}
 snippet get
-	${1:public} ${2:String} get${3:}(){
-		return this.${0:};
+	${1:public} ${2:String} get${3:Val}(){
+		return this.${0:name};
 	}
 ##
 ## Terminate Methods or Loops
@@ -260,12 +260,12 @@ snippet br
 ## Test Methods
 snippet t
 	public void test${1:Name}() throws Exception {
-		${0}
+		${0://}
 	}
 snippet test
 	@Test
 	public void test${1:Name}() throws Exception {
-		${0}
+		${0://}
 	}
 ##
 ## Utils
@@ -274,7 +274,7 @@ snippet Sc
 ##
 ## Miscellaneous
 snippet action
-	public static void ${1:index}(${2:args}) { ${0} }
+	public static void ${1:index}(${2:args}) { ${0:/* do sth */} }
 snippet rnf
 	notFound(${1:param});
 snippet rnfin

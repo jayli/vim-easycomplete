@@ -2258,6 +2258,9 @@ function! easycomplete#LuaSnipSupports()
 endfunction
 
 function! s:SnipSupports()
+  if !exists("g:easycomplete_snips_enable")
+    let g:easycomplete_snips_enable = 1
+  endif
   if g:easycomplete_snips_enable == 1 && exists("g:UltiSnipsDebugServerEnable")
     return v:true
   else

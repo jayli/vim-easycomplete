@@ -14,12 +14,12 @@ snippet =
 snippet end
 	<% end %>
 snippet ead
-	<% ${1}.each do |${2}| %>
-		${0}
+	<% ${1:data}.each do |${2:var, hash}| %>
+		${0:#}
 	<% end %>
 snippet for
-	<% for ${2:item} in ${1} %>
-		${0}
+	<% for ${2:item} in ${1:range} %>
+		${0:#}
 	<% end %>
 snippet rp
 	<%= render partial: '${0:item}' %>
@@ -43,7 +43,7 @@ snippet yield
 	<%= yield ${1::content_symbol} %>
 snippet conf
 	<% content_for :${1:head} do %>
-		${0}
+		${0:#}
 	<% end %>
 snippet cs
 	<%= collection_select <+object+>, <+method+>, <+collection+>, <+value_method+>, <+text_method+><+, <+[options]+>, <+[html_options]+>+> %>
@@ -51,7 +51,7 @@ snippet ct
 	<%= content_tag '${1:DIV}', ${2:content}${0:,options} %>
 snippet ff
 	<%= form_for @${1:model} do |f| %>
-		${0}
+		${0:#}
 	<% end %>
 snippet ffi
 	<%= ${1:f}.input :${0:attribute} %>
@@ -61,7 +61,7 @@ snippet ffe
 	<% error_messages_for :${1:model} %>
 
 	<%= form_for @${2:model} do |f| %>
-		${0}
+		${0:#}
 	<% end %>
 snippet ffff
 	<%= ${1:f}.file_field :${0:attribute} %>
@@ -81,7 +81,7 @@ snippet fftf
 	<%= ${1:f}.text_field :${0:attribute} %>
 snippet fields
 	<%= fields_for :${1:model}, @$1 do |${2:f}| %>
-		${0}
+		${0:#}
 	<% end %>
 snippet i18
 	I18n.t('${1:type.key}')
@@ -118,14 +118,14 @@ snippet slt
 snippet sslt
 	<%= stylesheet_link_tag "${0}" %>
 snippet if
-	<% if ${1} %>
-		${0}
+	<% if ${1:condition} %>
+		${0:#}
 	<% end %>
 snippet ife
-	<% if ${1} %>
-		${2}
+	<% if ${1:condition} %>
+		${2:#}
 	<% else %>
-		${0}
+		${0:#}
 	<% end %>
 snippet pry
 	<% require 'pry'; binding.pry %>

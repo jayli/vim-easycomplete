@@ -28,12 +28,17 @@ function M.init_once()
   if not M.luasnip_installed() then
     return
   end
+  local snip_path = ""
   if vim.g.easycomplete_custom_snippet == "" then
-    local snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
+    snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
   else
-    local snip_path = vim.g.easycomplete_custom_snippet
+    snip_path = vim.g.easycomplete_custom_snippet
   end
-  require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
+  if vim.fn.filereadable(snip_path .. '/package.json') == 1 then
+    require("luasnip.loaders.from_vscode").lazy_load({ path = { snip_path } })
+  else
+    require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
+  end
 end
 
 function normalize_info(docstring)

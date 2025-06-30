@@ -1,16 +1,16 @@
 # shorthand variable declaration
 snippet v
-	${1} := ${2}
+	${1:k} := ${2:v}
 # variable initialization
 snippet vr
 	var ${1:t} ${0:string}
 # variable declaration
 snippet var
-	var ${1} ${2} = ${3}
+	var ${1:t} ${2:k} = ${3:v}
 # variables declaration
 snippet vars
 	var (
-		${1} ${2} = ${3}
+		${1:t} ${2:k} = ${3:v}
 	)
 # append
 snippet ap
@@ -30,7 +30,7 @@ snippet ch
 # case
 snippet cs
 	case ${1:value}:
-		${0}
+		${0://}
 # const
 snippet c
 	const ${1:NAME} = ${0:0}
@@ -50,7 +50,7 @@ snippet df
 snippet dfr
 	defer func() {
 		if err := recover(); err != nil {
-			${0}
+			${0://}
 		}
 	}()
 # int
@@ -72,25 +72,25 @@ snippet inf
 # if condition
 snippet if
 	if ${1:/* condition */} {
-		${2}
+		${2://}
 	}
 snippet ife
 	if ${1:/* condition */} {
-		${2}
+		${2://}
 	} else {
-		${0}
+		${0://}
 	}
 # else snippet
 snippet el
 	else {
-		${1}
+		${1://}
 	}
 # error snippet
 snippet ir
 	if err != nil {
 		return err
 	}
-	${0}
+	${0://}
 # false
 snippet f
 	false
@@ -109,44 +109,44 @@ snippet f6
 # if else
 snippet ie
 	if ${1:/* condition */} {
-		${2}
+		${2://}
 	} else {
-		${3}
+		${3://}
 	}
-	${0}
+	${0://}
 # for int loop
 snippet for
-	for ${1}{
-		${0}
+	for ${1:condition}{
+		${0://}
 	}
 # for int loop
 snippet fori
 	for ${2:i} := 0; $2 < ${1:count}; $2${3:++} {
-		${0}
+		${0://}
 	}
 # for range loop
 snippet forr
 	for ${1:e} := range ${2:collection} {
-		${0}
+		${0://}
 	}
 # function simple
 snippet fun
-	func ${1:funcName}(${2}) ${3:error} {
-		${4}
+	func ${1:funcName}(${2:param}) ${3:error} {
+		${4://}
 	}
-	${0}
+	${0://}
 # function on receiver
 snippet fum
-	func (${1:receiver} ${2:type}) ${3:funcName}(${4}) ${5:error} {
-		${6}
+	func (${1:receiver} ${2:type}) ${3:funcName}(${4:param}) ${5:error} {
+		${6://}
 	}
-	${0}
+	${0://}
 # log printf
 snippet lf
 	log.Printf("%${1:s}", ${2:var})
 # log printf
 snippet lp
-	log.Println("${1}")
+	log.Println("${1:string}")
 # make
 snippet mk
 	make(${1:[]string}, ${0:0})
@@ -156,9 +156,9 @@ snippet mp
 # main()
 snippet main
 	func main() {
-		${1}
+		${1://}
 	}
-	${0}
+	${0://}
 # new
 snippet nw
 	new(${0:type})
@@ -173,10 +173,10 @@ snippet pr
 	fmt.Printf("%${1:s}\n", ${2:var})
 # range
 snippet rn
-	range ${0}
+	range ${0:/* data */}
 # return
 snippet rt
-	return ${0}
+	return ${0:/* data */}
 # result
 snippet rs
 	result
@@ -184,9 +184,9 @@ snippet rs
 snippet sl
 	select {
 	case ${1:v1} := <-${2:chan1}
-		${3}
+		${3://}
 	default:
-		${0}
+		${0://}
 	}
 # string
 snippet sr
@@ -196,16 +196,16 @@ snippet st
 	struct ${1:name} {
 		${2:/* data */}
 	}
-	${0}
+	${0://}
 # switch
 snippet sw
 	switch ${1:var} {
 	case ${2:value1}:
-		${3}
+		${3://}
 	case ${4:value2}:
-		${5}
+		${5://}
 	default:
-		${0}
+		${0://}
 	}
 snippet sp
 	fmt.Sprintf("%${1:s}", ${2:var})
@@ -214,21 +214,21 @@ snippet t
 	true
 # goroutine named function
 snippet g
-	go ${1:funcName}(${0})
+	go ${1:funcName}(${0:param})
 # goroutine anonymous function
 snippet ga
-	go func(${1} ${2:type}) {
+	go func(${1:val} ${2:type}) {
 		${3:/* code */}
-	}(${0})
+	}(${0:param})
 snippet test test function
 	func Test${1:name}(t *testing.T) {
-		${2}
+		${2://}
 	}
-	${0}
+	${0://}
 snippet bench benchmark function
 	func Benchmark${1:name}(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			${2}
+			${2://}
 		}
 	}
-	${0}
+	${0://}

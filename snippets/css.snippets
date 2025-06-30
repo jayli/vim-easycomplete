@@ -1,11 +1,7 @@
-snippet .
-	${1} {
-		${0}
-	}
 snippet !
 	 !important
 snippet bdi:m+
-	-moz-border-image: url(${1}) ${2:0} ${3:0} ${4:0} ${5:0} ${6:stretch} ${0:stretch};
+	-moz-border-image: url(${1:ur}) ${2:0} ${3:0} ${4:0} ${5:0} ${6:stretch} ${0:stretch};
 snippet bdi:m
 	-moz-border-image: ${0};
 snippet bdrz:m
@@ -26,8 +22,8 @@ snippet bxsh:w
 	-webkit-box-shadow: ${0};
 snippet @f
 	@font-face {
-		font-family: ${1};
-		src: url(${0});
+		font-family: ${1:font};
+		src: url(${0:url});
 	}
 snippet @i
 	@import url(${0});
@@ -36,7 +32,7 @@ snippet @m
 		${0}
 	}
 snippet bg+
-	background: #${1:FFF} url(${2}) ${3:0} ${4:0} ${0:no-repeat};
+	background: #${1:FFF} url(${2:url}) ${3:0} ${4:0} ${0:no-repeat};
 snippet bga
 	background-attachment: ${0};
 snippet bga:f
@@ -104,7 +100,7 @@ snippet bgz:cv
 snippet bg
 	background: ${0};
 snippet bg:ie
-	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${1}',sizingMethod='${0:crop}');
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${1:url}',sizingMethod='${0:crop}');
 snippet bg:n
 	background: none;
 snippet bd+
