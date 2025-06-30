@@ -169,6 +169,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `g:easycomplete_menu_abbr`           | 1             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
+| `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
 
 ## 语言支持
 
@@ -365,7 +366,7 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasyTabNine`: TabNine 图标样式. 默认link到 "Character".
 - `EasySnippets`: 行内补全样式. 默认link到 "LineNr"
 
-当 `g:easycomplete_winborder` 设置为 `1`. Pmenu 匹配菜单的背景色会设置成和文档背景色一致。
+当 `g:easycomplete_winborder` 设置为 `1`. Pmenu 匹配菜单的背景色会自动设置成和文档背景色一致。如果你不想被自动设置 pum 背景色，可以这样关掉: `let g:easycomplete_pum_pretty_style = 0`，然后定义新的“Pmenu, FloatBorder, PmenuExtra, PmenuKind” 等样式。
 
 更多例子: [例子](custom-config.md)
 

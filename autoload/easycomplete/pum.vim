@@ -152,6 +152,7 @@ function! s:hl()
           \ "hi link CustomSnippet  " . snippet_hl_group,
           \ "hi link CustomTabNine  " . tabnine_hl_group,
           \ "hi link CustomNormal   " . pmenu_hl_group,
+          \ "hi link Error Pmenu",
           \ ]
           " \ "hi Search guibg=NONE guifg=NONE ctermbg=NONE ctermfg=NONE",
   endif

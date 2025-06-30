@@ -126,6 +126,9 @@ endif
 if !exists("g:easycomplete_use_default_cr")
   let g:easycomplete_use_default_cr = 1
 endif
+if !exists("g:easycomplete_pum_pretty_style")
+  let g:easycomplete_pum_pretty_style = 1
+endif
 if !exists("g:easycomplete_lsp_type_font")
   let g:easycomplete_lsp_type_font = {}
 endif

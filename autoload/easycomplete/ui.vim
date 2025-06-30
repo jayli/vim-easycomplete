@@ -148,12 +148,14 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
 endfunction
 
 function! easycomplete#ui#HiFloatBorder()
-  let l:bg = easycomplete#ui#GetBgColor("Normal")
-  call easycomplete#ui#hi("Pmenu", "", l:bg, {})
-  call easycomplete#ui#hi("FloatBorder", "", l:bg, {})
-  call easycomplete#ui#hi("PmenuSBar", "", l:bg, {})
-  call easycomplete#ui#hi("PmenuExtra", "", l:bg, {})
-  call easycomplete#ui#hi("PmenuKind", "", l:bg, {})
+  if g:easycomplete_pum_pretty_style == 1
+    let l:bg = easycomplete#ui#GetBgColor("Normal")
+    call easycomplete#ui#hi("Pmenu", "", l:bg, {})
+    call easycomplete#ui#hi("FloatBorder", "", l:bg, {})
+    call easycomplete#ui#hi("PmenuSBar", "", l:bg, {})
+    call easycomplete#ui#hi("PmenuExtra", "", l:bg, {})
+    call easycomplete#ui#hi("PmenuKind", "", l:bg, {})
+  endif
 endfunction
 
 function! s:IsSearchWord()

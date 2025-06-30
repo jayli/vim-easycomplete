@@ -21,6 +21,7 @@ let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 " signature/lint
 let s:float_type = ""
+let s:hlsearch = &hlsearch
 
 augroup easycomplete#popup#au
   autocmd!
@@ -632,7 +633,8 @@ function! s:NVimShow(opt, windowtype, float_type)
   noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, opt)
   let g:easycomplete_popup_win[a:windowtype] = winid
   if a:windowtype == "popup" || (a:windowtype == "float" && a:float_type == "signature")
-    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu,Search:Normal,Error:Pmenu')
+    call setwinvar(winid, '&spell', 0)
   elseif a:windowtype == "float" && a:float_type == "lint"
     let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
     let fgcolor = s:GetSignGuifgAtCurrentLine()

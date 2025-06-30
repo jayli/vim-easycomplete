@@ -174,6 +174,7 @@ Global configurations:
 | `g:easycomplete_menu_abbr`           | 1             | Show abbr(shortname) at pum `menu` position, or show fullname |
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 | `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
+| `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |
 
 Typing `:h easycomplete` for help.
 
@@ -374,7 +375,7 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
 - `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
 
-When `g:easycomplete_winborder` is set to `1`. The guibg of Pmenu will be set to be the same as the Normal guibg.
+When `g:easycomplete_winborder` is set to `1`. The guibg of Pmenu will be set to be the same as the Normal guibg automatically. If you want to redefine pum style, disable the auto setting by `let g:easycomplete_pum_pretty_style = 0`. Then define these highlight group: "FloatBorder, Pmenu, PmenuExtra, PmenuKind" etc.
 
 More examples here: [full config example](custom-config.md)
 
