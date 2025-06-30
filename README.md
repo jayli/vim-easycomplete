@@ -18,17 +18,18 @@ It contains these features:
 - Full [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
 - Keywords/Directory support
 - Implemented based on pure vimscript
-- Snippet support via [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets).
+- Snippet support.
 - Fast performance
 - AI coding assistant via [tabnine](#TabNine-Support).
 
 ## Installation
 
-Requires Vim 8.2 or higher version on MacOS/Linux/FreeBSD. Neovim 0.6.0 or higher.
+Requires Vim 8.2 or higher version on MacOS/Linux/FreeBSD. Neovim 0.7.0 or higher.
 
 Lua config with Packer.nvim:
 
 ```lua
+-- lua
 use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
 -- For snippet support, 'SirVer/ultisnips' is an alternative option
 -- Tabnine aicoding support, default is 1
@@ -57,6 +58,7 @@ L3MON4D3/LuaSnip
 
 
 ```vim
+" vim
 Plug 'jayli/vim-easycomplete'
 Plug 'L3MON4D3/LuaSnip' " 'SirVer/ultisnips' is a backup option
 " Tabnine aicoding support, default is 1
@@ -82,9 +84,11 @@ Run `:PlugInstall`.
 
 ## Useage
 
-Use `Tab` to trigger the completion suggestions and select matched items. Use `Ctrl-]` for definition jumping, `Ctrl-t` for jumping back (Same as tags jumping).
-
-Use `Ctrl-N`/`Shift-Ctrl-N` to jump to the next/previous diagnostic position.
+- `Tab`/`S-Tab`: select next/previous matched items.
+- `Ctrl-]`: definition jumping
+- `Ctrl-t`: jumping back (Same as tags jumping).
+- `Ctrl-N`/`Shift-Ctrl-N`: jump to the next/previous diagnostic position.
+- `Ctrl-E`: close complete menu.
 
 Other optional configurations:
 
@@ -152,8 +156,8 @@ Typing `:h easycomplete` for help.
 
 There are tow ways to install lsp server.
 
-1. For vim/nvim: use command`:InstallLspServer`.
-2. For nvim: use [mason.nvim](https://github.com/mason-org/mason.nvim), Do `:MasonInstall {lsp-server-name}`
+1. vim/nvim: Via command`:InstallLspServer`.
+2. nvim: Via [mason.nvim](https://github.com/mason-org/mason.nvim), Do `:MasonInstall {lsp-server-name}`
 
 LSP Server will all be installed in local path: `~/.config/vim-easycomplete/servers`.
 
@@ -164,36 +168,36 @@ LSP Server will all be installed in local path: `~/.config/vim-easycomplete/serv
 
 All supported languages:
 
-| Plugin Name | Languages | Language Server          | Installer          | Requirements | nvim-lsp-installer support|
-|-------------|-----------|:------------------------:|:------------------:|:------------:|:-------------------------:|
-| directory   | directory | No Need                  | Integrated         | None         | -                         |
-| buf         | buf & dict| No Need                  | Integrated         | None         | -                         |
-| snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  | -                         |
-| ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
-| deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
-| tn          | TabNine   | TabNine                  | Yes                | None         | No                        |
-| vim         | Vim       | vimls                    | Yes                | node/npm     | Yes                       |
-| cpp         | C/C++/OC  | clangd                   | Yes                | None         | Yes                       |
-| css         | CSS       | cssls                    | Yes                | node/npm     | Yes                       |
-| html        | HTML      | html                     | Yes                | node/npm     | Yes                       |
-| yml         | YAML      | yamlls                   | Yes                | node/npm     | Yes                       |
-| xml         | Xml       | lemminx                  | Yes                | java/jdk     | Yes                       |
-| sh          | Bash      | bashls                   | Yes                | node/npm     | Yes                       |
-| json        | JSON      | json-languageserver      | Yes                | node/npm     | No                        |
-| php         | php       | intelephense             | Yes                | node/npm     | Yes                       |
-| dart        | dart      | dartls                   | Yes                | None         | Yes                       |
-| py          | Python    | pylsp                    | Yes                | python3/pip3 | Yes                       |
-| java        | Java      | jdtls                    | Yes                | java11/jdk   | Yes                       |
-| go          | Go        | gopls                    | Yes                | go           | Yes                       |
-| r           | R         | r-languageserver         | Yes                | R            | No                        |
-| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  | No                        |
-| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          | Yes                       |
-| nim         | Nim       | nimls                    | Yes                | nim/nimble   | Yes                       |
-| rust        | Rust      | `rust_analyzer`          | Yes                | None         | Yes                       |
-| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     | Yes                       |
-| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     | Yes                       |
-| cmake       | cmake     | cmake                    | Yes                | python3/pip3 | Yes                       |
-| c#          | C#        | omnisharp-lsp            | Yes                | None         | No                        |
+| Plugin Name | Languages | Language Server          | Installer          | Requirements |
+|-------------|-----------|:------------------------:|:------------------:|:------------:|
+| directory   | directory | No Need                  | Integrated         | None         |
+| buf         | buf & dict| No Need                  | Integrated         | None         |
+| snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  |
+| ts          | js/ts     | tsserver                 | Yes                | node/npm     |
+| deno        | js/ts     | denols                   | Yes                | deno         |
+| tn          | TabNine   | TabNine                  | Yes                | None         |
+| vim         | Vim       | vimls                    | Yes                | node/npm     |
+| cpp         | C/C++/OC  | clangd                   | Yes                | None         |
+| css         | CSS       | cssls                    | Yes                | node/npm     |
+| html        | HTML      | html                     | Yes                | node/npm     |
+| yml         | YAML      | yamlls                   | Yes                | node/npm     |
+| xml         | Xml       | lemminx                  | Yes                | java/jdk     |
+| sh          | Bash      | bashls                   | Yes                | node/npm     |
+| json        | JSON      | json-languageserver      | Yes                | node/npm     |
+| php         | php       | intelephense             | Yes                | node/npm     |
+| dart        | dart      | dartls                   | Yes                | None         |
+| py          | Python    | pylsp                    | Yes                | python3/pip3 |
+| java        | Java      | jdtls                    | Yes                | java11/jdk   |
+| go          | Go        | gopls                    | Yes                | go           |
+| r           | R         | r-languageserver         | Yes                | R            |
+| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  |
+| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          |
+| nim         | Nim       | nimls                    | Yes                | nim/nimble   |
+| rust        | Rust      | `rust_analyzer`          | Yes                | None         |
+| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     |
+| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     |
+| cmake       | cmake     | cmake                    | Yes                | python3/pip3 |
+| c#          | C#        | omnisharp-lsp            | Yes                | None         |
 
 More info about supported language:
 
@@ -227,7 +231,10 @@ More info about supported language:
 
 You can  add filetypes whitelist for specified language plugin. In most cases, it is not necessary to do so:
 
+vimscript
+
 ```vim
+" vim
 let g:easycomplete_filetypes = {
       \   "sh": {
       \     "whitelist": ["shell"]
@@ -238,17 +245,41 @@ let g:easycomplete_filetypes = {
       \ }
 ```
 
+luascript
+
+```lua
+-- lua
+vim.g.easycomplete_filetypes = {
+    sh = {
+        whitelist = {"shell"}
+    },
+    r = {
+        whitelist = {"rmd", "rmarkdown"}
+    }
+}
+```
+
 ### Snippet Support
 
 The snippet completion of Vim-EasyComplete relies on ultisnip or luasnip. They are both compatible with Vim-EasyComplete by simply place it in the dependent field. UltiSnips required python3 installed. You can use your own snippets path to replace the default snippets.
 
+vimscript
+
 ```vim
+" vim
 let g:easycomplete_custom_snippet = "./path/to/your/snippets"
 ```
 
-[LuaSnip](https://github.com/L3MON4D3/LuaSnip) is better choice for nvim.
+luascript
 
-You can add your own snippet directory to `&runtimepath`.
+```lua
+-- lua
+vim.g.easycomplete_custom_snippet = "./path/to/your/snippets"
+```
+
+You can alse add your own snippet directory to `&runtimepath`.
+
+[LuaSnip](https://github.com/L3MON4D3/LuaSnip) is better choice for nvim.
 
 ## AI Coding Inline Suggestion
 
@@ -265,11 +296,24 @@ Config TabNine via `g:easycomplete_tabnine_config` witch contains two properties
 - *line_limit*: The number of lines before and after the cursor to send to TabNine. If the option is smaller, the performance may be improved. (default: 1000)
 - *max_num_result*: Max results from TabNine showing in the complete menu. (default: 3)
 
+vimscript
+
 ```vim
+" vim
 let g:easycomplete_tabnine_config = {
     \ 'line_limit': 1000,
     \ 'max_num_result' : 3,
     \ }
+```
+
+luascript
+
+```lua
+-- lua
+vim.g.easycomplete_tabnine_config = {
+    line_limit = 1000,
+    max_num_result = 3
+}
 ```
 
 TabNine works well without APIKey. If you have a Tabnine's Pro API key or purchased a subscription license. To configure, you'll need to use the [TabNine' magic string](https://www.tabnine.com/faq#special_commands) (Type `Tabnine::config` in insert mode) to open the configuration panel.

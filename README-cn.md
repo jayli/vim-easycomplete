@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
 
 - 支持 [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)). 通过单命令安装 LSP 服务。
 - 支持关键词和字典
-- 通过 [Snippets](https://github.com/neovim/nvim-lspconfig/wiki/Snippets) 来兼容代码片段的补全
+- 代码片段的补全
 - 高性能
 - 基于 TabNine 的 AI 补全助手
 
@@ -28,6 +28,7 @@ Vim 8.2 及以上版本，Neovim 0.6.0 及以上，支持 MacOS/Linux/FreeBSD。
 lua 配置（基于 Packer.nvim ）：
 
 ```lua
+-- lua
 use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
 -- Tabnine AI 补全支持, 默认值 1
 -- 安装 tabnine ":InstallLspServer tabnine"
@@ -53,6 +54,7 @@ vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 Vimscript 配置（基于vim-plug）:
 
 ```vim
+" vim
 Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
 " Tabnine AI 补全支持, 默认值 1
@@ -79,7 +81,7 @@ noremap gb :BackToOriginalBuffer<CR>
 
 ## 使用
 
-`Tab` 触发匹配，并通过 `Tab` 来选择下一个匹配项，`Shift-Tab` 选择上一个匹配项。`Ctrl-]` 跳转到定义处，`Ctrl-t`跳回（和 tags 跳转快捷键一致）。
+输入过程中自动显示匹配菜单，并通过 `Tab` 来选择下一个匹配项，`Shift-Tab` 选择上一个匹配项。`Ctrl-]` 跳转到定义处，`Ctrl-t`跳回（和 tags 跳转快捷键一致）。
 
 使用`Ctrl-N`/`Shift-Ctrl-N` 跳转到下一个/上一个错误提示位置。
 
@@ -222,7 +224,10 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 
 自定义增加某种 lsp 所支持的语言类型，通常情况下不需要这么做：
 
+vimscript
+
 ```vim
+" vim
 let g:easycomplete_filetypes = {
       \   "sh": {
       \     "whitelist": ["shell"]
@@ -233,14 +238,38 @@ let g:easycomplete_filetypes = {
       \ }
 ```
 
+luascript
+
+```lua
+-- lua
+vim.g.easycomplete_filetypes = {
+    sh = {
+        whitelist = {"shell"}
+    },
+    r = {
+        whitelist = {"rmd", "rmarkdown"}
+    }
+}
+```
+
 ### Snippets 代码片段支持
 
 Vim-Easycomplete 的代码片段支持依赖 [ultisnips](https://github.com/SirVer/ultisnips) 或 [LuaSnip](https://github.com/L3MON4D3/LuaSnip)。只需在依赖字段中引用进来即可。性能考虑，推荐优先使用 `L3MON4D3/LuaSnip`（只支持 nvim），兼容考虑使用 `SirVer/ultisnips`（支持 vim/nvim）。 你可以增加 snippets 目录到 &runtimepath 中。
 
 你可以设置自己的 snippets 路径：
 
+vimscript
+
 ```vim
+" vim
 let g:easycomplete_custom_snippet = "./path/to/your/snippets"
+```
+
+luascript
+
+```lua
+-- lua
+vim.g.easycomplete_custom_snippet = "./path/to/your/snippets"
 ```
 
 ## AI 编程助手
@@ -260,13 +289,24 @@ Vim-easycomplete 默认支持 Tabnine。Tabnine 是本地运算补全结果的�
 - *line_limit*: 参与计算的行数. 越小速度越快，越大补全更准. (默认: 1000)
 - *max_num_result*: 在补全菜单中显示几个推荐项. (默认: 3)
 
-基于 vimscript 配置：
+vimscript
 
 ```vim
+" vim
 let g:easycomplete_tabnine_config = {
     \ 'line_limit': 1000,
     \ 'max_num_result' : 3,
     \ }
+```
+
+luascript
+
+```lua
+-- lua
+vim.g.easycomplete_tabnine_config = {
+    line_limit = 1000,
+    max_num_result = 3
+}
 ```
 
 TabNine 不使用 APIKey 就可以运行。如果你是 Tabnine 的付费用户，可以配置 API key 获得行内补全的增强。通过在文件中敲入魔术字符`Tabnine::config`来激活配置面板。[文档](https://www.tabnine.com/faq#special_commands)
