@@ -2,7 +2,8 @@ Full config in lua script with Packer.nvim:
 
 ```lua
 -- Packer.nvim
-use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- For snippet support, 'SirVer/ultisnips' is an alternative option
 
 -- Enable the plugin. Default is on. Set `0` if you want to turn off the plugin.
 -- Install lsp via `:InstallLspServer`
@@ -19,6 +20,7 @@ vim.g.easycomplete_cursor_word_hl = 0
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
 vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
 -- Using nerdfont is highly recommended
@@ -115,6 +117,22 @@ vim.g.easycomplete_diagnostics_enable = 1
 vim.g.easycomplete_signature_enable = 1
 -- Enable diagnostics via cursor hold event, default is 1
 vim.g.easycomplete_diagnostics_hover = 1
+
+-- close pum keymap
+-- vim.keymap.set('i', '<C-M>', '<Plug>EasycompleteClosePum')
+
+-- Select next/previous pum items Keymap
+-- vim.g.easycomplete_tab_trigger = "<C-J>"
+-- vim.g.easycomplete_shift_tab_trigger = "<C-K>"
+
+-- Redefine CR action
+-- vim.g.easycomplete_use_default_cr = 0
+-- vim.keymap.set('i', '<C-L>', '<Plug>EasycompleteCR')
+
+-- set 0 to Custom Pum style with border, default is 1
+vim.g.easycomplete_pum_pretty_style = 1
+-- vim.cmd("hi FloatBorder guifg=green")
+-- vim.cmd("hi Pmenu guibg=gray")
 
 -- recommended
 vim.opt.updatetime = 150

@@ -29,7 +29,8 @@ lua 配置（基于 Packer.nvim ）：
 
 ```lua
 -- lua
-use { 'jayli/vim-easycomplete', requires = {'SirVer/ultisnips'}}
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- 代码片段方案可选 'SirVer/ultisnips'，兼容 vim/nvim
 -- Tabnine AI 补全支持, 默认值 1
 -- 安装 tabnine ":InstallLspServer tabnine"
 vim.g.easycomplete_tabnine_enable = 1
@@ -67,7 +68,8 @@ Vimscript 配置（基于vim-plug）:
 ```vim
 " vim
 Plug 'jayli/vim-easycomplete'
-Plug 'SirVer/ultisnips'
+Plug 'L3MON4D3/LuaSnip'
+" 代码片段方案可选'SirVer/ultisnips'
 " Tabnine AI 补全支持, 默认值 1
 " 安装 Tabnine ":InstallLspServer tabnine"
 let g:easycomplete_tabnine_enable = 1
