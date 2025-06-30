@@ -69,12 +69,8 @@ function! s:HandleLspCallback(server, data) abort
   endtry
 endfunction
 
-" ['foo', '', 'bar', '', '', ''] → ['foo', '', 'bar']
 function! s:RemoveTrailingEmptyStrings(list)
-  while !empty(a:list) && get(a:list, -1, '') == ''
-    call remove(a:list, -1)
-  endwhile
-  return a:list
+  return easycomplete#util#RemoveTrailingEmptyStrings(a:list)
 endfunction
 
 function! s:log(...)

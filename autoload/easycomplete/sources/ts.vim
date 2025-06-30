@@ -131,6 +131,7 @@ function! easycomplete#sources#ts#constructor(opt, ctx)
   call s:RegistEventCallback('easycomplete#sources#ts#DiagnosticsCallback', 'diagnostics')
   call s:RegistResponseCallback('easycomplete#sources#ts#CompleteCallback', 'completions')
   call s:RegistResponseCallback('easycomplete#sources#ts#SignatureCallback', 'signatureHelp')
+  call s:RegistResponseCallback('easycomplete#sources#ts#QuickInfoCallback', 'quickinfo')
   call s:RegistResponseCallback('easycomplete#sources#ts#ReferenceCallback', 'references')
   call s:RegistResponseCallback('easycomplete#sources#ts#RenameCallback', 'rename')
   call s:RegistResponseCallback('easycomplete#sources#ts#DefinationCallback', 'definition')
@@ -515,7 +516,6 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
 endfunction
 
 function! easycomplete#sources#ts#hover()
-  return
   call s:TsserverReload()
   let ctx = easycomplete#context()
   let offset = ctx['col']
@@ -523,9 +523,26 @@ function! easycomplete#sources#ts#hover()
   let l:args = {'file': file, 'line': line("."), 'offset': offset}
   call timer_start(20,
         \ {
-        \    -> s:SendCommandAsyncResponse('hover',  l:args)
+        \    -> s:SendCommandAsyncResponse('quickinfo',  l:args)
         \ })
 
+endfunction
+
+function! easycomplete#sources#ts#QuickInfoCallback(response)
+  if s:get(a:response, "command") == "quickinfo" && s:get(a:response, "success") == v:false
+    call s:log(s:get(a:response, "message"))
+    return
+  endif
+  if s:get(a:response, "success") == v:true
+    let content = s:get(a:response, "body", "displayString")
+    let content = substitute(content, "```\\w\\+", "", "g")
+    let content = substitute(content, "```", "", "g")
+    let content = split(content, "\\n")
+    let content = easycomplete#util#RemoveTrailingEmptyStrings(content)
+    if !empty(content)
+      call easycomplete#popup#float(content, 'Pmenu', 0, "", [0, 0], 'signature')
+    endif
+  endif
 endfunction
 
 function! easycomplete#sources#ts#signature()
@@ -951,17 +968,19 @@ function! s:MessageHandler(msg)
     return
   endif
 
+
   " Ignore messages.
   if has_key(l:res_item, 'event') && index(s:ignore_response_events, get(l:res_item, 'event')) >= 0
     return
   endif
+
 
   let l:item = l:res_item
   let l:event_name = s:GetTsserverEventType(l:item)
   let l:response_name = s:GetTsserverResponseType(l:item)
 
   if easycomplete#util#NotInsertMode() && !empty(l:response_name) && empty(l:event_name) " Normal mod
-    if index(['definition', 'references', 'rename'], l:response_name) < 0
+    if index(['definition', 'references', 'rename', 'quickinfo'], l:response_name) < 0
       return
     endif
   endif

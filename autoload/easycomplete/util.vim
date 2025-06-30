@@ -2170,6 +2170,14 @@ function! easycomplete#util#get(obj, ...) " {{{
   return tmp
 endfunction " }}}
 
+" ['foo', '', 'bar', '', '', ''] → ['foo', '', 'bar']
+function! easycomplete#util#RemoveTrailingEmptyStrings(list) " {{{
+  while !empty(a:list) && get(a:list, -1, '') == ''
+    call remove(a:list, -1)
+  endwhile
+  return a:list
+endfunction " }}}
+
 function! easycomplete#util#ConfigRoot() " {{{
   let config_dir = expand('~/.config/vim-easycomplete')
   return config_dir
