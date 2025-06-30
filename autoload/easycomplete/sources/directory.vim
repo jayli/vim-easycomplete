@@ -28,7 +28,8 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   try
     let result = s:GetDirAndFiles(a:typing_path, a:typing_path.fname)
   catch
-    echom easycomplete#util#info('[Directory]', v:exception)
+    call s:errlog('[Directory]', v:exception)
+    return
   endtry
   if len(result) == 0
     if strwidth(a:ctx['char']) != 1
@@ -200,4 +201,8 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction
