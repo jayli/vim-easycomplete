@@ -46,6 +46,7 @@ vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
 vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
 -- 关闭 pum 菜单
@@ -83,6 +84,7 @@ let g:easycomplete_pum_format = ["kind", "abbr", "menu"]
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
+noremap gh :EasyCompleteHover<CR>
 noremap gb :BackToOriginalBuffer<CR>
 
 " 关闭 pum 菜单
@@ -124,6 +126,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `:EasyCompleteGotoDefinition`     | 跳转到定义                                          |
 | `:EasyCompleteReference`          | 跳转到引用                                          |
 | `:EasyCompleteRename`             | 重命名                                              |
+| `:EasyCompleteHover`              | 查看更多信息                                        |
 | `:EasyCompleteCheck`              | 检查 LSP 是否安装                                   |
 | `:EasyCompletePreviousDiagnostic` | 跳转到上一个错误提示                                |
 | `:EasyCompleteNextDiagnostic`     | 跳转到下一个错误提示                                |

@@ -47,6 +47,7 @@ vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
 vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
 -- close pum keymap
@@ -86,6 +87,7 @@ let g:easycomplete_pum_format = ["kind", "abbr", "menu"]
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
+noremap gh :EasyCompleteHover<CR>
 noremap gb :BackToOriginalBuffer<CR>
 
 " Close pum keymap
@@ -129,6 +131,7 @@ All commands:
 | `:EasyCompleteGotoDefinition`     | Goto definition position                            |
 | `:EasyCompleteReference`          | Find references                                     |
 | `:EasyCompleteRename`             | Rename                                              |
+| `:EasyCompleteHover`              | Hover to get more information                       |
 | `:EasyCompleteCheck`              | Checking LSP server                                 |
 | `:EasyCompletePreviousDiagnostic` | Goto Previous diagnostic                            |
 | `:EasyCompleteNextDiagnostic`     | Goto Next diagnostic                                |

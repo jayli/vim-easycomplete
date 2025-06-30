@@ -615,6 +615,7 @@ command! EasyCompleteReference : call easycomplete#reference()
 command! EasyCompleteRename : call easycomplete#rename()
 command! EasyCompleteAiCoding : call easycomplete#AiCoding()
 command! BackToOriginalBuffer : call easycomplete#BackToOriginalBuffer()
+command! EasyCompleteHover : call easycomplete#Hover()
 
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
@@ -627,6 +628,7 @@ if g:env_is_nvim
   inoremap <expr> <Right> easycomplete#Right()
   inoremap <C-E> <Plug>EasycompleteClosePum
 endif
+nnoremap <silent><expr> <ESC> easycomplete#Esc()
 inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap  <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>

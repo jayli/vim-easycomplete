@@ -295,7 +295,7 @@ function! easycomplete#lsp#diagnostics_enable(opt) abort
   call s:notify_diagnostics_update()
 endfunction
 
-" 没看出来这个函数有什么用
+" 这个函数还有什么用
 " call s:notify_diagnostics_update()
 " call s:notify_diagnostics_update('server')
 " call s:notify_diagnostics_update('server', 'uri')
@@ -318,7 +318,6 @@ function! easycomplete#lsp#has_signature_help_provider(server_name) abort
   endif
   return 0
 endfunction
-
 
 function! s:get_parameter_doc(parameter) abort
   if !has_key(a:parameter, 'documentation')
@@ -468,8 +467,6 @@ function! s:ensure_init(buf, server_name, cb) abort
   let l:server_info = l:server['server_info']
   let l:root_uri = has_key(l:server_info, 'root_uri') ?  l:server_info['root_uri'](l:server_info) : ''
   if empty(l:root_uri)
-    let l:msg = s:new_rpc_error('ignore initialization lsp server due to empty root_uri', { 'server_name': a:server_name, 'lsp_id': l:server['lsp_id'] })
-    " call s:errlog("[LOG]", l:msg)
     let l:root_uri = easycomplete#lsp#utils#get_default_root_uri()
   endif
   let l:server['server_info']['_root_uri_resolved'] = l:root_uri

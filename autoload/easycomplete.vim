@@ -1519,7 +1519,13 @@ function! easycomplete#CtlE()
   return "\<C-E>"
 endfunction
 
+function! easycomplete#Esc()
+  call easycomplete#popup#close()
+  return "\<ESC>"
+endfunction
+
 function! easycomplete#close()
+  call easycomplete#popup#close()
   return easycomplete#CtlE()
 endfunction
 
@@ -2568,6 +2574,17 @@ function! easycomplete#CursorMoved()
     endif
     let s:easycomplete_cursor_move_timer = timer_start(35, { -> easycomplete#sign#LintCurrentLine() })
   endif
+
+  " 上下移动时关闭hover，左右移动时不关闭
+  if exists("s:last_cursor_line")
+    let current_line = line(".")
+    if current_line != s:last_cursor_line
+      if easycomplete#action#signature#visible()
+        call easycomplete#popup#close("float")
+      endif
+    endif
+  endif
+  let s:last_cursor_line = line(".")
 endfunction
 
 function! easycomplete#CursorMovedI()
@@ -2809,6 +2826,10 @@ endfunction
 
 function! easycomplete#CompleteMatchAction()
   call s:CompleteMatchAction()
+endfunction
+
+function! easycomplete#Hover()
+  call easycomplete#action#hover#do()
 endfunction
 
 function! easycomplete#BackToOriginalBuffer()

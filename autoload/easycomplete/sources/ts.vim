@@ -514,6 +514,20 @@ function! easycomplete#sources#ts#ReferenceCallback(data)
   call easycomplete#action#reference#hi()
 endfunction
 
+function! easycomplete#sources#ts#hover()
+  return
+  call s:TsserverReload()
+  let ctx = easycomplete#context()
+  let offset = ctx['col']
+  let file = ctx['filepath']
+  let l:args = {'file': file, 'line': line("."), 'offset': offset}
+  call timer_start(20,
+        \ {
+        \    -> s:SendCommandAsyncResponse('hover',  l:args)
+        \ })
+
+endfunction
+
 function! easycomplete#sources#ts#signature()
   if !easycomplete#ok('g:easycomplete_signature_enable') | return | endif
   call s:TsserverReload()
