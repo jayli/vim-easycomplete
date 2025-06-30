@@ -134,7 +134,7 @@ function! s:InitLogWindow()
   vertical botright new filetype=help buftype=nofile debuger=1
   setlocal nonu
   let g:debugger.status = "running"
-  if g:env_is_vim
+  if !has("nvim")
     let g:debugger.job_id = term_start("tail -n 100 -f " . get(g:debugger, 'logfile'),{
         \ 'term_finish': 'close',
         \ 'term_name':'log_debugger_window_name',
@@ -188,7 +188,7 @@ endfunction
 
 function! easycomplete#log#quit()
   if get(g:debugger, 'log_winid') == bufwinid(bufnr(""))
-    if g:env_is_vim
+    if !has("nvim")
       call term_sendkeys("log_debugger_window_name","\<C-C>")
     else
       call feedkeys("\<C-C>", "t")

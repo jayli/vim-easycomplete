@@ -48,6 +48,12 @@ local function nvim_lsp_handler()
   end
 end
 
+function EasyComplete.setup(config)
+  for key, value in pairs(config) do
+    vim.g["easycomplete_" .. key] = value
+  end
+end
+
 function EasyComplete.complete_changed()
   console('--',Util.get(vim.v.event, "completed_item", "user_data"))
 end

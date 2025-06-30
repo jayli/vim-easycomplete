@@ -1,8 +1,8 @@
 """ 常用的工具函数
 scriptencoding utf-8
-let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
-let s:tabnine_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.tabnine") : v:null
-let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
+let s:easycomplete_toolkit = has('nvim') ? v:lua.require("easycomplete") : v:null
+let s:tabnine_toolkit = has('nvim') ? v:lua.require("easycomplete.tabnine") : v:null
+let s:util_toolkit = has('nvim') ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#util#ShowHint(text) " {{{
   if g:env_is_vim | return | endif
