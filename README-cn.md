@@ -104,6 +104,22 @@ noremap gb :BackToOriginalBuffer<CR>
 
 [一个例子](custom-config.md).
 
+可以使用 Lua setup 风格初始化配置：`require("easycomplete").setup()`:
+
+```lua
+-- lua style setup
+-- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
+require("easycomplete").setup({
+    tabnine_enable = 0,
+    nerd_font = 1,
+    enable = 1,
+    winborder = 1,
+    ghost_text = 1,
+    menu_abbr = 0,
+    pum_format = {"abbr", "kind", "menu"}
+  })
+```
+
 ## 使用
 
 输入过程中自动显示匹配菜单，并通过 `Tab` 来选择下一个匹配项，`Shift-Tab` 选择上一个匹配项。`Ctrl-]` 跳转到定义处，`Ctrl-t`跳回（和 tags 跳转快捷键一致）。

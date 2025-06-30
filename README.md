@@ -64,9 +64,6 @@ vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 Run `:PackerInstall`
 
 Vimscript config with vim-plug:
-SirVer/ultisnips
-L3MON4D3/LuaSnip
-
 
 ```vim
 " vim
@@ -104,6 +101,22 @@ noremap gb :BackToOriginalBuffer<CR>
 Run `:PlugInstall`.
 
 [Full configuration example](custom-config.md).
+
+Lua style setup with `require("easycomplete").setup()`:
+
+```lua
+-- lua style setup
+-- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
+require("easycomplete").setup({
+    tabnine_enable = 0,
+    nerd_font = 1,
+    enable = 1,
+    winborder = 1,
+    ghost_text = 1,
+    menu_abbr = 0,
+    pum_format = {"abbr", "kind", "menu"}
+  })
+```
 
 ## Useage
 
