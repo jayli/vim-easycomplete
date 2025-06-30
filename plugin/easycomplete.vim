@@ -123,6 +123,9 @@ endif
 if !exists("g:easycomplete_lsp_checking")
   let g:easycomplete_lsp_checking = 1
 endif
+if !exists("g:easycomplete_use_default_cr")
+  let g:easycomplete_use_default_cr = 1
+endif
 if !exists("g:easycomplete_lsp_type_font")
   let g:easycomplete_lsp_type_font = {}
 endif
@@ -613,19 +616,22 @@ command! EasyCompleteRename : call easycomplete#rename()
 command! EasyCompleteAiCoding : call easycomplete#AiCoding()
 command! BackToOriginalBuffer : call easycomplete#BackToOriginalBuffer()
 
-inoremap <expr> <CR> easycomplete#TypeEnterWithPUM()
 inoremap <expr> <Up> easycomplete#Up()
 inoremap <expr> <Down> easycomplete#Down()
+" CR 行为改为可定义
+" inoremap <CR> <Plug>EasycompleteCR
 if g:env_is_nvim
   inoremap <expr> <C-N> easycomplete#CtlN()
   inoremap <expr> <C-P> easycomplete#CtlP()
-  inoremap <expr> <C-E> easycomplete#CtlE()
   inoremap <expr> <Left> easycomplete#Left()
   inoremap <expr> <Right> easycomplete#Right()
+  inoremap <C-E> <Plug>EasycompleteClosePum
 endif
 inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap  <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>
 inoremap  <silent><Plug>EasycompleteRefresh <C-r>=easycomplete#refresh()<CR>
 inoremap  <Plug>EasycompleteNill <C-r>=easycomplete#nill()<CR>
+inoremap  <expr><Plug>EasycompleteClosePum  easycomplete#close()
+inoremap  <expr><Plug>EasycompleteCR easycomplete#TypeEnterWithPUM()
 inoremap  <Plug>EasycompleteExpandSnippet  <C-R>=UltiSnips#ExpandSnippet()<cr>

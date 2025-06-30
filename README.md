@@ -49,6 +49,16 @@ vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
+-- close pum keymap
+-- vim.keymap.set('i', '<C-M>', '<Plug>EasycompleteClosePum')
+
+-- Select next/previous pum items Keymap
+-- vim.g.easycomplete_tab_trigger = "<C-J>"
+-- vim.g.easycomplete_shift_tab_trigger = "<C-K>"
+
+-- Redefine CR action
+-- vim.g.easycomplete_use_default_cr = 0
+-- vim.keymap.set('i', '<C-L>', '<Plug>EasycompleteCR')
 ```
 Run `:PackerInstall`
 
@@ -77,6 +87,17 @@ noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
+
+" Close pum keymap
+" inoremap <C-M> <Plug>EasycompleteClosePum
+
+" Select Matched items Keymap
+" let g:easycomplete_tab_trigger = "<C-J>"
+" let g:easycomplete_shift_tab_trigger = "<C-K>"
+
+" Redefine CR action
+" let g:easycomplete_use_default_cr = 0
+" inoremap <C-L> <Plug>EasycompleteCR
 ```
 Run `:PlugInstall`.
 
@@ -149,6 +170,7 @@ Global configurations:
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 | `g:easycomplete_menu_abbr`           | 1             | Show abbr(shortname) at pum `menu` position, or show fullname |
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
+| `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
 
 Typing `:h easycomplete` for help.
 

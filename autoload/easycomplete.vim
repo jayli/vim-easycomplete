@@ -191,6 +191,10 @@ function! s:BindingTypingCommandOnce()
     call s:errlog("[ERR]", 'Diagnostic jumping map-key conflict', v:exception)
   endtry
 
+  if g:easycomplete_use_default_cr
+    inoremap <CR> <Plug>EasycompleteCR
+  endif
+
   " TODO 不生效
   " inoremap <Tab> <Plug>EasycompleteTabTrigger
   " 重定向 Tag 的跳转按键绑定，和默认<c-]>功能一致
@@ -1516,7 +1520,7 @@ function! easycomplete#CtlE()
 endfunction
 
 function! easycomplete#close()
-  call easycomplete#CtlE()
+  return easycomplete#CtlE()
 endfunction
 
 function! s:ExpandLuaSnipManually(body)

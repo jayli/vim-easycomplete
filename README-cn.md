@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
 
 ## 安装
 
-Vim 8.2 及以上版本，Neovim 0.6.0 及以上，支持 MacOS/Linux/FreeBSD。
+Vim 8.2 及以上版本，Neovim 0.7.0 及以上，支持 MacOS/Linux/FreeBSD。
 
 lua 配置（基于 Packer.nvim ）：
 
@@ -48,6 +48,16 @@ vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
+-- 关闭 pum 菜单
+-- vim.keymap.set('i', '<C-M>', '<Plug>EasycompleteClosePum')
+
+-- 重新定义 Tab/s-tab 建（选择上一个和下一个）
+-- vim.g.easycomplete_tab_trigger = "<C-J>"
+-- vim.g.easycomplete_shift_tab_trigger = "<C-K>"
+
+-- 重新定义回车键
+-- vim.g.easycomplete_use_default_cr = 0
+-- vim.keymap.set('i', '<C-L>', '<Plug>EasycompleteCR')
 ```
 执行 `:PackerInstall`
 
@@ -74,6 +84,17 @@ noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
 noremap gb :BackToOriginalBuffer<CR>
+
+" 关闭 pum 菜单
+" inoremap <C-M> <Plug>EasycompleteClosePum
+
+" 选择上一个和下一个的快捷键
+" let g:easycomplete_tab_trigger = "<C-J>"
+" let g:easycomplete_shift_tab_trigger = "<C-K>"
+
+" 重新定义回车键
+" let g:easycomplete_use_default_cr = 0
+" inoremap <C-L> <Plug>EasycompleteCR
 ```
 执行 `:PlugInstall`.
 
@@ -144,6 +165,7 @@ noremap gb :BackToOriginalBuffer<CR>
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
 | `g:easycomplete_menu_abbr`           | 1             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
+| `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 
 ## 语言支持
 
