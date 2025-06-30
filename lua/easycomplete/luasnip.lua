@@ -36,11 +36,14 @@ function M.init_once()
   end
   if vim.fn.filereadable(snip_path .. '/package.json') == 1 then
     require("luasnip.loaders.from_vscode").lazy_load({ path = { snip_path } })
+    vim.g.easycomplete_luasnip_from_where = "vscode"
   else
     require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
+    vim.g.easycomplete_luasnip_from_where = "snipmate"
   end
 end
 
+-- normalize_info 把占位符去掉，为了给info显示用
 function normalize_info(docstring)
   if docstring == "" then
     reutrn {}
@@ -53,6 +56,12 @@ function normalize_info(docstring)
     new_lines[#new_lines + 1] = subline
   end
   return new_lines
+end
+
+-- luasnip 对 snipmate 的支持不好，如果片段中有多个没有替代符的占位符"${1}"
+-- luasnip 无法通过 Tab 来跳转，必须要加上一个空格作为站位
+function hack_snipmate(docstring)
+  return docstring:gsub("%${(%d+)%}", "${%1: }")
 end
 
 function M.get_snip_items(typing, plugin_name, ctx)
@@ -94,7 +103,14 @@ function M.get_snip_items(typing, plugin_name, ctx)
           -- \ 'user_data': json_encode(user_data_json),
           -- \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
           -- \ 'user_data_json': user_data_json
-          -- console(vim.inspect(snip))
+
+          local snip_docstring = ""
+          if vim.g.easycomplete_luasnip_from_where == "snipmate" then
+            snip_docstring = hack_snipmate(snip.docstring)
+          else
+            snip_docstring = snip.docstring
+          end
+
           ft_items[#ft_items + 1] = {
             word = snip.trigger,
             abbr = snip.trigger .. "~",
@@ -102,7 +118,7 @@ function M.get_snip_items(typing, plugin_name, ctx)
             menu = vim.g.easycomplete_menuflag_snip,
             user_data = user_data,
             info = vim.list_extend({"Snippet: " .. snip.trigger, "--------"}, normalize_info(snip.docstring)),
-            docstring = snip.docstring,
+            docstring = snip_docstring,
             label = snip.trigger,
             user_data_json = user_data_json,
             data = {

@@ -1520,15 +1520,20 @@ function! easycomplete#close()
 endfunction
 
 function! s:ExpandLuaSnipManually(body)
-  " let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
-  " let operat_str = repeat("\<bs>", backing_count)
-  " call s:SendKeys(operat_str)
-  " call timer_start(10, {
-  "       \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
-  "       \ })
-  call timer_start(10, {
-        \ -> luaeval('require("luasnip").expand_or_jump()', [])
-        \ })
+  if empty(a:body)
+    " 找不到 docstring 时再用默认展开
+    call timer_start(10, {
+          \ -> luaeval('require("luasnip").expand_or_jump()', [])
+          \ })
+  else
+    " 优先根据 docstring 来展开 snip
+    let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
+    let operat_str = repeat("\<bs>", backing_count)
+    call s:SendKeys(operat_str)
+    call timer_start(10, {
+          \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
+          \ })
+  endif
 endfunction
 
 " <CR> 逻辑，主要判断是否展开代码片段
