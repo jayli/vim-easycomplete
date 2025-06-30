@@ -108,7 +108,7 @@ noremap gb :BackToOriginalBuffer<CR>
 
 输入过程中自动显示匹配菜单，并通过 `Tab` 来选择下一个匹配项，`Shift-Tab` 选择上一个匹配项。`Ctrl-]` 跳转到定义处，`Ctrl-t`跳回（和 tags 跳转快捷键一致）。
 
-使用`Ctrl-N`/`Shift-Ctrl-N` 跳转到下一个/上一个错误提示位置。
+使用`Ctrl-N`/`Shift-Ctrl-N` 跳转到下一个/上一个错误提示位置。`Ctrl-E`关闭匹配菜单。
 
 其他可选配置：
 
