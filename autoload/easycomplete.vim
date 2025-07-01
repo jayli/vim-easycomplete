@@ -179,6 +179,8 @@ function! s:BindingTypingCommandOnce()
   endtry
   exec "inoremap <expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
+  snoremap <expr> <Tab> easycomplete#CleverTab()
+  snoremap <expr> <S-Tab> easycomplete#CleverShiftTab()
   try
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_next . " :EasyCompleteNextDiagnostic<CR>"
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_prev . " :EasyCompletePreviousDiagnostic<CR>"
@@ -1415,7 +1417,7 @@ function! easycomplete#CleverTab()
       return ""
     endif
   endif
-  if &filetype == "sh" && easycomplete#context()['typed'] == "#!" && s:SnipSupports()
+  if mode() == "i" && &filetype == "sh" && easycomplete#context()['typed'] == "#!" && s:SnipSupports()
     " sh #!<tab> hack, bugfix #12
     " luasnip 中没有 Tab 触发展开的功能，这里只考虑 ultisnips 的情况
     call s:ExpandSnipManually("#!")
@@ -1481,7 +1483,8 @@ function! easycomplete#CleverShiftTab()
       call easycomplete#pum#prev()
       " call timer_start(5, { -> s:SnapShoot()})
       return easycomplete#pum#SetWordBySelecting()
-    elseif mode() == "i" && s:LuaSnipSupports() && luaeval("require('luasnip').locally_jumpable(-1)")
+    elseif (mode() == "i" || mode() == "s") &&
+          \ s:LuaSnipSupports() && luaeval("require('luasnip').locally_jumpable(-1)")
       call luaeval("require('luasnip').jump(-1)")
       return ""
     else
