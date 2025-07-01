@@ -25,13 +25,67 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   return v:true
 endfunction
 
-function! easycomplete#sources#snips#CompleteHandler(typing, name, ctx, startcol)
-
+function! easycomplete#sources#snips#cr(item, ctx)
   if easycomplete#LuaSnipSupports()
-    "-----------------for lua snip
+    call timer_start(20, {
+          \ -> s:ExpandLuaSnipManually(get(a:item, "docstring", ""))
+          \ })
+  elseif easycomplete#SnipSupports()
+    call timer_start(20, {
+          \ -> s:ExpandSnipManually(get(a:item, "word"))
+          \ })
+  endif
+  " 必须返回true，告诉主线程调用成功
+  return v:true
+endfunction
+
+function! s:ExpandSnipManually(word)
+  if !exists("*UltiSnips#SnippetsInCurrentScope")
+    return ""
+  endif
+  try
+    if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
+      call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
+      return ""
+    elseif empty(UltiSnips#SnippetsInCurrentScope())
+      call feedkeys("\<Plug>EasycompleteExpandSnippet")
+      return ""
+    endif
+  catch
+    " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
+    call s:errlog("[ERR]", 'ExpandSnipManually', v:exception)
+  endtry
+endfunction
+
+function! easycomplete#sources#snips#ExpandSnipManually(...)
+  return call('s:ExpandSnipManually', a:000)
+endfunction
+
+function! easycomplete#sources#snips#ExpandLuaSnipManually(...)
+  return call('s:ExpandLuaSnipManually', a:000)
+endfunction
+
+function! s:ExpandLuaSnipManually(body)
+  if empty(a:body)
+    " 找不到 docstring 时再用默认展开
+    call timer_start(10, {
+          \ -> luaeval('require("luasnip").expand_or_jump()', [])
+          \ })
+  else
+    " 优先根据 docstring 来展开 snip
+    let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
+    let operat_str = repeat("\<bs>", backing_count)
+    call feedkeys(operat_str, 'in')
+    call timer_start(10, {
+          \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
+          \ })
+  endif
+endfunction
+
+function! easycomplete#sources#snips#CompleteHandler(typing, name, ctx, startcol)
+  if easycomplete#LuaSnipSupports()
     let result = v:lua.require("easycomplete.luasnip").get_snip_items(a:typing, a:name, a:ctx)
     call easycomplete#complete(a:name, a:ctx, a:startcol, result)
-    "-----------------for lua snip
   elseif easycomplete#SnipSupports()
     let suggestions = []
     " 0.010s for these two function call
@@ -115,4 +169,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:errlog(...)
+  return call('easycomplete#util#errlog', a:000)
 endfunction

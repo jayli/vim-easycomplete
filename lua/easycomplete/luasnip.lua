@@ -16,7 +16,11 @@ function M.luasnip_installed()
       vim.g.easycomplete_lua_snip_enable = 1
     end
   end
-  return vim.g.easycomplete_lua_snip_enable
+  if vim.g.easycomplete_lua_snip_enable == 1 then
+    return true
+  else
+    return false
+  end
 end
 
 function M.init_once()
@@ -41,6 +45,16 @@ function M.init_once()
     require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
     vim.g.easycomplete_luasnip_from_where = "snipmate"
   end
+  vim.keymap.set('s', '<Tab>', function()
+    if require('luasnip').locally_jumpable(1) then
+      require('luasnip').jump(1)
+    end
+  end, { expr = true, silent = true })
+  vim.keymap.set('s', '<S-Tab>', function()
+    if require('luasnip').locally_jumpable(-1) then
+      require('luasnip').jump(-1)
+    end
+  end, { expr = true, silent = true })
 end
 
 -- normalize_info 把占位符去掉，为了给info显示用

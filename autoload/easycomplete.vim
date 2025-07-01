@@ -179,8 +179,9 @@ function! s:BindingTypingCommandOnce()
   endtry
   exec "inoremap <expr> " . g:easycomplete_tab_trigger . "  easycomplete#CleverTab()"
   exec "inoremap <expr> " . g:easycomplete_shift_tab_trigger . "  easycomplete#CleverShiftTab()"
-  snoremap <expr> <Tab> easycomplete#CleverTab()
-  snoremap <expr> <S-Tab> easycomplete#CleverShiftTab()
+  " luasnip 在选中模式下的跳转，应该闭包在 luasnip.lua 中
+  " snoremap <expr> <S-Tab> easycomplete#CleverShiftTab()
+  " snoremap <expr> <Tab> easycomplete#CleverTab()
   try
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_next . " :EasyCompleteNextDiagnostic<CR>"
     exec "nnoremap <silent><unique> " . g:easycomplete_diagnostics_prev . " :EasyCompletePreviousDiagnostic<CR>"
@@ -1149,6 +1150,21 @@ function! s:CompletorCallingAtFirstComplete(ctx)
   endtry
 endfunction
 
+function! s:CallCRHandlerByName(item, ctx)
+  let plugin_name = get(a:item, "plugin_name", "")
+  let l:opt = get(g:easycomplete_source, plugin_name)
+  if empty(l:opt) || empty(get(l:opt, "cr_handler"))
+    return v:false
+  endif
+  let b:cr_handler = get(l:opt, "cr_handler")
+  if type(b:cr_handler) == 2 " type is function
+    return b:cr_handler(a:item, a:ctx)
+  endif
+  if type(b:cr_handler) == type("string") " type is string
+    return call(b:cr_handler, [a:item, a:ctx])
+  endif
+endfunction
+
 function easycomplete#ConstructorCallingByName(plugin_name)
   let l:ctx = easycomplete#context()
   if s:CompleteSourceReady(a:plugin_name)
@@ -1532,23 +1548,6 @@ function! easycomplete#close()
   return easycomplete#CtlE()
 endfunction
 
-function! s:ExpandLuaSnipManually(body)
-  if empty(a:body)
-    " 找不到 docstring 时再用默认展开
-    call timer_start(10, {
-          \ -> luaeval('require("luasnip").expand_or_jump()', [])
-          \ })
-  else
-    " 优先根据 docstring 来展开 snip
-    let backing_count = col('.') - g:easycomplete_typing_ctx['startcol']
-    let operat_str = repeat("\<bs>", backing_count)
-    call s:SendKeys(operat_str)
-    call timer_start(10, {
-          \ -> luaeval('require("luasnip").lsp_expand(_A[1])', [a:body])
-          \ })
-  endif
-endfunction
-
 " <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
   if !(&completeopt =~ "noselect")
@@ -1564,21 +1563,9 @@ function! easycomplete#TypeEnterWithPUM()
       call s:AsyncRun("easycomplete#DoComplete", [v:true], 60)
       return s:CtrlY()
     endif
-    " 选中 snippet
-    if (!empty(l:item) && easycomplete#util#GetPluginNameFromUserData(l:item) ==# "snips" && !s:zizzing())
-      if s:LuaSnipSupports()
-        call timer_start(20, {
-              \ -> s:ExpandLuaSnipManually(get(l:item, "docstring", ""))
-              \ })
-        call s:zizz()
-        return s:CtrlY()
-      elseif s:SnipSupports()
-        call timer_start(20, {
-              \ -> s:ExpandSnipManually(get(l:item, "word"))
-              \ })
-        call s:zizz()
-        return s:CtrlY()
-      endif
+    if !empty(l:item) && s:CallCRHandlerByName(l:item, g:easycomplete_typing_ctx) && !s:zizzing()
+      call s:zizz()
+      return s:CtrlY()
     endif
     " 未选中任何单词，直接回车，直接关闭匹配菜单
     if (s:SnipSupports() || s:LuaSnipSupports()) && empty(l:item) && !s:zizzing()
@@ -1587,8 +1574,8 @@ function! easycomplete#TypeEnterWithPUM()
     endif
     " 其他选中动作一律插入单词并关闭匹配菜单
     call s:zizz()
-    " 新增 expandable 支持 for #48
     if easycomplete#util#expandable(l:item)
+      " 新增 expandable 支持 for #48
       let oitems = easycomplete#util#GetLspItem(l:item)
       let insert_text = get(oitems, 'insertText', '')
       let user_data = easycomplete#util#GetUserData(l:item)
@@ -1600,7 +1587,7 @@ function! easycomplete#TypeEnterWithPUM()
               \ })
       elseif !empty(insert_text) && s:LuaSnipSupports()
           call timer_start(20, {
-                \ -> s:ExpandLuaSnipManually(insert_text)
+                \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
                 \ })
       elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
@@ -1659,29 +1646,8 @@ function! s:cursor(line, row)
   call cursor(line, row)
 endfunction
 
-function! s:ExpandSnipManually(word)
-  if !exists("*UltiSnips#SnippetsInCurrentScope")
-    return ""
-  endif
-  try
-    if index(keys(UltiSnips#SnippetsInCurrentScope()), a:word) >= 0
-      " 可直接展开
-      " bugfix for #231，加上 CloseCompletionMenu
-      " 会导致如果上一行有内容，且当前列字符不为空时，关闭menu后会把不为空的字符带到当前行的光标处
-      " 原因未知，先注释掉这一行 在 nvim 中是 ok 的 vim 未测试
-      " call s:CloseCompletionMenu()
-      call feedkeys("\<C-R>=UltiSnips#ExpandSnippetOrJump()\<cr>")
-      return ""
-    elseif empty(UltiSnips#SnippetsInCurrentScope())
-      " 需要展开选项
-      " call s:CloseCompletionMenu()
-      call feedkeys("\<Plug>EasycompleteExpandSnippet")
-      return ""
-    endif
-  catch
-    " https://github.com/jayli/vim-easycomplete/issues/53#issuecomment-843701311
-    call s:errlog("[ERR]", 'ExpandSnipManually', v:exception)
-  endtry
+function! s:ExpandSnipManually(...)
+  return call('easycomplete#sources#snips#ExpandSnipManually', a:000)
 endfunction
 
 function! s:SendKeys(keys)

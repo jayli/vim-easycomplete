@@ -559,6 +559,7 @@ augroup easycomplete#PluginRegister
       \ 'name': 'snips',
       \ 'whitelist': ['*'],
       \ 'completor': 'easycomplete#sources#snips#completor',
+      \ 'cr_handler': 'easycomplete#sources#snips#cr'
       \ })
 augroup END
 
