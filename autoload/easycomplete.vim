@@ -2813,8 +2813,8 @@ function! easycomplete#CmdlineLeave()
   call easycomplete#cmdline#leave()
 endfunction
 
-function! easycomplete#CmdlineChanged(pfx)
-  call easycomplete#cmdline#changed(a:pfx)
+function! easycomplete#CmdlineChanged(char)
+  call easycomplete#cmdline#changed(a:char)
 endfunction
 
 function! easycomplete#Textchanged()

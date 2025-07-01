@@ -1,29 +1,32 @@
 
 let g:easycomplete_cmdline_typing = 0
 
-function! easycomplete#cmdline#changed(pfx)
-  return
+function! easycomplete#cmdline#changed(char)
   try
     let item_list = s:normalize(["abc","aaa","aaaasf","asdfsefd","asssfd","aaaas","bsd","aadsfafafaf"])
     let word = s:GetTypingWord()
-    call s:console("x", getcmdpos(), strlen(word))
+    let pleft = win_screenpos(win_getid())[1]  - 1
     let start_col = getcmdpos() - strlen(word)
-    call easycomplete#pum#complete(0, item_list)
   catch
     echom v:exception
   endtry
+  " call easycomplete#util#timer_start("easycomplete#cmdline#LazyComplete", [], 10)
+endfunction
+
+function! easycomplete#cmdline#LazyComplete()
 endfunction
 
 function! easycomplete#cmdline#enter()
+  " call s:console("cmdline enter")
   let g:easycomplete_cmdline_typing = 1
 endfunction
 
 function! easycomplete#cmdline#leave()
   let g:easycomplete_cmdline_typing = 0
+  call easycomplete#pum#close()
 endfunction
 
 function! easycomplete#cmdline#typing()
-  return v:false
   if !exists("g:easycomplete_cmdline_typing")
     let g:easycomplete_cmdline_typing = 0
   endif
@@ -61,4 +64,8 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:log(...)
+  return call('easycomplete#util#log', a:000)
 endfunction
