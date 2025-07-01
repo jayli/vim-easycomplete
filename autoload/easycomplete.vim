@@ -2806,9 +2806,15 @@ function! easycomplete#BackToOriginalBuffer()
 endfunction
 
 function! easycomplete#CmdlineEnter()
+  call easycomplete#cmdline#enter()
 endfunction
 
 function! easycomplete#CmdlineLeave()
+  call easycomplete#cmdline#leave()
+endfunction
+
+function! easycomplete#CmdlineChanged(pfx)
+  call easycomplete#cmdline#changed(a:pfx)
 endfunction
 
 function! easycomplete#Textchanged()

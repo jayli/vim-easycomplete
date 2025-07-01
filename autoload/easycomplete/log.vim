@@ -80,6 +80,7 @@ function! easycomplete#log#log(...)
     call call(s:log, a:000)
   endif
   call s:GotoOriginalWindow()
+  redraw
 endfunction
 
 function! s:GotoBottom()

@@ -190,6 +190,9 @@ function! s:OpenPum(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
+  if easycomplete#cmdline#typing()
+    let pum_pos.row = &window
+  endif
   let pum_opts = deepcopy(s:default_pum_pot)
   call extend(pum_opts, pum_pos)
   if empty(s:pum_window)

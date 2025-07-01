@@ -9,9 +9,9 @@ snippet guard script reload guard
 	endif
 	let $1 = 1${0}
 snippet f function
-	fun! ${1:`expand('%') =~ 'autoload' ? substitute(matchstr(expand('%:p'),'autoload/\zs.*\ze.vim'),'[/\\]','#','g').'#' : ''`}${2:function_name}(${3})
-		${0}
-	endf
+	function! ${1:function_name}(${2:param})
+		${0:"}
+	endfunction
 snippet t try ... catch statement
 	try
 		${1}
