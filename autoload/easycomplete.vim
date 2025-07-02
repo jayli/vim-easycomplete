@@ -195,7 +195,9 @@ function! s:BindingTypingCommandOnce()
   endtry
 
   if g:easycomplete_use_default_cr
-    inoremap <CR> <Plug>EasycompleteCR
+    if g:env_is_nvim
+      inoremap <CR> <Plug>EasycompleteCR
+    endif
   endif
 
   " TODO 不生效
@@ -1527,6 +1529,7 @@ endfunction
 
 " nvim only
 function! easycomplete#CtlE()
+  call s:zizz()
   if easycomplete#pum#visible()
     call s:CloseCompletionMenu()
     call s:flush()
@@ -1534,7 +1537,6 @@ function! easycomplete#CtlE()
   elseif pumvisible()
     return "\<C-E>"
   endif
-  call s:zizz()
   return "\<C-E>"
 endfunction
 

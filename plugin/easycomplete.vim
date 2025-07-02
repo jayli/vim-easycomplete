@@ -641,6 +641,9 @@ if g:env_is_nvim
   inoremap <expr> <Right> easycomplete#Right()
   inoremap <C-E> <Plug>EasycompleteClosePum
   nnoremap <silent><expr> <ESC> easycomplete#Esc()
+else
+  inoremap <expr><CR> easycomplete#TypeEnterWithPUM()
+  inoremap <expr><C-E> easycomplete#CtlE()
 endif
 inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
