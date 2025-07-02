@@ -73,12 +73,26 @@ function EasyComplete.typing(...)
   })
 end
 
+-- 执行每个模块里的 init_once 方法
+function EasyComplete.load_mojo(mojos)
+  if vim.g.easycomplete_lua_mojos_loaded == 1 then
+    return
+  end
+  vim.g.easycomplete_lua_mojos_loaded = 1
+  for i, mojo in ipairs(mojos) do
+    local mojo_name = "easycomplete." .. mojo
+    local Mo = require(mojo_name)
+    Mo.init_once()
+  end
+end
+
 -- 初始化入口
 function EasyComplete.init()
-  TabNine.init_once()
-  GhostText.init_once()
-  LuaSnip.init_once()
-  Cmdline.init_once()
+  EasyComplete.load_mojo({"tabnine", "ghost_text", "luasnip", "cmdline"})
+  -- TabNine.init_once()
+  -- GhostText.init_once()
+  -- LuaSnip.init_once()
+  -- Cmdline.init_once()
 
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
