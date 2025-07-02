@@ -55,24 +55,33 @@ function flush()
   pum_close()
 end
 
+function pum_selected()
+  return vim.fn['easycomplete#pum#CompleteCursored']()
+end
+
+function pum_selected_item()
+  return vim.fn['easycomplete#pum#CursoredItem']()
+end
+
 function M.select_next()
   vim.fn['easycomplete#pum#next']()
-  local word = vim.fn['easycomplete#pum#CursoredItem']()
   zizz()
-  do return "x" end
-
   local backing_count = vim.fn.getcmdpos() - cmdline_start_cmdpos
   local oprator_str = string.rep("\b", backing_count)
-  local new_whole_word = oprator_str .. word
+  local new_whole_word = ""
+  if pum_selected() then
+    local item = pum_selected_item()
+    local word = item.word
+    new_whole_word = oprator_str .. word
+  else
+    new_whole_word = oprator_str
+  end
   return new_whole_word
 end
 
 function M.select_prev()
   vim.fn['easycomplete#pum#prev']()
   zizz()
-  local word = vim.fn['easycomplete#pum#CursoredItem']()
-
-
 end
 
 local function bind_cmdline_event()

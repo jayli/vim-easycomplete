@@ -241,8 +241,10 @@ function! easycomplete#pum#WinScrolled()
       call easycomplete#ShowCompleteInfoByItem(curr_item)
     endif
   endif
+  " 当从 cmdline 触发时没有调用 WinScrolled，是因为cmdline激活状态时主屏渲染停滞
+  " 所以要注意在 select() 函数中手动触发一下RenderScrollThumb
   if has_key(v:event, s:pum_window)
-    " pum 窗口的移动
+    " pum 窗口的移动和滚动都会调用这里
     call s:RenderScrollThumb()
   endif
 endfunction
@@ -441,6 +443,18 @@ function! s:select(line_index)
     endif
     call s:HLCursordFuzzyChar("CustomFuzzyMatch", prefix_length)
   endif
+  " cmdline 中弹出 pum 时，主线程的非必要渲染会停止，所以往往需要手动加 redraw 才能触发渲染
+  " 因此在 cmdline 中弹出 pum 时机做了一个延迟，导致渲染延后，以至于获得的 PumPosition 不是
+  " 最初计算的值，导致 scrollbar 的位置计算错误，重新渲染后一般又会正确，都是渲染停滞导致的
+  " 因此这里加上一个强制的延迟，强制重新渲染 scroll 来解决
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    call timer_start(10, { -> s:RenderScroll() })
+  endif
+endfunction
+
+function s:RenderScroll()
+  call s:RenderScrollBar()
+  call s:RenderScrollThumb()
 endfunction
 
 function! s:CharCounts(str, char)
