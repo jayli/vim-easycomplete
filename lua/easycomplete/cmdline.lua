@@ -139,7 +139,7 @@ local function bind_cmdline_event()
   end)
 end
 
-function normalize_list(arr)
+function normalize_list(arr, word)
   if #arr == 0 then return arr end
   local ret = {}
   for index, value in ipairs(arr) do
@@ -148,11 +148,9 @@ function normalize_list(arr)
         abbr = arr[index],
         kind = vim.g.easycomplete_kindflag_cmdline,
         menu = vim.g.easycomplete_menuflag_cmdline,
-        marked_position = {0},
-        abbr_marked = "§" .. string.sub(arr[index], 1, 1) .. "§" .. string.sub(arr[index], 2)
       })
   end
-  return ret
+  return vim.fn['easycomplete#util#CompleteMenuFilter'](ret, word, 500)
 end
 
 function cmdline_handler(keys, key_str)
@@ -179,7 +177,7 @@ function cmdline_handler(keys, key_str)
     local menu_items = vim.fn.getcompletion(word, "function")
     local start_col = vim.fn.getcmdpos() - calculate_sign_and_linenr_width() - #word
     cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
-    pum_complete(start_col, normalize_list(menu_items))
+    pum_complete(start_col, normalize_list(menu_items, word))
   end
   vim.cmd("redraw")
 end
