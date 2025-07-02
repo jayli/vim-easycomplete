@@ -679,8 +679,13 @@ endfunction " }}}
 
 " GetTypingWord {{{
 function! easycomplete#util#GetTypingWord()
-  let start = col('.') - 1
-  let line = getline('.')
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    let start = getcmdpos() - 1
+    let line = getcmdline()
+  else
+    let start = col('.') - 1
+    let line = getline('.')
+  endif
   let width = 0
   " 正常情况这里取普通单词逻辑不应当变化
   " 如果不同语言对单词组成字符界定不一，在主流程中处理

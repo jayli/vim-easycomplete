@@ -17,16 +17,15 @@ function pum_close()
 end
 
 function get_typing_word()
-  -- 获取当前行的文本
-  local current_line = string.sub(vim.fn.getcmdline(),1,vim.fn.getcmdpos())
-
-  -- 使用 gmatch 迭代所有单词（假设单词由空格分隔）
-  local last_word = ""
-  for word in string.gmatch(current_line, "[%w%-]+") do
-    last_word = word
-  end
-
-  return last_word
+  return vim.fn['easycomplete#util#GetTypingWord']()
+  -- -- 获取当前行的文本
+  -- local current_line = string.sub(vim.fn.getcmdline(),1,vim.fn.getcmdpos())
+  -- -- 使用 gmatch 迭代所有单词（假设单词由空格分隔）
+  -- local last_word = ""
+  -- for word in string.gmatch(current_line, "[%w%-]+") do
+  --   last_word = word
+  -- end
+  -- return last_word
 end
 
 function calculate_sign_and_linenr_width()
@@ -66,6 +65,18 @@ end
 function M.select_next()
   vim.fn['easycomplete#pum#next']()
   zizz()
+  local new_whole_word = get_tab_returing_opword()
+  return new_whole_word
+end
+
+function M.select_prev()
+  vim.fn['easycomplete#pum#prev']()
+  zizz()
+  local new_whole_word = get_tab_returing_opword()
+  return new_whole_word
+end
+
+function get_tab_returing_opword()
   local backing_count = vim.fn.getcmdpos() - cmdline_start_cmdpos
   local oprator_str = string.rep("\b", backing_count)
   local new_whole_word = ""
@@ -77,11 +88,6 @@ function M.select_next()
     new_whole_word = oprator_str
   end
   return new_whole_word
-end
-
-function M.select_prev()
-  vim.fn['easycomplete#pum#prev']()
-  zizz()
 end
 
 local function bind_cmdline_event()
@@ -101,10 +107,15 @@ local function bind_cmdline_event()
         vim.g.easycomplete_cmdline_pattern = "/"
       end,
     })
-  vim.cmd [[
-    cnoremap <expr> <Tab> v:lua.require("easycomplete.cmdline").select_next()
-    cnoremap <expr> <S-Tab> v:lua.require("easycomplete.cmdline").select_prev()
-  ]]
+
+  vim.keymap.set("c", "<Tab>", function()
+    return M.select_next()
+  end, { expr = true, noremap = true })
+
+  vim.keymap.set("c", "<S-Tab>", function()
+    return M.select_prev()
+  end, { expr = true, noremap = true })
+
   vim.api.nvim_create_autocmd("CmdlineLeave", {
       group = augroup,
       callback = function()
@@ -136,7 +147,9 @@ function normalize_list(arr)
         word = arr[index],
         abbr = arr[index],
         kind = vim.g.easycomplete_kindflag_cmdline,
-        menu = vim.g.easycomplete_menuflag_cmdline
+        menu = vim.g.easycomplete_menuflag_cmdline,
+        marked_position = {0},
+        abbr_marked = "§" .. string.sub(arr[index], 1, 1) .. "§" .. string.sub(arr[index], 2)
       })
   end
   return ret
@@ -150,20 +163,20 @@ function cmdline_handler(keys, key_str)
   local cmdline = vim.fn.getcmdline()
   cmdline_start_cmdpos = 0
   if string.byte(key_str) == 9 then
-    console("Tab 键被按下")
+    -- console("Tab 键被按下")
   elseif string.byte(key_str) == 32 then
-    console("空格键被按下")
+    -- console("空格键被按下")
     pum_close()
   elseif string.byte(key_str) == 8 or string.byte(key_str) == 128 then
-    console("退格键被按下")
+    -- console("退格键被按下")
     pum_close()
   elseif string.byte(key_str) == 13 then
-    console("回车键被按下")
+    -- console("回车键被按下")
     pum_close()
   else
-    console("其他键被按下: " .. keys)
+    -- console("其他键被按下: " .. keys)
     local word = get_typing_word()
-    local menu_items = vim.fn.getcompletion(word, "cmdline")
+    local menu_items = vim.fn.getcompletion(word, "function")
     local start_col = vim.fn.getcmdpos() - calculate_sign_and_linenr_width() - #word
     cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
     pum_complete(start_col, normalize_list(menu_items))

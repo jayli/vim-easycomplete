@@ -34,6 +34,10 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   return v:true
 endfunction
 
+function! easycomplete#sources#buf#GetKeywords(typing)
+  return s:GetKeywords(a:typing)
+endfunction
+
 " 读取缓冲区词表和字典词表，两者合并输出大词表
 function! s:GetKeywords(typing)
   " 性能测试，3万个单词量级
