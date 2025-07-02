@@ -2805,8 +2805,8 @@ function! easycomplete#BackToOriginalBuffer()
   call easycomplete#action#reference#back()
 endfunction
 
-function! easycomplete#CmdlineEnter()
-  call easycomplete#cmdline#enter()
+function! easycomplete#CmdlineEnter(...)
+  return call('easycomplete#cmdline#enter', a:000)
 endfunction
 
 function! easycomplete#CmdlineLeave()

@@ -17,13 +17,11 @@ function! easycomplete#cmdline#LazyComplete()
 endfunction
 
 function! easycomplete#cmdline#enter()
-  " call s:console("cmdline enter")
-  let g:easycomplete_cmdline_typing = 1
+  return
 endfunction
 
 function! easycomplete#cmdline#leave()
-  let g:easycomplete_cmdline_typing = 0
-  call easycomplete#pum#close()
+  return
 endfunction
 
 function! easycomplete#cmdline#typing()

@@ -190,7 +190,7 @@ function! s:OpenPum(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
-  if easycomplete#cmdline#typing()
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
     let pum_pos.row = &window
   endif
   let pum_opts = deepcopy(s:default_pum_pot)
@@ -373,10 +373,16 @@ endfunction
 
 function! easycomplete#pum#next()
   call s:SelectNext()
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    redraw
+  endif
 endfunction
 
 function! easycomplete#pum#prev()
   call s:SelectPrev()
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    redraw
+  endif
 endfunction
 
 function! easycomplete#pum#CompleteCursored()

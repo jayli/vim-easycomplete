@@ -46,6 +46,10 @@ if g:easycomplete_nerd_font == 1
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󰕃"),
         \      "menu": g:easycomplete_menu_abbr ? "𝘛𝘕" : "tabnine"
+        \    },
+        \   "cmdline": {
+        \      "kind":get(kind_icons, "cmdline", ""),
+        \      "menu": g:easycomplete_menu_abbr ? "CMD" : "cmdline"
         \    }
         \ }
   let g:easycomplete_sign_text = {
@@ -68,7 +72,7 @@ if g:easycomplete_nerd_font == 1
         \ 'const':     get(kind_icons, "const", ""),     'alias':         get(kind_icons, 'alias', ""),
         \ 'let':       get(kind_icons, "let", ""),       'parameter':     get(kind_icons, 'parameter', "󰏗"),
         \ 'operator':  get(kind_icons, 'operator', "󱧕"),  'property':      get(kind_icons, 'property', "󰙅"),
-        \ 'local':     get(kind_icons, 'local', ""),
+        \ 'local':     get(kind_icons, 'local', ""),     'cmdline':       get(kind_icons, 'cmdline', ""),
         \ 'r':'',     't':'',
         \ 'f':'f',     'c':'',
         \ 'u':'𝘶',     'e':'𝘦',
@@ -96,6 +100,8 @@ let g:easycomplete_kindflag_snip = empty(   easycomplete#util#get(g:easycomplete
                                   \ "s" :   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "kind")
 let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "t" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
+let g:easycomplete_kindflag_cmdline = empty(easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "kind")) ?
+                                  \ "c" :    easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "kind")
 if g:easycomplete_menu_abbr
   let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
                                     \ "[B]" : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
@@ -105,6 +111,8 @@ if g:easycomplete_menu_abbr
                                     \ "[S]" : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
   let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
                                     \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
+  let g:easycomplete_menuflag_cmdline = empty(easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")) ?
+                                    \ "[CMD]": easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")
   let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 else
@@ -112,6 +120,7 @@ else
   let g:easycomplete_menuflag_dict = "dict"
   let g:easycomplete_menuflag_snip = "snippet"
   let g:easycomplete_menuflag_tabnine = "tabnine"
+  let g:easycomplete_menuflag_cmdline = "cmdline"
 endif
 
 if !exists("g:easycomplete_fuzzymatch_hlgroup")
@@ -582,8 +591,8 @@ augroup easycomplete#NormalBinding
   autocmd CursorHold * call easycomplete#CursorHold()
   autocmd CursorHoldI * call easycomplete#CursorHoldI()
   autocmd CursorMovedI * call easycomplete#CursorMovedI()
-  autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
-  autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
+  " autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
+  " autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
   if has("nvim")
     autocmd WinScrolled * noa call easycomplete#WinScrolled()
