@@ -2,11 +2,13 @@ local Util = require "easycomplete.util"
 local log = Util.log
 local console = Util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
+-- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
+local cmdline_start_cmdpos = 0
+local zizz_flag = 0
+local zizz_timer = vim.loop.new_timer()
 local M = {}
 
-function pum_complete(menu_items, typing_word)
-  local word = typing_word
-  local start_col = vim.fn.getcmdpos() - calculate_sign_and_linenr_width() - #word
+function pum_complete(start_col, menu_items)
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
@@ -49,17 +51,28 @@ end
 function flush()
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
+  cmdline_start_cmdpos = 0
   pum_close()
 end
 
-function pum_next()
-  vim.fn['easycomplete#CleverTab']()
-  return ""
+function M.select_next()
+  vim.fn['easycomplete#pum#next']()
+  local word = vim.fn['easycomplete#pum#CursoredItem']()
+  zizz()
+  do return "x" end
+
+  local backing_count = vim.fn.getcmdpos() - cmdline_start_cmdpos
+  local oprator_str = string.rep("\b", backing_count)
+  local new_whole_word = oprator_str .. word
+  return new_whole_word
 end
 
-function pum_prev()
+function M.select_prev()
   vim.fn['easycomplete#pum#prev']()
-  return ""
+  zizz()
+  local word = vim.fn['easycomplete#pum#CursoredItem']()
+
+
 end
 
 local function bind_cmdline_event()
@@ -80,8 +93,8 @@ local function bind_cmdline_event()
       end,
     })
   vim.cmd [[
-    cnoremap <expr> <Tab> easycomplete#CleverTab()
-    cnoremap <expr> <S-Tab> easycomplete#CleverShiftTab()
+    cnoremap <expr> <Tab> v:lua.require("easycomplete.cmdline").select_next()
+    cnoremap <expr> <S-Tab> v:lua.require("easycomplete.cmdline").select_prev()
   ]]
   vim.api.nvim_create_autocmd("CmdlineLeave", {
       group = augroup,
@@ -97,7 +110,10 @@ local function bind_cmdline_event()
     vim.g.easycomplete_cmdline_typing = 1
     vim.defer_fn(function()
       vim.schedule(function()
-        cmdline_handler(keys, key_str)
+        local ok, ret = pcall(cmdline_handler, keys, key_str)
+        if not ok then
+          print(ret)
+        end
       end)
     end, 10)
   end)
@@ -121,9 +137,9 @@ function cmdline_handler(keys, key_str)
   if vim.g.easycomplete_cmdline_pattern == "" then
     return
   end
+  if zizzing() then return end
   local cmdline = vim.fn.getcmdline()
-  local typing_word = get_typing_word()
-  local menu_items = vim.fn.getcompletion(typing_word, "cmdline")
+  cmdline_start_cmdpos = 0
   if string.byte(key_str) == 9 then
     console("Tab 键被按下")
   elseif string.byte(key_str) == 32 then
@@ -137,21 +153,40 @@ function cmdline_handler(keys, key_str)
     pum_close()
   else
     console("其他键被按下: " .. keys)
-    pum_complete(normalize_list(menu_items), typing_word)
+    local word = get_typing_word()
+    local menu_items = vim.fn.getcompletion(word, "cmdline")
+    local start_col = vim.fn.getcmdpos() - calculate_sign_and_linenr_width() - #word
+    cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
+    pum_complete(start_col, normalize_list(menu_items))
   end
   vim.cmd("redraw")
+end
+
+function zizz()
+  if zizz_flag > 0 then
+    zizz_timer:stop()
+    zizz_flag = 0
+  end
+  zizz_timer:start(30, 0, function()
+    zizz_flag = 0
+  end)
+  zizz_flag = 1
+end
+
+function zizzing()
+  if zizz_flag == 1 then
+    return true
+  else
+    return false
+  end
 end
 
 
 function M.init_once()
   -- TODO here -----------------------------
   if true then return end
+  console(1)
   -- TODO here -----------------------------
-  if vim.g.easycomplete_cmdline_loaded == 1 then
-    return
-  end
-  vim.g.easycomplete_cmdline_loaded = 1
-
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
   bind_cmdline_event()
