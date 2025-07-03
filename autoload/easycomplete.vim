@@ -1670,7 +1670,7 @@ function! s:CloseCompletionMenu()
   else
     if pumvisible()
       if !(&completeopt =~ "noselect")
-        silent! noa call s:SendKeys("\<ESC>a")
+        call timer_start(10, { -> s:SendKeys("\<Esc>a")})
       else
         silent! noa call s:SendKeys("\<C-Y>")
       endif
