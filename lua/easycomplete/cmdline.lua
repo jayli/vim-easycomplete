@@ -7,13 +7,16 @@ local cmdline_start_cmdpos = 0
 local zizz_flag = 0
 local zizz_timer = vim.loop.new_timer()
 local this = {}
+local completeopt = vim.o.completeopt
 
 function this.pum_complete(start_col, menu_items)
+  vim.opt.completeopt:append("noselect")
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
+  vim.opt.completeopt = completeopt
 end
 
 function this.get_typing_word()
@@ -100,6 +103,14 @@ function this.bind_cmdline_event()
       end,
     })
 
+  vim.api.nvim_create_autocmd("CmdlineLeave", {
+      group = augroup,
+      callback = function()
+        this.flush()
+        vim.o.completeopt = completeopt
+      end
+    })
+
   vim.keymap.set("c", "<Tab>", function()
     return this.select_next()
   end, { expr = true, noremap = true })
@@ -108,12 +119,6 @@ function this.bind_cmdline_event()
     return this.select_prev()
   end, { expr = true, noremap = true })
 
-  vim.api.nvim_create_autocmd("CmdlineLeave", {
-      group = augroup,
-      callback = function()
-        this.flush()
-      end
-    })
   vim.on_key(function(keys, _)
     if vim.api.nvim_get_mode().mode ~= "c" then
       return
