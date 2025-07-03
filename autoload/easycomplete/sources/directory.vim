@@ -95,6 +95,9 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
     return []
   endif
 
+  let dir_menu = g:easycomplete_menu_abbr ? '[Dir]' : 'folder'
+  let file_menu = g:easycomplete_menu_abbr ? '[File]' : 'file'
+
   if a:base[-1:] == "."
     let l:pfx = a:base
   else
@@ -106,17 +109,17 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : "[Dir]"})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : dir_menu})
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item,
-              \ "menu" : "folder", "kind": "" })
+              \ "menu" : dir_menu, "kind": "" })
       endif
     else
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr":item,"menu" : "[File]"})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr":item,"menu" : file_menu})
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr": item,
-              \ "menu" : "[file]",
+              \ "menu" : file_menu,
               \ "kind": ""
               \ })
       endif
