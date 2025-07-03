@@ -1,13 +1,12 @@
 local util = require "easycomplete.util"
-local log = util.log
 local console = util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
 local zizz_flag = 0
 local zizz_timer = vim.loop.new_timer()
-local this = {}
 local completeopt = vim.o.completeopt
+local this = {}
 
 function this.pum_complete(start_col, menu_items)
   vim.opt.completeopt:append("noselect")
@@ -164,13 +163,22 @@ function this.cmdline_handler(keys, key_str)
     this.pum_close()
   elseif string.byte(key_str) == 8 or string.byte(key_str) == 128 then
     -- console("退格键被按下")
-    this.pum_close()
+    this.do_complete()
   elseif string.byte(key_str) == 13 then
     -- console("回车键被按下")
     this.pum_close()
   else
     -- console("其他键被按下: " .. keys)
-    local word = this.get_typing_word()
+    this.do_complete()
+  end
+  vim.cmd("redraw")
+end
+
+function this.do_complete()
+  local word = this.get_typing_word()
+  if word == "" then
+    this.pum_close()
+  else
     local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
     cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
     local menu_items = this.get_cmp_items()
@@ -180,7 +188,6 @@ function this.cmdline_handler(keys, key_str)
       this.pum_complete(start_col, this.normalize_list(menu_items, word))
     end
   end
-  vim.cmd("redraw")
 end
 
 function this.get_all_commands()
@@ -196,8 +203,16 @@ end
 
 -- 路由
 function this.get_cmp_items()
-  if this.typing_cmd() then
+  if this.typing:cmd() then
     return this.get_all_commands()
+  elseif this.typing:path() then
+    return {}
+  elseif this.typing:buffer() then
+    return {}
+  elseif this.typing:fun() then
+    return {}
+  else
+    return {}
   end
 end
 
@@ -206,16 +221,27 @@ function this.trim_before(str)
   return string.gsub(str, "^%s*(.-)$", "%1")
 end
 
--- 正在输入命令
-function this.typing_cmd()
-  local cmdline_all = vim.fn.getcmdline()
-  local cmdline_typed = this.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
-  if string.find(cmdline_typed, "%s") then
-    return false
-  else
-    return true
+this.typing = {
+  -- 正在输入命令
+  cmd = function()
+    local cmdline_all = vim.fn.getcmdline()
+    local cmdline_typed = this.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
+    if string.find(cmdline_typed, "%s") then
+      return false
+    else
+      return true
+    end
+  end,
+  -- 正在输入路径
+  path = function()
+  end,
+  -- 正在输入buf
+  buffer = function()
+  end,
+  -- 正在输入函数
+  fun = function ()
   end
-end
+}
 
 -- 正在输入buffer
 -- 正在输入路径
@@ -365,16 +391,14 @@ this.commands_type = {
   user = 'user',
 }
 
-
 function this.init_once()
   -- TODO here -----------------------------
-  if true then return end
+  do return end
   console(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
   this.bind_cmdline_event()
 end
-
 
 return this
