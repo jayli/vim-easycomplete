@@ -1,17 +1,17 @@
-local Util = {}
+local util = {}
 local async_timer = vim.loop.new_timer()
 local async_timer_counter = 0
 
-function Util.get_servers()
-  if not Util.nvim_installer_installed() then
+function util.get_servers()
+  if not util.nvim_installer_installed() then
     return nil
   end
   local Servers = require("nvim-lsp-installer.servers")
   return Servers
 end
 
-function Util.get_server()
-  if not Util.nvim_installer_installed() then
+function util.get_server()
+  if not util.nvim_installer_installed() then
     return nil
   end
   local Server = require("nvim-lsp-installer.server")
@@ -19,7 +19,7 @@ function Util.get_server()
 end
 
 -- TODO 需要再测试一下这个函数
-function Util.get(a, ...)
+function util.get(a, ...)
   local args = {...}
   if type(a) ~= "table" then
     return a
@@ -35,7 +35,7 @@ function Util.get(a, ...)
 end
 
 -- get word or abbr
-function Util.get_word(a)
+function util.get_word(a)
   local k = a.abbr
   if type(k) == nil or k == nil or k ~= "" then
     local k = a.word
@@ -43,8 +43,8 @@ function Util.get_word(a)
   return k
 end
 
-function Util.isTN(item)
-  local plugin_name = Util.get_item_plugin_name(item)
+function util.isTN(item)
+  local plugin_name = util.get_item_plugin_name(item)
   if plugin_name == "tn" then
     return true
   else
@@ -52,71 +52,71 @@ function Util.isTN(item)
   end
 end
 
-function Util.curr_lsp_constructor_calling()
-  Util.constructor_calling_by_name(Util.current_plugin_name())
+function util.curr_lsp_constructor_calling()
+  util.constructor_calling_by_name(util.current_plugin_name())
 end
 
-function Util.show_success_message()
+function util.show_success_message()
   vim.defer_fn(function()
-    Util.log("LSP is initalized successfully!")
+    util.log("LSP is initalized successfully!")
   end, 100)
 end
 
-function Util.get_configuration()
-  local curr_lsp_name = Util.current_lsp_name()
-  local Servers       = Util.get_servers()
-  local Server        = Util.get_server()
+function util.get_configuration()
+  local curr_lsp_name = util.current_lsp_name()
+  local Servers       = util.get_servers()
+  local Server        = util.get_server()
   local ok, server    = Servers.get_server(curr_lsp_name)
   return {
-    easy_plugin_ctx      = Util.current_plugin_ctx(),
-    easy_plugin_name     = Util.current_plugin_name(),
+    easy_plugin_ctx      = util.current_plugin_ctx(),
+    easy_plugin_name     = util.current_plugin_name(),
     easy_lsp_name        = curr_lsp_name,
-    easy_lsp_config_path = Util.get_default_config_path(),
-    easy_cmd_full_path   = Util.get_default_command_full_path(),
-    nvim_lsp_root        = Util.get(server, "root_dir"),
+    easy_lsp_config_path = util.get_default_config_path(),
+    easy_cmd_full_path   = util.get_default_command_full_path(),
+    nvim_lsp_root        = util.get(server, "root_dir"),
     nvim_lsp_root_path   = Server.get_server_root_path(),
     nvim_lsp_ok          = ok,
   }
 end
 
-function Util.constructor_calling_by_name(plugin_name)
+function util.constructor_calling_by_name(plugin_name)
   vim.fn['easycomplete#ConstructorCallingByName'](plugin_name)
 end
 
-function Util.console(...)
+function util.console(...)
   return vim.fn['easycomplete#log#log'](...)
 end
 
-function Util.log(...)
+function util.log(...)
   return vim.fn['easycomplete#util#info'](...)
 end
 
-function Util.get_item_plugin_name(...)
+function util.get_item_plugin_name(...)
   return vim.fn['easycomplete#util#GetPluginNameFromUserData'](...)
 end
 
-function Util.current_plugin_ctx()
+function util.current_plugin_ctx()
   return vim.fn['easycomplete#GetCurrentLspContext']()
 end
 
-function Util.current_plugin_name()
-  local curr_ctx = Util.current_plugin_ctx()
-  local plugin_name = Util.get(curr_ctx, 'name')
+function util.current_plugin_name()
+  local curr_ctx = util.current_plugin_ctx()
+  local plugin_name = util.get(curr_ctx, 'name')
   return plugin_name
 end
 
-function Util.current_lsp_name()
-  local curr_plugin_ctx = Util.current_plugin_ctx()
+function util.current_lsp_name()
+  local curr_plugin_ctx = util.current_plugin_ctx()
   if curr_plugin_ctx.name == "ts" then
     return "tsserver"
   end
-  local lsp_name = Util.get(curr_plugin_ctx, "lsp", "name")
+  local lsp_name = util.get(curr_plugin_ctx, "lsp", "name")
   return lsp_name
 end
 
-function Util.get_default_lsp_root_path()
+function util.get_default_lsp_root_path()
   local all_root = vim.fn['easycomplete#installer#LspServerDir']()
-  local plugin_name = Util.current_plugin_name()
+  local plugin_name = util.current_plugin_name()
   local root_path = vim.fn.join({
     all_root,
     plugin_name,
@@ -124,8 +124,8 @@ function Util.get_default_lsp_root_path()
   return root_path
 end
 
-function Util.get_default_config_path()
-  local lsp_root = Util.get_default_lsp_root_path()
+function util.get_default_config_path()
+  local lsp_root = util.get_default_lsp_root_path()
   local config_path = vim.fn.join({
     lsp_root,
     "config.json",
@@ -133,22 +133,22 @@ function Util.get_default_config_path()
   return config_path
 end
 
-function Util.get_default_command_full_path()
-  local curr_plugin_ctx   = Util.current_plugin_ctx()
-  local command_name      = Util.get(curr_plugin_ctx, "command")
+function util.get_default_command_full_path()
+  local curr_plugin_ctx   = util.current_plugin_ctx()
+  local command_name      = util.get(curr_plugin_ctx, "command")
   local command_full_path = vim.fn.join({
-    Util.get_default_lsp_root_path(),
+    util.get_default_lsp_root_path(),
     command_name
   }, "/")
   return command_full_path
 end
 
-function Util.nvim_installer_installed()
+function util.nvim_installer_installed()
   return vim.g.loaded_nvim_lsp_installer
 end
 
 -- concat is a array
-function Util.create_command(file_path, content)
+function util.create_command(file_path, content)
   if vim.fn.executable(file_path) then
     vim.fn.delete(file_path, "rf")
   end
@@ -156,20 +156,20 @@ function Util.create_command(file_path, content)
   vim.fn.setfperm(file_path, "rwxr-xr-x")
 end
 
-function Util.create_config(file_path, content)
+function util.create_config(file_path, content)
   if vim.fn.executable(file_path) then
     vim.fn.delete(file_path, "rf")
   end
   vim.fn.writefile(content, file_path, "a")
 end
 
-function Util.nvim_lsp_installed()
-  local current_lsp_ctx = Util.current_plugin_ctx()
-  local lsp_name = Util.current_lsp_name()
-  if not Util.nvim_installer_installed() or type(lsp_name) == nil then
+function util.nvim_lsp_installed()
+  local current_lsp_ctx = util.current_plugin_ctx()
+  local lsp_name = util.current_lsp_name()
+  if not util.nvim_installer_installed() or type(lsp_name) == nil then
     return false
   end
-  local Servers = Util.get_servers()
+  local Servers = util.get_servers()
   local install_list = Servers.get_installed_server_names()
   local flag = false
   for i = 1, #install_list do
@@ -181,14 +181,14 @@ function Util.nvim_lsp_installed()
   return flag
 end
 
-function Util.easy_lsp_installed()
+function util.easy_lsp_installed()
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
-  local current_lsp_ctx = Util.current_plugin_ctx()
+  local current_lsp_ctx = util.current_plugin_ctx()
   local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name) 
   if plugin_name == "ts" and string.find(easy_available_command, "tsserver$") then
     return true
   end
-  local easy_lsp_ready = Util.get(current_lsp_ctx, "lsp", "ready")
+  local easy_lsp_ready = util.get(current_lsp_ctx, "lsp", "ready")
   if easy_available_command ~= "" and easy_lsp_ready == true then
     return true
   else
@@ -196,7 +196,7 @@ function Util.easy_lsp_installed()
   end
 end
 
-function Util.async_run(func, args, timeout)
+function util.async_run(func, args, timeout)
   async_timer:start(timeout, 0, function()
     if type(func) == "string" then
       -- 如果是字符串，则作为全局函数名调用
@@ -231,12 +231,12 @@ function Util.async_run(func, args, timeout)
   return async_timer_counter + 1
 end
 
-function Util.stop_async_run()
+function util.stop_async_run()
   async_timer:stop()
   async_timer_counter = 0
 end
 
-function Util.defer_fn(func_name, args, timeout)
+function util.defer_fn(func_name, args, timeout)
   if type(func_name) == "string" then
     -- 如果是字符串，则作为全局函数名调用
     local f = vim.fn[func_name]
@@ -261,4 +261,4 @@ function Util.defer_fn(func_name, args, timeout)
   end
 end
 
-return Util
+return util
