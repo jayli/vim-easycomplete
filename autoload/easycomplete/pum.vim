@@ -90,11 +90,12 @@ endfunction
 "  EasyExtra:      "‰", 继承 PmenuExtra
 "
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
-" 区分开，这里增加四种常见的颜色配置：
+" 区分开，这里增加5种常见的颜色配置：
 "  EasyFunction:   "%", Function/Constant/Scruct
 "  EasySnippet:    "∫", Snippet/snip
 "  EasyTabNine:    "@", TabNine
 "  EasyNormal:     "Φ", Buf/Text/dict - Pmenu 默认色
+"  EasyKeyword:    "♧", Keyword
 function! s:hl()
   if empty(s:easycomplete_hl_exec_cmd)
     if easycomplete#util#IsGui()
@@ -109,6 +110,7 @@ function! s:hl()
     let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Keyword"
     let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
     let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
+    let keyword_hl_group = s:HLExists("EasyKeyword") ? "EasyKeyword" : "Define"
     let pmenu_cursor_has_reverse = s:HasReverseHighlight("PmenuSel")
     if s:HLExists("EasyFuzzyMatch")
       let fuzzymatch_bold_str = s:HasBold("EasyFuzzyMatch") ? "gui=bold" : ""
@@ -143,6 +145,7 @@ function! s:hl()
           \ 'syntax region CustomFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/∫\([^∫]∫\)\@=/  matchgroup=Conceal end=/\(∫[^∫]\)\@<=∫/ concealends oneline',
           \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
+          \ 'syntax region CustomKeyword    matchgroup=Conceal start=/♧\([^♧]♧\)\@=/  matchgroup=Conceal end=/\(♧[^♧]\)\@<=♧/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/Φ\([^Φ]Φ\)\@=/  matchgroup=Conceal end=/\(Φ[^Φ]\)\@<=Φ/ concealends oneline',
           \ "hi CustomFuzzyMatch " . dev . "fg=" . fuzzymatch_fg . " " . fuzzymatch_bold_str,
           \ "hi CustomPmenuSel " . dev . "fg=" . pmenu_cursor_hl_group_fg . " " . dev . "bg=" . pmenu_cursor_hl_group_bg,
@@ -152,6 +155,7 @@ function! s:hl()
           \ "hi link CustomSnippet  " . snippet_hl_group,
           \ "hi link CustomTabNine  " . tabnine_hl_group,
           \ "hi link CustomNormal   " . pmenu_hl_group,
+          \ "hi link CustomKeyword  " . keyword_hl_group,
           \ "hi link Error Pmenu",
           \ ]
           " \ "hi Search guibg=NONE guifg=NONE ctermbg=NONE ctermfg=NONE",
@@ -1086,6 +1090,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s∫\[^∫\]∫\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s@\[^@\]@\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\sΦ\[^Φ\]Φ\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♧\[^♧\]♧\\s", " x ", "g")
     let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§|‰]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
@@ -1120,6 +1125,10 @@ function! s:MapFunction(key, val)
           \ kind_o ==# g:easycomplete_lsp_type_font["text"]
       " 颜色4，标准色
       let kind_char = "Φ"
+    elseif kind_o ==# g:easycomplete_lsp_type_font["keyword"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["class"]
+      " 颜色 5
+      let kind_char = "♧"
     endif
   endif
   let format_object = {
