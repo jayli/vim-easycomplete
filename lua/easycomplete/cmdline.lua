@@ -199,12 +199,12 @@ function this.get_all_commands()
   return all_commands
 end
 
--- 路由
+-- 路由 TODO: 命令跟一个空格也应该直接弹出菜单
 function this.get_cmp_items()
   if this.typing:cmd() then
     return this.get_all_commands()
-  elseif this.typing:path() then
-    return {}
+  elseif this.typing:file() then
+    return vim.fn.getcompletion("", "file")
   elseif this.typing:buffer() then
     return {}
   elseif this.typing:fun() then
@@ -219,19 +219,59 @@ function this.trim_before(str)
   return string.gsub(str, "^%s*(.-)$", "%1")
 end
 
+function this.cmdline_before_cursor()
+  local cmdline_all = vim.fn.getcmdline()
+  local cmdline_typed = this.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
+  return cmdline_typed
+end
+
+function this.get_cmd_name()
+  local cmdline_typed = this.cmdline_before_cursor()
+  local cmdline_tb = vim.split(cmdline_typed, "%s+")
+  if #cmdline_tb == 0 then
+    return ""
+  else
+    return cmdline_tb[1]
+  end
+end
+
+-- 判断当前输入命令字符串是否完全匹配rgx
+function this.cmd_match(rgx)
+  local cmdline_typed = this.cmdline_before_cursor()
+  local ret = string.find(cmdline_typed, rgx)
+  if ret == nil then -- 不匹配
+    return false
+  elseif ret == 1 then -- 从头匹配
+    return true
+  else -- 不从头匹配
+    return false
+  end
+end
+
+function this.has_item(tb, it)
+  if #tb == 0 then return false end
+  local idx = vim.fn.index(tb, it)
+  if idx == -1 then
+    return false
+  else
+    return true
+  end
+end
+
 this.typing = {
   -- 正在输入命令
   cmd = function()
-    local cmdline_all = vim.fn.getcmdline()
-    local cmdline_typed = this.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
-    if string.find(cmdline_typed, "%s") then
-      return false
-    else
-      return true
-    end
+    return this.cmd_match("^[a-zA-Z0-9_]+$")
   end,
   -- 正在输入路径
-  path = function()
+  file = function()
+    local cmd_name = this.get_cmd_name()
+    if this.cmd_match("^[a-zA-Z0-9_]+%s") and
+       this.has_item(this.cmd_type.file, cmd_name) then
+      return true
+    else
+      return false
+    end
   end,
   -- 正在输入buf
   buffer = function()
@@ -263,6 +303,28 @@ function this.get_completion_type()
   end
   return cmd_type
 end
+
+this.cmd_type = {
+  file = {
+    'edit',
+    'read',
+    'write',
+    'saveas',
+    'source',
+    'split',
+    'vsplit',
+    'tabedit',
+    'diffsplit',
+    'diffpatch',
+    'explore',
+    'lexplore',
+    'sexplore',
+    'vexplore',
+    'find',
+    'sfind',
+    'tabfind'
+  }
+}
 
 this.commands_type = {
   -- File completion
