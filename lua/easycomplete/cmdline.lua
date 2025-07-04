@@ -3,8 +3,6 @@ local console = util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
-local zizz_flag = 0
-local zizz_timer = vim.loop.new_timer()
 local completeopt = vim.o.completeopt
 local this = {}
 
@@ -58,14 +56,14 @@ end
 
 function this.select_next()
   vim.fn['easycomplete#pum#next']()
-  this.zizz()
+  util.zizz()
   local new_whole_word = this.get_tab_returing_opword()
   return new_whole_word
 end
 
 function this.select_prev()
   vim.fn['easycomplete#pum#prev']()
-  this.zizz()
+  util.zizz()
   local new_whole_word = this.get_tab_returing_opword()
   return new_whole_word
 end
@@ -153,7 +151,7 @@ function this.cmdline_handler(keys, key_str)
   if vim.g.easycomplete_cmdline_pattern == "" then
     return
   end
-  if this.zizzing() then return end
+  if util.zizzing() then return end
   local cmdline = vim.fn.getcmdline()
   cmdline_start_cmdpos = 0
   if string.byte(key_str) == 9 then
@@ -264,25 +262,6 @@ function this.get_completion_type()
     end
   end
   return cmd_type
-end
-
-function this.zizz()
-  if zizz_flag > 0 then
-    zizz_timer:stop()
-    zizz_flag = 0
-  end
-  zizz_timer:start(30, 0, function()
-    zizz_flag = 0
-  end)
-  zizz_flag = 1
-end
-
-function this.zizzing()
-  if zizz_flag == 1 then
-    return true
-  else
-    return false
-  end
 end
 
 this.commands_type = {

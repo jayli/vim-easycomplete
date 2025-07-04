@@ -1,6 +1,27 @@
 local util = {}
+local zizz_flag = 0
+local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
 local async_timer_counter = 0
+
+function util.zizz()
+  if zizz_flag > 0 then
+    zizz_timer:stop()
+    zizz_flag = 0
+  end
+  zizz_timer:start(30, 0, function()
+    zizz_flag = 0
+  end)
+  zizz_flag = 1
+end
+
+function util.zizzing()
+  if zizz_flag == 1 then
+    return true
+  else
+    return false
+  end
+end
 
 function util.get_servers()
   if not util.nvim_installer_installed() then
