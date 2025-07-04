@@ -383,6 +383,9 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasySnippet`: Snippet 图标样式. 默认link到 "Keyword".
 - `EasyTabNine`: TabNine 图标样式. 默认link到 "Character".
 - `EasySnippets`: 行内补全样式. 默认link到 "LineNr"
+- `EasyNormal`: 默认图标样式，默认link到 Normal.
+- `EasyKeyword`: 默认Keyword图标，默认links 到 "Define".
+- `EasyModule`: 默认Module 图标. 默认links到"Function".
 
 当 `g:easycomplete_winborder` 设置为 `1`. Pmenu 匹配菜单的背景色会自动设置成和文档背景色一致。如果你不想被自动设置 pum 背景色，可以这样关掉: `let g:easycomplete_pum_pretty_style = 0`，然后定义新的“Pmenu, FloatBorder, PmenuExtra, PmenuKind” 等样式。
 

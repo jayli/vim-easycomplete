@@ -73,6 +73,7 @@ if g:easycomplete_nerd_font == 1
         \ 'let':       get(kind_icons, "let", ""),       'parameter':     get(kind_icons, 'parameter', "󰏗"),
         \ 'operator':  get(kind_icons, 'operator', "󱧕"),  'property':      get(kind_icons, 'property', "󰙅"),
         \ 'local':     get(kind_icons, 'local', ""),     'cmdline':       get(kind_icons, 'cmdline', ""),
+        \ 'method':    get(kind_icons, 'method', ""),
         \ 'r':'',     't':'',
         \ 'f':'f',     'c':'',
         \ 'u':'𝘶',     'e':'𝘦',

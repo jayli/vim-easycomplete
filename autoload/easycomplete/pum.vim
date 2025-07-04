@@ -90,12 +90,14 @@ endfunction
 "  EasyExtra:      "‰", 继承 PmenuExtra
 "
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
-" 区分开，这里增加5种常见的颜色配置：
+" 区分开，这里设置6种常见的颜色配置：
+" 6种颜色做隔离足够了，ColorScheme 常用颜色一般也就八九个
 "  EasyFunction:   "%", Function/Constant/Scruct
 "  EasySnippet:    "∫", Snippet/snip
 "  EasyTabNine:    "@", TabNine
 "  EasyNormal:     "Φ", Buf/Text/dict - Pmenu 默认色
 "  EasyKeyword:    "♧", Keyword
+"  EasyModule:     "♤", module
 function! s:hl()
   if empty(s:easycomplete_hl_exec_cmd)
     if easycomplete#util#IsGui()
@@ -103,14 +105,15 @@ function! s:hl()
     else
       let dev = "cterm"
     endif
-    let fuzzymatch_hl_group = s:HLExists("EasyFuzzyMatch") ? "EasyFuzzyMatch" : "PmenuMatch"
-    let pmenu_kind_hl_group = s:HLExists("EasyPmenuKind") ? "EasyPmenuKind" : "PmenuKind"
-    let pmenu_extra_hl_group = s:HLExists("EasyPmenuExtra") ? "EasyPmenuExtra" : "PmenuExtra"
-    let function_hl_group = s:HLExists("EasyFunction") ? "EasyFunction" : "Conditional"
-    let snippet_hl_group = s:HLExists("EasySnippet") ? "EasySnippet" : "Keyword"
-    let tabnine_hl_group = s:HLExists("EasyTabNine") ? "EasyTabNine" : "Character"
-    let pmenu_hl_group = s:HLExists("EasyPmenu") ? "EasyPmenu" : "Pmenu"
-    let keyword_hl_group = s:HLExists("EasyKeyword") ? "EasyKeyword" : "Define"
+    let fuzzymatch_hl_group      = s:HLExists("EasyFuzzyMatch") ? "EasyFuzzyMatch" : "PmenuMatch"
+    let pmenu_kind_hl_group      = s:HLExists("EasyPmenuKind") ? "EasyPmenuKind"   : "PmenuKind"
+    let pmenu_extra_hl_group     = s:HLExists("EasyPmenuExtra") ? "EasyPmenuExtra" : "PmenuExtra"
+    let function_hl_group        = s:HLExists("EasyFunction") ? "EasyFunction"     : "Conditional"
+    let snippet_hl_group         = s:HLExists("EasySnippet") ? "EasySnippet"       : "Number"
+    let tabnine_hl_group         = s:HLExists("EasyTabNine") ? "EasyTabNine"       : "Character"
+    let pmenu_hl_group           = s:HLExists("EasyPmenu") ? "EasyPmenu"           : "Pmenu"
+    let keyword_hl_group         = s:HLExists("EasyKeyword") ? "EasyKeyword"       : "Define"
+    let module_hl_group          = s:HLExists("EasyModule") ? "EasyModule"         : "Function"
     let pmenu_cursor_has_reverse = s:HasReverseHighlight("PmenuSel")
     if s:HLExists("EasyFuzzyMatch")
       let fuzzymatch_bold_str = s:HasBold("EasyFuzzyMatch") ? "gui=bold" : ""
@@ -146,6 +149,7 @@ function! s:hl()
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/∫\([^∫]∫\)\@=/  matchgroup=Conceal end=/\(∫[^∫]\)\@<=∫/ concealends oneline',
           \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
           \ 'syntax region CustomKeyword    matchgroup=Conceal start=/♧\([^♧]♧\)\@=/  matchgroup=Conceal end=/\(♧[^♧]\)\@<=♧/ concealends oneline',
+          \ 'syntax region CustomModule     matchgroup=Conceal start=/♤\([^♤]♤\)\@=/  matchgroup=Conceal end=/\(♤[^♤]\)\@<=♤/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/Φ\([^Φ]Φ\)\@=/  matchgroup=Conceal end=/\(Φ[^Φ]\)\@<=Φ/ concealends oneline',
           \ "hi CustomFuzzyMatch " . dev . "fg=" . fuzzymatch_fg . " " . fuzzymatch_bold_str,
           \ "hi CustomPmenuSel " . dev . "fg=" . pmenu_cursor_hl_group_fg . " " . dev . "bg=" . pmenu_cursor_hl_group_bg,
@@ -156,6 +160,7 @@ function! s:hl()
           \ "hi link CustomTabNine  " . tabnine_hl_group,
           \ "hi link CustomNormal   " . pmenu_hl_group,
           \ "hi link CustomKeyword  " . keyword_hl_group,
+          \ "hi link CustomModule   " . module_hl_group,
           \ "hi link Error Pmenu",
           \ ]
           " \ "hi Search guibg=NONE guifg=NONE ctermbg=NONE ctermfg=NONE",
@@ -349,7 +354,7 @@ function! easycomplete#pum#PumGetPos()
         \ "width": w - 1,
         \ "scrollbar": scrollbar,
         \ "size": item_size
-        \}
+        \ }
 endfunction
 
 function! easycomplete#pum#CompleteChangedEvnet()
@@ -1091,6 +1096,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s@\[^@\]@\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\sΦ\[^Φ\]Φ\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♧\[^♧\]♧\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♤\[^♤\]♤\\s", " x ", "g")
     let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§|‰]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
@@ -1108,27 +1114,31 @@ function! s:MapFunction(key, val)
   let kind_char = "|"
   if g:easycomplete_nerd_font
     let kind_o = get(a:val, "kind", "")
-    if kind_o ==# g:easycomplete_lsp_type_font["function"] ||
+    if      kind_o ==# g:easycomplete_lsp_type_font["function"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["constant"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["struct"]
       " 颜色1
       let kind_char = "%"
-    elseif kind_o ==# g:easycomplete_menu_skin["snip"]["kind"] ||
+    elseif  kind_o ==# g:easycomplete_menu_skin["snip"]["kind"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["snippet"]
       " 颜色2
       let kind_char = "∫"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
       " 颜色3
       let kind_char = "@"
-    elseif kind_o ==# g:easycomplete_menu_skin["buf"]["kind"] ||
+    elseif  kind_o ==# g:easycomplete_menu_skin["buf"]["kind"] ||
           \ kind_o ==# g:easycomplete_menu_skin["dict"]["kind"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["text"]
       " 颜色4，标准色
       let kind_char = "Φ"
-    elseif kind_o ==# g:easycomplete_lsp_type_font["keyword"] ||
+    elseif  kind_o ==# g:easycomplete_lsp_type_font["keyword"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["class"]
       " 颜色 5
       let kind_char = "♧"
+    elseif  kind_o ==# g:easycomplete_lsp_type_font["module"] ||
+          \ kind_o ==# g:easycomplete_lsp_type_font["method"]
+      " 颜色 6
+      let kind_char = "♤"
     endif
   endif
   let format_object = {

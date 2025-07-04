@@ -387,6 +387,9 @@ You can add custom Pmenu styles by defining these highlight groups:
 - `EasySnippet`: Snippet kind icon style. links to "Keyword" by default.
 - `EasyTabNine`: TabNine kind icon style. links to "Character" by default.
 - `EasySnippets`: TabNine snippets suggestion style. links to "LineNr" by default
+- `EasyNormal`: Pmenu default style. links to "Normal" by default.
+- `EasyKeyword`: Pmenu keyword kind icon style. links to "Define" by default.
+- `EasyModule`: Module kind icon style. links to "Function" by default.
 
 When `g:easycomplete_winborder` is set to `1`. The guibg of Pmenu will be set to be the same as the Normal guibg automatically. If you want to redefine pum style, disable the auto setting by `let g:easycomplete_pum_pretty_style = 0`. Then define these highlight group: "FloatBorder, Pmenu, PmenuExtra, PmenuKind" etc.
 
