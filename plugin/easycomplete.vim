@@ -591,8 +591,6 @@ augroup easycomplete#NormalBinding
   autocmd CursorHold * call easycomplete#CursorHold()
   autocmd CursorHoldI * call easycomplete#CursorHoldI()
   autocmd CursorMovedI * call easycomplete#CursorMovedI()
-  " autocmd CmdlineEnter * noa call easycomplete#CmdlineEnter()
-  " autocmd CmdlineLeave * noa call easycomplete#CmdlineLeave()
   autocmd BufLeave * noa call easycomplete#BufLeave()
   if has("nvim")
     autocmd WinScrolled * noa call easycomplete#WinScrolled()

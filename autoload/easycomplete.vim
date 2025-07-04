@@ -2808,15 +2808,12 @@ function! easycomplete#BackToOriginalBuffer()
 endfunction
 
 function! easycomplete#CmdlineEnter(...)
-  return call('easycomplete#cmdline#enter', a:000)
 endfunction
 
 function! easycomplete#CmdlineLeave()
-  call easycomplete#cmdline#leave()
 endfunction
 
 function! easycomplete#CmdlineChanged(char)
-  call easycomplete#cmdline#changed(a:char)
 endfunction
 
 function! easycomplete#Textchanged()
