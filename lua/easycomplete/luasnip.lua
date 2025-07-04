@@ -3,6 +3,28 @@ local Util = require "easycomplete.util"
 local console = Util.console
 local snip_cache = {}
 
+-- normalize_info 把占位符去掉，为了给info显示用
+local function normalize_info(docstring)
+  if docstring == "" then
+    return {}
+  end
+  local new_lines = {}
+  local snip_lines = vim.split(docstring, "\n")
+  for i, line_str in pairs(snip_lines) do
+    local subline = string.gsub(line_str, "%${[^{^}]-}", "")
+    local subline = string.gsub(subline, "%${[^{^}]-}", "")
+    new_lines[#new_lines + 1] = subline
+  end
+  return new_lines
+end
+
+-- luasnip 对 snipmate 的支持不好，如果片段中有多个没有替代符的占位符"${1}"
+-- luasnip 无法通过 Tab 来跳转，必须要加上一个空格作为站位
+local function hack_snipmate(docstring)
+  return docstring:gsub("%${(%d+)%}", "${%1: }")
+end
+
+
 function M.luasnip_installed()
   -- do return false end
   if vim.g.easycomplete_lua_snip_enable == nil then
@@ -32,6 +54,7 @@ function M.init_once()
   if not M.luasnip_installed() then
     return
   end
+  require('luasnip').filetype_extend("typescript", { "javascript" })
   local snip_path = ""
   if vim.g.easycomplete_custom_snippet == "" then
     snip_path = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]() .. '/snippets'
@@ -45,6 +68,10 @@ function M.init_once()
     require("luasnip.loaders.from_snipmate").lazy_load({ path = { snip_path } })
     vim.g.easycomplete_luasnip_from_where = "snipmate"
   end
+  M.bind_snip_event()
+end
+
+function M.bind_snip_event()
   vim.keymap.set('s', '<Tab>', function()
     if require('luasnip').locally_jumpable(1) then
       require('luasnip').jump(1)
@@ -55,27 +82,6 @@ function M.init_once()
       require('luasnip').jump(-1)
     end
   end, { expr = true, silent = true })
-end
-
--- normalize_info 把占位符去掉，为了给info显示用
-function normalize_info(docstring)
-  if docstring == "" then
-    reutrn {}
-  end
-  local new_lines = {}
-  local snip_lines = vim.split(docstring, "\n")
-  for i, line_str in pairs(snip_lines) do
-    local subline = string.gsub(line_str, "%${[^{^}]-}", "")
-    local subline = string.gsub(subline, "%${[^{^}]-}", "")
-    new_lines[#new_lines + 1] = subline
-  end
-  return new_lines
-end
-
--- luasnip 对 snipmate 的支持不好，如果片段中有多个没有替代符的占位符"${1}"
--- luasnip 无法通过 Tab 来跳转，必须要加上一个空格作为站位
-function hack_snipmate(docstring)
-  return docstring:gsub("%${(%d+)%}", "${%1: }")
 end
 
 function M.get_snip_items(typing, plugin_name, ctx)
