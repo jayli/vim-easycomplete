@@ -646,6 +646,7 @@ function! s:NVimShow(opt, windowtype, float_type)
   else
     call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
   endif
+  call setwinvar(winid, '&hlsearch', 0)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)
