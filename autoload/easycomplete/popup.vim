@@ -633,7 +633,7 @@ function! s:NVimShow(opt, windowtype, float_type)
   noa let winid = nvim_open_win(s:buf[a:windowtype], v:false, opt)
   let g:easycomplete_popup_win[a:windowtype] = winid
   if a:windowtype == "popup" || (a:windowtype == "float" && a:float_type == "signature")
-    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu,Search:Normal,Error:Pmenu')
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu,Search:Normal,Error:Pmenu,Search:NONE')
     call setwinvar(winid, '&spell', 0)
   elseif a:windowtype == "float" && a:float_type == "lint"
     let bgcolor = easycomplete#ui#GetBgColor("CursorLine")
@@ -642,11 +642,10 @@ function! s:NVimShow(opt, windowtype, float_type)
       let fgcolor = easycomplete#ui#GetFgColor("Comment")
     endif
     call easycomplete#ui#hi("EasyLintStyle", fgcolor, bgcolor, "")
-    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle')
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:EasyLintStyle,Search:NONE')
   else
-    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu')
+    call setwinvar(winid, '&winhl', 'Normal:Pmenu,NormalNC:Pmenu,Search:NONE')
   endif
-  " call setwinvar(winid, '&hlsearch', 0)
   if has('nvim-0.5.0')
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&scrolloff', 0)
     call setwinvar(g:easycomplete_popup_win[a:windowtype], '&spell', 0)

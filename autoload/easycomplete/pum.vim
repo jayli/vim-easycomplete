@@ -662,7 +662,7 @@ function! s:OpenFloatWindow(buf, opts, hl)
   call setwinvar(winid, '&number', 0)
   call setwinvar(winid, '&wrap', 0)
   call setwinvar(winid, '&signcolumn', "no")
-  call setwinvar(winid, '&hlsearch', 0)
+  " call setwinvar(winid, '&hlsearch', 0)
   call setwinvar(winid, '&list', 0)
   call setwinvar(winid, '&conceallevel', 3)
   if exists("&pumblend")
@@ -686,7 +686,7 @@ function! s:RenderScrollBar()
   let scrollbar_opts = deepcopy(s:default_scroll_bar_pot)
   call extend(scrollbar_opts, pos)
   if empty(s:scrollbar_window)
-    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar"
+    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar:Search:NONE"
     let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
   else
     " update scroll window
