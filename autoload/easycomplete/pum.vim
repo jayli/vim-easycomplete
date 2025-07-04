@@ -686,7 +686,7 @@ function! s:RenderScrollBar()
   let scrollbar_opts = deepcopy(s:default_scroll_bar_pot)
   call extend(scrollbar_opts, pos)
   if empty(s:scrollbar_window)
-    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar:Search:NONE"
+    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar:Search:EasyNone"
     let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
   else
     " update scroll window

@@ -132,6 +132,7 @@ function! easycomplete#_enable()
   call timer_start(300, { -> easycomplete#util#AutoLoadDict() })
   call timer_start(400, { -> s:SnippetsInit()})
   exec "hi EasyLintStyle guifg=NONE"
+  exec "hi EasyNone guifg=NONE"
   if g:easycomplete_winborder
     call easycomplete#ui#HiFloatBorder()
   endif
