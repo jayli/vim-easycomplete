@@ -2,10 +2,6 @@
 local EasyComplete = {}
 local Util = require "easycomplete.util"
 local AutoLoad = require "easycomplete.autoload"
-local TabNine = require "easycomplete.tabnine"
-local GhostText = require "easycomplete.ghost_text"
-local LuaSnip = require "easycomplete.luasnip"
-local Cmdline = require "easycomplete.cmdline"
 local console = Util.console
 local log = Util.log
 local global_timer = vim.loop.new_timer()
@@ -88,11 +84,7 @@ end
 
 -- 初始化入口
 function EasyComplete.init()
-  EasyComplete.load_mojo({"tabnine", "ghost_text", "luasnip", "cmdline"})
-  -- TabNine.init_once()
-  -- GhostText.init_once()
-  -- LuaSnip.init_once()
-  -- Cmdline.init_once()
+  EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
   nvim_lsp_handler()
   if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then

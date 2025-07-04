@@ -394,7 +394,7 @@ this.commands_type = {
 function this.init_once()
   -- TODO here -----------------------------
   do return end
-  console(1)
+  -- console(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
