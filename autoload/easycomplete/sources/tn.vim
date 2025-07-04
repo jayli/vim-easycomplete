@@ -140,7 +140,7 @@ function! s:GetTabNineParams()
   let l:before_line = max([1, l:pos[1] - l:line_limit])
   let l:before_lines = getline(l:before_line, l:pos[1])
   if !empty(l:before_lines)
-    let l:before_lines[-1] = l:before_lines[-1][:l:pos[2]-1]
+    let l:before_lines[-1] = l:before_lines[-1][:l:pos[2]-2]
   endif
   let l:after_line = min([l:last_line, l:pos[1] + l:line_limit])
   let l:after_lines = getline(l:pos[1], l:after_line)
