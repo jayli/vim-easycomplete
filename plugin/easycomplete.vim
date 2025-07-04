@@ -579,7 +579,7 @@ augroup easycomplete#NormalBinding
   autocmd CursorMoved * call easycomplete#CursorMoved()
   autocmd BufEnter * call easycomplete#BufEnter()
   " FirstComplete Entry
-  if has("vim") " 输入激发相关的事件放在 lua 中绑定
+  if !has("nvim") " 输入激发相关的事件放在 lua 中绑定
     autocmd TextChangedI * call easycomplete#TextChangedI()
   endif
   " autocmd TextChanged * call easycomplete#Textchanged()
@@ -587,7 +587,7 @@ augroup easycomplete#NormalBinding
   autocmd ExitPre * call easycomplete#finish()
   " SecondComplete Entry
   autocmd CompleteChanged * noa call easycomplete#CompleteChanged()
-  if has("vim")
+  if !has("nvim")
     autocmd TextChangedP * noa call easycomplete#TextChangedP()
     autocmd InsertCharPre * call easycomplete#InsertCharPre()
   endif
