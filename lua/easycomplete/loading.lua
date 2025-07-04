@@ -6,13 +6,13 @@ local loading_timer = vim.loop.new_timer()
 local loading_chars = {'⠇','⠋','⠙','⠸','⢰','⣠','⣄','⡆'}
 local cursor = 1
 
-function set_loading_interval(interval, callback)
+local function set_loading_interval(interval, callback)
   loading_timer:start(interval, interval, function ()
     callback()
   end)
 end
 
-function clear_loading_interval()
+local function clear_loading_interval()
   loading_timer:stop()
 end
 
@@ -37,7 +37,7 @@ end
 
 function M.stop()
   if type(loading_timer) == "userdata" then
-    clear_loading_interval(loading_timer)
+    clear_loading_interval()
     vim.api.nvim_buf_del_extmark(0, loading_ns, 2)
   end
 end
