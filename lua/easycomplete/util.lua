@@ -252,6 +252,22 @@ function util.async_run(func, args, timeout)
   return async_timer_counter + 1
 end
 
+function util.trim_before(str)
+  if str == "" then return "" end
+  return string.gsub(str, "^%s*(.-)$", "%1")
+end
+
+-- 判断一个list中是否包含某个字符串元素
+function util.has_item(tb, it)
+  if #tb == 0 then return false end
+  local idx = vim.fn.index(tb, it)
+  if idx == -1 then
+    return false
+  else
+    return true
+  end
+end
+
 function util.stop_async_run()
   async_timer:stop()
   async_timer_counter = 0

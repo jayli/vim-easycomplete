@@ -68,6 +68,7 @@ function this.select_prev()
   return new_whole_word
 end
 
+-- Tab 切换 pum 选项的动作
 function this.get_tab_returing_opword()
   local backing_count = vim.fn.getcmdpos() - cmdline_start_cmdpos
   local oprator_str = string.rep("\b", backing_count)
@@ -172,22 +173,64 @@ function this.cmdline_handler(keys, key_str)
   vim.cmd("redraw")
 end
 
+this.REG_CMP_HANDLER = {
+  {
+    -- 空
+    pattern = "^%s*$",
+    get_cmd_items = function()
+      return {}
+    end
+  },
+  {
+    -- 正在输入命令
+    pattern = "^[a-zA-Z0-9_]+$",
+    get_cmp_items = function()
+      return this.get_all_commands()
+    end
+  },
+  {
+    -- 命令输入完毕，并敲击空格
+    pattern = "^[a-zA-Z0-9_]+%s",
+    get_cmp_items = function()
+    end
+  }
+}
+
 function this.do_complete()
   local word = this.get_typing_word()
-  if word == "" then
-    this.pum_close()
-  else
-    local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
-    cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
-    local menu_items = this.get_cmp_items()
-    if menu_items == nil or #menu_items == 0 then
-      this.pum_close()
-    else
-      this.pum_complete(start_col, this.normalize_list(menu_items, word))
+  for index, item in ipairs(this.REG_CMP_HANDLER) do
+    if this.cmd_match(item.pattern) then
+      local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
+      cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
+      local ok, menu_items = pcall(item.get_cmp_items)
+      if not ok then
+        this.pum_close()
+      elseif menu_items == nil or #menu_items == 0 then
+        this.pum_close()
+      else
+        this.pum_complete(start_col, this.normalize_list(menu_items, word))
+      end
+      break
     end
   end
+  do return end
+  -------------------------------------------
+  -- local word = this.get_typing_word()
+  -- if word == "" then
+  --   this.pum_close()
+  -- else
+  --   local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
+  --   cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
+  --   local menu_items = this.get_cmp_items()
+  --   if menu_items == nil or #menu_items == 0 then
+  --     this.pum_close()
+  --   else
+  --     this.pum_complete(start_col, this.normalize_list(menu_items, word))
+  --   end
+  -- end
 end
 
+-- 获得所有command list
 function this.get_all_commands()
   local all_commands = {}
   local tmp_items = vim.fn.getcompletion("", "command")
@@ -214,18 +257,15 @@ function this.get_cmp_items()
   end
 end
 
-function this.trim_before(str)
-  if str == "" then return "" end
-  return string.gsub(str, "^%s*(.-)$", "%1")
-end
-
 function this.cmdline_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
-  local cmdline_typed = this.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
+  local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
   return cmdline_typed
 end
 
-function this.get_cmd_name()
+-- 获得 cmdline 中的命令
+-- 不管有没有输入完整，都返回
+function this.get_guide_cmd()
   local cmdline_typed = this.cmdline_before_cursor()
   local cmdline_tb = vim.split(cmdline_typed, "%s+")
   if #cmdline_tb == 0 then
@@ -236,6 +276,7 @@ function this.get_cmd_name()
 end
 
 -- 判断当前输入命令字符串是否完全匹配rgx
+-- 只获取光标前的字符串
 function this.cmd_match(rgx)
   local cmdline_typed = this.cmdline_before_cursor()
   local ret = string.find(cmdline_typed, rgx)
@@ -248,16 +289,6 @@ function this.cmd_match(rgx)
   end
 end
 
-function this.has_item(tb, it)
-  if #tb == 0 then return false end
-  local idx = vim.fn.index(tb, it)
-  if idx == -1 then
-    return false
-  else
-    return true
-  end
-end
-
 this.typing = {
   -- 正在输入命令
   cmd = function()
@@ -265,9 +296,9 @@ this.typing = {
   end,
   -- 正在输入路径
   file = function()
-    local cmd_name = this.get_cmd_name()
+    local cmd_name = this.get_guide_cmd()
     if this.cmd_match("^[a-zA-Z0-9_]+%s") and
-       this.has_item(this.cmd_type.file, cmd_name) then
+       util.has_item(this.cmd_type.file, cmd_name) then
       return true
     else
       return false
