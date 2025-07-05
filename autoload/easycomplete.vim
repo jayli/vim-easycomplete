@@ -301,7 +301,12 @@ function! s:CompleteTypingMatch(...)
     let local_menuitems = g:easycomplete_menuitems
   endif
   let filtered_menu = easycomplete#util#CompleteMenuFilter(local_menuitems, word, 250)
-  if len(filtered_menu) == 0
+  if easycomplete#sources#tn#available()
+    let tn_result = easycomplete#sources#tn#GetGlobalSourceItems()
+  else
+    let tn_result = []
+  endif
+  if len(filtered_menu) == 0 && len(tn_result) == 0
     " call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
     " 正常SecondComplete中无匹配词了就关掉 pum 了
     if has('nvim')
@@ -323,6 +328,25 @@ function! s:CompleteTypingMatch(...)
     return
   endif
 
+  " 如果正常匹配为空，但还存在旧的 TN 占位符，则物理匹配旧的占位符
+  if len(filtered_menu) == 0 && len(tn_result) != 0
+    let tn_result = easycomplete#util#CompleteMenuFilter(tn_result, word, 500)
+    if len(tn_result) == 0
+      if has('nvim')
+        call s:CloseCompletionMenu()
+        call s:CloseCompleteInfo()
+      else
+        call s:CloseCompletionMenu()
+      endif
+    else
+      let start_pos = col('.') - strlen(word)
+      let b:easycomplete_tn_match_done = 1
+      call s:SecondCompleteRendering(start_pos, tn_result)
+    endif
+    let g:easycomplete_stunt_menuitems = []
+    return
+  endif
+
   " 如果在 VIM 中输入了':'和'.'，一旦没有匹配项，就直接清空
   " g:easycomplete_menuitems，匹配状态复位
   " 注意：这里其实区分了 跟随匹配 和 Tab 匹配两个不同的动作
@@ -338,14 +362,31 @@ function! s:CompleteTypingMatch(...)
 endfunction
 
 " 这里调用是异步回来，需要记录上一次 complete 的 start_pos
+" easycomplete#TabNineCompleteRendering 和 easycomplete#UpdateTNPlaceHolder
+" 总会调用其中一个，旧的占位符要么被定时器更新掉，要么被TN新的返回结果更新掉
 function! easycomplete#TabNineCompleteRendering()
   let current_items = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
   let tabnine_result = easycomplete#sources#tn#GetGlobalSourceItems()
   if empty(tabnine_result) | return | endif
   let result = tabnine_result + current_items
   let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(s:GetTypingWord()) : s:easycomplete_start_pos
-  " call s:trace()
+  let b:easycomplete_tn_match_done = 1
   call s:SecondCompleteRendering(start_pos, result)
+endfunction
+
+function! easycomplete#UpdateTNPlaceHolder(word)
+  if !exists("b:easycomplete_tn_match_done")
+    let b:easycomplete_tn_match_done = 0
+  endif
+  if b:easycomplete_tn_match_done == 0
+    let l:tn_ret = easycomplete#sources#tn#GetGlobalSourceItems()
+    if empty(l:tn_ret) | return | endif
+    let tabnine_result = easycomplete#util#CompleteMenuFilter(l:tn_ret, a:word, 500)
+    let current_items = g:easycomplete_stunt_menuitems[0 : g:easycomplete_maxlength]
+    let result = tabnine_result + current_items
+    let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(a:word) : s:easycomplete_start_pos
+    call s:SecondCompleteRendering(start_pos, result)
+  endif
 endfunction
 
 function! s:SecondCompleteRendering(start_pos, result)
@@ -368,9 +409,17 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   if len(result) <= 5
     let result = easycomplete#util#uniq(result)
   endif
-  " 防止抖动
+  " 这里功能上是不必要的，因为已经输入新的字符，应该匹配出新的TN结果，而GetGlobalSourceItems
+  " 返回的是旧的，这里还要加上旧结果只是为了先占位，防止删除+呈现TN新结果时的pum的抖动
+  "
+  " 但TN并不是每次都能有返回，如果没有返回结果时，这里的旧的占位的结果也应该更新掉，否则会
+  " 出现 #368 的问题，所以要有一个定时器判断TN有没有正确的返回，如果没有正确返回，那么占位
+  " 的TN的旧结果要更新掉
   if easycomplete#sources#tn#available()
-    let result_all = easycomplete#sources#tn#GetGlobalSourceItems() + result
+    let l:tn_ret = easycomplete#sources#tn#GetGlobalSourceItems()
+    let b:easycomplete_tn_match_done = 0
+    let result_all = l:tn_ret + result
+    call easycomplete#util#timer_start("easycomplete#UpdateTNPlaceHolder", [a:word], 3)
   else
     let result_all = [] + result
   endif
