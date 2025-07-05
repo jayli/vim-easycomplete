@@ -159,7 +159,8 @@ function this.cmdline_handler(keys, key_str)
     -- console("Tab 键被按下")
   elseif string.byte(key_str) == 32 then
     -- console("空格键被按下")
-    this.pum_close()
+    -- this.pum_close()
+    this.do_complete()
   elseif string.byte(key_str) == 8 or string.byte(key_str) == 128 then
     -- console("退格键被按下")
     this.do_complete()
@@ -175,14 +176,14 @@ end
 
 this.REG_CMP_HANDLER = {
   {
-    -- 空
+    -- cmdline 是空
     pattern = "^%s*$",
     get_cmd_items = function()
       return {}
     end
   },
   {
-    -- 正在输入命令
+    -- 正在输入第一个命令
     pattern = "^[a-zA-Z0-9_]+$",
     get_cmp_items = function()
       return this.get_all_commands()
@@ -192,9 +193,28 @@ this.REG_CMP_HANDLER = {
     -- 命令输入完毕，并敲击空格
     pattern = "^[a-zA-Z0-9_]+%s",
     get_cmp_items = function()
+      local cmd_name = this.get_guide_cmd()
+      local cmp_type = this.get_complition_type(cmd_name)
+      if cmp_type == "" then
+        return {}
+      else
+        local result = vim.fn.getcompletion("", cmp_type)
+        return result
+      end
     end
   }
 }
+
+function this.get_complition_type(cmd_name)
+  local cmd_type = ""
+  for key, item in pairs(this.cmd_type) do
+    if util.has_item(item, cmd_name) then
+      cmd_type = key
+      break
+    end
+  end
+  return cmd_type
+end
 
 function this.do_complete()
   local word = this.get_typing_word()
