@@ -191,7 +191,7 @@ this.REG_CMP_HANDLER = {
   },
   {
     -- 命令输入完毕，并敲击空格
-    pattern = "^[a-zA-Z0-9_]+%s",
+    pattern = "^[a-zA-Z0-9_]+%s$",
     get_cmp_items = function()
       local cmd_name = this.get_guide_cmd()
       local cmp_type = this.get_complition_type(cmd_name)
@@ -218,6 +218,7 @@ end
 
 function this.do_complete()
   local word = this.get_typing_word()
+  local matched_pattern = false
   for index, item in ipairs(this.REG_CMP_HANDLER) do
     if this.cmd_match(item.pattern) then
       local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
@@ -230,8 +231,12 @@ function this.do_complete()
       else
         this.pum_complete(start_col, this.normalize_list(menu_items, word))
       end
+      matched_pattern = true
       break
     end
+  end
+  if matched_pattern == false then
+    this.pum_close()
   end
   do return end
   -------------------------------------------
