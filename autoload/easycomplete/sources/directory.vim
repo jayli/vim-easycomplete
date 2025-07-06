@@ -88,6 +88,10 @@ function! s:GetDirAndFiles(typing_path, base)
   return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path), l:base)
 endfunction
 
+function! easycomplete#sources#directory#GetDirAndFiles(typing_path, base)
+  return s:GetDirAndFiles(a:typing_path, a:base)
+endfunction
+
 " 将某个目录下查找出的列表 List 的每项识别出目录和文件
 " 并转换成补全浮窗所需的展示格式
 function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
@@ -129,15 +133,26 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
   return result_with_kind
 endfunction
 
+function! easycomplete#sources#directory#TypingAPath(...)
+  return call(function('s:TypingAPath'), a:000)
+endfunction
+
 " 判断当前是否正在输入一个地址path
 " base 原本想传入当前文件名字，实际上传不进来，这里也没用到
-function! s:TypingAPath(ctx)
+" s:TypingAPath(ctx) 参数是ctx时，在当前脚本中调用
+" s:TypingAPath()    参数留空时，只在cmdline里调用
+function! s:TypingAPath(...)
   " TODO 这里不清楚为什么
   " 输入 ./a/b/c ，./a/b/  两者得到的prefx都为空
   " 前者应该得到 c, 这里只能临时将base透传进来表示文件名
-  let line  = getline('.')
-  let coln  = col('.') - 1
-  let coln  = a:ctx['col'] - 1
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    let line = getcmdline()
+    let coln = getcmdpos() - 1
+  else
+    let l:ctx = a:1
+    let line  = getline('.')
+    let coln  = l:ctx['col'] - 1
+  endif
   let prefx = ' ' . line[0:coln - 1]
 
   " 需要注意，参照上一个注释，fpath和spath只是path，没有filename
