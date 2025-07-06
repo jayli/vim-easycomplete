@@ -1,7 +1,7 @@
 
 function! easycomplete#sources#directory#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
-  if !l:typing_path.isPath
+  if !l:typing_path.is_path
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
@@ -191,11 +191,11 @@ function! s:TypingAPath(...)
   " 排除掉输入注释的情况
   " 因为如果输入'//'紧跟<Tab>不应该出<C-X><C-U><C-N>出补全菜单
   if len(fpath) == 0 || match(prefx,"\\(\\/\\/\\|\\/\\*\\)") >= 0
-    let pathDict.isPath = 0
+    let pathDict.is_path = 0
   elseif fpath == "/"
-    let pathDict.isPath = 0
+    let pathDict.is_path = 0
   else
-    let pathDict.isPath = 1
+    let pathDict.is_path = 1
   endif
 
   return pathDict

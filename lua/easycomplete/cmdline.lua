@@ -137,12 +137,21 @@ function this.normalize_list(arr, word)
   if #arr == 0 then return arr end
   local ret = {}
   for index, value in ipairs(arr) do
-    table.insert(ret, {
-        word = arr[index],
-        abbr = arr[index],
-        kind = vim.g.easycomplete_kindflag_cmdline,
-        menu = vim.g.easycomplete_menuflag_cmdline,
-      })
+    if type(value) == "table" then
+      table.insert(ret, {
+          word = value["word"],
+          abbr = value["abbr"],
+          kind = value["kind"],
+          menu = value["menu"],
+        })
+    else
+      table.insert(ret, {
+          word = arr[index],
+          abbr = arr[index],
+          kind = vim.g.easycomplete_kindflag_cmdline,
+          menu = vim.g.easycomplete_menuflag_cmdline,
+        })
+    end
   end
   return vim.fn['easycomplete#util#CompleteMenuFilter'](ret, word, 500)
 end
@@ -209,11 +218,11 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
       -- TODO 这里还需要再调试
-      console(typing_path.isPath)
-      if typing_path.isPath == 0 then
+      if typing_path.is_path == 0 then
         return {}
       else
-        return vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+        local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+        return ret
       end
     end
 
@@ -249,14 +258,7 @@ end
 function this.do_complete()
   local word = this.get_typing_word()
   local matched_pattern = false
-  ------------------------ for debug ------------------------
-  -- local logggg_cmd = vim.fn.getcmdline()
-  -- local logggg_al = {}
-  -----------------------------------------------------------
   for index, item in ipairs(this.REG_CMP_HANDLER) do
-    ------------------------ for debug ------------------------
-    -- logggg_al[#logggg_al + 1] = logggg_cmd .. "|" .. item.pattern .. "|" .. tostring(this.cmd_match(item.pattern))
-    -- --------------------------------------------------------
     if this.cmd_match(item.pattern) then
       local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
       cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
@@ -273,28 +275,9 @@ function this.do_complete()
       break
     end
   end
-  ------------------------ for debug ------------------------
-  -- this.pum_complete(1, this.normalize_list(logggg_al, ""))
-  -- do return end
-  -----------------------------------------------------------
   if matched_pattern == false then
     this.pum_close()
   end
-  do return end
-  -------------------------------------------
-  -- local word = this.get_typing_word()
-  -- if word == "" then
-  --   this.pum_close()
-  -- else
-  --   local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
-  --   cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
-  --   local menu_items = this.get_cmp_items()
-  --   if menu_items == nil or #menu_items == 0 then
-  --     this.pum_close()
-  --   else
-  --     this.pum_complete(start_col, this.normalize_list(menu_items, word))
-  --   end
-  -- end
 end
 
 -- 获得所有command list
