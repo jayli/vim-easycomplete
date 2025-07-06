@@ -174,6 +174,7 @@ function this.cmdline_handler(keys, key_str)
   vim.cmd("redraw")
 end
 
+-- MAIN ROUTER
 this.REG_CMP_HANDLER = {
   {
     -- cmdline 是空
@@ -193,17 +194,28 @@ this.REG_CMP_HANDLER = {
     -- 命令输入完毕，并敲击空格
     pattern = "^[a-zA-Z0-9_]+%s$",
     get_cmp_items = function()
-      local cmd_name = this.get_guide_cmd()
-      local cmp_type = this.get_complition_type(cmd_name)
-      if cmp_type == "" then
-        return {}
-      else
-        local result = vim.fn.getcompletion("", cmp_type)
-        return result
-      end
+      return this.cmp_just_after_cmd()
+    end
+  },
+  {
+    -- 命令输入完毕，敲击空格后直接输入单词
+    pattern = "^[a-zA-Z0-9_]+%s+%w+$",
+    get_cmp_items = function()
+      return this.cmp_just_after_cmd()
     end
   }
 }
+
+function this.cmp_just_after_cmd()
+  local cmd_name = this.get_guide_cmd()
+  local cmp_type = this.get_complition_type(cmd_name)
+  if cmp_type == "" then
+    return {}
+  else
+    local result = vim.fn.getcompletion("", cmp_type)
+    return result
+  end
+end
 
 function this.get_complition_type(cmd_name)
   local cmd_type = ""
@@ -267,21 +279,6 @@ function this.get_all_commands()
   return all_commands
 end
 
--- 路由 TODO: 命令跟一个空格也应该直接弹出菜单
-function this.get_cmp_items()
-  if this.typing:cmd() then
-    return this.get_all_commands()
-  elseif this.typing:file() then
-    return vim.fn.getcompletion("", "file")
-  elseif this.typing:buffer() then
-    return {}
-  elseif this.typing:fun() then
-    return {}
-  else
-    return {}
-  end
-end
-
 function this.cmdline_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
   local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
@@ -313,29 +310,6 @@ function this.cmd_match(rgx)
     return false
   end
 end
-
-this.typing = {
-  -- 正在输入命令
-  cmd = function()
-    return this.cmd_match("^[a-zA-Z0-9_]+$")
-  end,
-  -- 正在输入路径
-  file = function()
-    local cmd_name = this.get_guide_cmd()
-    if this.cmd_match("^[a-zA-Z0-9_]+%s") and
-       util.has_item(this.cmd_type.file, cmd_name) then
-      return true
-    else
-      return false
-    end
-  end,
-  -- 正在输入buf
-  buffer = function()
-  end,
-  -- 正在输入函数
-  fun = function ()
-  end
-}
 
 -- 正在输入buffer
 -- 正在输入路径
@@ -376,10 +350,12 @@ this.cmd_type = {
     'lexplore',
     'sexplore',
     'vexplore',
+  },
+  file_in_path = {
     'find',
     'sfind',
     'tabfind'
-  }
+  },
 }
 
 this.commands_type = {
