@@ -1,6 +1,5 @@
 local util = require "easycomplete.util"
 local console = util.console
-local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
 local completeopt = vim.o.completeopt
@@ -203,6 +202,21 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       return this.cmp_just_after_cmd()
     end
+  },
+  {
+    -- 输入路径
+    pattern = "^[a-zA-Z0-9_]+%s+.*/$",
+    get_cmp_items = function()
+      local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
+      -- TODO 这里还需要再调试
+      console(typing_path.isPath)
+      if typing_path.isPath == 0 then
+        return {}
+      else
+        return vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+      end
+    end
+
   }
 }
 
@@ -228,15 +242,27 @@ function this.get_complition_type(cmd_name)
   return cmd_type
 end
 
+function this.log(str)
+  this.pum_complete(1, this.normalize_list({str}, ""))
+end
+
 function this.do_complete()
   local word = this.get_typing_word()
   local matched_pattern = false
+  ------------------------ for debug ------------------------
+  -- local logggg_cmd = vim.fn.getcmdline()
+  -- local logggg_al = {}
+  -----------------------------------------------------------
   for index, item in ipairs(this.REG_CMP_HANDLER) do
+    ------------------------ for debug ------------------------
+    -- logggg_al[#logggg_al + 1] = logggg_cmd .. "|" .. item.pattern .. "|" .. tostring(this.cmd_match(item.pattern))
+    -- --------------------------------------------------------
     if this.cmd_match(item.pattern) then
       local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
       cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
       local ok, menu_items = pcall(item.get_cmp_items)
       if not ok then
+        print("[jayli debug] ".. menu_items)
         this.pum_close()
       elseif menu_items == nil or #menu_items == 0 then
         this.pum_close()
@@ -247,6 +273,10 @@ function this.do_complete()
       break
     end
   end
+  ------------------------ for debug ------------------------
+  -- this.pum_complete(1, this.normalize_list(logggg_al, ""))
+  -- do return end
+  -----------------------------------------------------------
   if matched_pattern == false then
     this.pum_close()
   end
