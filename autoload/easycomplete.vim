@@ -392,6 +392,7 @@ function! easycomplete#UpdateTNPlaceHolder(word)
     let result = tabnine_result + current_items
     let start_pos = empty(s:easycomplete_start_pos) ? col('.') - strlen(a:word) : s:easycomplete_start_pos
     call s:SecondCompleteRendering(start_pos, result)
+    call easycomplete#sources#tn#SetGlobalSourceItems(tabnine_result)
   endif
 endfunction
 
@@ -465,7 +466,7 @@ function! easycomplete#CompleteDone()
   " bugfix for #88
   if g:env_is_nvim
     " 触发 tabnine suggest
-    if !easycomplete#pum#visible() && !easycomplete#IsBacking() && easycomplete#tabnine#ready() 
+    if !easycomplete#pum#visible() && !easycomplete#IsBacking() && easycomplete#tabnine#ready()
       call s:LazyTabNineSuggestFire(500)
     endif
     "TODO v:complete_item 是否是必须的，还需再测试一下
@@ -880,6 +881,7 @@ function! s:BackingCompleteHandler()
           let g:easycomplete_ghost_text_str = ghost_text
         endif
         noa call easycomplete#util#timer_start("easycomplete#pum#complete", [start_pos, result], 30)
+        call easycomplete#sources#tn#SetGlobalSourceItems([])
         call s:CloseCompleteInfo()
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件

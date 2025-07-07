@@ -110,6 +110,10 @@ function! easycomplete#sources#tn#GetGlobalSourceItems()
   return g:easycomplete_source[s:name].complete_result
 endfunction
 
+function! easycomplete#sources#tn#SetGlobalSourceItems(items)
+  let g:easycomplete_source[s:name].complete_result = a:items
+endfunction
+
 function! easycomplete#sources#tn#completor(opt, ctx) abort
   if !s:tn_init_ready
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
