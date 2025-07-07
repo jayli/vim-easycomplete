@@ -425,7 +425,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
     let l:tn_ret = easycomplete#sources#tn#GetGlobalSourceItems()
     let b:easycomplete_tn_match_done = 0
     let result_all = l:tn_ret + result
-    call easycomplete#util#timer_start("easycomplete#UpdateTNPlaceHolder", [a:word], 3)
+    call easycomplete#util#timer_start("easycomplete#UpdateTNPlaceHolder", [a:word], 20)
   else
     let result_all = [] + result
   endif
