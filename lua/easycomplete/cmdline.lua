@@ -1,6 +1,6 @@
 local util = require "easycomplete.util"
 local console = util.console
-local errlog = util.errlog
+local debug = util.debug
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
@@ -512,7 +512,7 @@ this.commands_type = {
 function this.init_once()
   -- TODO here -----------------------------
   do return end
-  -- errlog(1)
+  -- debug(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0

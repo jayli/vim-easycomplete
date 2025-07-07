@@ -10,6 +10,7 @@ let g:easycomplete_script_loaded = 1
 
 function! easycomplete#LogStart()
   " call s:console()
+  " call s:debug()
 endfunction
 
 " 全局 Complete 注册插件，其中 plugin 和 LSP Server 是包含关系
@@ -1298,7 +1299,8 @@ function! s:CompleteMatchAction()
     if s:TabnineSupports()
       call easycomplete#sources#tn#refresh()
     endif
-    let l:vim_word = s:GetTypingWordByGtx()
+    let l:vim_word = s:GetTypingWordByGtx() " 刚输入的单词
+    let l:vim_char = strpart(getline('.'), col('.') - 2, 1) " 刚输入的字符
     if g:env_is_nvim && empty(l:vim_word)
       " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
       " 也有可能输入了(，这时应该尝试执行signature
@@ -2954,6 +2956,10 @@ endfunction
 
 function! s:console(...)
   return call('easycomplete#log#log', a:000)
+endfunction
+
+function! s:debug(...)
+  return call('easycomplete#util#debug', a:000)
 endfunction
 
 function! s:trace(...)

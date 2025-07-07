@@ -100,19 +100,25 @@ function util.get_configuration()
   }
 end
 
--- 定义日志函数
-function util.errlog(message)
+-- 定义日志函数，日志写在 ~/debuglog 中
+function util.debug(...)
+  local args = {...}
   local homedir = os.getenv("HOME") or os.getenv("USERPROFILE")
-  local filename = homedir .. "/errlog"
+  local filename = homedir .. "/debuglog"
   local file = io.open(filename, "w")
   if not file then
-    print("无法创建或打开日志文件: ~/errlog")
+    print("无法创建或打开日志文件: ~/debuglog")
     return
   end
   -- 获取当前时间（可选）
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
+
+  local output_msg = ""
+  for i, v in ipairs(args) do
+    output_msg = output_msg .. " " .. vim.inspect(v)
+  end
   -- 写入日志内容
-  file:write(string.format("[%s] %s\n", timestamp, message))
+  file:write(string.format("[%s]%s\n", timestamp, output_msg))
   -- 关闭文件
   file:close()
 end

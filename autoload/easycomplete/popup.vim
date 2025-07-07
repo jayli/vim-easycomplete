@@ -28,8 +28,8 @@ augroup easycomplete#popup#au
   autocmd!
   autocmd VimResized * call easycomplete#popup#reopen()
   autocmd BufLeave * call easycomplete#popup#close()
-  autocmd BufWinLeave * call easycomplete#popup#close()
-  autocmd WinLeave * call easycomplete#popup#close()
+  " autocmd BufWinLeave * call easycomplete#popup#close()
+  " autocmd WinLeave * call easycomplete#popup#close()
   autocmd InsertLeave * call easycomplete#popup#close()
   if s:is_nvim
     autocmd VimResume * call easycomplete#popup#reopen()
@@ -825,4 +825,8 @@ endfunction
 
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)
+endfunction
+
+function! s:debug(...)
+  return call('easycomplete#util#debug', a:000)
 endfunction

@@ -236,10 +236,6 @@ function! s:log(...)
   return call('easycomplete#util#log', a:000)
 endfunction
 
-function! s:elog(...)
-  return call('easycomplete#util#elog', a:000)
-endfunction
-
 function! s:AsyncRun(...)
   return call('easycomplete#util#AsyncRun', a:000)
 endfunction

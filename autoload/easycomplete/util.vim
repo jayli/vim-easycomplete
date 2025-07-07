@@ -2157,7 +2157,11 @@ function! easycomplete#util#IsGui()
 endfunction
 
 function! s:console(...)
-  return call('easycomplete#log#log', a:000)
+  if easycomplete#log#running()
+    return call('easycomplete#log#log', a:000)
+  else
+    return call('easycomplete#util#debug', a:000)
+  endif
 endfunction
 
 function! s:trace(...)
@@ -2208,8 +2212,10 @@ function! easycomplete#util#errlog(...) " {{{
   call timer_start(1, { -> easycomplete#util#call("s:errlog", args)})
 endfunction " }}}
 
-function! easycomplete#util#elog(msg) " {{{
-  call v:lua.require("easycomplete.util").errlog(string(a:msg))
+function! easycomplete#util#debug(...) " {{{
+  if has('nvim')
+    call call(s:util_toolkit.debug, a:000)
+  endif
 endfunction " }}}
 
 function! s:errlog(...) " {{{
