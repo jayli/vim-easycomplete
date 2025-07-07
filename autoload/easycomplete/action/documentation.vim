@@ -2,7 +2,12 @@
 let b:easycomplete_documentation_popup = 0
 
 function! easycomplete#action#documentation#LspRequest(item) abort
-  let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
+  try
+    let l:server_name = easycomplete#util#FindLspServers()['server_names'][0]
+  catch
+    " 获取不到 server_name 意味着当前 item 不来自 lsp，则这里过滤掉不符合条件的 item
+    return
+  endtry
   if easycomplete#lsp#HasProvider(l:server_name, 'completionProvider', 'resolveProvider')
     if !exists("b:easycomplete_documentation_popup")
       let b:easycomplete_documentation_popup = 0
@@ -229,6 +234,10 @@ endfunction
 
 function! s:log(...)
   return call('easycomplete#util#log', a:000)
+endfunction
+
+function! s:elog(...)
+  return call('easycomplete#util#elog', a:000)
 endfunction
 
 function! s:AsyncRun(...)

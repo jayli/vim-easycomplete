@@ -82,8 +82,12 @@ function! s:GetDirAndFiles(typing_path, base)
     " TODO：当按<Del>键时，自动补全窗会跟随匹配，但无法做到忽略大小写
     " 只有首次点击<Tab>时能忽略大小写，
     " 应该在del跟随和tab时都忽略大小写才对
-    let result_list = filter(result_list,
-          \ 'tolower(v:val) =~ "^'. tolower(substitute(l:base, "\\.", "\\\\\\\\.", "g")) . '"')
+    if exists('*matchfuzzy')
+      let result_list = result_list->matchfuzzy(l:base)
+    else
+      let result_list = filter(result_list,
+            \ 'tolower(v:val) =~ "^'. tolower(substitute(l:base, "\\.", "\\\\\\\\.", "g")) . '"')
+    endif
   endif
   return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path), l:base)
 endfunction

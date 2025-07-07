@@ -3,6 +3,7 @@ local console = util.console
 local errlog = util.errlog
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
+local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
 local this = {}
 
@@ -171,7 +172,13 @@ function this.cmdline_handler(keys, key_str)
     -- console("空格键被按下")
     -- this.pum_close()
     this.do_complete()
-  elseif string.byte(key_str) == 8 or string.byte(key_str) == 128 then
+  elseif string.byte(key_str) == 128 and #cmdline == #old_cmdline then
+    -- 方向键
+    this.pum_close()
+  elseif string.byte(key_str) == 128 and #cmdline == #old_cmdline - 1 then
+    -- 退格键
+    this.do_complete()
+  elseif string.byte(key_str) == 8 then
     -- console("退格键被按下")
     this.do_complete()
   elseif string.byte(key_str) == 13 then
@@ -181,6 +188,7 @@ function this.cmdline_handler(keys, key_str)
     -- console("其他键被按下: " .. keys)
     this.do_complete()
   end
+  old_cmdline = cmdline
   vim.cmd("redraw")
 end
 
@@ -318,7 +326,7 @@ end
 
 function this.cmdline_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
-  local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos()))
+  local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos() - 1))
   return cmdline_typed
 end
 
