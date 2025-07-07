@@ -250,7 +250,14 @@ this.REG_CMP_HANDLER = {
 -- 做到连续的逐级匹配
 function this.path_dir_normalize(ret)
   for index, item in ipairs(ret) do
-    item.word = string.gsub(item.word, "/$", "")
+    if string.find(item.word, "/$") ~= nil then
+      -- 去掉结尾的/
+      item.word = string.gsub(item.word, "/$", "")
+      if string.sub(item.word,1,2) ~= "./" then
+        -- 开头新增./
+        -- item.word = "./" .. item.word
+      end
+    end
   end
   return ret
 end
