@@ -310,11 +310,17 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
 endfunction
 
 function! easycomplete#popup#SignatureVisible()
-  if empty(s:float_type) || empty(g:easycomplete_popup_win["float"])
-    return v:false
-  else
+  if g:easycomplete_popup_win["float"] && s:float_type == "signature"
     return v:true
+  else
+    return v:false
   endif
+
+  " if empty(s:float_type) || empty(g:easycomplete_popup_win["float"])
+  "   return v:false
+  " else
+  "   return v:true
+  " endif
 endfunction
 
 " 当 float_type 是 signature 时，判断 popup
@@ -541,6 +547,7 @@ function! s:StartPopupAsyncRun(method, args, times)
 endfunction
 
 " windowtype: float/popup
+" float_type: lint/signature
 function! s:VimShow(opt, windowtype, float_type)
   if s:is_nvim | return | endif
   let opt = {
@@ -721,13 +728,9 @@ function! easycomplete#popup#close(...)
     if g:easycomplete_popup_win["float"]
       call easycomplete#popup#close("float")
     endif
-    let s:float_opt = {}
     return
   endif
   let windowtype = a:1
-  if windowtype == "float"
-    let s:float_type = ""
-  endif
   if windowtype == "float" &&
         \ bufnr() != expand("<abuf>") &&
         \ !empty(expand("<abuf>")) &&
@@ -757,6 +760,10 @@ function! easycomplete#popup#close(...)
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []
     endif
+  endif
+  if windowtype == "float"
+    let s:float_type = ""
+    let s:float_opt = {}
   endif
 endfunction
 
