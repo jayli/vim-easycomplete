@@ -143,7 +143,13 @@ function! s:SetCompleteOption()
   setlocal completeopt+=noinsert
   setlocal completeopt+=menuone
   " noselect 不作为默认选项，应当为可选配置
-  " setlocal completeopt+=noselect
+  " g:easycomplete_pum_noselect 和 setlocal completeopt+=noselect
+  " 二选一即可
+  if g:easycomplete_pum_noselect
+    setlocal completeopt+=noselect
+  else
+    setlocal completeopt-=noselect
+  endif
   setlocal completeopt-=popup
   setlocal completeopt-=preview
   setlocal completeopt-=longest
@@ -542,7 +548,7 @@ endfunction
 
 " typing 过程中需要即时展开completeinfo，这里先做一个判断
 function! easycomplete#FirstSelectedWithOptDefaultSelected()
-  if &completeopt =~ "noselect"
+  if g:easycomplete_pum_noselect
     return v:false
   endif
   if g:env_is_vim && !pumvisible()
@@ -1602,7 +1608,7 @@ endfunction
 
 " <CR> 逻辑，主要判断是否展开代码片段
 function! easycomplete#TypeEnterWithPUM()
-  if !(&completeopt =~ "noselect")
+  if !(g:easycomplete_pum_noselect)
     let l:item = easycomplete#GetCursordItem()
   else
     let l:item = easycomplete#GetCompletedItem()
@@ -1719,7 +1725,7 @@ function! s:CloseCompletionMenu()
     endif
   else
     if pumvisible()
-      if !(&completeopt =~ "noselect")
+      if !(g:easycomplete_pum_noselect)
         call timer_start(10, { -> s:SendKeys("\<Esc>a")})
       else
         silent! noa call s:SendKeys("\<C-Y>")
@@ -2090,7 +2096,7 @@ endfunction
 
 " 这里只处理默认无 noselect 的情况
 function! s:ShowCompleteInfoInSecondRendering()
-  if !(&completeopt =~ "noselect")
+  if !(g:easycomplete_pum_noselect)
     call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
     if easycomplete#util#GetCurrentPluginName() == "ts"
       call timer_start(1, { -> easycomplete#sources#ts#CompleteChanged() })
@@ -2100,7 +2106,7 @@ endfunction
 
 " 有时候能弹出，有时候弹不出，无所谓了
 function! easycomplete#ShowCompleteInfoInFirstRendering()
-  if !(&completeopt =~ "noselect")
+  if !(g:easycomplete_pum_noselect)
     call timer_start(2, { -> s:ShowCompleteInfoWithoutTimer() })
     if easycomplete#util#GetCurrentPluginName() == "ts"
       call timer_start(1, { -> easycomplete#sources#ts#CompleteChanged() })

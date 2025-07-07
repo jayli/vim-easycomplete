@@ -722,7 +722,7 @@ function! easycomplete#popup#close(...)
         let winid = g:easycomplete_popup_win[windowtype]
         " 这里的hack有一定的隐患，这里的timer有可能给completedone事件带来干扰
         " ref: #281
-        if !(&completeopt =~ "noselect")
+        if !(g:easycomplete_pum_noselect)
           let delay = 20
         else
           let delay = 30

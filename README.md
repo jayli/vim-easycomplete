@@ -108,6 +108,7 @@ Lua style setup with `require("easycomplete").setup()`:
 -- lua style setup
 -- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
 require("easycomplete").setup({
+    pum_noselect = 0,
     tabnine_enable = 0,
     nerd_font = 1,
     enable = 1,
@@ -188,6 +189,7 @@ Global configurations:
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 | `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
 | `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |
+| `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | Autoselect first matched item or not. Same as `set &completeopt+=noselect` |
 
 Typing `:h easycomplete` for help.
 

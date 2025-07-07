@@ -139,7 +139,7 @@ vim.opt.updatetime = 150
 
 -- Do not select first matched item
 -- "set completeopt-=noselect" to automatically select first matched item
-vim.cmd('set completeopt+=noselect')
+vim.g.easycomplete_pum_noselect = 0
 ```
 
 Lua style setup
@@ -148,6 +148,7 @@ Lua style setup
 -- lua style setup
 -- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
 require("easycomplete").setup({
+    pum_noselect = 0,
     tabnine_enable = 0,
     nerd_font = 1,
     enable = 1,

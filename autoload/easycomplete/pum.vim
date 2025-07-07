@@ -1013,7 +1013,7 @@ endfunction
 " secondcomplete 过程中有可能手动移动了 pum 的 cursor，继续 typing
 " 时需要reset一下状态 
 function! s:reset()
-  if !(&completeopt=~"noselect")
+  if !(g:easycomplete_pum_noselect)
     call s:select(1)
   else
     call s:select(0)

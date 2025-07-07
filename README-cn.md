@@ -110,6 +110,7 @@ noremap gb :BackToOriginalBuffer<CR>
 -- lua style setup
 -- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
 require("easycomplete").setup({
+    pum_noselect = 0,
     tabnine_enable = 0,
     nerd_font = 1,
     enable = 1,
@@ -188,6 +189,7 @@ require("easycomplete").setup({
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
+| `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | 是否自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
 
 ## 语言支持
 

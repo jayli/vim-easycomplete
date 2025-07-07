@@ -207,6 +207,14 @@ endif
 if !exists("g:easycomplete_signature_enable")
   let g:easycomplete_signature_enable = 1
 endif
+if !exists("g:easycomplete_pum_noselect ")
+  " 如果没有设置，则取 completeopt 默认值
+  if &completeopt =~ "noselect"
+    let g:easycomplete_pum_noselect = 1
+  else
+    let g:easycomplete_pum_noselect = 0
+  endif
+endif
 if !exists("g:easycomplete_diagnostics_hover")
   let g:easycomplete_diagnostics_hover = 1
 endif
