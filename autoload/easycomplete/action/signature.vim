@@ -28,7 +28,7 @@ function! easycomplete#action#signature#LazyRunHandle()
     call timer_stop(b:signature_timer)
     let b:signature_timer = 0
   endif
-  let b:signature_timer = timer_start(50, { -> easycomplete#action#signature#handle() })
+  let b:signature_timer = timer_start(100, { -> easycomplete#action#signature#handle() })
 endfunction
 
 function! easycomplete#action#signature#handle()

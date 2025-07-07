@@ -1299,6 +1299,7 @@ function! s:CompleteMatchAction()
     let l:vim_word = s:GetTypingWordByGtx()
     if g:env_is_nvim && empty(l:vim_word)
       " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
+      " 也有可能输入了(，这时应该尝试执行signature
       call s:CloseCompletionMenu()
       call s:flush()
       call s:StopZizz()
@@ -1306,6 +1307,9 @@ function! s:CompleteMatchAction()
       let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
       if g:env_is_nvim
         call s:util_toolkit.defer_fn("easycomplete#typing", [], local_delay)
+        if easycomplete#ok('g:easycomplete_signature_enable')
+          call easycomplete#action#signature#LazyRunHandle()
+        endif
       else
         call timer_start(local_delay, { -> easycomplete#typing() })
       endif
@@ -2699,7 +2703,6 @@ function! easycomplete#TextChangedI()
       call s:LazyFireTyping()
     endif
     if easycomplete#ok('g:easycomplete_signature_enable')
-      " hack for #281
       call easycomplete#action#signature#LazyRunHandle()
     endif
     let b:old_changedtick = b:changedtick
