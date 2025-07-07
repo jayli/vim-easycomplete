@@ -1,18 +1,19 @@
 local util = require "easycomplete.util"
 local console = util.console
+local errlog = util.errlog
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
-local completeopt = vim.o.completeopt
+local pum_noselect = vim.g.easycomplete_pum_noselect
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
-  vim.opt.completeopt:append("noselect")
+  vim.g.easycomplete_pum_noselect = 1
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
-  vim.opt.completeopt = completeopt
+  vim.g.easycomplete_pum_noselect = pum_noselect
 end
 
 function this.get_typing_word()
@@ -104,7 +105,7 @@ function this.bind_cmdline_event()
       group = augroup,
       callback = function()
         this.flush()
-        vim.o.completeopt = completeopt
+        vim.g.easycomplete_pum_noselect = pum_noselect
       end
     })
 
@@ -153,7 +154,8 @@ function this.normalize_list(arr, word)
         })
     end
   end
-  return vim.fn['easycomplete#util#CompleteMenuFilter'](ret, word, 500)
+  local filtered_items = vim.fn['easycomplete#util#CompleteMenuFilter'](ret, word, 500)
+  return filtered_items
 end
 
 function this.cmdline_handler(keys, key_str)
@@ -199,45 +201,50 @@ this.REG_CMP_HANDLER = {
     end
   },
   {
-    -- 命令输入完毕，并敲击空格
-    pattern = "^[a-zA-Z0-9_]+%s$",
+    pattern = {
+      "^[a-zA-Z0-9_]+%s$", -- 命令输入完毕，并敲击空格
+      "^[a-zA-Z0-9_]+%s+%w+$" -- 命令输入完毕，敲击空格后直接输入单词
+    },
     get_cmp_items = function()
-      return this.cmp_just_after_cmd()
-    end
-  },
-  {
-    -- 命令输入完毕，敲击空格后直接输入单词
-    pattern = "^[a-zA-Z0-9_]+%s+%w+$",
-    get_cmp_items = function()
-      return this.cmp_just_after_cmd()
+      local cmd_name = this.get_guide_cmd()
+      local cmp_type = this.get_complition_type(cmd_name)
+      if cmp_type == "" then
+        return {}
+      else
+        local result = vim.fn.getcompletion("", cmp_type)
+        return result
+      end
     end
   },
   {
     -- 输入路径
-    pattern = "^[a-zA-Z0-9_]+%s+.*/$",
+    pattern = {
+      "^[a-zA-Z0-9_]+%s+.*/$",
+      "^[a-zA-Z0-9_]+%s+.*/[a-zA-Z0-9_]+$"
+    },
     get_cmp_items = function()
       local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
-      -- TODO 这里还需要再调试
       if typing_path.is_path == 0 then
         return {}
       else
+        -- 这里原来就不提供模糊匹配？
         local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+        local result = this.path_dir_normalize(ret)
         return ret
       end
     end
-
   }
 }
 
-function this.cmp_just_after_cmd()
-  local cmd_name = this.get_guide_cmd()
-  local cmp_type = this.get_complition_type(cmd_name)
-  if cmp_type == "" then
-    return {}
-  else
-    local result = vim.fn.getcompletion("", cmp_type)
-    return result
+-- 在路径匹配中，正文中tab匹配一个目录会自动带上'/'，方便回车后继续匹配下级目录
+-- 在cmdline中按回车是执行的意思，所以这里保持了原生menu行为习惯，即Tab出菜单和
+-- 选择下一个，回车是执行，因此这里就把目录末尾的"/"去掉了，让用户去输入，以便
+-- 做到连续的逐级匹配
+function this.path_dir_normalize(ret)
+  for index, item in ipairs(ret) do
+    item.word = string.gsub(item.word, "/$", "")
   end
+  return ret
 end
 
 function this.get_complition_type(cmd_name)
@@ -259,24 +266,41 @@ function this.do_complete()
   local word = this.get_typing_word()
   local matched_pattern = false
   for index, item in ipairs(this.REG_CMP_HANDLER) do
-    if this.cmd_match(item.pattern) then
-      local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
-      cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
-      local ok, menu_items = pcall(item.get_cmp_items)
-      if not ok then
-        print("[jayli debug] ".. menu_items)
-        this.pum_close()
-      elseif menu_items == nil or #menu_items == 0 then
-        this.pum_close()
-      else
-        this.pum_complete(start_col, this.normalize_list(menu_items, word))
+    if type(item.pattern) == "table" then
+      for jndex, jtem in ipairs(item.pattern) do
+        if this.cmd_match(jtem) then
+          this.cmp_regex_handler(item.get_cmp_items, word)
+          matched_pattern = true
+          break
+        end
       end
-      matched_pattern = true
+    else
+      if this.cmd_match(item.pattern) then
+        this.cmp_regex_handler(item.get_cmp_items, word)
+        matched_pattern = true
+      end
+    end
+    if matched_pattern == true then
       break
     end
   end
   if matched_pattern == false then
     this.pum_close()
+  end
+end
+
+-- 根据某个正则表达式是否匹配，来调用既定的get_cmp_items，并执行complete()
+function this.cmp_regex_handler(get_cmp_items, word)
+  local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
+  cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
+  local ok, menu_items = pcall(get_cmp_items)
+  if not ok then
+    print("[jayli debug] ".. menu_items)
+    this.pum_close()
+  elseif menu_items == nil or #menu_items == 0 then
+    this.pum_close()
+  else
+    this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
 end
 
@@ -480,7 +504,7 @@ this.commands_type = {
 function this.init_once()
   -- TODO here -----------------------------
   do return end
-  -- console(1)
+  -- errlog(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0

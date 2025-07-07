@@ -100,6 +100,23 @@ function util.get_configuration()
   }
 end
 
+-- 定义日志函数
+function util.errlog(message)
+  local homedir = os.getenv("HOME") or os.getenv("USERPROFILE")
+  local filename = homedir .. "/errlog"
+  local file = io.open(filename, "w")
+  if not file then
+    print("无法创建或打开日志文件: ~/errlog")
+    return
+  end
+  -- 获取当前时间（可选）
+  local timestamp = os.date("%Y-%m-%d %H:%M:%S")
+  -- 写入日志内容
+  file:write(string.format("[%s] %s\n", timestamp, message))
+  -- 关闭文件
+  file:close()
+end
+
 function util.constructor_calling_by_name(plugin_name)
   vim.fn['easycomplete#ConstructorCallingByName'](plugin_name)
 end
