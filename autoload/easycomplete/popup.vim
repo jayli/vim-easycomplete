@@ -21,6 +21,7 @@ let s:is_vim = !has('nvim')
 let s:is_nvim = has('nvim')
 " signature/lint
 let s:float_type = ""
+let s:float_opt = {}
 let s:hlsearch = &hlsearch
 
 augroup easycomplete#popup#au
@@ -205,8 +206,9 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   endif
   if a:float_type == "lint"
     call s:lint(a:content, a:hl, a:ft)
+    let s:float_type = a:float_type
+    let s:float_opt = {}
     return
-    let float_maxwidth = g:easycomplete_lint_float_width
   endif
   if a:float_type == "signature"
     let float_maxwidth = g:easycomplete_popup_width
@@ -304,6 +306,7 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
     call s:VimShow(opt, "float", a:float_type)
   endif
   let s:float_type = a:float_type
+  let s:float_opt = opt
 endfunction
 
 function! easycomplete#popup#SignatureVisible()
@@ -311,6 +314,27 @@ function! easycomplete#popup#SignatureVisible()
     return v:false
   else
     return v:true
+  endif
+endfunction
+
+" 当 float_type 是 signature 时，判断 popup
+" 在当前行上还是下，如果没有显示则返回空
+"   上: above
+"   下: below
+"   无: ''
+function! easycomplete#popup#SignatureDirection()
+  if easycomplete#popup#SignatureVisible() && !(empty(s:float_opt))
+    let screen_row_enc = win_screenpos(win_getid())[0] - 1
+    let c_row = screen_row_enc + winline() - 1
+    if c_row < s:float_opt["row"]
+      return "below"
+    elseif c_row > s:float_opt["row"]
+      return "above"
+    else
+      return ""
+    endif
+  else
+    return ""
   endif
 endfunction
 
@@ -697,6 +721,7 @@ function! easycomplete#popup#close(...)
     if g:easycomplete_popup_win["float"]
       call easycomplete#popup#close("float")
     endif
+    let s:float_opt = {}
     return
   endif
   let windowtype = a:1

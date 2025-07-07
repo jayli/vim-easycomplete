@@ -826,7 +826,32 @@ endfunction
 function! s:PumDirection(buffer_height)
   let buffer_height = a:buffer_height
   let below_space = s:CursorBottom() - 1
+  let above_space = s:CursorTop() - 1
   
+  " #369: 尽量和 signature 不要重叠
+  let signature_direction = easycomplete#popup#SignatureDirection()
+  if signature_direction == "below"
+    if above_space - (g:easycomplete_winborder ? 2 : 0) <= 6 " 顶部空间少于6个item
+      if buffer_height - (above_space - (g:easycomplete_winborder ? 2 : 0)) < 0 " 顶部空间可以展开所有item
+        return "above"
+      else " 顶部空间太小，且item个数比顶部空间更多，一律在底部展示
+        return "below"
+      endif
+    else " 顶部空间大于 6 个item，一律在顶部展示
+      return "above"
+    endif
+  elseif signature_direction == "above"
+    if below_space - (g:easycomplete_winborder ? 2 : 0) <= 6 " 底部空间少于 6 个item
+      if buffer_height - (below_space - (g:easycomplete_winborder ? 2 : 0)) < 0 " 底部空间可以展开所有item
+        return "below"
+      else " 底部空间太小，且item个数比底部空间更多，一律在顶部展示
+        return "above"
+      endif
+    else " 底部空间大于6个item，一律在底部展示
+      return "below"
+    endif
+  endif
+
   " 如果底部空间不够
   if buffer_height > below_space
     if below_space < 6 + (g:easycomplete_winborder ? 2 : 0) " 底部空间太小，小于 6，一律在上部展示
