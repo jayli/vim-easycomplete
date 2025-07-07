@@ -104,10 +104,10 @@ end
 function util.debug(...)
   local args = {...}
   local homedir = os.getenv("HOME") or os.getenv("USERPROFILE")
-  local filename = homedir .. "/debuglog"
+  local filename = homedir .. "/.config/vim-easycomplete/debuglog"
   local file = io.open(filename, "w")
   if not file then
-    print("无法创建或打开日志文件: ~/debuglog")
+    print("无法创建或打开日志文件: ~/.config/vim-easycomplete/debuglog")
     return
   end
   -- 获取当前时间（可选）
