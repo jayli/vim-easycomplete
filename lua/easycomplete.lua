@@ -113,22 +113,7 @@ end
 
 
 function EasyComplete.distinct(items)
-  local unique_values = {}
-  local result = {}
-  table.sort(items)
-  for _, value in ipairs(items) do
-    if #value == 0 or #value == 1 then
-      -- 空字符串，一个长度的字符
-      -- continue
-    elseif tonumber(value:sub(1,1)) ~= nil then
-      -- 首字符是数字
-      -- continue
-    elseif not unique_values[value] then
-      unique_values[value] = true
-      table.insert(result, value)
-    end
-  end
-  return result
+  return Util.distinct(items)
 end
 
 -- 返回去重之后的列表

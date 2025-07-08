@@ -176,10 +176,11 @@ function this.cmdline_handler(keys, key_str)
   if util.zizzing() then return end
   local cmdline = vim.fn.getcmdline()
   cmdline_start_cmdpos = 0
+  -- console(string.byte(key_str))
   if string.byte(key_str) == 9 then
-    -- console("Tab 键被按下")
+    -- console("Tab 键")
   elseif string.byte(key_str) == 32 then
-    -- console("空格键被按下")
+    -- console("空格键")
     -- this.pum_close()
     this.do_complete()
   elseif string.byte(key_str) == 128 and #cmdline == #old_cmdline then
@@ -189,12 +190,18 @@ function this.cmdline_handler(keys, key_str)
     -- 退格键
     this.do_complete()
   elseif string.byte(key_str) == 8 then
-    -- console("退格键被按下")
+    -- console("退格")
     this.do_complete()
   elseif string.byte(key_str) == 13 then
-    -- console("回车键被按下")
+    -- console("回车")
+  elseif string.byte(key_str) == 58 then
+    -- console("冒号:")
+    this.do_complete()
+  elseif string.byte(key_str) == 95 then
+    -- console("下划线_")
+    this.do_complete()
   else
-    -- console("其他键被按下: " .. keys)
+    -- console("其他键: " .. keys)
     this.do_complete()
   end
   old_cmdline = cmdline
@@ -228,24 +235,36 @@ this.REG_CMP_HANDLER = {
     -- 正在输入第一个命令
     pattern = "^[a-zA-Z0-9_]+$",
     get_cmp_items = function()
+      -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
       return this.get_all_commands()
     end
   },
   {
     pattern = {
       "^[a-zA-Z0-9_]+%s$", -- 命令输入完毕，并敲击空格
-      "^[a-zA-Z0-9_]+%s+%w+$" -- 命令输入完毕，敲击空格后直接输入单词
+      "^[a-zA-Z0-9_]+%s+[_%w]+$", -- 命令输入完毕，敲击空格后直接输入正常单词
+      "^[a-zA-Z0-9_]+%s+[glbwtvas]:%w-$", -- 命令输入完毕，输入 x:y 变量
     },
     get_cmp_items = function()
       local cmd_name = this.get_guide_cmd()
       local cmp_type = this.get_complition_type(cmd_name)
+      local typing_word = this.get_typing_word()
       if cmp_type == "" then
         return {}
-      elseif this.get_typing_word() == "" and cmp_type == "expression" then
-        -- expression 的返回结果太多了，会卡，做一个限制，不取全部了
+      elseif typing_word == "" and (cmp_type == "expression" or cmp_type == "function") then
+        -- expression 和 function 的返回结果太多了，太卡了，这里做一个限制，不做空匹配取全部了
         return {}
-      else
-        local result = vim.fn.getcompletion("", cmp_type)
+      else -- 最多情况的匹配
+        local guide_str = ""
+        if (cmp_type == "expression" or cmp_type == "function") then
+          -- 带搜索词的匹配，根据第一个字符做一遍过滤
+          guide_str = string.sub(typing_word, 1, 1)
+        end
+        local result = vim.fn.getcompletion(guide_str, cmp_type)
+        -- user 的返回结果里有重复的
+        if cmp_type == "user" then
+          result = util.distinct(result)
+        end
         -- Hack for file and file_in_path
         -- getcompletion 的路径结果中，给所有的当前目录加上./前缀
         -- 便于连续回车匹配
@@ -274,11 +293,11 @@ this.REG_CMP_HANDLER = {
   {
     -- 输入引号里的文本
     pattern = {
-      "^[a-zA-Z0-9_]+%s+.*%\"[^\"]-$"
+      "^[a-zA-Z0-9_]+%s+.*%\"[^\"]-$",
+      "^[a-zA-Z0-9_]+%s+.*%\'[^\']-$",
     },
     get_cmp_items = function()
       local typing_word = this.get_typing_word()
-      console(typing_word)
       if typing_word == "" then
         return {}
       else
@@ -288,6 +307,22 @@ this.REG_CMP_HANDLER = {
     end
   }
 }
+
+-- expression 和 function 有 1800+ 个结果，最好首字母过滤一下
+-- 这里 menu_list 是裸字符串数组
+function this.match_first_char(menu_list, word)
+  if #word == 0 then
+    return {}
+  else
+    local new_list = {}
+    for index, item in ipairs(menu_list) do
+      if item[1] == word[1] then
+        table.insert(new_list, item)
+      end
+    end
+    return new_list
+  end
+end
 
 function this.do_path_complete()
   this.cmp_regex_handler(function()
@@ -361,6 +396,7 @@ function this.cmp_regex_handler(get_cmp_items, word)
   elseif menu_items == nil or #menu_items == 0 then
     this.pum_close()
   else
+    -- console(">>>", #menu_items)
     this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
 end
@@ -471,9 +507,12 @@ this.cmd_type = {
 }
 
 function this.init_once()
+  if vim.g.easycomplete_cmdline ~= 1 then
+    return
+  end
   -- TODO here -----------------------------
-  do return end
-  console(1)
+  -- do return end
+  -- console(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0

@@ -189,6 +189,7 @@ Global configurations:
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 | `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
 | `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |
+| `g:easycomplete_cmdline`             | 1             | Commandline complete                                          |
 | `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | Autoselect first matched item or not. Same as `set &completeopt+=noselect` |
 
 Typing `:h easycomplete` for help.

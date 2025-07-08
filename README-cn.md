@@ -189,6 +189,7 @@ require("easycomplete").setup({
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
+| `g:easycomplete_cmdline`             | 1             | cmdline 匹配                                                |
 | `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | 是否自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
 
 ## 语言支持

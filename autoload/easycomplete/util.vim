@@ -698,6 +698,9 @@ function! easycomplete#util#GetTypingWord()
   if index(["lua"], &filetype) >= 0
     let regx = '[$a-zA-Z0-9_]'
   endif
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    let regx = '[a-zA-Z0-9_#:]'
+  endif
   while start > 0 && line[start - 1] =~ regx
     let start = start - 1
     let width = width + 1
