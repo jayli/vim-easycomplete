@@ -117,14 +117,14 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
     let localfile = simplify(a:fpath . '/' . item)
     if isdirectory(localfile)
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : dir_menu})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : dir_menu, "kind": ""})
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item,
               \ "menu" : dir_menu, "kind": "" })
       endif
     else
       if g:easycomplete_nerd_font == 0
-        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr":item,"menu" : file_menu})
+        call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr":item,"menu" : file_menu, "kind":""})
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr": item,
               \ "menu" : file_menu,

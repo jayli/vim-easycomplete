@@ -1165,9 +1165,13 @@ function! s:MapFunction(key, val)
       let kind_char = "♤"
     endif
   endif
+  let kind_str = get(a:val, "kind", "")
+  if kind_str == ""
+    let kind_char = ""
+  endif
   let format_object = {
         \ "abbr" : get(a:val, "abbr", ""),
-        \ "kind" : kind_char . get(a:val, "kind", "") . kind_char,
+        \ "kind" : kind_char . kind_str . kind_char,
         \ "menu" : "‰" . get(a:val, "menu", "") . "‰"
         \ }
   let ret = []
