@@ -223,7 +223,8 @@ function! s:OpenPum(startcol, lines)
   call s:RenderScrollThumb()
   noa setl textwidth=0
   noa setl completeopt=menu
-  if g:easycomplete_ghost_text
+  if g:easycomplete_ghost_text &&
+        \ !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
     noa setlocal lazyredraw
   endif
 endfunction
@@ -1074,7 +1075,8 @@ function! s:flush()
   endif
   call execute("noa setl textwidth=" . s:textwidth)
   call execute("noa setl completeopt=" . s:completeopt)
-  if g:easycomplete_ghost_text
+  if g:easycomplete_ghost_text &&
+        \ !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
     if !s:lazyredraw
       noa setlocal nolazyredraw
     endif

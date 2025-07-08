@@ -4,16 +4,21 @@ local console = util.console
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
+local lazyredraw = vim.o.lazyredraw
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
   vim.g.easycomplete_pum_noselect = 1
+  vim.cmd("setlocal nolazyredraw")
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
   vim.g.easycomplete_pum_noselect = pum_noselect
+  if lazyredraw == true then
+    vim.cmd("setlocal lazyredraw")
+  end
 end
 
 function this.get_typing_word()
