@@ -20,6 +20,10 @@ function this.get_typing_word()
   return vim.fn['easycomplete#util#GetTypingWord']()
 end
 
+function this.get_buf_keywords(typing_word)
+  return vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+end
+
 function this.calculate_sign_and_linenr_width()
   local width = 0
 
@@ -237,7 +241,7 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       if vim.g.easycomplete_cmdline_pattern == "/" then
         local typing_word = this.get_typing_word()
-        local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+        local ret = this.get_buf_keywords(typing_word)
         return ret
       elseif vim.g.easycomplete_cmdline_pattern == ":" then
         -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
@@ -262,7 +266,7 @@ this.REG_CMP_HANDLER = {
         if typing_word == "" then
           return {}
         else -- 如果不是预设的命令，直接从buf取词
-          local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+          local ret = this.get_buf_keywords(typing_word)
           return ret
         end
       elseif typing_word == "" and (cmp_type == "expression" or cmp_type == "function") then
@@ -323,7 +327,7 @@ this.REG_CMP_HANDLER = {
       if typing_word == "" then
         return {}
       else
-        local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+        local ret = this.get_buf_keywords(typing_word)
         return ret
       end
     end
