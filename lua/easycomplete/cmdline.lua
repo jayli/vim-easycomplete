@@ -205,7 +205,6 @@ function this.cr_handler()
   if this.pum_visible() and this.pum_selected() then
     this.pum_close()
     vim.defer_fn(function()
-      console(222, this.char_before_cursor())
       if this.char_before_cursor() == "/" then
         this.do_path_complete()
       end
@@ -242,6 +241,9 @@ this.REG_CMP_HANDLER = {
       local cmp_type = this.get_complition_type(cmd_name)
       if cmp_type == "" then
         return {}
+      elseif this.get_typing_word() == "" and cmp_type == "expression" then
+        -- expression 的返回结果太多了，会卡，做一个限制，不取全部了
+        return {}
       else
         local result = vim.fn.getcompletion("", cmp_type)
         -- Hack for file and file_in_path
@@ -268,6 +270,22 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       return this.get_path_cmp_items()
     end
+  },
+  {
+    -- 输入引号里的文本
+    pattern = {
+      "^[a-zA-Z0-9_]+%s+.*%\"[^\"]-$"
+    },
+    get_cmp_items = function()
+      local typing_word = this.get_typing_word()
+      console(typing_word)
+      if typing_word == "" then
+        return {}
+      else
+        local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+        return ret
+      end
+    end
   }
 }
 
@@ -286,7 +304,6 @@ function this.get_path_cmp_items()
   if string.find(typing_path.prefx,"%s/$") ~= nil then
     typing_path.is_path = 1
   end
-  console(typing_path)
   if typing_path.is_path == 0 then
     return {}
   else
@@ -398,13 +415,6 @@ function this.cmd_match(rgx)
   end
 end
 
--- 正在输入buffer
--- 正在输入路径
--- 正在输入函数
--- 正在输入文本
--- 正在输入color
--- 正在输入...
-
 this.cmd_type = {
   -- File completion
   file = {
@@ -436,7 +446,7 @@ this.cmd_type = {
     'tlast', 'tnext', 'tprev', 'tunmenu',
   },
   arglist = { 'args' },
-  ['function'] = { 'function', 'delfunction' },
+  ['function'] = { 'function', 'delfunction', 'call'},
   mapping = {
     'map', 'noremap', 'unmap',
     'nmap', 'vmap', 'imap', 'cmap',
