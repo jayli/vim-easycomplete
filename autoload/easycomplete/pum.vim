@@ -206,7 +206,7 @@ function! s:OpenPum(startcol, lines)
   call extend(pum_opts, pum_pos)
   if empty(s:pum_window)
     call s:CacheOpt()
-    let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:CustomPmenuSel'
+    let hl = 'Normal:Pmenu,NormalNC:Pmenu,CursorLine:CustomPmenuSel,Search:EasyNone'
     let winid = s:OpenFloatWindow(s:pum_buffer, pum_opts, hl)
     let s:pum_window = winid
     call s:hl()
