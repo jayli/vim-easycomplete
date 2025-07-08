@@ -241,7 +241,7 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       if vim.g.easycomplete_cmdline_pattern == "/" then
         local typing_word = this.get_typing_word()
-        local ret = this.get_buf_keywords(typing_word)
+        local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
         return ret
       elseif vim.g.easycomplete_cmdline_pattern == ":" then
         -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
