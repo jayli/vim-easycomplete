@@ -682,7 +682,7 @@ function! s:RenderScrollBar()
   let scrollbar_opts = deepcopy(s:default_scroll_bar_pot)
   call extend(scrollbar_opts, pos)
   if empty(s:scrollbar_window)
-    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar,Search:EasyNone"
+    let hl = "Normal:PmenuSbar,NormalNC:PmenuSbar,CursorLine:PmenuSbar,Search:EasyNone,NonText:PmenuSbar"
     let s:scrollbar_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollbar_opts, hl)
   else
     " update scroll window
@@ -716,7 +716,7 @@ function! s:RenderScrollThumb()
   endif
   if empty(s:scrollthumb_window)
     " create scrollthumb window
-    let hl = "Normal:PmenuThumb,NormalNC:PmenuThumb,CursorLine:PmenuThumb"
+    let hl = "Normal:PmenuThumb,NormalNC:PmenuThumb,CursorLine:PmenuThumb,NonText:PmenuThumb"
     let s:scrollthumb_window = s:OpenFloatWindow(s:scrollbar_buffer, scrollthumb_opts, hl)
   else
     " update scrollthumb window
