@@ -405,150 +405,59 @@ end
 -- 正在输入color
 -- 正在输入...
 
-function this.get_completion_type()
-  local cmdline = vim.fn.getcmdline()
-  local cmd_name = string.match(cmdline, "([^%s]+)")
-  if cmd_name == nil then
-    return nil
-  end
-  local cmd_type = ""
-  for key, value in pairs(this.commands_type) do
-    if cmd_name == key then
-      cmd_type = value
-      break
-    end
-  end
-  return cmd_type
-end
-
 this.cmd_type = {
-  file = {
-    'edit',
-    'read',
-    'write',
-    'saveas',
-    'source',
-    'split',
-    'vsplit',
-    'tabedit',
-    'diffsplit',
-    'diffpatch',
-    'explore',
-    'lexplore',
-    'sexplore',
-    'vexplore',
-  },
-  file_in_path = {
-    'find',
-    'sfind',
-    'tabfind'
-  },
-}
-
-this.commands_type = {
   -- File completion
-  edit = 'file',
-  read = 'file',
-  write = 'file',
-  saveas = 'file',
-  source = 'file',
-  split = 'file',
-  vsplit = 'file',
-  tabedit = 'file',
-  diffsplit = 'file',
-  diffpatch = 'file',
-  explore = 'file',
-  lexplore = 'file',
-  sexplore = 'file',
-  vexplore = 'file',
-  find = 'file_in_path',
-  sfind = 'file_in_path',
-  tabfind = 'file_in_path',
+  file = {
+    'edit', 'read', 'write','saveas',
+    'source','split', 'vsplit', 'tabedit',
+    'diffsplit', 'diffpatch', 'explore',
+    'lexplore', 'sexplore', 'vexplore',
+    'argadd', 'argdelete', 'argdo'
+  },
+  file_in_path = { 'find', 'sfind', 'tabfind' },
   -- Directory completion
-  cd = 'dir',
-  lcd = 'dir',
-  tcd = 'dir',
-  chdir = 'dir',
+  dir = { 'cd', 'lcd', 'tcd', 'chdir' },
   -- Buffer completion
-  buffer = 'buffer',
-  bdelete = 'buffer',
-  bwipeout = 'buffer',
-  bnext = 'buffer',
-  bprevious = 'buffer',
-  bfirst = 'buffer',
-  blast = 'buffer',
-  sbuffer = 'buffer',
-  sball = 'buffer',
-  diffthis = 'diff_buffer',
-  diffoff = 'diff_buffer',
-  diffupdate = 'diff_buffer',
-  -- Command completion
-  command = 'command',
-  delcommand = 'command',
-  -- Option completion
-  set = 'option',
-  setlocal = 'option',
-  setglobal = 'option',
-  -- Help completion
-  help = 'help',
-  -- Expression completion
-  substitute = 'expression',
-  global = 'expression',
-  vglobal = 'expression',
-  let = 'expression',
-  echo = 'expression',
-  -- Tag completion
-  tag = 'tag',
-  stag = 'tag',
-  tselect = 'tag',
-  tjump = 'tag',
-  tlast = 'tag',
-  tnext = 'tag',
-  tprev = 'tag',
-  tunmenu = 'tag',
-  -- Argument completion
-  args = 'arglist',
-  argadd = 'file',
-  argdelete = 'file',
-  argdo = 'file',
-  -- User completion (for user-defined functions/commands)
-  ['function'] = 'function',
-  delfunction = 'function',
-  -- Mapping completion
-  map = 'mapping',
-  noremap = 'mapping',
-  unmap = 'mapping',
-  nmap = 'mapping',
-  vmap = 'mapping',
-  imap = 'mapping',
-  cmap = 'mapping',
-  nunmap = 'mapping',
-  vunmap = 'mapping',
-  iunmap = 'mapping',
-  cunmap = 'mapping',
-  -- Autocmd completion
-  autocmd = 'event',
-  augroup = 'augroup',
-  doautocmd = 'event',
-  doautoall = 'event',
-  -- Shell command completion
-  terminal = 'shellcmd',
-  ['!'] = 'shellcmd',
-  -- Misc
-  ['='] = 'lua',
-  colorscheme = 'color',
-  compiler = 'compiler',
-  filetype = 'filetype',
-  highlight = 'highlight',
-  history = 'history',
-  lua = 'lua',
-  messages = 'messages',
-  packadd = 'packadd',
-  register = 'register',
-  runtime = 'runtime',
-  sign = 'sign',
-  syntax = 'syntax',
-  user = 'user',
+  buffer = {
+    'buffer', 'bdelete', 'bwipeout',
+    'bnext', 'bprevious', 'bfirst',
+    'blast', 'sbuffer', 'sball',
+  },
+  diff_buffer = { 'diffthis', 'diffoff', 'diffupdate' },
+  command = { 'command', 'delcommand' },
+  option = { 'set', 'setlocal', 'setglobal' },
+  help = { 'help' },
+  expression = {
+    'substitute', 'global', 'vglobal', 'let',
+    'echo', 'echom', 'echon',
+  },
+  tag = {
+    'tag', 'stag', 'tselect', 'tjump',
+    'tlast', 'tnext', 'tprev', 'tunmenu',
+  },
+  arglist = { 'args' },
+  ['function'] = { 'function', 'delfunction' },
+  mapping = {
+    'map', 'noremap', 'unmap',
+    'nmap', 'vmap', 'imap', 'cmap',
+    'nunmap', 'vunmap', 'iunmap', 'cunmap',
+  },
+  event     = { 'autocmd', 'doautocmd', 'doautoall' },
+  augroup   = { 'augroup' },
+  shellcmd  = { 'terminal' },
+  color     = { 'colorscheme' },
+  compiler  = { 'compiler' },
+  filetype  = { 'filetype' },
+  highlight = { 'highlight' },
+  history   = { 'history' },
+  lua       = { 'lua' },
+  messages  = { 'messages' },
+  packadd   = { 'packadd' },
+  register  = { 'register' },
+  runtime   = { 'runtime' },
+  sign      = { 'sign' },
+  syntax    = { 'syntax' },
+  user      = { 'user' }
 }
 
 function this.init_once()
