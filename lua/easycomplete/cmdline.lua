@@ -250,9 +250,15 @@ this.REG_CMP_HANDLER = {
       local cmp_type = this.get_complition_type(cmd_name)
       local typing_word = this.get_typing_word()
       if cmp_type == "" then
-        return {}
+        if typing_word == "" then
+          return {}
+        else -- 如果不是预设的命令，直接从buf取词
+          local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+          return ret
+        end
       elseif typing_word == "" and (cmp_type == "expression" or cmp_type == "function") then
         -- expression 和 function 的返回结果太多了，太卡了，这里做一个限制，不做空匹配取全部了
+        -- 这俩都有1800+个匹配项
         return {}
       else -- 最多情况的匹配
         local guide_str = ""
@@ -307,22 +313,6 @@ this.REG_CMP_HANDLER = {
     end
   }
 }
-
--- expression 和 function 有 1800+ 个结果，最好首字母过滤一下
--- 这里 menu_list 是裸字符串数组
-function this.match_first_char(menu_list, word)
-  if #word == 0 then
-    return {}
-  else
-    local new_list = {}
-    for index, item in ipairs(menu_list) do
-      if item[1] == word[1] then
-        table.insert(new_list, item)
-      end
-    end
-    return new_list
-  end
-end
 
 function this.do_path_complete()
   this.cmp_regex_handler(function()
@@ -396,7 +386,7 @@ function this.cmp_regex_handler(get_cmp_items, word)
   elseif menu_items == nil or #menu_items == 0 then
     this.pum_close()
   else
-    -- console(">>>", #menu_items)
+    -- console(">>> 匹配项个数", #menu_items)
     this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
 end
@@ -510,10 +500,10 @@ function this.init_once()
   if vim.g.easycomplete_cmdline ~= 1 then
     return
   end
-  -- TODO here -----------------------------
+  -- debug start -----------------------------
   -- do return end
   -- console(1)
-  -- TODO here -----------------------------
+  --------------------------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
   this.bind_cmdline_event()

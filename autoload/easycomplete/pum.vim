@@ -220,11 +220,7 @@ function! s:OpenPum(startcol, lines)
   call s:reset()
   call nvim_win_set_cursor(s:pum_window, [1, 0])
   call s:RenderScrollBar()
-  if g:easycomplete_winborder
-    call s:RenderScrollThumb()
-  else
-    call s:RenderScrollThumb()
-  endif
+  call s:RenderScrollThumb()
   noa setl textwidth=0
   noa setl completeopt=menu
   if g:easycomplete_ghost_text
@@ -457,7 +453,7 @@ function! s:select(line_index)
   " 最初计算的值，导致 scrollbar 的位置计算错误，重新渲染后一般又会正确，都是渲染停滞导致的
   " 因此这里加上一个强制的延迟，强制重新渲染 scroll 来解决
   if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
-    call timer_start(10, { -> s:RenderScroll() })
+    call timer_start(3, { -> s:RenderScroll() })
   endif
 endfunction
 
@@ -766,6 +762,9 @@ function! s:ComputeScrollThumbPos()
   let scroll_h = float2nr(floor(pum_h * pum_h * 1.0 / buf_h))
   if scroll_h >= pum_h
     let scroll_h = pum_h
+  endif
+  if scroll_h == 0
+    let scroll_h = 1
   endif
   let h = scroll_h
   " ---- 计算scrollbar 的位置 ----
