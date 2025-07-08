@@ -58,6 +58,14 @@ function! easycomplete#log#log(...)
   if easycomplete#util#IsTerminal()
     return
   endif
+
+  " log debug 窗口改为了默认直接看文件了
+  if easycomplete#log#running()
+    " return call('easycomplete#log#log', a:000)
+  else
+    return call('easycomplete#util#debug', a:000)
+  endif
+
   if !exists('g:vim_log_enabled')
     let g:vim_log_enabled = 1
   endif

@@ -1,6 +1,5 @@
-local util = require "easycomplete.util"
+local util = require("easycomplete.util")
 local console = util.console
-local debug = util.debug
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
@@ -45,6 +44,10 @@ function this.flush()
   vim.g.easycomplete_cmdline_typing = 0
   cmdline_start_cmdpos = 0
   this.pum_close()
+end
+
+function this.pum_visible()
+  return vim.fn["easycomplete#pum#visible"]()
 end
 
 function this.pum_selected()
@@ -132,6 +135,13 @@ function this.bind_cmdline_event()
         end
       end)
     end, 10)
+    if key_str == '\r' then
+      if this.cr_handler() then
+        return -- 执行回车
+      else
+        return "" -- 阻止回车
+      end
+    end
   end)
 end
 
@@ -183,13 +193,27 @@ function this.cmdline_handler(keys, key_str)
     this.do_complete()
   elseif string.byte(key_str) == 13 then
     -- console("回车键被按下")
-    this.pum_close()
   else
     -- console("其他键被按下: " .. keys)
     this.do_complete()
   end
   old_cmdline = cmdline
   vim.cmd("redraw")
+end
+
+function this.cr_handler()
+  if this.pum_visible() and this.pum_selected() then
+    this.pum_close()
+    vim.defer_fn(function()
+      console(222, this.char_before_cursor())
+      if this.char_before_cursor() == "/" then
+        this.do_path_complete()
+      end
+    end, 30)
+    return false -- 阻止回车
+  else
+    return true -- 执行回车
+  end
 end
 
 -- MAIN ROUTER
@@ -231,35 +255,26 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+.*/[a-zA-Z0-9_]+$"
     },
     get_cmp_items = function()
-      local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
-      if typing_path.is_path == 0 then
-        return {}
-      else
-        -- 这里原来就不提供模糊匹配？
-        local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
-        local result = this.path_dir_normalize(ret)
-        return ret
-      end
+      return this.get_path_cmp_items()
     end
   }
 }
 
--- 在路径匹配中，正文中tab匹配一个目录会自动带上'/'，方便回车后继续匹配下级目录
--- 在cmdline中按回车是执行的意思，所以这里保持了原生menu行为习惯，即Tab出菜单和
--- 选择下一个，回车是执行，因此这里就把目录末尾的"/"去掉了，让用户去输入，以便
--- 做到连续的逐级匹配
-function this.path_dir_normalize(ret)
-  for index, item in ipairs(ret) do
-    if string.find(item.word, "/$") ~= nil then
-      -- 去掉结尾的/
-      item.word = string.gsub(item.word, "/$", "")
-      if string.sub(item.word,1,2) ~= "./" then
-        -- 开头新增./
-        -- item.word = "./" .. item.word
-      end
-    end
+function this.do_path_complete()
+  this.cmp_regex_handler(function()
+    return this.get_path_cmp_items()
+  end, this.get_typing_word())
+  vim.cmd("redraw")
+end
+
+function this.get_path_cmp_items()
+  local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
+  if typing_path.is_path == 0 then
+    return {}
+  else
+    local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+    return ret
   end
-  return ret
 end
 
 function this.get_complition_type(cmd_name)
@@ -271,10 +286,6 @@ function this.get_complition_type(cmd_name)
     end
   end
   return cmd_type
-end
-
-function this.log(str)
-  this.pum_complete(1, this.normalize_list({str}, ""))
 end
 
 function this.do_complete()
@@ -335,6 +346,12 @@ function this.cmdline_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
   local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos() - 1))
   return cmdline_typed
+end
+
+function this.char_before_cursor()
+  local cmdline_all = vim.fn.getcmdline()
+  local char = string.sub(cmdline_all, vim.fn.getcmdpos() - 1, vim.fn.getcmdpos() - 1)
+  return char
 end
 
 -- 获得 cmdline 中的命令
@@ -519,7 +536,7 @@ this.commands_type = {
 function this.init_once()
   -- TODO here -----------------------------
   do return end
-  -- debug(1)
+  console(1)
   -- TODO here -----------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
