@@ -244,6 +244,16 @@ this.REG_CMP_HANDLER = {
         return {}
       else
         local result = vim.fn.getcompletion("", cmp_type)
+        -- Hack for file and file_in_path
+        -- getcompletion 的路径结果中，给所有的当前目录加上./前缀
+        -- 便于连续回车匹配
+        if cmp_type == "file" or cmp_type == "file_in_path" then
+          for i, item in ipairs(result) do
+            if string.find(item, "^[^/]+/$") ~= nil then
+              result[i] = "./" .. item
+            end
+          end
+        end
         return result
       end
     end
@@ -252,7 +262,8 @@ this.REG_CMP_HANDLER = {
     -- 输入路径
     pattern = {
       "^[a-zA-Z0-9_]+%s+.*/$",
-      "^[a-zA-Z0-9_]+%s+.*/[a-zA-Z0-9_]+$"
+      "^[a-zA-Z0-9_]+%s+.*/[a-zA-Z0-9_]+$",
+      "^[a-zA-Z0-9_]+%s+/$"
     },
     get_cmp_items = function()
       return this.get_path_cmp_items()
@@ -269,6 +280,13 @@ end
 
 function this.get_path_cmp_items()
   local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
+  -- 取根目录
+  -- insert模式下为了避免和输入注释"//"频繁干扰，去掉了根目录的路径匹配
+  -- 这里不存在这个频繁干扰的问题，再加回来
+  if string.find(typing_path.prefx,"%s/$") ~= nil then
+    typing_path.is_path = 1
+  end
+  console(typing_path)
   if typing_path.is_path == 0 then
     return {}
   else
