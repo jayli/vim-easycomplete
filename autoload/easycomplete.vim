@@ -322,15 +322,6 @@ function! s:CompleteTypingMatch(...)
     else
       call s:CloseCompletionMenu()
     endif
-
-    " #317
-    let cword = expand("<cword>")
-    if strlen(cword) > 1 && cword =~ "^[a-zA-Z_$]"
-      let local_delay = 50
-      call s:flush()
-      call easycomplete#util#timer_start("easycomplete#typing", [], local_delay)
-    endif
-
     let g:easycomplete_stunt_menuitems = []
     return
   endif
@@ -1955,6 +1946,12 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       let result = filtered_menu[0 : g:easycomplete_maxlength]
       if len(result) <= 10
         let result = easycomplete#util#uniq(result)
+      endif
+
+      if len(result) == 1 &&
+            \ result[0]["word"] == typing_word &&
+            \ easycomplete#util#GetPluginNameFromUserData(result[0]) == "buf"
+        let result = []
       endif
 
       " tabnine
