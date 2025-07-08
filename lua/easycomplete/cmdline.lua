@@ -176,7 +176,7 @@ function this.cmdline_handler(keys, key_str)
   if util.zizzing() then return end
   local cmdline = vim.fn.getcmdline()
   cmdline_start_cmdpos = 0
-  -- console(string.byte(key_str))
+  -- console(string.byte(key_str), vim.g.easycomplete_cmdline_pattern)
   if string.byte(key_str) == 9 then
     -- console("Tab 键")
   elseif string.byte(key_str) == 32 then
@@ -235,8 +235,14 @@ this.REG_CMP_HANDLER = {
     -- 正在输入第一个命令
     pattern = "^[a-zA-Z0-9_]+$",
     get_cmp_items = function()
-      -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
-      return this.get_all_commands()
+      if vim.g.easycomplete_cmdline_pattern == "/" then
+        local typing_word = this.get_typing_word()
+        local ret = vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+        return ret
+      elseif vim.g.easycomplete_cmdline_pattern == ":" then
+        -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
+        return this.get_all_commands()
+      end
     end
   },
   {
@@ -246,6 +252,9 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+[glbwtvas]:%w-$", -- 命令输入完毕，输入 x:y 变量
     },
     get_cmp_items = function()
+      if vim.g.easycomplete_cmdline_pattern == "/" then
+        return {}
+      end
       local cmd_name = this.get_guide_cmd()
       local cmp_type = this.get_complition_type(cmd_name)
       local typing_word = this.get_typing_word()
@@ -293,7 +302,11 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+/$"
     },
     get_cmp_items = function()
-      return this.get_path_cmp_items()
+      if vim.g.easycomplete_cmdline_pattern == "/" then
+        return {}
+      else
+        return this.get_path_cmp_items()
+      end
     end
   },
   {
@@ -303,6 +316,9 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+.*%\'[^\']-$",
     },
     get_cmp_items = function()
+      if vim.g.easycomplete_cmdline_pattern == "/" then
+        return {}
+      end
       local typing_word = this.get_typing_word()
       if typing_word == "" then
         return {}
