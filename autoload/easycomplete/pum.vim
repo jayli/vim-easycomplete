@@ -221,8 +221,11 @@ function! s:OpenPum(startcol, lines)
   call nvim_win_set_cursor(s:pum_window, [1, 0])
   call s:RenderScrollBar()
   call s:RenderScrollThumb()
-  noa setl textwidth=0
-  noa setl completeopt=menu
+  " 缓解在 cmdline 中匹配查找时造成Search高亮的抖动
+  if !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
+    noa setl textwidth=0
+    noa setl completeopt=menu
+  endif
   if g:easycomplete_ghost_text &&
         \ !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
     noa setlocal lazyredraw
