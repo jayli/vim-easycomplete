@@ -227,7 +227,7 @@ this.REG_CMP_HANDLER = {
   {
     -- cmdline 是空
     pattern = "^%s*$",
-    get_cmd_items = function()
+    get_cmp_items = function()
       return {}
     end
   },
