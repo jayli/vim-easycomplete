@@ -178,6 +178,7 @@ function EasyComplete.filter(match_list, needle)
       goto continue
     elseif item == needle then
       -- pass
+      table.insert(result, item)
       goto continue
     end
     local idx = string.find(string.lower(item), "" .. string.lower(needle))

@@ -140,7 +140,8 @@ function! s:GetBufKeywordsList(typing)
     " 53378 → 4781   0.102643
     " 53378 → 4781   0.101672
     " vim 的实现还是应该性能优先，只匹配首字符
-    call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
+    " call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '" && v:val !=# "' . a:typing . '"')
+    call filter(tmpkeywords, 'v:val =~ "^' . a:typing . '"')
     let keyword_list = tmpkeywords
   endif
   " call easycomplete#util#StopRecord('filter ' . len(tmpkeywords) . "→" . len(keyword_list))
