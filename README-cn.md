@@ -20,6 +20,7 @@ https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
 - 代码片段的补全
 - 高性能
 - 基于 TabNine 的 AI 补全助手
+- 命令行补全
 
 ## 安装
 
@@ -49,6 +50,9 @@ vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+
+-- cmdline 补全
+vim.g.easycomplete_cmdline = 1
 
 -- 关闭 pum 菜单
 -- vim.keymap.set('i', '<C-M>', '<Plug>EasycompleteClosePum')
@@ -89,6 +93,9 @@ noremap rn :EasyCompleteRename<CR>
 noremap gh :EasyCompleteHover<CR>
 noremap gb :BackToOriginalBuffer<CR>
 
+" cmdline 补全
+let g:easycomplete_cmdline = 1
+
 " 关闭 pum 菜单
 " inoremap <C-M> <Plug>EasycompleteClosePum
 
@@ -110,6 +117,7 @@ noremap gb :BackToOriginalBuffer<CR>
 -- lua style setup
 -- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
 require("easycomplete").setup({
+    cmdline = 1,
     pum_noselect = 0,
     tabnine_enable = 0,
     nerd_font = 1,
@@ -189,7 +197,7 @@ require("easycomplete").setup({
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
-| `g:easycomplete_cmdline`             | 1             | cmdline 匹配                                                |
+| `g:easycomplete_cmdline`             | 0             | cmdline 匹配                                                |
 | `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | 是否自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
 
 ## 语言支持

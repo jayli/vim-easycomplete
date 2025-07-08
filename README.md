@@ -21,6 +21,7 @@ It contains these features:
 - Snippet support.
 - Fast performance
 - AI coding assistant via [tabnine](#TabNine-Support).
+- cmdline completion support
 
 ## Installation
 
@@ -49,6 +50,9 @@ vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
 vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+
+-- cmdline completion
+vim.g.easycomplete_cmdline = 1
 
 -- close pum keymap
 -- vim.keymap.set('i', '<C-M>', '<Plug>EasycompleteClosePum')
@@ -87,6 +91,9 @@ noremap rn :EasyCompleteRename<CR>
 noremap gh :EasyCompleteHover<CR>
 noremap gb :BackToOriginalBuffer<CR>
 
+" cmdline completion
+let g:easycomplete_cmdline = 1
+
 " Close pum keymap
 " inoremap <C-M> <Plug>EasycompleteClosePum
 
@@ -108,6 +115,7 @@ Lua style setup with `require("easycomplete").setup()`:
 -- lua style setup
 -- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
 require("easycomplete").setup({
+    cmdline = 1,
     pum_noselect = 0,
     tabnine_enable = 0,
     nerd_font = 1,
@@ -189,7 +197,7 @@ Global configurations:
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 | `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
 | `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |
-| `g:easycomplete_cmdline`             | 1             | Commandline complete                                          |
+| `g:easycomplete_cmdline`             | 0             | Commandline complete                                          |
 | `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | Autoselect first matched item or not. Same as `set &completeopt+=noselect` |
 
 Typing `:h easycomplete` for help.
