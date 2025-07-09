@@ -31,20 +31,17 @@ end
 
 function this.calculate_sign_and_linenr_width()
   local width = 0
-
   -- 检查是否有 sign 列
   local signcolumn = vim.api.nvim_win_get_option(0, "signcolumn")
   if signcolumn == "yes" or signcolumn == "auto" or signcolumn == "number" then
     width = width + 2 -- sign 列通常占据 2 个字符宽度
   end
-
   -- 检查是否显示行号
   if vim.wo.number or vim.wo.relativenumber then
     -- 计算行号的最大宽度
     local max_num_width = #tostring(vim.fn.line("$"))
-    width = width + max_num_width + 1 -- 加 1 是为了考虑空隙或者额外的字符
+    width = width + max_num_width
   end
-
   return width
 end
 
@@ -215,6 +212,8 @@ function this.cmdline_handler(keys, key_str)
   end
   old_cmdline = cmdline
   vim.cmd("redraw")
+  -- vim.defer_fn(function()
+  -- end, 10)
 end
 
 function this.cr_handler()

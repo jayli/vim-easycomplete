@@ -452,13 +452,6 @@ function! s:select(line_index)
     endif
     call s:HLCursordFuzzyChar("CustomFuzzyMatch", prefix_length)
   endif
-  " cmdline 中弹出 pum 时，主线程的非必要渲染会停止，所以往往需要手动加 redraw 才能触发渲染
-  " 因此在 cmdline 中弹出 pum 时机做了一个延迟，导致渲染延后，以至于获得的 PumPosition 不是
-  " 最初计算的值，导致 scrollbar 的位置计算错误，重新渲染后一般又会正确，都是渲染停滞导致的
-  " 因此这里加上一个强制的延迟，强制重新渲染 scroll 来解决
-  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
-    call timer_start(3, { -> s:RenderScroll() })
-  endif
 endfunction
 
 function s:RenderScroll()
@@ -813,12 +806,21 @@ function! s:HasScrollbar()
   return s:has_scrollbar == 1 ? v:true : v:false
 endfunction
 
-" PumPosition 是获得原始window信息，包括了window border
+" PumPosition 是获得原始window信息，实测不包括 window border
 function! s:PumPosition()
   if s:pumvisible()
+    " pos 这里是窗口初始化时给的值，如果溢出屏幕，需要重新矫正
     let pos = nvim_win_get_position(s:pum_window)
     let h = nvim_win_get_height(s:pum_window)
     let w = nvim_win_get_width(s:pum_window)
+    if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+      let editor_height = &window
+      let rel_row = editor_height - h - (g:easycomplete_winborder ? 2 : 0)
+      let pos[0] = rel_row
+      if pos[1] < 0
+        let pos[1] = 0
+      endif
+    endif
     return {"pos":pos, "height": h, "width": w}
   else
     return {}
