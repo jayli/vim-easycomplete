@@ -112,6 +112,7 @@ function EasyComplete.normalize_sort(items)
 end
 
 
+-- 字符串组成的数组
 function EasyComplete.distinct(items)
   return Util.distinct(items)
 end
@@ -195,6 +196,7 @@ local function get_item_word(item)
   return item.word or ""
 end
 
+-- Firstcomplete 中调用
 function EasyComplete.distinct_keywords(menu_list)
   if not menu_list or #menu_list == 0 then
     return {}

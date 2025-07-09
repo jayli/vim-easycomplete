@@ -23,13 +23,17 @@ function util.zizzing()
   end
 end
 
+-- items 字符串组成的数组
 function util.distinct(items)
   local unique_values = {}
   local result = {}
   table.sort(items)
   for _, value in ipairs(items) do
-    if #value == 0 or #value == 1 then
-      -- 空字符串，一个长度的字符
+    if #value == 0 then
+      -- 空字符串
+      -- continue
+    elseif #value == 1 and vim.g.easycomplete_cmdline_typing == 0 then
+      -- 在insert模式下，把一个长度的字符也过滤掉
       -- continue
     elseif tonumber(value:sub(1,1)) ~= nil then
       -- 首字符是数字

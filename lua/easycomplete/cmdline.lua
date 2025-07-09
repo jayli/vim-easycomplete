@@ -43,7 +43,9 @@ function this.get_typing_word()
 end
 
 function this.get_buf_keywords(typing_word)
-  return vim.fn['easycomplete#sources#buf#GetKeywords'](typing_word)
+  local items_list = vim.fn['easycomplete#sources#buf#GetBufKeywords'](typing_word)
+  local distinct_items = util.distinct(items_list)
+  return distinct_items
 end
 
 function this.calculate_sign_and_linenr_width()
@@ -152,7 +154,7 @@ function this.bind_cmdline_event()
     vim.g.easycomplete_cmdline_typing = 1
     -- TODO 匹配模式闪烁问题没解决，先关闭
     if vim.g.easycomplete_cmdline_pattern == '/' then
-      return
+      -- return
     end
     vim.defer_fn(function()
       vim.schedule(function()
@@ -264,7 +266,7 @@ this.REG_CMP_HANDLER = {
     get_cmp_items = function()
       if vim.g.easycomplete_cmdline_pattern == "/" then
         local typing_word = this.get_typing_word()
-        local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
+        local ret = this.get_buf_keywords(string.sub(typing_word, 1, 2))
         return ret
       elseif vim.g.easycomplete_cmdline_pattern == ":" then
         -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
@@ -288,8 +290,8 @@ this.REG_CMP_HANDLER = {
       if cmp_type == "" then
         if typing_word == "" then
           return {}
-        else -- 如果不是预设的命令，直接从buf取词
-          local ret = this.get_buf_keywords(typing_word)
+        else -- 如果不是预设的命令，直接从buf取词，也做前两个字符的过滤
+          local ret = this.get_buf_keywords(string.sub(typing_word, 1, 2))
           return ret
         end
       elseif typing_word == "" and (cmp_type == "expression" or cmp_type == "function") then
@@ -350,7 +352,7 @@ this.REG_CMP_HANDLER = {
       if typing_word == "" then
         return {}
       else
-        local ret = this.get_buf_keywords(typing_word)
+        local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
         return ret
       end
     end
