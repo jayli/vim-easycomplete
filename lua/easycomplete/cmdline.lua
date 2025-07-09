@@ -154,7 +154,7 @@ function this.bind_cmdline_event()
     vim.g.easycomplete_cmdline_typing = 1
     -- TODO 匹配模式闪烁问题没解决，先关闭
     if vim.g.easycomplete_cmdline_pattern == '/' then
-      -- return
+      return
     end
     vim.defer_fn(function()
       vim.schedule(function()
