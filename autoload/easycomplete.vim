@@ -313,6 +313,7 @@ function! s:CompleteTypingMatch(...)
   else
     let tn_result = []
   endif
+  " 正常匹配为空，tabnine 结果也为空
   if len(filtered_menu) == 0 && len(tn_result) == 0
     " call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
     " 正常SecondComplete中无匹配词了就关掉 pum 了
