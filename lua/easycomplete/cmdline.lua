@@ -4,21 +4,38 @@ local console = util.console
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
-local lazyredraw = vim.o.lazyredraw
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
   vim.g.easycomplete_pum_noselect = 1
-  vim.cmd("setlocal nolazyredraw")
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
+end
+
+function this.pum_redraw()
+  if vim.fn.has('nvim-0.10') then
+    local pum_bufid = this.pum_bufid()
+    vim.api.nvim__redraw({
+      buf = pum_bufid,
+      flush = true
+    })
+  else
+    vim.cmd("redraw")
+  end
 end
 
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
   vim.g.easycomplete_pum_noselect = pum_noselect
-  if lazyredraw == true then
-    vim.cmd("setlocal lazyredraw")
-  end
+end
+
+function this.pum_bufid()
+  local pum_bufid = vim.fn['easycomplete#pum#bufid']()
+  return pum_bufid
+end
+
+function this.pum_winid()
+  local pum_winid = vim.fn['easycomplete#pum#winid']()
+  return pum_winid
 end
 
 function this.get_typing_word()
@@ -211,9 +228,7 @@ function this.cmdline_handler(keys, key_str)
     this.do_complete()
   end
   old_cmdline = cmdline
-  vim.cmd("redraw")
-  -- vim.defer_fn(function()
-  -- end, 10)
+  this.pum_redraw()
 end
 
 function this.cr_handler()
@@ -342,7 +357,7 @@ function this.do_path_complete()
   this.cmp_regex_handler(function()
     return this.get_path_cmp_items()
   end, this.get_typing_word())
-  vim.cmd("redraw")
+  this.pum_redraw()
 end
 
 function this.get_path_cmp_items()

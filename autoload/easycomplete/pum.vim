@@ -195,6 +195,14 @@ function! s:bgcolor(group)
   return easycomplete#ui#GetBgColor(a:group)
 endfunction
 
+function! easycomplete#pum#winid()
+  return s:pum_window
+endfunction
+
+function! easycomplete#pum#bufid()
+  return s:pum_buffer
+endfunction
+
 function! s:OpenPum(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
