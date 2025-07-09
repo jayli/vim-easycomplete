@@ -22,7 +22,7 @@ if !exists("g:easycomplete_nerd_font")
 endif
 
 if !exists("g:easycomplete_menu_abbr")
-  let g:easycomplete_menu_abbr = 1
+  let g:easycomplete_menu_abbr = 0
 endif
 if !exists("g:easycomplete_kind_icons")
   let g:easycomplete_kind_icons = {}

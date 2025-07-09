@@ -544,12 +544,13 @@ function! s:NormalizeCompleteResult(data)
       let percent_str = s:fullfill(tmp_detail)
     endif
     let l:word["menu"] .= percent_str
+    let l:full_abbr = l:word['word']
     let l:word["sort_number"] = matchstr(percent_str, "\\d\\+","g")
     let l:word['abbr'] = easycomplete#util#parseAbbr(l:word['word'])
     let l:word['word'] = tn_prefix . l:word['word']
     let complete_kind = easycomplete#util#get(l:result, 'completion_metadata', 'completion_kind')
     let complete_origin = easycomplete#util#get(l:result, 'completion_metadata', 'origin')
-    let l:word['info'] = join(["TabNine Snippet:", l:word['abbr']], "\n")
+    let l:word['info'] = join(["TabNine Suggestion:", l:full_abbr], "\n")
     call add(l:words, l:word)
   endfor
   call sort(l:words, {a, b -> str2nr(a["sort_number"]) < str2nr(b["sort_number"])})

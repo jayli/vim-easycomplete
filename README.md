@@ -193,7 +193,7 @@ Global configurations:
 | `g:easycomplete_ghost_text`          | 1             | Ghost text                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
-| `g:easycomplete_menu_abbr`           | 1             | Show abbr(shortname) at pum `menu` position, or show fullname |
+| `g:easycomplete_menu_abbr`           | 0             | Show abbr(shortname) at pum `menu` position, or show fullname |
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |
 | `g:easycomplete_use_default_cr`      | 1             | enable or disable default cr action                           |
 | `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |

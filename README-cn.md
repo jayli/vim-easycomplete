@@ -193,7 +193,7 @@ require("easycomplete").setup({
 | `g:easycomplete_ghost_text`          | 1             | 幽灵文本                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
-| `g:easycomplete_menu_abbr`           | 1             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
+| `g:easycomplete_menu_abbr`           | 0             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
