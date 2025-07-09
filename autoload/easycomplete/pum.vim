@@ -460,6 +460,7 @@ function! s:select(line_index)
     endif
     call s:HLCursordFuzzyChar("CustomFuzzyMatch", prefix_length)
   endif
+  call s:RenderScrollThumb()
 endfunction
 
 function s:RenderScroll()
