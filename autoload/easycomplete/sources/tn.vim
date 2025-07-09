@@ -545,7 +545,7 @@ function! s:NormalizeCompleteResult(data)
     endif
     let l:word["menu"] .= percent_str
     let l:word["sort_number"] = matchstr(percent_str, "\\d\\+","g")
-    let l:word['abbr'] = l:word['word']
+    let l:word['abbr'] = easycomplete#util#parseAbbr(l:word['word'])
     let l:word['word'] = tn_prefix . l:word['word']
     let complete_kind = easycomplete#util#get(l:result, 'completion_metadata', 'completion_kind')
     let complete_origin = easycomplete#util#get(l:result, 'completion_metadata', 'origin')
