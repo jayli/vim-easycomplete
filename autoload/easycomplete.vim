@@ -1936,11 +1936,12 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
 
     if !should_stop_render && len(source_result) > 0
       if b:is_directory_complete
-        let filtered_menu = source_result
+        let filtered_menu = deepcopy(source_result)
       else
-        let filtered_menu = easycomplete#util#CompleteMenuFilter(source_result, typing_word, 500)
+        " distinct 只去重 bufkeyword 和 dict
+        let tmp_result = easycomplete#util#distinct(deepcopy(source_result))
+        let filtered_menu = easycomplete#util#CompleteMenuFilter(tmp_result, typing_word, 500)
       endif
-      let filtered_menu = easycomplete#util#distinct(deepcopy(filtered_menu))
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
       let result = filtered_menu[0 : g:easycomplete_maxlength]
