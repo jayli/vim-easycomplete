@@ -23,6 +23,25 @@ function util.zizzing()
   end
 end
 
+-- 求一个列表t的前limit个元素
+-- util.sub_table({...}, 1, 20) 求列表从1到20个元素
+function util.sub_table(t, from, to)
+  local result = {}
+  table.move(t, from, math.min(#t, to), 1, result)
+  return result
+end
+
+-- filter 函数，t 是一个输入的数组
+function util.filter(t, func)
+  local result = {}
+  for _, v in ipairs(t) do
+    if func(v) then
+      table.insert(result, v)
+    end
+  end
+  return result
+end
+
 -- items 字符串组成的数组
 function util.distinct(items)
   local unique_values = {}
