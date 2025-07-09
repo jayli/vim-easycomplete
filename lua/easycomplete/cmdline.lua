@@ -150,6 +150,10 @@ function this.bind_cmdline_event()
     end
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     vim.g.easycomplete_cmdline_typing = 1
+    -- TODO 匹配模式闪烁问题没解决，先关闭
+    if vim.g.easycomplete_cmdline_pattern == '/' then
+      return
+    end
     vim.defer_fn(function()
       vim.schedule(function()
         local ok, ret = pcall(this.cmdline_handler, keys, key_str)
