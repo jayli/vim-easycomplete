@@ -224,6 +224,10 @@ endif
 if !exists("g:easycomplete_pum_maxheight")
   let g:easycomplete_pum_maxheight = 20
 endif
+" 匹配文本的距离
+if !exists("g:easycomplete_pum_maxlength")
+  let g:easycomplete_pum_maxlength = 35
+endif
 
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  g:easycomplete_diagnostics_hover,

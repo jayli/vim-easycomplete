@@ -1173,6 +1173,8 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
           let fuzzymatching[count_i]["abbr"] = fuzzymatching[count_i]["word"]
           let abbr = fuzzymatching[count_i]["word"]
         endif
+        let abbr = easycomplete#util#parseAbbr(abbr)
+        let fuzzymatching[count_i]["abbr"] = easycomplete#util#parseAbbr(abbr)
         let p = fuzzy_position[count_i]
         let fuzzymatching[count_i]["abbr_marked"] = s:ReplaceMent(abbr, p, "§")
         let fuzzymatching[count_i]["marked_position"] = p
@@ -2046,6 +2048,18 @@ function! easycomplete#util#lintTrim(line_str, width, offset)
     return repeat(" ", a:offset) . strpart(line_str, 0, real_width)
   else
     return repeat(" ", a:offset) . line_str . repeat(" ", real_width - strlen(line_str))
+  endif
+endfunction " }}}
+
+" abbr: 字符串
+" max_length: 最大长度
+function! easycomplete#util#parseAbbr(abbr) " {{{
+  let max_length = g:easycomplete_pum_maxlength
+  if max_length == 0 || strlen(a:abbr) <= max_length
+    return a:abbr
+  else
+    let short_abbr = a:abbr[0:max_length - 3] . ".."
+    return short_abbr
   endif
 endfunction " }}}
 
