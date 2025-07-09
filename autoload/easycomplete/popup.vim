@@ -130,6 +130,10 @@ endfunction
 
 function! s:CurrCharIsChinese()
   let offset = 0
+  " Tab
+  if char2nr(strpart(getline('.'), col('.')-1, 1)) == 9
+    return 1
+  endif
   let l_len = strwidth(strpart(getline('.'), col('.')-1, 3))
   if l_len == 2
     let offset = 1 " 是中文字符
