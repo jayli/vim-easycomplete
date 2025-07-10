@@ -4,6 +4,7 @@ local console = util.console
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
+local redraw_queued = false
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
@@ -14,10 +15,15 @@ end
 function this.pum_redraw()
   if vim.fn.has('nvim-0.10') then
     local pum_bufid = this.pum_bufid()
-    vim.api.nvim__redraw({
-      buf = pum_bufid,
-      flush = true
-    })
+    if redraw_queued then return end
+    redraw_queued = true
+    vim.schedule(function()
+      redraw_queued = false
+      vim.api.nvim__redraw({
+        buf = pum_bufid,
+        flush = true
+      })
+    end)
   else
     vim.cmd("redraw")
   end
