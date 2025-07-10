@@ -324,13 +324,14 @@ end
 
 -- 判断一个list中是否包含某个字符串元素
 function util.has_item(tb, it)
-  if #tb == 0 then return false end
-  local idx = vim.fn.index(tb, it)
-  if idx == -1 then
-    return false
-  else
-    return true
-  end
+  return vim.tbl_contains(tb, it)
+  -- if #tb == 0 then return false end
+  -- local idx = vim.fn.index(tb, it)
+  -- if idx == -1 then
+  --   return false
+  -- else
+  --   return true
+  -- end
 end
 
 function util.stop_async_run()
