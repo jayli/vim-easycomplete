@@ -190,7 +190,7 @@ function this.bind_cmdline_event()
     -- TODO 匹配模式闪烁问题没解决，先关闭
     if vim.g.easycomplete_cmdline_pattern == '/' and key_str ~= '\r'then
       -- jayli 先关掉，继续调试
-      do return end
+      -- do return end
       if util.zizzing() then
         return
       end
