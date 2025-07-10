@@ -8,7 +8,6 @@ local redraw_queued = false
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
-  console('pum_complete')
   vim.g.easycomplete_pum_noselect = 1
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
@@ -30,6 +29,7 @@ function this.pum_redraw()
   if redraw_queued then return end
   if vim.g.easycomplete_cmdline_pattern == '/' then
     redraw_queued = true
+    local ch = vim.fn.nr2char(0x200F)
     local termcode = vim.api.nvim_replace_termcodes(" <bs>", true, true, true)
     vim.schedule(function()
       if vim.o.incsearch then
@@ -49,7 +49,6 @@ function this.pum_redraw()
 end
 
 function this.pum_close()
-  console('pum_close')
   vim.fn["easycomplete#pum#close"]()
   vim.g.easycomplete_pum_noselect = pum_noselect
 end
