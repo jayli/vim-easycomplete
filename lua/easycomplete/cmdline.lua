@@ -33,7 +33,7 @@ function this.pum_redraw()
     local termcode = vim.api.nvim_replace_termcodes(" <bs>", true, true, true)
     vim.schedule(function()
       if vim.o.incsearch then
-        vim.api.nvim_feedkeys(termcode, 'ni', false)
+        vim.api.nvim_feedkeys(termcode, 'ni', true)
       end
       redraw_queued = false
     end)
@@ -128,7 +128,7 @@ function this.select_prev()
   return new_whole_word
 end
 
--- Tab 切换 pum 选项的动作
+-- :cmd 模式下Tab 切换 pum 选项的动作
 function this.get_tab_returing_opword()
   local backing_count = vim.fn.getcmdpos() - cmdline_start_cmdpos
   local oprator_str = string.rep("\b", backing_count)
@@ -141,6 +141,11 @@ function this.get_tab_returing_opword()
     new_whole_word = oprator_str
   end
   return new_whole_word
+end
+
+-- / search 模式下回车键返回的内容
+function this.get_search_returing_opword()
+
 end
 
 function this.bind_cmdline_event()
@@ -183,7 +188,7 @@ function this.bind_cmdline_event()
     end
     vim.g.easycomplete_cmdline_typing = 1
     -- TODO 匹配模式闪烁问题没解决，先关闭
-    if vim.g.easycomplete_cmdline_pattern == '/' then
+    if vim.g.easycomplete_cmdline_pattern == '/' and key_str ~= '\r'then
       -- jayli 先关掉，继续调试
       do return end
       if util.zizzing() then
@@ -274,13 +279,22 @@ end
 
 function this.cr_handler()
   if this.pum_visible() and this.pum_selected() then
-    this.pum_close()
-    vim.defer_fn(function()
-      if this.char_before_cursor() == "/" then
-        this.do_path_complete()
-      end
-    end, 30)
-    return false -- 阻止回车
+    if vim.g.easycomplete_cmdline_pattern == ":" then
+      this.pum_close()
+      vim.defer_fn(function()
+        if this.char_before_cursor() == "/" then
+          this.do_path_complete()
+        end
+      end, 30)
+    elseif vim.g.easycomplete_cmdline_pattern == "/" then
+      local opr = this.get_tab_returing_opword()
+      this.pum_close()
+      vim.defer_fn(function()
+        vim.api.nvim_feedkeys(opr, 'ni', true)
+        util.zizz()
+      end, 30)
+    end
+    return false -- 组织回车
   else
     return true -- 执行回车
   end
