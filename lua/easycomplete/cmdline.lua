@@ -8,28 +8,48 @@ local redraw_queued = false
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
+  console('pum_complete')
   vim.g.easycomplete_pum_noselect = 1
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
-function this.pum_redraw()
+function this.safe_redraw()
   if vim.fn.has('nvim-0.10') then
-    local pum_bufid = this.pum_bufid()
-    if redraw_queued then return end
-    redraw_queued = true
-    vim.schedule(function()
-      redraw_queued = false
-      vim.api.nvim__redraw({
-        buf = pum_bufid,
+    vim.api.nvim__redraw({
+        win = this.pum_winid(),
         flush = true
       })
-    end)
   else
     vim.cmd("redraw")
   end
 end
 
+function this.pum_redraw()
+  if util.zizzing() then return end
+  util.zizz()
+  if redraw_queued then return end
+  if vim.g.easycomplete_cmdline_pattern == '/' then
+    redraw_queued = true
+    local termcode = vim.api.nvim_replace_termcodes(" <bs>", true, true, true)
+    vim.schedule(function()
+      if vim.o.incsearch then
+        vim.api.nvim_feedkeys(termcode, 'ni', false)
+      end
+      redraw_queued = false
+    end)
+  else
+    if not vim.api.nvim_win_is_valid(this.pum_winid()) then
+      vim.schedule(function()
+        this.safe_redraw()
+      end)
+    else
+      vim.cmd("redraw")
+    end
+  end
+end
+
 function this.pum_close()
+  console('pum_close')
   vim.fn["easycomplete#pum#close"]()
   vim.g.easycomplete_pum_noselect = pum_noselect
 end
@@ -91,6 +111,9 @@ end
 
 function this.select_next()
   vim.fn['easycomplete#pum#next']()
+  if vim.g.easycomplete_cmdline_pattern == '/' then
+    return ""
+  end
   util.zizz()
   local new_whole_word = this.get_tab_returing_opword()
   return new_whole_word
@@ -98,6 +121,9 @@ end
 
 function this.select_prev()
   vim.fn['easycomplete#pum#prev']()
+  if vim.g.easycomplete_cmdline_pattern == '/' then
+    return ""
+  end
   util.zizz()
   local new_whole_word = this.get_tab_returing_opword()
   return new_whole_word
@@ -156,12 +182,16 @@ function this.bind_cmdline_event()
     if vim.api.nvim_get_mode().mode ~= "c" then
       return
     end
-    local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     vim.g.easycomplete_cmdline_typing = 1
     -- TODO 匹配模式闪烁问题没解决，先关闭
     if vim.g.easycomplete_cmdline_pattern == '/' then
-      return
+      -- jayli 先关掉，继续调试
+      do return end
+      if util.zizzing() then
+        return
+      end
     end
+    local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     vim.defer_fn(function()
       vim.schedule(function()
         local ok, ret = pcall(this.cmdline_handler, keys, key_str)
