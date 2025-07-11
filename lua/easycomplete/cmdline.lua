@@ -30,14 +30,20 @@ function this.pum_redraw()
   if vim.g.easycomplete_cmdline_pattern == '/' then
     redraw_queued = true
     local ch = vim.fn.nr2char(0x200F)
-    -- " <bs>"
-    -- "<c-]>"
-    -- <c-t>
+    -- cmdline 模式下模拟 redraw，即要避免整个界面重绘，也要能正确的绘出pumwindow
+    -- 还要不干扰 cmdline 原本输入的内容，nvim__redraw 和 redraw 都不行，这里用
+    -- feedkey 一个字符来模拟，目前还不完美，这会导致在大文件时光标有一次闪烁
+    -- 功能是没问题的，nvim-cmp 用 " <bs>"，我感觉"<c-]>"更好一些
+    -- " <bs>" "<c-]>" <c-t> "<c-a><c-h>" "<c-r><c-r><c-r>" "<c-r><c-r><end>"
+    -- "<c-g>":匹配下一个
     local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
     vim.schedule(function()
-      if vim.o.incsearch then
-        vim.api.nvim_feedkeys(termcode, 'ni', true)
-      end
+      -- vim.fn.win_execute(this.pum_winid(), "update")
+      vim.api.nvim_win_call(this.pum_winid(), function()
+        if vim.o.incsearch then
+          vim.api.nvim_feedkeys(termcode, 'ni', true)
+        end
+      end)
       redraw_queued = false
     end)
   else
@@ -68,6 +74,11 @@ end
 
 function this.get_typing_word()
   return vim.fn['easycomplete#util#GetTypingWord']()
+end
+
+function this.menu_filter(menu_list, word, max_word)
+  local ret = vim.fn['easycomplete#util#CompleteMenuFilter'](menu_list, word, max_word)
+  return ret
 end
 
 function this.get_buf_keywords(typing_word)
@@ -109,6 +120,10 @@ end
 
 function this.pum_selected_item()
   return vim.fn['easycomplete#pum#CursoredItem']()
+end
+
+function this.select(index)
+  return vim.fn['easycomplete#pum#select'](index)
 end
 
 function this.select_next()
@@ -237,7 +252,7 @@ function this.normalize_list(arr, word)
         })
     end
   end
-  local filtered_items = vim.fn['easycomplete#util#CompleteMenuFilter'](ret, word, 500)
+  local filtered_items = this.menu_filter(ret, word, 500)
   return filtered_items
 end
 

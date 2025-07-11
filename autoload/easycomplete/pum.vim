@@ -435,6 +435,10 @@ function! easycomplete#pum#CursoredItem()
   return s:curr_items[s:selected_i - 1]
 endfunction
 
+function! easycomplete#pum#select(index)
+  call s:select(a:index)
+endfunction
+
 function! s:select(line_index)
   if !s:pumvisible() | return | endif
   if a:line_index > len(s:curr_items)
