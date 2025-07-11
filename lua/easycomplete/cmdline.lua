@@ -30,7 +30,10 @@ function this.pum_redraw()
   if vim.g.easycomplete_cmdline_pattern == '/' then
     redraw_queued = true
     local ch = vim.fn.nr2char(0x200F)
-    local termcode = vim.api.nvim_replace_termcodes(" <bs>", true, true, true)
+    -- " <bs>"
+    -- "<c-]>"
+    -- <c-t>
+    local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
     vim.schedule(function()
       if vim.o.incsearch then
         vim.api.nvim_feedkeys(termcode, 'ni', true)
