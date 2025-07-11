@@ -433,7 +433,9 @@ function this.do_path_complete()
   this.cmp_regex_handler(function()
     return this.get_path_cmp_items()
   end, this.get_typing_word())
-  this.pum_redraw()
+  vim.defer_fn(function()
+    this.pum_redraw()
+  end, 10)
 end
 
 function this.get_path_cmp_items()
