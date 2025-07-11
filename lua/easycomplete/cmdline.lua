@@ -126,7 +126,7 @@ function this.select(index)
   return vim.fn['easycomplete#pum#select'](index)
 end
 
-function this.select_next()
+function this.pum_select_next()
   vim.fn['easycomplete#pum#next']()
   if vim.g.easycomplete_cmdline_pattern == '/' then
     return ""
@@ -136,7 +136,7 @@ function this.select_next()
   return new_whole_word
 end
 
-function this.select_prev()
+function this.pum_select_prev()
   vim.fn['easycomplete#pum#prev']()
   if vim.g.easycomplete_cmdline_pattern == '/' then
     return ""
@@ -193,11 +193,11 @@ function this.bind_cmdline_event()
     })
 
   vim.keymap.set("c", "<Tab>", function()
-    return this.select_next()
+    return this.pum_select_next()
   end, { expr = true, noremap = true })
 
   vim.keymap.set("c", "<S-Tab>", function()
-    return this.select_prev()
+    return this.pum_select_prev()
   end, { expr = true, noremap = true })
 
   vim.on_key(function(keys, _)
