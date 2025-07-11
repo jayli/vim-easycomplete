@@ -122,7 +122,7 @@ function this.pum_selected_item()
   return vim.fn['easycomplete#pum#CursoredItem']()
 end
 
-function this.select(index)
+function this.pum_select(index)
   return vim.fn['easycomplete#pum#select'](index)
 end
 
