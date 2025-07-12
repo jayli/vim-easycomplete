@@ -324,6 +324,16 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   endif
 endfunction
 
+function! easycomplete#popup#LintPopupVisible()
+  if g:env_is_nvim && nvim_win_is_valid(g:easycomplete_popup_win["float"])
+    return v:true
+  elseif g:easycomplete_popup_win["float"] && s:float_type == "lint"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#popup#SignatureVisible()
   if g:easycomplete_popup_win["float"] && s:float_type == "signature"
     return v:true
@@ -734,25 +744,14 @@ function! easycomplete#popup#visiable()
   return v:false
 endfunction
 
-function! easycomplete#popup#close(...)
-  "call setwinvar(winid, '&hlsearch', s:hlsearch)
-  if empty(a:000)
-    if g:easycomplete_popup_win["popup"]
-      call easycomplete#popup#close("popup")
-    endif
-    if g:easycomplete_popup_win["float"]
-      call easycomplete#popup#close("float")
-    endif
-    return
+function! easycomplete#popup#CloseLintPopup()
+  if easycomplete#popup#LintPopupVisible()
+    call s:CloseByWindowType("float")
   endif
-  let windowtype = a:1
-  if windowtype == "float" &&
-        \ bufnr() != expand("<abuf>") &&
-        \ !empty(expand("<abuf>")) &&
-        \ ((g:env_is_vim && pumvisible()) || g:env_is_nvim && easycomplete#pum#visible()) &&
-        \ easycomplete#util#InsertMode()
-    return
-  endif
+endfunction
+
+function! s:CloseByWindowType(win_type)
+  let windowtype = a:win_type
   if s:is_vim
     if g:easycomplete_popup_win[windowtype]
       call popup_close(g:easycomplete_popup_win[windowtype])
@@ -776,6 +775,28 @@ function! easycomplete#popup#close(...)
       let s:last_winargs = []
     endif
   endif
+endfunction
+
+function! easycomplete#popup#close(...)
+  "call setwinvar(winid, '&hlsearch', s:hlsearch)
+  if empty(a:000)
+    if g:easycomplete_popup_win["popup"]
+      call easycomplete#popup#close("popup")
+    endif
+    if g:easycomplete_popup_win["float"]
+      call easycomplete#popup#close("float")
+    endif
+    return
+  endif
+  let windowtype = a:1
+  if windowtype == "float" &&
+        \ bufnr() != expand("<abuf>") &&
+        \ !empty(expand("<abuf>")) &&
+        \ ((g:env_is_vim && pumvisible()) || g:env_is_nvim && easycomplete#pum#visible()) &&
+        \ easycomplete#util#InsertMode()
+    return
+  endif
+  call s:CloseByWindowType(windowtype)
   if windowtype == "float"
     let s:float_type = ""
     let s:float_opt = {}

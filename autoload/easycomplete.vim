@@ -2601,7 +2601,7 @@ endfunction
 
 function! easycomplete#CursorMoved()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
-        \ && easycomplete#util#NormalMode()
+        \ && easycomplete#util#NormalMode() && s:NotInsertMode()
     " 防止快速换行时的密集调用带来的卡顿
     if s:easycomplete_cursor_move_timer > 0
       call timer_stop(s:easycomplete_cursor_move_timer)
@@ -2612,12 +2612,10 @@ function! easycomplete#CursorMoved()
   endif
 
   " 上下移动时关闭hover，左右移动时不关闭
-  if exists("s:last_cursor_line")
+  if exists("s:last_cursor_line") && s:NotInsertMode()
     let current_line = line(".")
     if current_line != s:last_cursor_line
-      if easycomplete#action#signature#visible()
-        call easycomplete#popup#close("float")
-      endif
+      call easycomplete#popup#CloseLintPopup()
     endif
   endif
   let s:last_cursor_line = line(".")
@@ -2629,9 +2627,7 @@ function! easycomplete#CursorMovedI()
     if g:env_is_nvim && easycomplete#pum#visible()
       call easycomplete#pum#close()
     endif
-    if easycomplete#action#signature#visible()
-      call easycomplete#popup#close("float")
-    endif
+    call easycomplete#popup#CloseLintPopup()
   endif
 endfunction
 
@@ -2898,6 +2894,7 @@ endfunction
 function! easycomplete#InsertEnter()
   call s:SnapShoot()
   call easycomplete#sign#DiagHoverFlush()
+  call timer_start(10, { ->easycomplete#popup#CloseLintPopup() })
 endfunction
 
 function! easycomplete#disable()

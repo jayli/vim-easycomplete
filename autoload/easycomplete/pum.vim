@@ -86,7 +86,7 @@ endfunction
 
 " 基础的三类样式用到的 Conceal 字符:
 "  EazyFuzzyMatch: "§", abbr 中匹配 fuzzymatch 的字符高亮，只配置 fg
-"  EasyKind:       "|", 继承 PmenuKind
+"  EasyKind:       "ϟ", 继承 PmenuKind
 "  EasyExtra:      "‰", 继承 PmenuExtra
 "
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
@@ -144,7 +144,7 @@ function! s:hl()
     let s:easycomplete_hl_exec_cmd = [
           \ 'syntax region CustomFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
           \ 'syntax region CustomExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
-          \ 'syntax region CustomKind       matchgroup=Conceal start=/|\([^|]|\)\@=/  matchgroup=Conceal end=/\(|[^|]\)\@<=|/ concealends oneline',
+          \ 'syntax region CustomKind       matchgroup=Conceal start=/ϟ\([^ϟ]ϟ\)\@=/  matchgroup=Conceal end=/\(ϟ[^ϟ]\)\@<=ϟ/ concealends oneline',
           \ 'syntax region CustomFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/∫\([^∫]∫\)\@=/  matchgroup=Conceal end=/\(∫[^∫]\)\@<=∫/ concealends oneline',
           \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
@@ -1141,7 +1141,7 @@ function! s:MaxLength(lines)
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\sΦ\[^Φ\]Φ\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♧\[^♧\]♧\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♤\[^♤\]♤\\s", " x ", "g")
-    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§|‰]", "", "g"))
+    let curr_length = strdisplaywidth(substitute(remove_style_wrapper, "\[§ϟ‰]", "", "g"))
     if curr_length > max_length
       let max_length = curr_length
     endif
@@ -1155,7 +1155,7 @@ function! s:NormalizeItems(items)
 endfunction
 
 function! s:MapFunction(key, val)
-  let kind_char = "|"
+  let kind_char = "ϟ"
   if g:easycomplete_nerd_font
     let kind_o = get(a:val, "kind", "")
     if      kind_o ==# g:easycomplete_lsp_type_font["function"] ||

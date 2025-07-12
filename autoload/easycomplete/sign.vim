@@ -495,6 +495,10 @@ function! easycomplete#sign#LintPopup()
     call easycomplete#sign#DiagHoverFlush()
     return
   endif
+  if easycomplete#util#InsertMode() && easycomplete#popup#LintPopupVisible()
+    call easycomplete#popup#CloseLintPopup()
+    return
+  endif
   let ctx = easycomplete#context()
   " 换行则先清空
   if g:easycomplete_diagnostics_last_ln != ctx["lnum"]
