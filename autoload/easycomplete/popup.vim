@@ -165,7 +165,7 @@ function! s:lint(content, hl, ft)
     let l:content = [trimed_content["str"]]
     if trimed_content["trimed"]
       " TODO 关闭
-      " call s:log(a:content[0])
+      echo a:content[0]
     endif
     call s:InitBuf(l:content, 'float', a:ft)
     let screen_col_enc = win_screenpos(win_getid())[1] - 1

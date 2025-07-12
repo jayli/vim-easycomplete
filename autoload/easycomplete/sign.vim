@@ -83,6 +83,7 @@ function! easycomplete#sign#DiagHoverFlush()
     endif
   endif
   let g:easycomplete_diagnostics_last_ln = 0
+  echo ""
 endfunction
 
 " 只清空当前buf的diagnostics
