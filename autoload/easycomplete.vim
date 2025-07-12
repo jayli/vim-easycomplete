@@ -1598,7 +1598,14 @@ function! easycomplete#CtlE()
 endfunction
 
 function! easycomplete#Esc()
-  call easycomplete#popup#close()
+  call easycomplete#popup#close("popup")
+  if easycomplete#util#InsertMode()
+    call easycomplete#popup#CloseLintPopup()
+  elseif easycomplete#popup#LintPopupVisible()
+    " do nothing
+  else
+    call easycomplete#popup#close("float")
+  endif
   return "\<ESC>"
 endfunction
 
