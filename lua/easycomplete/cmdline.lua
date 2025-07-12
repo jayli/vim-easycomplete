@@ -100,7 +100,6 @@ function this.pum_redraw()
     -- "<c-g>":匹配下一个
     local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
     vim.schedule(function()
-      -- vim.fn.win_execute(this.pum_winid(), "update")
       vim.api.nvim_win_call(this.pum_winid(), function()
         if vim.o.incsearch then
           vim.api.nvim_feedkeys(termcode, 'ni', true)
