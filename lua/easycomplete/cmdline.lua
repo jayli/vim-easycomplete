@@ -178,11 +178,6 @@ function this.get_tab_returing_opword()
   return new_whole_word
 end
 
--- / search 模式下回车键返回的内容
-function this.get_search_returing_opword()
-
-end
-
 function this.bind_cmdline_event()
   local augroup = vim.api.nvim_create_augroup('CustomCmdlineComplete', { clear = true })
 
