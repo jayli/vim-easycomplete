@@ -1287,37 +1287,32 @@ function! s:GetTypingWordByGtx()
 endfunction
 
 function! s:CompleteMatchAction()
-  try
+  call s:StopZizz()
+  if s:TabnineSupports()
+    call easycomplete#sources#tn#refresh()
+  endif
+  let l:vim_word = s:GetTypingWordByGtx() " 刚输入的单词
+  let l:vim_char = strpart(getline('.'), col('.') - 2, 1) " 刚输入的字符
+  if g:env_is_nvim && empty(l:vim_word)
+    " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
+    " 也有可能输入了(，这时应该尝试执行signature
+    call s:CloseCompletionMenu()
+    call s:flush()
     call s:StopZizz()
-    if s:TabnineSupports()
-      call easycomplete#sources#tn#refresh()
-    endif
-    let l:vim_word = s:GetTypingWordByGtx() " 刚输入的单词
-    let l:vim_char = strpart(getline('.'), col('.') - 2, 1) " 刚输入的字符
-    if g:env_is_nvim && empty(l:vim_word)
-      " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
-      " 也有可能输入了(，这时应该尝试执行signature
-      call s:CloseCompletionMenu()
-      call s:flush()
-      call s:StopZizz()
-      " 这里的 timer 要比 tabnine 的触发慢 20ms 以上才能正常激活 
-      let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
-      if g:env_is_nvim
-        call s:util_toolkit.defer_fn("easycomplete#typing", [], local_delay)
-        if easycomplete#ok('g:easycomplete_signature_enable')
-          call easycomplete#action#signature#LazyRunHandle()
-        endif
-      else
-        call timer_start(local_delay, { -> easycomplete#typing() })
+    " 这里的 timer 要比 tabnine 的触发慢 20ms 以上才能正常激活 
+    let local_delay = easycomplete#ok("g:easycomplete_tabnine_enable") ? 50 : 20
+    if g:env_is_nvim
+      call s:util_toolkit.defer_fn("easycomplete#typing", [], local_delay)
+      if easycomplete#ok('g:easycomplete_signature_enable')
+        call easycomplete#action#signature#LazyRunHandle()
       endif
-      return
+    else
+      call timer_start(local_delay, { -> easycomplete#typing() })
     endif
-    call s:CompleteTypingMatch(l:vim_word)
-    call s:SnapShoot()
-  catch
-    call s:log('[CompleteMatchAction]', v:exception)
-    call s:errlog("[ERR]", 'CompleteMatchAction', v:exception)
-  endtry
+    return
+  endif
+  call s:CompleteTypingMatch(l:vim_word)
+  call s:SnapShoot()
 endfunction
 
 function! s:SnapShoot(...)

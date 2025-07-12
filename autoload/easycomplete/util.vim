@@ -223,7 +223,12 @@ function! easycomplete#util#GetSha256(item) " {{{
 endfunction " }}}
 
 function! easycomplete#util#GetUserData(item) " {{{
-  let ret = get(a:item, "user_data_json", {})
+  " let ret = get(a:item, "user_data_json", {})
+  if has_key(a:item, "user_data_json")
+    let ret = a:item["user_data_json"]
+  else
+    let ret = {}
+  endif
   if !empty(ret)
     return ret
   endif
@@ -2059,7 +2064,16 @@ endfunction " }}}
 
 " abbr: 字符串
 " max_length: 最大长度
-function! easycomplete#util#parseAbbr(abbr) " {{{
+" parseAbbr {{{
+function! easycomplete#util#parseAbbr(abbr)
+  if g:env_is_nvim
+    return s:util_toolkit.parse_abbr(a:abbr)
+  else
+    return s:ParseAbbr(a:abbr)
+  endif
+endfunction
+
+function! s:ParseAbbr(abbr)
   let max_length = g:easycomplete_pum_maxlength
   if max_length == 0 || strlen(a:abbr) <= max_length
     return a:abbr
@@ -2067,7 +2081,7 @@ function! easycomplete#util#parseAbbr(abbr) " {{{
     let short_abbr = a:abbr[0:max_length - 3] . ".."
     return short_abbr
   endif
-endfunction " }}}
+endfunction
 
 " fullfill {{{
 " "2"   -> "002"

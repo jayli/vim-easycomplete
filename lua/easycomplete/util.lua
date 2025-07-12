@@ -4,6 +4,16 @@ local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
 local async_timer_counter = 0
 
+function util.parse_abbr(abbr)
+  local max_length = vim.g.easycomplete_pum_maxlength
+  if max_length == 0 or #abbr <= max_length then
+    return abbr
+  else
+    local short_abbr = string.sub(abbr, 1, max_length - 3) .. ".."
+    return short_abbr
+  end
+end
+
 function util.zizz()
   if zizz_flag > 0 then
     zizz_timer:stop()
