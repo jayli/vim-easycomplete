@@ -31,7 +31,10 @@ function! easycomplete#util#GetAttachedPlugins(...)
   for name in keys(all_plugins)
     let plugin = get(all_plugins, name)
     if empty(plugin) | continue | endif
-    let whitelist = get(plugin, 'whitelist')
+    let whitelist = get(plugin, 'whitelist', [])
+    if empty(whitelist)
+      continue
+    endif
     if index(whitelist, ft) >= 0
       call add(attached_plugins, plugin)
     endif

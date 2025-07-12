@@ -305,15 +305,13 @@ augroup easycomplete#PluginRegister
       \ 'completor': function('easycomplete#sources#directory#completor'),
       \  })
 
-  if g:easycomplete_tabnine_enable
-    au User easycomplete_default_plugin call easycomplete#RegisterSource({
-          \ 'name': 'tn',
-          \ 'whitelist': ['*'],
-          \ 'completor': function('easycomplete#sources#tn#completor'),
-          \ 'constructor': function('easycomplete#sources#tn#constructor'),
-          \ 'command': 'TabNine',
-          \ })
-  endif
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+        \ 'name': 'tn',
+        \ 'whitelist': ['*'],
+        \ 'completor': function('easycomplete#sources#tn#completor'),
+        \ 'constructor': function('easycomplete#sources#tn#constructor'),
+        \ 'command': 'TabNine',
+        \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'buf',

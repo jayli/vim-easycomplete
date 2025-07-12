@@ -1,7 +1,7 @@
 let s:tn_job = v:null
 let s:ctx = v:null
 let s:opt = v:null
-let s:name = ''
+let s:tn_name = 'tn'
 let s:tn_init_ready = v:false
 " TabNine 第一次匹配需要大量算法运算，比较耗时，完成第一次之后速度比较快
 let b:module_building = v:false
@@ -20,7 +20,7 @@ let s:force_complete = 0
 function! easycomplete#sources#tn#constructor(opt, ctx)
   let s:opt = a:opt
   let name = get(a:opt, "name", "")
-  let s:name = name
+  let s:tn_name = name
   if !easycomplete#installer#LspServerInstalled(name)
     return v:true
   endif
@@ -41,7 +41,7 @@ function! easycomplete#sources#tn#available()
 endfunction
 
 function! s:flush()
-  let global_opt = get(g:easycomplete_source, s:name, {})
+  let global_opt = get(g:easycomplete_source, s:tn_name, {})
   let global_opt.complete_result = []
   let s:force_complete = 0
   if s:tn_render_timer > 0
@@ -57,14 +57,14 @@ endfunction
 " 只更新 g:easycomplete_sources['tn'].complete_result
 " refresh(v:true), 强制给出匹配菜单
 function! easycomplete#sources#tn#refresh(...)
+  if !easycomplete#ok('g:easycomplete_tabnine_enable')
+    return
+  endif
   if exists("a:1") && a:1 == v:true
     let s:force_complete = 1
     call timer_start(100, { -> s:ResetForceCompleteFlag()})
   else
     let s:force_complete = 0
-  endif
-  if !easycomplete#ok('g:easycomplete_tabnine_enable')
-    return
   endif
   call easycomplete#sources#tn#completor(s:opt, easycomplete#context())
 endfunction
@@ -107,11 +107,16 @@ function! easycomplete#sources#tn#VimColonTyping(typed)
 endfunction
 
 function! easycomplete#sources#tn#GetGlobalSourceItems()
-  return g:easycomplete_source[s:name].complete_result
+  return g:easycomplete_source[s:tn_name].complete_result
 endfunction
 
 function! easycomplete#sources#tn#SetGlobalSourceItems(items)
-  let g:easycomplete_source[s:name].complete_result = a:items
+  if !has_key(g:easycomplete_source, s:tn_name)
+    let g:easycomplete_source[s:tn_name] = {
+          \ "complete_result" : []
+          \ }
+  endif
+  let g:easycomplete_source[s:tn_name].complete_result = a:items
 endfunction
 
 function! easycomplete#sources#tn#completor(opt, ctx) abort
@@ -178,7 +183,7 @@ endfunction
 
 function! easycomplete#sources#tn#GetTabNineVersion()
   if empty(s:version)
-    let l:tabnine_cmd = easycomplete#installer#GetCommand(s:name)
+    let l:tabnine_cmd = easycomplete#installer#GetCommand(s:tn_name)
     let l:tabnine_dir = fnameescape(fnamemodify(l:tabnine_cmd, ':p:h'))
     let l:version_file = l:tabnine_dir . '/version'
 
@@ -297,10 +302,10 @@ function! s:DD(dir) abort
 endfunction
 
 function! s:StartTabNine()
-  if empty(s:name)
+  if empty(s:tn_name)
     return
   endif
-  let name = s:name
+  let name = s:tn_name
   let l:tabnine_path = easycomplete#installer#GetCommand(name)
   let l:tabnine_root_path = fnameescape(fnamemodify(l:tabnine_path, ':p:h'))
   call s:DeleteAllDirsExceptTow(l:tabnine_root_path . "/binaries")
@@ -354,7 +359,7 @@ function! s:TabnineJobCallback(job_id, data, event)
   call easycomplete#tabnine#LoadingStop()
   let l:ctx = easycomplete#context()
   if a:event != 'stdout'
-    call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+    call easycomplete#complete(s:tn_name, s:ctx, s:ctx['startcol'], [])
     return
   endif
   if !exists('b:module_building') | let b:module_building = v:false | endif
@@ -439,10 +444,10 @@ function! s:CompleteHandler(res)
       if len(easycomplete#GetStuntMenuItems()) == 0 && g:easycomplete_first_complete_hit == 0
         " First Complete
         if s:tn_render_timer == 0
-          call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], [])
+          call easycomplete#complete(s:tn_name, s:ctx, s:ctx['startcol'], [])
           " tn 的返回已经超时了，为了防止pum抖动，结果直接丢弃
         else
-          call easycomplete#complete(s:name, s:ctx, s:ctx['startcol'], result)
+          call easycomplete#complete(s:tn_name, s:ctx, s:ctx['startcol'], result)
           let s:tn_render_timer = 0
         endif
       else
@@ -467,7 +472,7 @@ function! s:CompleteHandler(res)
   catch
     call s:log("[TabNine Error]:", "CompleteHandler", v:exception)
     let l:ctx = easycomplete#context()
-    call easycomplete#complete(s:name, l:ctx, l:ctx['startcol'], [])
+    call easycomplete#complete(s:tn_name, l:ctx, l:ctx['startcol'], [])
   endtry
 endfunction
 
@@ -475,7 +480,7 @@ function! s:UpdateRendering(result)
   if easycomplete#sources#directory#pum()
     return
   endif
-  call easycomplete#StoreCompleteSourceItems(s:name, a:result)
+  call easycomplete#StoreCompleteSourceItems(s:tn_name, a:result)
   call easycomplete#TabNineCompleteRendering()
 endfunction
 
