@@ -92,17 +92,21 @@ function this.pum_redraw()
   if vim.g.easycomplete_cmdline_pattern == '/' then
     redraw_queued = true
     local ch = vim.fn.nr2char(0x200F)
-    -- cmdline 模式下模拟 redraw，即要避免整个界面重绘，也要能正确的绘出pumwindow
-    -- 还要不干扰 cmdline 原本输入的内容，nvim__redraw 和 redraw 都不行，这里用
-    -- feedkey 一个字符来模拟，目前还不完美，这会导致在大文件时光标有一次闪烁
-    -- 功能是没问题的，nvim-cmp 用 " <bs>"，我感觉"<c-]>"更好一些
-    -- " <bs>" "<c-]>" <c-t> "<c-a><c-h>" "<c-r><c-r><c-r>" "<c-r><c-r><end>"
-    -- "<c-g>":匹配下一个
-    local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
+    -- cmdline 中模拟 redraw：
+    -- 问题现象：cmdline动作不会直接redraw主屏，会慢一拍，需要手动触发 redraw 才
+    -- 能正确的渲染出 PUM，否则 PUM 中的内容是上一次匹配的结果。
+    --  1. ":" 命令模式下，主界面没有变更，直接 redraw 即可
+    --  2. "/" 搜索模式下，会导致不断刷新匹配词，导致不断闪烁，不能直接 redraw
+    --     而要用cmdline按键来模拟，常用的是 " <bs>"/"<c-]>"/"<c-a><c-h>" 等，但
+    --     这些指令会导致在大文件中光标闪烁，虽然功能没问题，但明显不流畅
+    --     这里用了一个 hack，默认选中第一项，然后执行一次<s-tab>，可以避免光标
+    --     闪烁的问题。
+    local termcode = vim.api.nvim_replace_termcodes("<s-tab>", true, true, true)
     vim.schedule(function()
       vim.api.nvim_win_call(this.pum_winid(), function()
         if vim.o.incsearch then
-          vim.api.nvim_feedkeys(termcode, 'ni', true)
+          this.pum_select(1)
+          vim.api.nvim_feedkeys(termcode, 't', true)
         end
       end)
       redraw_queued = false
