@@ -91,7 +91,14 @@ function this.pum_redraw()
   if redraw_queued then return end
   if vim.g.easycomplete_cmdline_pattern == '/' then
     redraw_queued = true
-    local ch = vim.fn.nr2char(0x200F)
+    -- 首次insearch匹配<s-tab>会导致匹配高亮渲染消失，这里做一下区分
+    local cmdline = vim.fn.getcmdline()
+    local first_insearch_match = false
+    if #cmdline == 1 then
+      first_insearch_match = true
+    else
+      first_insearch_match = false
+    end
     -- cmdline 中模拟 redraw：
     -- 问题现象：cmdline动作不会直接redraw主屏，会慢一拍，需要手动触发 redraw 才
     -- 能正确的渲染出 PUM，否则 PUM 中的内容是上一次匹配的结果。
@@ -101,11 +108,21 @@ function this.pum_redraw()
     --     这些指令会导致在大文件中光标闪烁，虽然功能没问题，但明显不流畅
     --     这里用了一个 hack，默认选中第一项，然后执行一次<s-tab>，可以避免光标
     --     闪烁的问题。
-    local termcode = vim.api.nvim_replace_termcodes("<s-tab>", true, true, true)
+    local command_str = ""
+    if first_insearch_match then
+      command_str = "<c-]>"
+    else
+      command_str = "<s-tab>"
+    end
+    local termcode = vim.api.nvim_replace_termcodes(command_str, true, true, true)
     vim.schedule(function()
       vim.api.nvim_win_call(this.pum_winid(), function()
         if vim.o.incsearch then
-          this.pum_select(1)
+          if first_insearch_match then
+            -- do nothing
+          else
+            this.pum_select(1)
+          end
           vim.api.nvim_feedkeys(termcode, 't', true)
         end
       end)
@@ -276,6 +293,7 @@ function this.cmdline_handler(keys, key_str)
     return
   end
   if util.zizzing() then return end
+  local should_redraw = false
   local cmdline = vim.fn.getcmdline()
   cmdline_start_cmdpos = 0
   -- console(string.byte(key_str), vim.g.easycomplete_cmdline_pattern)
@@ -284,30 +302,32 @@ function this.cmdline_handler(keys, key_str)
   elseif string.byte(key_str) == 32 then
     -- console("空格键")
     -- this.pum_close()
-    this.do_complete()
+    should_redraw = this.do_complete()
   elseif string.byte(key_str) == 128 and #cmdline == #old_cmdline then
     -- 方向键
     this.pum_close()
   elseif string.byte(key_str) == 128 and #cmdline == #old_cmdline - 1 then
     -- 退格键
-    this.do_complete()
+    should_redraw = this.do_complete()
   elseif string.byte(key_str) == 8 then
     -- console("退格")
-    this.do_complete()
+    should_redraw = this.do_complete()
   elseif string.byte(key_str) == 13 then
     -- console("回车")
   elseif string.byte(key_str) == 58 then
     -- console("冒号:")
-    this.do_complete()
+    should_redraw = this.do_complete()
   elseif string.byte(key_str) == 95 then
     -- console("下划线_")
-    this.do_complete()
+    should_redraw = this.do_complete()
   else
     -- console("其他键: " .. keys)
-    this.do_complete()
+    should_redraw = this.do_complete()
   end
   old_cmdline = cmdline
-  this.pum_redraw()
+  if should_redraw then
+    this.pum_redraw()
+  end
 end
 
 function this.cr_handler()
@@ -466,19 +486,20 @@ end
 
 function this.do_complete()
   local word = this.get_typing_word()
+  local should_redraw = false
   local matched_pattern = false
   for index, item in ipairs(this.REG_CMP_HANDLER) do
     if type(item.pattern) == "table" then
       for jndex, jtem in ipairs(item.pattern) do
         if this.cmd_match(jtem) then
-          this.cmp_regex_handler(item.get_cmp_items, word)
+          should_redraw = this.cmp_regex_handler(item.get_cmp_items, word)
           matched_pattern = true
           break
         end
       end
     else
       if this.cmd_match(item.pattern) then
-        this.cmp_regex_handler(item.get_cmp_items, word)
+        should_redraw = this.cmp_regex_handler(item.get_cmp_items, word)
         matched_pattern = true
       end
     end
@@ -487,24 +508,31 @@ function this.do_complete()
     end
   end
   if matched_pattern == false then
+    should_redraw = false
     this.pum_close()
   end
+  return should_redraw
 end
 
 -- 根据某个正则表达式是否匹配，来调用既定的get_cmp_items，并执行complete()
 function this.cmp_regex_handler(get_cmp_items, word)
+  local should_redraw = false
   local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
   cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
   local ok, menu_items = pcall(get_cmp_items)
   if not ok then
     print("[jayli debug] ".. menu_items)
+    should_redraw = false
     this.pum_close()
   elseif menu_items == nil or #menu_items == 0 then
+    should_redraw = false
     this.pum_close()
   else
     -- console(">>> 匹配项个数", #menu_items)
+    should_redraw = true
     this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
+  return should_redraw
 end
 
 -- 获得所有command list
