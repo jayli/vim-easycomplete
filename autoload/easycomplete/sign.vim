@@ -83,7 +83,11 @@ function! easycomplete#sign#DiagHoverFlush()
     endif
   endif
   let g:easycomplete_diagnostics_last_ln = 0
-  echo ""
+  if exists("b:easycomplete_echo_lint_msg") && b:easycomplete_echo_lint_msg == 1
+    " 有 lint msg 的残留则清空，否则不应该做动作
+    echo ""
+    let b:easycomplete_echo_lint_msg = 0
+  endif
 endfunction
 
 " 只清空当前buf的diagnostics
@@ -495,8 +499,6 @@ function! easycomplete#sign#LintPopup()
   if g:easycomplete_diagnostics_last_ln != ctx["lnum"]
     call easycomplete#sign#DiagHoverFlush()
   endif
-  
-
   " 如果当前行没有 lintinfo, 则清空后直接返回
   let diagnostics_info = easycomplete#sign#GetDiagnosticsInfo(ctx["lnum"], ctx["col"])
   if empty(diagnostics_info)

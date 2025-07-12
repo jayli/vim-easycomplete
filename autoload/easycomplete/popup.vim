@@ -158,6 +158,7 @@ function! s:lint(content, hl, ft)
   let s:float_opt = {}
   try
     if distance < 5
+      let b:easycomplete_echo_lint_msg = 1
       echo a:content[0]
       return
     endif
@@ -165,6 +166,7 @@ function! s:lint(content, hl, ft)
     let l:content = [trimed_content["str"]]
     if trimed_content["trimed"]
       " TODO 关闭
+      let b:easycomplete_echo_lint_msg = 1
       echo a:content[0]
     endif
     call s:InitBuf(l:content, 'float', a:ft)

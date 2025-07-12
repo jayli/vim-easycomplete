@@ -506,7 +506,8 @@ endfunction
 function! easycomplete#InsertLeave()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     call easycomplete#lint()
-    call easycomplete#sign#LintCurrentLine()
+    " call easycomplete#sign#LintCurrentLine()
+    call easycomplete#sign#LintPopup()
   endif
   call easycomplete#tabnine#flush()
   call s:flush()
@@ -2606,7 +2607,8 @@ function! easycomplete#CursorMoved()
       call timer_stop(s:easycomplete_cursor_move_timer)
       let s:easycomplete_cursor_move_timer = 0
     endif
-    let s:easycomplete_cursor_move_timer = timer_start(35, { -> easycomplete#sign#LintCurrentLine() })
+    " let s:easycomplete_cursor_move_timer = timer_start(35, { -> easycomplete#sign#LintCurrentLine() })
+    let s:easycomplete_cursor_move_timer = timer_start(80, { -> easycomplete#sign#LintPopup() })
   endif
 
   " 上下移动时关闭hover，左右移动时不关闭
@@ -2657,7 +2659,7 @@ function! easycomplete#CursorHold()
   call easycomplete#lint()
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
         \ && easycomplete#ok('g:easycomplete_diagnostics_hover')
-    call easycomplete#sign#LintPopup()
+    " call easycomplete#sign#LintPopup()
   endif
 endfunction
 
