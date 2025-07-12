@@ -618,7 +618,7 @@ function! easycomplete#sign#ShowDiagMsg(diagnostics_info)
     let showing = showing[0:winwidth(winnr()) - offset - 3] . '...'
   endif
   " echo showing
-  echo ""
+  " echo ""
 endfunction
 
 function! easycomplete#sign#GetDiagnosticsInfo(line, colnr)

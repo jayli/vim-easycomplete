@@ -2045,9 +2045,15 @@ function! easycomplete#util#lintTrim(line_str, width, offset)
   let real_width = a:width - a:offset
   let line_str = a:line_str
   if strlen(line_str) > real_width
-    return repeat(" ", a:offset) . strpart(line_str, 0, real_width)
+    return {
+          \ "str": repeat(" ", a:offset) . strpart(line_str, 0, real_width),
+          \ "trimed": v:true
+          \ }
   else
-    return repeat(" ", a:offset) . line_str . repeat(" ", real_width - strlen(line_str))
+    return {
+          \ "str": repeat(" ", a:offset) . line_str . repeat(" ", real_width - strlen(line_str)),
+          \ "trimed": v:false
+          \ }
   endif
 endfunction " }}}
 

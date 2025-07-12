@@ -161,7 +161,12 @@ function! s:lint(content, hl, ft)
       echo a:content[0]
       return
     endif
-    let l:content = [easycomplete#util#lintTrim(a:content[0], distance, 2)]
+    let trimed_content = easycomplete#util#lintTrim(a:content[0], distance, 2)
+    let l:content = [trimed_content["str"]]
+    if trimed_content["trimed"]
+      " TODO 关闭
+      " call s:log(a:content[0])
+    endif
     call s:InitBuf(l:content, 'float', a:ft)
     let screen_col_enc = win_screenpos(win_getid())[1] - 1
     let screen_row_enc = win_screenpos(win_getid())[0] - 1
