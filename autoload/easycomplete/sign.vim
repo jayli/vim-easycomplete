@@ -466,6 +466,7 @@ function! easycomplete#sign#render(...)
   endwhile
 
   call easycomplete#sign#LintCurrentLine()
+  call easycomplete#sign#LintPopup()
   call easycomplete#sign#unhold()
 endfunction
 
