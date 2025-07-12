@@ -154,6 +154,8 @@ endfunction
 function! s:lint(content, hl, ft)
   let distance = s:GetCurrentLineLastCharToWindowRightEdgeDistance()
   let lensleft = s:GetCusorToLineRightEdgeDistance()
+  let s:float_type = 'lint'
+  let s:float_opt = {}
   try
     if distance < 5
       echo a:content[0]
@@ -191,29 +193,10 @@ function! s:lint(content, hl, ft)
   catch /.*/
     echom v:exception
   endtry
-
 endfunction
 
-" content, hl, direction: 0, 向下，1，向上
-" ft, 文件类型
-" offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
-" float_type: signature/lint
-"   signature: 函数参数提示
-"   lint:      错误提示
-function! easycomplete#popup#float(content, hl, direction, ft, offset, float_type)
-  if type(a:content) == type('')
-    let content = [a:content]
-  elseif type(a:content) == type([])
-    let content = a:content
-  else
-    return
-  endif
-  if a:float_type == "lint"
-    call s:lint(a:content, a:hl, a:ft)
-    let s:float_type = a:float_type
-    let s:float_opt = {}
-    return
-  endif
+function! s:float(content, hl, direction, ft, offset, float_type)
+  let content = a:content
   if a:float_type == "signature"
     let float_maxwidth = g:easycomplete_popup_width
   endif
@@ -311,6 +294,27 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
   endif
   let s:float_type = a:float_type
   let s:float_opt = opt
+endfunction
+
+" content, hl, direction: 0, 向下，1，向上
+" ft, 文件类型
+" offset, 偏移量，正常跟随光标传入[0,0], [line(),col()]
+" float_type: signature/lint
+"   signature: 函数参数提示
+"   lint:      错误提示
+function! easycomplete#popup#float(content, hl, direction, ft, offset, float_type)
+  if type(a:content) == type('')
+    let content = [a:content]
+  elseif type(a:content) == type([])
+    let content = a:content
+  else
+    return
+  endif
+  if a:float_type == "lint"
+    call s:lint(a:content, a:hl, a:ft)
+  else
+    call s:float(content, a:hl, a:direction, a:ft, a:offset, a:float_type)
+  endif
 endfunction
 
 function! easycomplete#popup#SignatureVisible()
