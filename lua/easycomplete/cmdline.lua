@@ -12,51 +12,6 @@ function this.pum_complete(start_col, menu_items)
   vim.fn["easycomplete#pum#complete"](start_col, menu_items)
 end
 
-function this.safe_redraw()
-  if vim.fn.has('nvim-0.10') then
-    vim.api.nvim__redraw({
-        win = this.pum_winid(),
-        flush = true
-      })
-  else
-    vim.cmd("redraw")
-  end
-end
-
-function this.pum_redraw()
-  if util.zizzing() then return end
-  util.zizz()
-  if redraw_queued then return end
-  if vim.g.easycomplete_cmdline_pattern == '/' then
-    redraw_queued = true
-    local ch = vim.fn.nr2char(0x200F)
-    -- cmdline 模式下模拟 redraw，即要避免整个界面重绘，也要能正确的绘出pumwindow
-    -- 还要不干扰 cmdline 原本输入的内容，nvim__redraw 和 redraw 都不行，这里用
-    -- feedkey 一个字符来模拟，目前还不完美，这会导致在大文件时光标有一次闪烁
-    -- 功能是没问题的，nvim-cmp 用 " <bs>"，我感觉"<c-]>"更好一些
-    -- " <bs>" "<c-]>" <c-t> "<c-a><c-h>" "<c-r><c-r><c-r>" "<c-r><c-r><end>"
-    -- "<c-g>":匹配下一个
-    local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
-    vim.schedule(function()
-      -- vim.fn.win_execute(this.pum_winid(), "update")
-      vim.api.nvim_win_call(this.pum_winid(), function()
-        if vim.o.incsearch then
-          vim.api.nvim_feedkeys(termcode, 'ni', true)
-        end
-      end)
-      redraw_queued = false
-    end)
-  else
-    if not vim.api.nvim_win_is_valid(this.pum_winid()) then
-      vim.schedule(function()
-        this.safe_redraw()
-      end)
-    else
-      vim.cmd("redraw")
-    end
-  end
-end
-
 function this.get_path_cmp_items()
   local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
   -- 取根目录
@@ -72,7 +27,6 @@ function this.get_path_cmp_items()
     return ret
   end
 end
-
 
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
@@ -118,6 +72,51 @@ function this.calculate_sign_and_linenr_width()
     width = width + max_num_width
   end
   return width
+end
+
+function this.safe_redraw()
+  if vim.fn.has('nvim-0.10') then
+    vim.api.nvim__redraw({
+        win = this.pum_winid(),
+        flush = true
+      })
+  else
+    vim.cmd("redraw")
+  end
+end
+
+function this.pum_redraw()
+  if util.zizzing() then return end
+  util.zizz()
+  if redraw_queued then return end
+  if vim.g.easycomplete_cmdline_pattern == '/' then
+    redraw_queued = true
+    local ch = vim.fn.nr2char(0x200F)
+    -- cmdline 模式下模拟 redraw，即要避免整个界面重绘，也要能正确的绘出pumwindow
+    -- 还要不干扰 cmdline 原本输入的内容，nvim__redraw 和 redraw 都不行，这里用
+    -- feedkey 一个字符来模拟，目前还不完美，这会导致在大文件时光标有一次闪烁
+    -- 功能是没问题的，nvim-cmp 用 " <bs>"，我感觉"<c-]>"更好一些
+    -- " <bs>" "<c-]>" <c-t> "<c-a><c-h>" "<c-r><c-r><c-r>" "<c-r><c-r><end>"
+    -- "<c-g>":匹配下一个
+    local termcode = vim.api.nvim_replace_termcodes("<c-]>", true, true, true)
+    vim.schedule(function()
+      -- vim.fn.win_execute(this.pum_winid(), "update")
+      vim.api.nvim_win_call(this.pum_winid(), function()
+        if vim.o.incsearch then
+          vim.api.nvim_feedkeys(termcode, 'ni', true)
+        end
+      end)
+      redraw_queued = false
+    end)
+  else
+    if not vim.api.nvim_win_is_valid(this.pum_winid()) then
+      vim.schedule(function()
+        this.safe_redraw()
+      end)
+    else
+      vim.cmd("redraw")
+    end
+  end
 end
 
 function this.flush()
@@ -217,15 +216,15 @@ function this.bind_cmdline_event()
       return
     end
     vim.g.easycomplete_cmdline_typing = 1
+    local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     -- TODO 匹配模式闪烁问题没解决，先关闭
-    if vim.g.easycomplete_cmdline_pattern == '/' and key_str ~= '\r'then
+    if vim.g.easycomplete_cmdline_pattern == '/' and key_str ~= '\r' then
       -- jayli 先关掉，继续调试
       -- do return end
       if util.zizzing() then
         return
       end
     end
-    local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     vim.defer_fn(function()
       vim.schedule(function()
         local ok, ret = pcall(this.cmdline_handler, keys, key_str)
