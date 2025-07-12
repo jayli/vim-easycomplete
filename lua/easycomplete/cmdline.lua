@@ -69,7 +69,13 @@ function this.calculate_sign_and_linenr_width()
   if vim.wo.number or vim.wo.relativenumber then
     -- 计算行号的最大宽度
     local max_num_width = #tostring(vim.fn.line("$"))
-    width = width + max_num_width
+    local realwidth = 3
+    if max_num_width <= 3 then
+      -- do nothing
+    else
+      realwidth = realwidth + (max_num_width - 3)
+    end
+    width = width + realwidth
   end
   return width
 end
