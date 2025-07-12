@@ -57,6 +57,23 @@ function this.pum_redraw()
   end
 end
 
+function this.get_path_cmp_items()
+  local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
+  -- 取根目录
+  -- insert模式下为了避免和输入注释"//"频繁干扰，去掉了根目录的路径匹配
+  -- 这里不存在这个频繁干扰的问题，再加回来
+  if string.find(typing_path.prefx,"%s/$") ~= nil then
+    typing_path.is_path = 1
+  end
+  if typing_path.is_path == 0 then
+    return {}
+  else
+    local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
+    return ret
+  end
+end
+
+
 function this.pum_close()
   vim.fn["easycomplete#pum#close"]()
   vim.g.easycomplete_pum_noselect = pum_noselect
@@ -436,22 +453,6 @@ function this.do_path_complete()
   vim.defer_fn(function()
     this.pum_redraw()
   end, 10)
-end
-
-function this.get_path_cmp_items()
-  local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
-  -- 取根目录
-  -- insert模式下为了避免和输入注释"//"频繁干扰，去掉了根目录的路径匹配
-  -- 这里不存在这个频繁干扰的问题，再加回来
-  if string.find(typing_path.prefx,"%s/$") ~= nil then
-    typing_path.is_path = 1
-  end
-  if typing_path.is_path == 0 then
-    return {}
-  else
-    local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
-    return ret
-  end
 end
 
 function this.get_complition_type(cmd_name)
