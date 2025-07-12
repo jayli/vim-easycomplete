@@ -329,7 +329,7 @@ function this.cr_handler()
         util.zizz()
       end, 30)
     end
-    return false -- 组织回车
+    return false -- 阻止回车
   else
     return true -- 执行回车
   end
