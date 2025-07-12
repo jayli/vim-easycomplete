@@ -214,6 +214,7 @@ function this.bind_cmdline_event()
     if vim.api.nvim_get_mode().mode ~= "c" then
       return
     end
+    if vim.bo.filetype == 'help' then return end
     vim.g.easycomplete_cmdline_typing = 1
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     -- TODO 匹配模式闪烁问题没解决，先关闭
