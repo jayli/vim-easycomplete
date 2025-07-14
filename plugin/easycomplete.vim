@@ -370,7 +370,8 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
-      \ 'whitelist': easycomplete#FileTypes("cpp", ['hpp', 'h', 'tpp', "c", "cc", "cpp", "c++", "objc", "objcpp"]),
+      \ 'whitelist': easycomplete#FileTypes("cpp", ['hpp', 'h', 'tpp', "c", "cc",
+      \                                             "cpp", "c++", "objc", "objcpp"]),
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
@@ -565,6 +566,16 @@ augroup easycomplete#PluginRegister
       \ 'constructor' :'easycomplete#sources#r#constructor',
       \ 'gotodefinition': 'easycomplete#sources#r#GotoDefinition',
       \ 'command': 'r-languageserver',
+      \ 'semantic_triggers':[]
+      \ })
+
+  au User easycomplete_default_plugin call easycomplete#RegisterSource({
+      \ 'name': 'zig',
+      \ 'whitelist': easycomplete#FileTypes("zig", ['zig']),
+      \ 'completor': 'easycomplete#sources#zig#completor',
+      \ 'constructor' :'easycomplete#sources#zig#constructor',
+      \ 'gotodefinition': 'easycomplete#sources#zig#GotoDefinition',
+      \ 'command': 'zls',
       \ 'semantic_triggers':[]
       \ })
 
