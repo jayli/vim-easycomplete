@@ -1193,7 +1193,7 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \              'documentationFormat': ['markdown', 'plaintext'],
         \              'snippetSupport': v:false,
         \              'resolveSupport': {
-        \                  'properties': ['additionalTextEdits']
+        \                  'properties': ['additionalTextEdits','documentation','detail']
         \              }
         \           },
         \           'completionItemKind': {
