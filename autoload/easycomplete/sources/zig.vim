@@ -9,7 +9,6 @@ function! easycomplete#sources#zig#constructor(opt, ctx)
 endfunction
 
 function! easycomplete#sources#zig#completor(opt, ctx) abort
-  call s:console(11, easycomplete#lsp#get_server_capabilities("zls"))
   return easycomplete#DoLspComplete(a:opt, a:ctx)
 endfunction
 
