@@ -575,8 +575,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#zig#completor',
       \ 'constructor' :'easycomplete#sources#zig#constructor',
       \ 'gotodefinition': 'easycomplete#sources#zig#GotoDefinition',
-      \ 'command': 'zls',
-      \ 'semantic_triggers':[]
+      \ 'command': 'zls'
       \ })
 
   " TODO cmake-languageserver 本身有 bug，等其更新

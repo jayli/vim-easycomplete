@@ -2,7 +2,9 @@
 
 set -e
 
-git clone --depth=1 https://github.com/zigtools/zls .
+#git clone --depth=1 https://github.com/zigtools/zls .
+# git clone https://gitee.com/buffed/zls.git .
+git clone https://github.com/zigtools/zls .
 git checkout "refs/tags/$(git tag | grep "^$(zig version | sed -r 's/\.[0-9]+$//')")"
 git submodule update --init --recursive
 zig build

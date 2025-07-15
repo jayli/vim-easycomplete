@@ -24,6 +24,7 @@ endfunction
 " info: lsp server 信息
 " plugin_name: 插件的名字，比如 py, ts
 function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
+  " call s:console('-->', 'lsp request start')
   let l:server_name = a:info['server_names'][0]
   call easycomplete#lsp#send_request(l:server_name, {
         \ 'method': 'textDocument/completion',
@@ -34,7 +35,6 @@ function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
         \ },
         \ 'on_notification': function('s:HandleLspCallback', [l:server_name, a:plugin_name])
         \ })
-  " call s:console('-->', 'lsp request start')
 endfunction
 
 function! s:HandleLspCallback(server_name, plugin_name, data) abort
