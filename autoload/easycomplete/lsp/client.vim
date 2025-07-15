@@ -183,8 +183,14 @@ function! s:on_exit(id, status, event) abort
 endfunction
 
 function! s:lsp_start(opts) abort
+  " let l:jobopt = { 'in_mode': 'lsp', 'out_mode': 'lsp', 'noblock': 1,
+  "     \ 'out_cb': function('s:native_out_cb', [l:cbctx]),
+  "     \ 'err_cb': function('s:native_err_cb', [l:cbctx]),
+  "     \ 'exit_cb': function('s:native_exit_cb', [l:cbctx]),
+  "     \ }
   if has_key(a:opts, 'cmd')
     let l:client_id = easycomplete#job#start(a:opts.cmd, {
+          \ 'in_mode': 'lsp', 'out_mode': 'lsp', 'noblock': 1,
           \ 'on_stdout': function('s:on_stdout'),
           \ 'on_stderr': function('s:on_stderr'),
           \ 'on_exit': function('s:on_exit'),

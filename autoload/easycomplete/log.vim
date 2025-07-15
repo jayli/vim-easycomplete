@@ -15,6 +15,10 @@ function! easycomplete#log#init()
 endfunction
 
 function! s:InitVars()
+  if !exists("g:easycomplete_debugger")
+    let g:easycomplete_debugger = {}
+  endif
+  let g:easycomplete_debugger = {}
   let g:easycomplete_debugger.log_bufinfo = 0
   let g:easycomplete_debugger.log_winid = 0
   let g:easycomplete_debugger.log_winnr = 0
@@ -57,6 +61,10 @@ endfunction
 function! easycomplete#log#log(...)
   if easycomplete#util#IsTerminal()
     return
+  endif
+
+  if !exists("g:easycomplete_debugger")
+    call s:InitVars()
   endif
 
   " log debug 窗口改为了默认直接看文件了

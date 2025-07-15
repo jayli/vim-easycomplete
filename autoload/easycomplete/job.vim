@@ -72,6 +72,7 @@ function! s:exit_cb(jobid, opts, job, status) abort
 endfunction
 
 function! s:on_stdout(jobid, data, event) abort
+  " call s:console("easycomplete, stdout", a:event, a:data)
   if has_key(s:jobs, a:jobid)
     let l:jobinfo = s:jobs[a:jobid]
     if has_key(l:jobinfo.opts, 'on_stdout')
@@ -81,6 +82,7 @@ function! s:on_stdout(jobid, data, event) abort
 endfunction
 
 function! s:on_stderr(jobid, data, event) abort
+  " call s:console("stderr", a:event, a:data)
   if has_key(s:jobs, a:jobid)
     let l:jobinfo = s:jobs[a:jobid]
     if has_key(l:jobinfo.opts, 'on_stderr')
@@ -90,6 +92,7 @@ function! s:on_stderr(jobid, data, event) abort
 endfunction
 
 function! s:on_exit(jobid, status, event) abort
+  " call s:console("exit", a:status)
   if has_key(s:jobs, a:jobid)
     let l:jobinfo = s:jobs[a:jobid]
     if has_key(l:jobinfo.opts, 'on_exit')
@@ -168,6 +171,7 @@ function! s:job_start(cmd, opts) abort
     if has('patch-8.1.889')
       let l:jobopt['noblock'] = 1
     endif
+
     let l:job  = job_start(cmd_str, l:jobopt)
     if job_status(l:job) !=? 'run'
       return -1
@@ -417,6 +421,10 @@ endfunction
 
 function! s:log(msg)
   call easycomplete#log(a:msg)
+endfunction
+
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
 endfunction
 " }}}
 

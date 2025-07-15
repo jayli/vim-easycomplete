@@ -497,7 +497,6 @@ function! s:ensure_init(buf, server_name, cb) abort
   endif
 
   let l:server['init_callbacks'] = [a:cb]
-
   call s:send_request(a:server_name, l:request)
 endfunction
 
@@ -882,6 +881,7 @@ function! s:ensure_start(buf, server_name, cb) abort
       return
     endif
     call s:errlog("[LOG]", 'Starting server', a:server_name, l:cmd)
+    " call s:console("0", l:server_info)
     let l:lsp_id = easycomplete#lsp#client#start({
           \ 'cmd': l:cmd,
           \ 'on_stderr': function('s:on_stderr', [a:server_name]),
@@ -1067,6 +1067,7 @@ function! s:on_exit(...) abort
   let id = exists('a:2') ? a:2 : v:null
   let data = exists('a:3') ? a:3 : v:null
   let event = exists('a:4') ? a:4 : v:null
+  " call s:console('exit', a:000)
   if has_key(s:servers, server_name)
     let l:server = s:servers[server_name]
     let l:server['lsp_id'] = 0
@@ -1170,6 +1171,9 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
   " Sorted alphabetically
   return {
         \   'textDocument': {
+        \       'callHierarchy': {
+        \           'dynamicRegistration': v:false,
+        \       },
         \       'codeAction': {
         \         'dynamicRegistration': v:false,
         \         'codeActionLiteralSupport': {
@@ -1177,6 +1181,7 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \             'valueSet': ['', 'quickfix', 'refactor', 'refactor.extract', 'refactor.inline', 'refactor.rewrite', 'source', 'source.organizeImports'],
         \           }
         \         },
+        \         'isPreferredSupport': v:true,
         \         'disabledSupport': v:true,
         \       },
         \       'codeLens': {
@@ -1188,7 +1193,7 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \              'documentationFormat': ['markdown', 'plaintext'],
         \              'snippetSupport': v:false,
         \              'resolveSupport': {
-        \                  'properties': ['additionalTextEdits','documentation','detail']
+        \                  'properties': ['additionalTextEdits']
         \              }
         \           },
         \           'completionItemKind': {
@@ -1226,9 +1231,15 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \           'dynamicRegistration': v:false,
         \           'contentFormat': ['markdown', 'plaintext'],
         \       },
+        \       'inlayHint': {
+        \           'dynamicRegistration': v:false,
+        \       },
         \       'implementation': {
         \           'dynamicRegistration': v:false,
         \           'linkSupport' : v:true
+        \       },
+        \       'publishDiagnostics': {
+        \           'relatedInformation': v:true,
         \       },
         \       'rangeFormatting': {
         \           'dynamicRegistration': v:false,
@@ -1236,8 +1247,32 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \       'references': {
         \           'dynamicRegistration': v:false,
         \       },
-        \       'semanticHighlightingCapabilities': {
-        \           'semanticHighlighting': v:false
+        \       'rename': {
+        \           'dynamicRegistration': v:false,
+        \           'prepareSupport': v:true,
+        \           'prepareSupportDefaultBehavior': 1
+        \       },
+        \       'semanticTokens': {
+        \           'dynamicRegistration': v:false,
+        \           'requests': {
+        \               'range': v:false,
+        \               'full':  v:false
+        \           },
+        \           'tokenTypes': [
+        \               'type', 'class', 'enum', 'interface', 'struct',
+        \               'typeParameter', 'parameter', 'variable', 'property',
+        \               'enumMember', 'event', 'function', 'method', 'macro',
+        \               'keyword', 'modifier', 'comment', 'string', 'number',
+        \               'regexp', 'operator'
+        \           ],
+        \           'tokenModifiers': [],
+        \           'formats': ['relative'],
+        \           'overlappingTokenSupport': v:false,
+        \           'multilineTokenSupport': v:false,
+        \           'serverCancelSupport': v:false
+        \       },
+        \       'signatureHelp': {
+        \           'dynamicRegistration': v:false,
         \       },
         \       'synchronization': {
         \           'didSave': v:true,
@@ -1245,18 +1280,24 @@ function! easycomplete#lsp#default_get_supported_capabilities(server_info) abort
         \           'willSave': v:false,
         \           'willSaveWaitUntil': v:false,
         \       },
-        \       'typeHierarchy': v:false,
         \       'typeDefinition': {
         \           'dynamicRegistration': v:false,
         \           'linkSupport' : v:true
         \       },
+        \       'typeHierarchy': {
+        \           'dynamicRegistration': v:false
+        \       },
         \   },
         \   'window': {
-        \       'workDoneProgress': v:false
+        \       'workDoneProgress':  v:false,
         \   },
         \   'workspace': {
         \       'applyEdit': v:true,
-        \       'configuration': v:true
+        \       'configuration': v:true,
+        \       'symbol': {
+        \           'dynamicRegistration': v:false,
+        \       },
+        \       'workspaceFolders':  v:false,
         \   },
         \ }
 endfunction
