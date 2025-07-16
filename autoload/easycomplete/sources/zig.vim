@@ -1,11 +1,11 @@
 function! easycomplete#sources#zig#constructor(opt, ctx)
   call easycomplete#RegisterLspServer(a:opt, {
       \ 'name': 'zls',
-      \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name'])],
+      \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), '--config-path',
+      \         easycomplete#installer#LspServerDir() . '/zig/zls.json'],
       \ 'allowlist': a:opt['whitelist'],
       \ 'root_uri':{server_info->easycomplete#util#GetDefaultRootUri()},
       \ })
-      " \ 'cmd': [easycomplete#installer#GetCommand(a:opt['name']), '--config-path','/Users/hfy/.config/vim-easycomplete/servers/zig/zls.json'],
 endfunction
 
 function! easycomplete#sources#zig#completor(opt, ctx) abort
@@ -13,7 +13,7 @@ function! easycomplete#sources#zig#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#zig#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["zig"])
+  return easycomplete#DoLspDefinition(["zig","zon"])
 endfunction
 
 function! s:log(...)

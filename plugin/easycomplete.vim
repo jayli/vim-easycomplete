@@ -571,7 +571,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'zig',
-      \ 'whitelist': easycomplete#FileTypes("zig", ['zig']),
+      \ 'whitelist': easycomplete#FileTypes("zig", ['zig','zon']),
       \ 'completor': 'easycomplete#sources#zig#completor',
       \ 'constructor' :'easycomplete#sources#zig#constructor',
       \ 'gotodefinition': 'easycomplete#sources#zig#GotoDefinition',

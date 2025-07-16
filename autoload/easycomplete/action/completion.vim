@@ -57,7 +57,6 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   let l:startcol = l:ctx['startcol']
 
   let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches)
-  call s:console(l:matches)
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
