@@ -92,9 +92,9 @@ endfunction
 " vscode 提供了超过五种 kind 颜色配置，把 lsp 和 text
 " 区分开，这里设置6种常见的颜色配置：
 " 6种颜色做隔离足够了，ColorScheme 常用颜色一般也就八九个
-"  EasyFunction:   "%", Function/Constant/Scruct
+"  EasyFunction:   "⊥", Function/Constant/Scruct
 "  EasySnippet:    "∫", Snippet/snip
-"  EasyTabNine:    "@", TabNine
+"  EasyTabNine:    "∮", TabNine
 "  EasyNormal:     "Φ", Buf/Text/dict - Pmenu 默认色
 "  EasyKeyword:    "♧", Keyword
 "  EasyModule:     "♤", module
@@ -145,9 +145,9 @@ function! s:hl()
           \ 'syntax region CustomFuzzyMatch matchgroup=Conceal start=/\%(§§\)\@!§/ matchgroup=Conceal end=/\%(§§\)\@!§/ concealends oneline keepend',
           \ 'syntax region CustomExtra      matchgroup=Conceal start=/\%(‰‰\)\@!‰/ matchgroup=Conceal end=/\%(‰‰\)\@!‰/ concealends oneline',
           \ 'syntax region CustomKind       matchgroup=Conceal start=/ϟ\([^ϟ]ϟ\)\@=/  matchgroup=Conceal end=/\(ϟ[^ϟ]\)\@<=ϟ/ concealends oneline',
-          \ 'syntax region CustomFunction   matchgroup=Conceal start=/%\([^%]%\)\@=/  matchgroup=Conceal end=/\(%[^%]\)\@<=%/ concealends oneline',
+          \ 'syntax region CustomFunction   matchgroup=Conceal start=/⊥\([^⊥]⊥\)\@=/  matchgroup=Conceal end=/\(⊥[^⊥]\)\@<=⊥/ concealends oneline',
           \ 'syntax region CustomSnippet    matchgroup=Conceal start=/∫\([^∫]∫\)\@=/  matchgroup=Conceal end=/\(∫[^∫]\)\@<=∫/ concealends oneline',
-          \ 'syntax region CustomTabNine    matchgroup=Conceal start=/@\([^@]@\)\@=/  matchgroup=Conceal end=/\(@[^@]\)\@<=@/ concealends oneline',
+          \ 'syntax region CustomTabNine    matchgroup=Conceal start=/∮\([^∮]∮\)\@=/  matchgroup=Conceal end=/\(∮[^∮]\)\@<=∮/ concealends oneline',
           \ 'syntax region CustomKeyword    matchgroup=Conceal start=/♧\([^♧]♧\)\@=/  matchgroup=Conceal end=/\(♧[^♧]\)\@<=♧/ concealends oneline',
           \ 'syntax region CustomModule     matchgroup=Conceal start=/♤\([^♤]♤\)\@=/  matchgroup=Conceal end=/\(♤[^♤]\)\@<=♤/ concealends oneline',
           \ 'syntax region CustomNormal     matchgroup=Conceal start=/Φ\([^Φ]Φ\)\@=/  matchgroup=Conceal end=/\(Φ[^Φ]\)\@<=Φ/ concealends oneline',
@@ -1135,9 +1135,9 @@ function! s:MaxLength(lines)
   let max_length = 0
   for item in a:lines
     let remove_style_wrapper = item
-    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s%\[^%\]%\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s⊥\[^⊥\]⊥\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s∫\[^∫\]∫\\s", " x ", "g")
-    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s@\[^@\]@\\s", " x ", "g")
+    let remove_style_wrapper = substitute(remove_style_wrapper, "\\s∮\[^∮\]∮\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\sΦ\[^Φ\]Φ\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♧\[^♧\]♧\\s", " x ", "g")
     let remove_style_wrapper = substitute(remove_style_wrapper, "\\s♤\[^♤\]♤\\s", " x ", "g")
@@ -1162,14 +1162,14 @@ function! s:MapFunction(key, val)
           \ kind_o ==# g:easycomplete_lsp_type_font["constant"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["struct"]
       " 颜色1
-      let kind_char = "%"
+      let kind_char = "⊥"
     elseif  kind_o ==# g:easycomplete_menu_skin["snip"]["kind"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["snippet"]
       " 颜色2
       let kind_char = "∫"
     elseif kind_o ==# g:easycomplete_menu_skin["tabnine"]["kind"]
       " 颜色3
-      let kind_char = "@"
+      let kind_char = "∮"
     elseif  kind_o ==# g:easycomplete_menu_skin["buf"]["kind"] ||
           \ kind_o ==# g:easycomplete_menu_skin["dict"]["kind"] ||
           \ kind_o ==# g:easycomplete_lsp_type_font["text"]
