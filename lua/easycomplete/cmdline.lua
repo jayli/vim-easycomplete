@@ -636,8 +636,8 @@ this.cmd_type = {
   dir = { 'cd', 'lcd', 'tcd', 'chdir' },
   -- Buffer completion
   buffer = {
-    'buffer', 'bdelete', 'bwipeout',
-    'bnext', 'bprevious', 'bfirst',
+    'buffer', 'bdelete', 'bwipeout', 'b',
+    'bnext', 'bprevious', 'bfirst', 'buf',
     'blast', 'sbuffer', 'sball',
   },
   diff_buffer = { 'diffthis', 'diffoff', 'diffupdate' },
@@ -665,7 +665,7 @@ this.cmd_type = {
   color     = { 'colorscheme' },
   compiler  = { 'compiler' },
   filetype  = { 'filetype' },
-  highlight = { 'highlight' },
+  highlight = { 'highlight', 'hl' },
   history   = { 'history' },
   lua       = { 'lua' },
   messages  = { 'messages' },
