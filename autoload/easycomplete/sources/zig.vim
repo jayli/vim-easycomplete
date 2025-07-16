@@ -12,6 +12,10 @@ function! easycomplete#sources#zig#completor(opt, ctx) abort
   return easycomplete#DoLspComplete(a:opt, a:ctx)
 endfunction
 
+function! easycomplete#sources#zig#GetFullItems(items)
+  return a:items
+endfunction
+
 function! easycomplete#sources#zig#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["zig","zon"])
 endfunction

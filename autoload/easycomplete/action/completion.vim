@@ -56,6 +56,10 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
+  if a:server_name == "zls"
+    let l:matches = easycomplete#sources#zig#GetFullItems(l:matches)
+  endif
+
   let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches)
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
