@@ -2087,7 +2087,7 @@ function! s:ParseAbbr(abbr)
   if max_length == 0 || strlen(a:abbr) <= max_length
     return a:abbr
   else
-    let short_abbr = a:abbr[0:max_length - 3] . ".."
+    let short_abbr = a:abbr[0:max_length - 2] . "…"
     return short_abbr
   endif
 endfunction

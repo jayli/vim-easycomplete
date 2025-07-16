@@ -19,7 +19,7 @@ function util.parse_abbr(abbr)
   if max_length == 0 or #abbr <= max_length then
     return abbr
   else
-    local short_abbr = string.sub(abbr, 1, max_length - 3) .. ".."
+    local short_abbr = string.sub(abbr, 1, max_length - 2) .. "…"
     return short_abbr
   end
 end
