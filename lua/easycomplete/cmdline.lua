@@ -80,6 +80,12 @@ function this.calculate_sign_and_linenr_width()
   return width
 end
 
+function this.window_offset_horizontal()
+  local offset = vim.fn.win_screenpos(vim.fn.win_getid())
+  local offset_horizontal = offset[2]
+  return offset_horizontal - 1
+end
+
 function this.safe_redraw()
   if vim.fn.has('nvim-0.10') then
     vim.api.nvim__redraw({
@@ -523,7 +529,10 @@ end
 -- 根据某个正则表达式是否匹配，来调用既定的get_cmp_items，并执行complete()
 function this.cmp_regex_handler(get_cmp_items, word)
   local should_redraw = false
-  local start_col = vim.fn.getcmdpos() - this.calculate_sign_and_linenr_width() - #word
+  local start_col = vim.fn.getcmdpos()
+                    - this.calculate_sign_and_linenr_width()
+                    - #word
+                    - this.window_offset_horizontal()
   cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
   local ok, menu_items = pcall(get_cmp_items)
   if not ok then
