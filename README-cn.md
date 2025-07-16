@@ -247,6 +247,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 | grvy        | Groovy    | groovyls                 | Yes                | java/jdk     | Yes                       |
 | cmake       | cmake     | cmake                    | Yes                | python3/pip3 | Yes                       |
 | c#          | C#        | omnisharp-lsp            | Yes                | 无           | No                        |
+| zig         | zig       | zls                      | Yes                | zig          | No                        |
 
 更多 lsp 服务相关信息:
 
@@ -276,6 +277,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 - Deno: [denols](https://morioh.com/p/84a54d70a7fa). 使用 `:DenoCache` 命令来缓存当前 ts/js file.
 - C# : [omnisharp](http://www.omnisharp.net/).
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver).
+- zig: [zls](https://zigtools.org/zls/install/) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
 
 自定义增加某种 lsp 所支持的语言类型，通常情况下不需要这么做：

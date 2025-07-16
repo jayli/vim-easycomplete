@@ -249,6 +249,7 @@ All supported languages:
 | grvy        | Groovy    | groovyls                 | Yes                | java/jdk     |
 | cmake       | cmake     | cmake                    | Yes                | python3/pip3 |
 | c#          | C#        | omnisharp-lsp            | Yes                | None         |
+| zig         | zig       | zls                      | Yes                | zig          |
 
 More info about supported language:
 
@@ -278,6 +279,7 @@ More info about supported language:
 - Deno: [denols](https://morioh.com/p/84a54d70a7fa) required. Use `:DenoCache` command for `deno cache` current ts/js file.
 - C# : [omnisharp](http://www.omnisharp.net/) required.
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
+- zig: [zls](https://zigtools.org/zls/install/) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
 
 You can  add filetypes whitelist for specified language plugin. In most cases, it is not necessary to do so:
