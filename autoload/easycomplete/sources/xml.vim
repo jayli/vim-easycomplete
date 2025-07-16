@@ -16,7 +16,7 @@ function! easycomplete#sources#xml#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["xml"])
 endfunction
 
-function! easycomplete#sources#xml#filter(matches)
+function! easycomplete#sources#xml#filter(matches, ctx)
   let ctx = easycomplete#context()
   let matches = a:matches
   if ctx['typed'] =~ "\\w:\\w\\{-}$" " x:y~ 的处理

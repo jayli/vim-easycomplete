@@ -101,8 +101,8 @@ function! s:CachePost(job, code, ...) abort
   call easycomplete#util#timer_start('easycomplete#util#info', ['`deno cache` Finished!'], 10)
 endfunction
 
-function! easycomplete#sources#deno#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#deno#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches

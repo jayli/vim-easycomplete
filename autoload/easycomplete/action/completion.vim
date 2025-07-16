@@ -56,11 +56,7 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
-  if a:server_name == "zls"
-    let l:matches = easycomplete#sources#zig#GetFullItems(l:matches)
-  endif
-
-  let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches)
+  let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches, l:ctx)
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
@@ -73,7 +69,7 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 
-function! s:MatchResultFilterPipe(plugin_name, matches)
+function! s:MatchResultFilterPipe(plugin_name, matches, ctx)
   let lsp_ctx = easycomplete#GetCurrentLspContext()
   if type(get(lsp_ctx, "constructor")) != type('')
     let fn_name = a:plugin_name
@@ -85,7 +81,7 @@ function! s:MatchResultFilterPipe(plugin_name, matches)
   if !easycomplete#util#FuncExists(Fun_name)
     return a:matches
   endif
-  return call(funcref(Fun_name), [a:matches])
+  return call(funcref(Fun_name), [a:matches, a:ctx])
 endfunction
 
 function! s:console(...)

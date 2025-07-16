@@ -67,8 +67,8 @@ function! easycomplete#sources#lua#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["lua"])
 endfunction
 
-function! easycomplete#sources#lua#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#lua#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   if ctx['typed'] =~ '\(\w\+\.\)\{-1,}$' " LoaDotTyping bugfix for #196
     call filter(matches, function("s:LuaHack_S_DotFilter"))

@@ -15,8 +15,8 @@ function! easycomplete#sources#py#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["py", "pyi"])
 endfunction
 
-function! easycomplete#sources#py#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#py#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches

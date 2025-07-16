@@ -18,8 +18,8 @@ function! easycomplete#sources#cpp#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp","m","hpp"])
 endfunction
 
-function! easycomplete#sources#cpp#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#cpp#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = map(copy(a:matches), function("easycomplete#util#FunctionSurffixMap"))
   let matches_ret = map(copy(matches), function("s:CppItemPrefixHandling"))
   return matches_ret

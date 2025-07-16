@@ -17,8 +17,8 @@ function! easycomplete#sources#kotlin#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["kt"])
 endfunction
 
-function! easycomplete#sources#kotlin#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#kotlin#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches

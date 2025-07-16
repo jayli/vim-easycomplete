@@ -16,8 +16,8 @@ function! easycomplete#sources#php#GotoDefinition(...)
   return easycomplete#DoLspDefinition(["php"])
 endfunction
 
-function! easycomplete#sources#php#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#php#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches

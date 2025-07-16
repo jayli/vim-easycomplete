@@ -24,8 +24,8 @@ function! easycomplete#sources#vim#GotoDefinition(...)
 endfunction
 
 " hack for #98 #92
-function! easycomplete#sources#vim#filter(matches)
-  let ctx = easycomplete#context()
+function! easycomplete#sources#vim#filter(matches, ctx)
+  let ctx = a:ctx
   let matches = a:matches
   if ctx['typed'] =~ "s:\\w\\{-}$"
     " hack for vim-language-server:
