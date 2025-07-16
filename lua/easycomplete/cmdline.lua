@@ -565,11 +565,18 @@ function this.cmp_regex_handler(get_cmp_items, word)
     should_redraw = false
     this.pum_close()
   else
-    -- console(">>> 匹配项个数", #menu_items)
     should_redraw = true
+    -- 光标所在行的 tab 的数量会影响 pum 的位置，感觉应该是 nvim 的bug
+    start_col = start_col - this.tabs_number() * (vim.bo.tabstop - 1)
     this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
   return should_redraw
+end
+
+function this.tabs_number()
+  local line = vim.fn.getline('.')
+  local res, no = string.gsub(line, "\t", "")
+  return no
 end
 
 -- 获得所有command list
