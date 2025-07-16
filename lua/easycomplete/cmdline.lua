@@ -101,7 +101,7 @@ function this.pum_redraw()
   if util.zizzing() then return end
   util.zizz()
   if redraw_queued then return end
-  if vim.g.easycomplete_cmdline_pattern == '/' then
+  if this.insearch() then
     redraw_queued = true
     -- 首次insearch匹配<s-tab>会导致匹配高亮渲染消失，这里做一下区分
     local cmdline = vim.fn.getcmdline()
@@ -158,6 +158,14 @@ function this.flush()
   this.pum_close()
 end
 
+function this.insearch()
+  if vim.g.easycomplete_cmdline_pattern == "/" or vim.g.easycomplete_cmdline_pattern == "?" then
+    return true
+  else
+    return false
+  end
+end
+
 function this.pum_visible()
   return vim.fn["easycomplete#pum#visible"]()
 end
@@ -176,7 +184,7 @@ end
 
 function this.pum_select_next()
   vim.fn['easycomplete#pum#next']()
-  if vim.g.easycomplete_cmdline_pattern == '/' then
+  if this.insearch() then
     return ""
   end
   util.zizz()
@@ -186,7 +194,7 @@ end
 
 function this.pum_select_prev()
   vim.fn['easycomplete#pum#prev']()
-  if vim.g.easycomplete_cmdline_pattern == '/' then
+  if this.insearch() then
     return ""
   end
   util.zizz()
@@ -216,14 +224,29 @@ function this.bind_cmdline_event()
       group = augroup,
       pattern = ":",
       callback = function()
-        vim.g.easycomplete_cmdline_pattern = ":"
+        if vim.fn.getcmdtype() == ":" then
+          vim.g.easycomplete_cmdline_pattern = ":"
+        end
       end,
     })
+
   vim.api.nvim_create_autocmd("CmdlineEnter", {
       group = augroup,
       pattern = "/",
       callback = function()
-        vim.g.easycomplete_cmdline_pattern = "/"
+        if vim.fn.getcmdtype() == "/" then
+          vim.g.easycomplete_cmdline_pattern = "/"
+        end
+      end,
+    })
+
+  vim.api.nvim_create_autocmd("CmdlineEnter", {
+      group = augroup,
+      pattern = "?",
+      callback = function()
+        if vim.fn.getcmdtype() == "?" then
+          vim.g.easycomplete_cmdline_pattern = "?"
+        end
       end,
     })
 
@@ -250,8 +273,7 @@ function this.bind_cmdline_event()
     if vim.bo.filetype == 'help' then return end
     vim.g.easycomplete_cmdline_typing = 1
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
-    -- TODO 匹配模式闪烁问题没解决，先关闭
-    if vim.g.easycomplete_cmdline_pattern == '/' and key_str ~= '\r' then
+    if this.insearch() and key_str ~= '\r' then
       -- jayli 先关掉，继续调试
       -- do return end
       if util.zizzing() then
@@ -351,7 +373,7 @@ function this.cr_handler()
           this.do_path_complete()
         end
       end, 30)
-    elseif vim.g.easycomplete_cmdline_pattern == "/" then
+    elseif this.insearch() then
       local opr = this.get_tab_returing_opword()
       this.pum_close()
       vim.defer_fn(function()
@@ -378,7 +400,7 @@ this.REG_CMP_HANDLER = {
     -- 正在输入第一个命令
     pattern = "^[a-zA-Z0-9_]+$",
     get_cmp_items = function()
-      if vim.g.easycomplete_cmdline_pattern == "/" then
+      if this.insearch() then
         local typing_word = this.get_typing_word()
         local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
         local ret = util.filter(ret, function(item)
@@ -398,7 +420,7 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+[glbwtvas]:%w-$", -- 命令输入完毕，输入 x:y 变量
     },
     get_cmp_items = function()
-      if vim.g.easycomplete_cmdline_pattern == "/" then
+      if this.insearch() then
         return {}
       end
       local cmd_name = this.get_guide_cmd()
@@ -448,7 +470,7 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+/$"
     },
     get_cmp_items = function()
-      if vim.g.easycomplete_cmdline_pattern == "/" then
+      if this.insearch() then
         return {}
       else
         return this.get_path_cmp_items()
@@ -462,7 +484,7 @@ this.REG_CMP_HANDLER = {
       "^[a-zA-Z0-9_]+%s+.*%\'[^\']-$",
     },
     get_cmp_items = function()
-      if vim.g.easycomplete_cmdline_pattern == "/" then
+      if this.insearch() then
         return {}
       end
       local typing_word = this.get_typing_word()
