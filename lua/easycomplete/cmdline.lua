@@ -551,10 +551,12 @@ end
 -- 根据某个正则表达式是否匹配，来调用既定的get_cmp_items，并执行complete()
 function this.cmp_regex_handler(get_cmp_items, word)
   local should_redraw = false
+  -- 光标所在行的 tab 的数量会影响 pum 的位置，感觉应该是 nvim 的bug
   local start_col = vim.fn.getcmdpos()
                     - this.calculate_sign_and_linenr_width()
                     - #word
                     - this.window_offset_horizontal()
+                    - this.tabs_number() * (vim.bo.tabstop - 1)
   cmdline_start_cmdpos = vim.fn.getcmdpos() - #word
   local ok, menu_items = pcall(get_cmp_items)
   if not ok then
@@ -566,8 +568,6 @@ function this.cmp_regex_handler(get_cmp_items, word)
     this.pum_close()
   else
     should_redraw = true
-    -- 光标所在行的 tab 的数量会影响 pum 的位置，感觉应该是 nvim 的bug
-    start_col = start_col - this.tabs_number() * (vim.bo.tabstop - 1)
     this.pum_complete(start_col, this.normalize_list(menu_items, word))
   end
   return should_redraw
