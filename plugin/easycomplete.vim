@@ -491,7 +491,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'grvy',
-      \ 'whitelist': easycomplete#FileTypes("grvy", ["groovy"]),
+      \ 'whitelist': easycomplete#FileTypes("grvy", ["groovy", "gradle"]),
       \ 'completor': 'easycomplete#sources#grvy#completor',
       \ 'constructor' :'easycomplete#sources#grvy#constructor',
       \ 'gotodefinition': 'easycomplete#sources#grvy#GotoDefinition',
@@ -551,7 +551,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'c#',
-      \ 'whitelist': easycomplete#FileTypes("c#", ["cs"]),
+      \ 'whitelist': easycomplete#FileTypes("c#", ["cs", "csharp"]),
       \ 'completor': 'easycomplete#sources#cs#completor',
       \ 'constructor' :'easycomplete#sources#cs#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cs#GotoDefinition',

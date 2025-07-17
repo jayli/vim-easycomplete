@@ -64,7 +64,7 @@ function! easycomplete#sources#lua#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#lua#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["lua"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#lua#filter(matches, ctx)

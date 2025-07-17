@@ -14,7 +14,7 @@ function! easycomplete#sources#kotlin#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#kotlin#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["kt"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#kotlin#filter(matches, ctx)

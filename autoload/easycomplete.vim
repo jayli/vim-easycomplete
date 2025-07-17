@@ -2555,14 +2555,14 @@ endfunction
 
 " LSP definition 跳转的通用封装
 " file_exts 文件后缀
-function! easycomplete#DoLspDefinition(file_exts)
-  let ext = tolower(easycomplete#util#extention())
-  if index(a:file_exts, ext) >= 0
+function! easycomplete#DoLspDefinition(...)
+  if easycomplete#util#FitLspFiletype()
     return easycomplete#action#defination#LspRequest()
+  else
+    " exec "tag ". expand('<cword>')
+    " 未成功跳转，则交给主进程处理
+    return v:false
   endif
-  " exec "tag ". expand('<cword>')
-  " 未成功跳转，则交给主进程处理
-  return v:false
 endfunction
 
 " lsp 各项配置检查是否通过

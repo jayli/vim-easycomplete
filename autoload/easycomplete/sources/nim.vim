@@ -13,6 +13,6 @@ function! easycomplete#sources#nim#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#nim#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["nim","nimble"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

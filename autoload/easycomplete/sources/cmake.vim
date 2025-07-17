@@ -15,7 +15,7 @@ function! easycomplete#sources#cmake#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cmake#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cmake", "make", "txt"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 

@@ -20,7 +20,7 @@ function! easycomplete#sources#vim#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#vim#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["vim","vimrc","nvim"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 " hack for #98 #92

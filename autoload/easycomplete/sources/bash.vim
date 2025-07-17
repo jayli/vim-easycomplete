@@ -13,6 +13,6 @@ function! easycomplete#sources#bash#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#bash#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["sh"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

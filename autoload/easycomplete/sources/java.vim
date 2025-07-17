@@ -13,7 +13,7 @@ function! easycomplete#sources#java#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#java#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["java"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! s:log(...)

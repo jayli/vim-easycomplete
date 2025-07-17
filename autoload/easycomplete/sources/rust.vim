@@ -20,6 +20,6 @@ function! easycomplete#sources#rust#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#rust#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["rs", "rust"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

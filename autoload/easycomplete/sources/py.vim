@@ -12,7 +12,7 @@ function! easycomplete#sources#py#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#py#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["py", "pyi"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#py#filter(matches, ctx)

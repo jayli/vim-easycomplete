@@ -12,7 +12,7 @@ function! easycomplete#sources#r#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#r#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["r", "rmd", "rmarkdown"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! s:log(...)

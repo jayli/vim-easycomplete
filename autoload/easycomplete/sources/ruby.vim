@@ -14,6 +14,6 @@ function! easycomplete#sources#ruby#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#ruby#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["rb"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

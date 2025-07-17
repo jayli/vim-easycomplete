@@ -15,7 +15,7 @@ function! easycomplete#sources#cpp#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cpp#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cpp","c","h","cc","objc","objcpp","m","hpp"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#cpp#filter(matches, ctx)

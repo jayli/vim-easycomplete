@@ -1757,6 +1757,19 @@ function! s:BadBoy.Dart(item, typing_word)
 endfunction
 " }}}
 
+" 判断当前文件类型是否适应当前lsp-server支持的filetype
+" 用以判断lsp的行为是否执行
+function! easycomplete#util#FitLspFiletype()
+  let ft = s:filetype()
+  let plugin_name = easycomplete#util#GetCurrentPluginName()
+  let support_fts = s:get(g:easycomplete_source, plugin_name, "whitelist")
+  if type(support_fts) == type([]) && index(support_fts, ft) >= 0
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#util#IsCursorNextToLeftParen() " {{{
   let line = getline('.')
   let col = col('.')

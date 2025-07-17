@@ -23,7 +23,7 @@ function! easycomplete#sources#dart#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#dart#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["dart"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 

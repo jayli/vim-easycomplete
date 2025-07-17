@@ -13,7 +13,7 @@ function! easycomplete#sources#php#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#php#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["php"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#php#filter(matches, ctx)

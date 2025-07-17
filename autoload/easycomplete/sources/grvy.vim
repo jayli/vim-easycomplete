@@ -12,6 +12,6 @@ function! easycomplete#sources#grvy#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#grvy#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["groovy","gradle"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

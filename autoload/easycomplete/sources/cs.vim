@@ -13,6 +13,6 @@ function! easycomplete#sources#cs#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#cs#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["cs"])
+  return easycomplete#DoLspDefinition()
 endfunction
 

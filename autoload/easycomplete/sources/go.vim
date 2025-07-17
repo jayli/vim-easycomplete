@@ -20,7 +20,7 @@ function! easycomplete#sources#go#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#go#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(["go"])
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#go#filter(matches, ctx)

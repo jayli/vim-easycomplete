@@ -60,7 +60,7 @@ function! easycomplete#sources#deno#completor(opt, ctx) abort
 endfunction
 
 function! easycomplete#sources#deno#GotoDefinition(...)
-  return easycomplete#DoLspDefinition(s:file_extensions)
+  return easycomplete#DoLspDefinition()
 endfunction
 
 function! easycomplete#sources#deno#cache()
