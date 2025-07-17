@@ -217,37 +217,38 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 
 所有支持的语言:
 
-| 名称        | 语言      | LSP 服务                 | LSP 是否需要安装   | 依赖         | 是否支持nvim-lsp-installer|
-|-------------|-----------|:------------------------:|:------------------:|:------------:|:-------------------------:|
-| directory   | directory | No Need                  | 内置               | 无           | -                         |
-| buf         | buf & dict| No Need                  | 内置               | 无           | -                         |
-| snips       | Snippets  | ultisnips/LuaSnip        | 内置               | python3/lua  | -                         |
-| ts          | js/ts     | tsserver                 | Yes                | node/npm     | Yes                       |
-| deno        | js/ts     | denols                   | Yes                | deno         | Yes                       |
-| tn          | TabNine   | TabNine                  | Yes                | 无           | No                        |
-| vim         | Vim       | vimls                    | Yes                | node/npm     | Yes                       |
-| cpp         | C/C++/OC  | clangd                   | Yes                | 无           | Yes                       |
-| css         | CSS       | cssls                    | Yes                | node/npm     | Yes                       |
-| html        | HTML      | html                     | Yes                | node/npm     | Yes                       |
-| yml         | YAML      | yamlls                   | Yes                | node/npm     | Yes                       |
-| xml         | Xml       | lemminx                  | Yes                | java/jdk     | Yes                       |
-| sh          | Bash      | bashls                   | Yes                | node/npm     | Yes                       |
-| json        | JSON      | json-languageserver      | Yes                | node/npm     | No                        |
-| php         | php       | intelephense             | Yes                | node/npm     | Yes                       |
-| dart        | dart      | dartls                   | Yes                | 无           | Yes                       |
-| py          | Python    | pylsp                    | Yes                | python3/pip3 | Yes                       |
-| java        | Java      | jdtls                    | Yes                | java11/jdk   | Yes                       |
-| go          | Go        | gopls                    | Yes                | go           | Yes                       |
-| r           | R         | r-languageserver         | Yes                | R            | No                        |
-| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  | No                        |
-| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          | Yes                       |
-| nim         | Nim       | nimls                    | Yes                | nim/nimble   | Yes                       |
-| rust        | Rust      | `rust_analyzer`          | Yes                | 无           | Yes                       |
-| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     | Yes                       |
-| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     | Yes                       |
-| cmake       | cmake     | cmake                    | Yes                | python3/pip3 | Yes                       |
-| c#          | C#        | omnisharp-lsp            | Yes                | 无           | No                        |
-| zig         | zig       | zls                      | Yes                | zig          | No                        |
+| 名称        | 语言      | LSP 服务                 | LSP 是否需要安装   | 依赖         | URL |
+|-------------|-----------|:------------------------:|:------------------:|:------------:|:--------:|
+| directory   | directory | No Need                  | 内置               | 无           |          |
+| buf         | buf & dict| No Need                  | 内置               | 无           |          |
+| snips       | Snippets  | ultisnips/LuaSnip        | 内置               | python3/lua  |          |
+| ts          | js/ts     | tsserver                 | Yes                | node/npm     |          |
+| deno        | js/ts     | denols                   | Yes                | deno         |          |
+| tn          | TabNine   | TabNine                  | Yes                | 无           |          |
+| vim         | Vim       | vimls                    | Yes                | node/npm     |          |
+| cpp         | C/C++/OC  | clangd                   | Yes                | 无           |          |
+| css         | CSS       | cssls                    | Yes                | node/npm     |          |
+| html        | HTML      | html                     | Yes                | node/npm     |          |
+| yml         | YAML      | yamlls                   | Yes                | node/npm     |          |
+| xml         | Xml       | lemminx                  | Yes                | java/jdk     |          |
+| sh          | Bash      | bashls                   | Yes                | node/npm     |          |
+| json        | JSON      | json-languageserver      | Yes                | node/npm     |          |
+| php         | php       | intelephense             | Yes                | node/npm     |          |
+| dart        | dart      | dartls                   | Yes                | 无           |          |
+| py          | Python    | pylsp                    | Yes                | python3/pip3 |          |
+| java        | Java      | jdtls                    | Yes                | java11/jdk   |          |
+| go          | Go        | gopls                    | Yes                | go           |          |
+| r           | R         | r-languageserver         | Yes                | R            |          |
+| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  |          |
+| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          |          |
+| nim         | Nim       | nimls                    | Yes                | nim/nimble   |          |
+| rust        | Rust      | `rust_analyzer`          | Yes                | 无           |          |
+| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     |          |
+| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     |          |
+| cmake       | cmake     | cmake                    | Yes                | python3/pip3 |          |
+| c#          | C#        | omnisharp-lsp            | Yes                | 无           |          |
+| zig         | zig       | zls                      | Yes                | zig          |          |
+| docker      | docker    |dockerfile-language-server| Mason              | node/npm     |[easycomplete-docker](https://github.com/jayli/easycomplete-docker) |
 
 更多 lsp 服务相关信息:
 
@@ -278,6 +279,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 - C# : [omnisharp](http://www.omnisharp.net/).
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver).
 - zig: [zls](https://zigtools.org/zls/install/) required.
+- docker: 安装插件 [easycomplete-docker](https://github.com/jayli/easycomplete-docker), 依赖 [dockerfile-language-server](https://github.com/rcjsuen/dockerfile-language-server).
 - TabNine: [TabNine](https://www.tabnine.com/)
 
 自定义增加某种 lsp 所支持的语言类型，通常情况下不需要这么做：

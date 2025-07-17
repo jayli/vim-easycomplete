@@ -219,37 +219,38 @@ LSP Server will all be installed in local path: `~/.config/vim-easycomplete/serv
 
 All supported languages:
 
-| Plugin Name | Languages | Language Server          | Installer          | Requirements |
-|-------------|-----------|:------------------------:|:------------------:|:------------:|
-| directory   | directory | No Need                  | Integrated         | None         |
-| buf         | buf & dict| No Need                  | Integrated         | None         |
-| snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  |
-| ts          | js/ts     | tsserver                 | Yes                | node/npm     |
-| deno        | js/ts     | denols                   | Yes                | deno         |
-| tn          | TabNine   | TabNine                  | Yes                | None         |
-| vim         | Vim       | vimls                    | Yes                | node/npm     |
-| cpp         | C/C++/OC  | clangd                   | Yes                | None         |
-| css         | CSS       | cssls                    | Yes                | node/npm     |
-| html        | HTML      | html                     | Yes                | node/npm     |
-| yml         | YAML      | yamlls                   | Yes                | node/npm     |
-| xml         | Xml       | lemminx                  | Yes                | java/jdk     |
-| sh          | Bash      | bashls                   | Yes                | node/npm     |
-| json        | JSON      | json-languageserver      | Yes                | node/npm     |
-| php         | php       | intelephense             | Yes                | node/npm     |
-| dart        | dart      | dartls                   | Yes                | None         |
-| py          | Python    | pylsp                    | Yes                | python3/pip3 |
-| java        | Java      | jdtls                    | Yes                | java11/jdk   |
-| go          | Go        | gopls                    | Yes                | go           |
-| r           | R         | r-languageserver         | Yes                | R            |
-| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  |
-| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          |
-| nim         | Nim       | nimls                    | Yes                | nim/nimble   |
-| rust        | Rust      | `rust_analyzer`          | Yes                | None         |
-| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     |
-| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     |
-| cmake       | cmake     | cmake                    | Yes                | python3/pip3 |
-| c#          | C#        | omnisharp-lsp            | Yes                | None         |
-| zig         | zig       | zls                      | Yes                | zig          |
+| Plugin Name | Languages | Language Server          | Installer          | Requirements | URL |
+|-------------|-----------|:------------------------:|:------------------:|:------------:|:---:|
+| directory   | directory | No Need                  | Integrated         | None         |     |
+| buf         | buf & dict| No Need                  | Integrated         | None         |     |
+| snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  |     |
+| ts          | js/ts     | tsserver                 | Yes                | node/npm     |     |
+| deno        | js/ts     | denols                   | Yes                | deno         |     |
+| tn          | TabNine   | TabNine                  | Yes                | None         |     |
+| vim         | Vim       | vimls                    | Yes                | node/npm     |     |
+| cpp         | C/C++/OC  | clangd                   | Yes                | None         |     |
+| css         | CSS       | cssls                    | Yes                | node/npm     |     |
+| html        | HTML      | html                     | Yes                | node/npm     |     |
+| yml         | YAML      | yamlls                   | Yes                | node/npm     |     |
+| xml         | Xml       | lemminx                  | Yes                | java/jdk     |     |
+| sh          | Bash      | bashls                   | Yes                | node/npm     |     |
+| json        | JSON      | json-languageserver      | Yes                | node/npm     |     |
+| php         | php       | intelephense             | Yes                | node/npm     |     |
+| dart        | dart      | dartls                   | Yes                | None         |     |
+| py          | Python    | pylsp                    | Yes                | python3/pip3 |     |
+| java        | Java      | jdtls                    | Yes                | java11/jdk   |     |
+| go          | Go        | gopls                    | Yes                | go           |     |
+| r           | R         | r-languageserver         | Yes                | R            |     |
+| rb          | Ruby      | solargraph               | Yes                | ruby/bundle  |     |
+| lua         | Lua       | `sumneko_lua`            | Yes                | Lua          |     |
+| nim         | Nim       | nimls                    | Yes                | nim/nimble   |     |
+| rust        | Rust      | `rust_analyzer`          | Yes                | None         |     |
+| kt          | Kotlin    | `kotlin_language_server` | Yes                | java/jdk     |     |
+| grvy        | Groovy    | groovyls                 | Yes                | java/jdk     |     |
+| cmake       | cmake     | cmake                    | Yes                | python3/pip3 |     |
+| c#          | C#        | omnisharp-lsp            | Yes                | None         |     |
+| zig         | zig       | zls                      | Yes                | zig          |     |
+| docker      | docker    |dockerfile-language-server| Mason              | node/npm     |[easycomplete-docker](https://github.com/jayli/easycomplete-docker) |
 
 More info about supported language:
 
@@ -280,6 +281,7 @@ More info about supported language:
 - C# : [omnisharp](http://www.omnisharp.net/) required.
 - R: [r-languageserver](https://github.com/REditorSupport/languageserver) required.
 - zig: [zls](https://zigtools.org/zls/install/) required.
+- docker: install plugin [easycomplete-docker](https://github.com/jayli/easycomplete-docker), [dockerfile-language-server](https://github.com/rcjsuen/dockerfile-language-server) required.
 - TabNine: [TabNine](https://www.tabnine.com/)
 
 You can  add filetypes whitelist for specified language plugin. In most cases, it is not necessary to do so:
