@@ -337,10 +337,16 @@ function! s:CompleteTypingMatch(...)
       else
         call s:CloseCompletionMenu()
       endif
+      call easycomplete#sources#tn#SetGlobalSourceItems([])
     else
       let start_pos = col('.') - strlen(word)
-      let b:easycomplete_tn_match_done = 1
-      call s:SecondCompleteRendering(start_pos, tn_result)
+      " call s:SecondCompleteRendering(start_pos, tn_result)
+      " 这里如果执行了匹配，tabnine 还会在 20ms
+      " 后有一个返回，导致闪烁，因此这里也需要加一个延迟，而不应该直接
+      " 执行 Rendering，和 SecondComplete中的逻辑一样
+      call easycomplete#sources#tn#SetGlobalSourceItems(tn_result)
+      let b:easycomplete_tn_match_done = 0
+      call easycomplete#util#timer_start("easycomplete#UpdateTNPlaceHolder", [word], 20)
     endif
     let g:easycomplete_stunt_menuitems = []
     return
