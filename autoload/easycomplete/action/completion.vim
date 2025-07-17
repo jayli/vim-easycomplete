@@ -17,7 +17,6 @@ function! easycomplete#action#completion#do(opt, ctx)
     return v:true
   endif
   call easycomplete#action#completion#LspRequest(l:info, a:opt['name'])
-  call s:console(9997)
   return v:true
 endfunction
 

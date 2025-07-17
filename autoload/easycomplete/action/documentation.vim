@@ -99,6 +99,9 @@ function! s:GetDocumentParams(item, server_name)
     else
       let param_data = s:GetExtendedParamData(get(lsp_item, 'data', {}))
     endif
+    if type(param_data) != type({})
+      let param_data = {}
+    endif
     let ret.completion_item = extend({
           \  'label' : get(lsp_item, "label", a:item.word),
           \  'data' : extend({
