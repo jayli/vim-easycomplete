@@ -159,7 +159,7 @@ function! s:lint(content, hl, ft)
   try
     if distance < 5
       let b:easycomplete_echo_lint_msg = 1
-      echo a:content[0]
+      echom a:content[0]
       return
     endif
     let trimed_content = easycomplete#util#lintTrim(a:content[0], distance, 2)
@@ -167,7 +167,7 @@ function! s:lint(content, hl, ft)
     if trimed_content["trimed"]
       " TODO 关闭
       let b:easycomplete_echo_lint_msg = 1
-      echo a:content[0]
+      echom a:content[0]
     endif
     call s:InitBuf(l:content, 'float', a:ft)
     let screen_col_enc = win_screenpos(win_getid())[1] - 1
