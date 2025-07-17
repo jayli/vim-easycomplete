@@ -239,6 +239,26 @@ function EasyComplete.register_source(tb)
   vim.fn["easycomplete#RegisterSource"](tb)
 end
 
+function EasyComplete.register_lsp_server(opt, tb)
+  vim.fn["easycomplete#RegisterLspServer"](opt, tb)
+end
+
+function EasyComplete.get_command(plugin_name)
+  return vim.fn["easycomplete#installer#GetCommand"](plugin_name)
+end
+
+function EasyComplete.get_default_root_uri()
+  return vim.fn["easycomplete#util#GetDefaultRootUri"]()
+end
+
+function EasyComplete.do_lsp_complete(opt, ctx)
+  return vim.fn["easycomplete#DoLspComplete"](opt, ctx)
+end
+
+function EasyComplete.do_lsp_defination()
+  return vim.fn["easycomplete#DoLspDefinition"]()
+end
+
 -- 判断 diagnostics 中是否已经包含 item（根据 sortNumber）
 function EasyComplete.has(diagnostics, item)
   local item_sort = item.sortNumber
