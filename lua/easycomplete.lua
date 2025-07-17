@@ -235,6 +235,10 @@ function EasyComplete.distinct_keywords(menu_list)
   return result_items
 end
 
+function EasyComplete.register_source(tb)
+  vim.fn["easycomplete#RegisterSource"](tb)
+end
+
 -- 判断 diagnostics 中是否已经包含 item（根据 sortNumber）
 function EasyComplete.has(diagnostics, item)
   local item_sort = item.sortNumber
