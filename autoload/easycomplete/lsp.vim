@@ -463,9 +463,21 @@ function! s:ensure_init(buf, server_name, cb) abort
   endif
 
   " server has already started, but not initialized
-
   let l:server_info = l:server['server_info']
-  let l:root_uri = has_key(l:server_info, 'root_uri') ?  l:server_info['root_uri'](l:server_info) : ''
+  if has_key(l:server_info, 'root_uri')
+    let l:root_uri_type = type(l:server_info['root_uri'])
+    if l:root_uri_type == v:t_list
+      let l:root_uri_o = l:server_info['root_uri'][0]
+    elseif l:root_uri_type == v:t_string
+      let l:root_uri_o = l:server_info['root_uri']
+    else
+      let l:root_uri_o = l:server_info['root_uri'](l:server_info)
+    endif
+  else
+    let l:root_uri_o = ""
+  endif
+
+  let l:root_uri = l:root_uri_o
   if empty(l:root_uri)
     let l:root_uri = easycomplete#lsp#utils#get_default_root_uri()
   endif
