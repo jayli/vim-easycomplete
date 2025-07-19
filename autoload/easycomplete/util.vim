@@ -698,16 +698,14 @@ function! easycomplete#util#GetTypingWord()
   " 正常情况这里取普通单词逻辑不应当变化
   " 如果不同语言对单词组成字符界定不一，在主流程中处理
   " 比如 vim 把 'g:abc' 对待为一个完整单词
-  if index(["php"], &filetype) >= 0
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    let regx = '[a-zA-Z0-9_#:@]'
+  elseif index(["php", "javascript", "typescript"], &filetype) >= 0
     let regx = '[$a-zA-Z0-9_#]'
+  elseif index(["lua"], &filetype) >= 0
+    let regx = '[$a-zA-Z0-9_]'
   else
     let regx = '[a-zA-Z0-9_#]'
-  endif
-  if index(["lua"], &filetype) >= 0
-    let regx = '[$a-zA-Z0-9_]'
-  endif
-  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
-    let regx = '[a-zA-Z0-9_#:]'
   endif
   while start > 0 && line[start - 1] =~ regx
     let start = start - 1
