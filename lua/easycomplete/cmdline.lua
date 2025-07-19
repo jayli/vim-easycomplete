@@ -387,6 +387,15 @@ function this.cr_handler()
   end
 end
 
+function this.get_normal_search_cmp()
+  local typing_word = this.get_typing_word()
+  local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
+  local ret = util.filter(ret, function(item)
+    return string.lower(string.sub(item, 1, 1)) == string.lower(string.sub(typing_word, 1, 1))
+  end)
+  return ret
+end
+
 -- MAIN ROUTER
 this.REG_CMP_HANDLER = {
   {
@@ -401,11 +410,7 @@ this.REG_CMP_HANDLER = {
     pattern = "^[a-zA-Z0-9_]+$",
     get_cmp_items = function()
       if this.insearch() then
-        local typing_word = this.get_typing_word()
-        local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
-        local ret = util.filter(ret, function(item)
-          return string.lower(string.sub(item, 1, 1)) == string.lower(string.sub(typing_word, 1, 1))
-        end)
+        local ret = this.get_normal_search_cmp()
         return ret
       elseif vim.g.easycomplete_cmdline_pattern == ":" then
         -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
@@ -458,6 +463,23 @@ this.REG_CMP_HANDLER = {
             end
           end
         end
+        return result
+      end
+    end
+  },
+  {
+    -- highlight
+    pattern = {
+      "^hi%s.*$",
+      "^highlight%s.*$"
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local typing_word = this.get_typing_word()
+        local guide_str = string.sub(typing_word, 1, 1)
+        local result = vim.fn.getcompletion(guide_str, "highlight")
         return result
       end
     end
