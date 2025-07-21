@@ -671,6 +671,7 @@ else
   inoremap <expr><CR> easycomplete#TypeEnterWithPUM()
   inoremap <expr><C-E> easycomplete#CtlE()
 endif
+cnoremap <expr><CR>  easycomplete#ui#CmdlineCR()
 inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>
 inoremap  <Plug>EasycompleteShiftTabTrigger <c-r>=easycomplete#CleverShiftTab()<cr>
