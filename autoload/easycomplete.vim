@@ -212,6 +212,7 @@ function! s:BindingTypingCommandOnce()
   " inoremap <Tab> <Plug>EasycompleteTabTrigger
   " 重定向 Tag 的跳转按键绑定，和默认<c-]>功能一致
   nnoremap <silent> <c-]> :EasyCompleteGotoDefinition<CR>
+  nnoremap <silent> <S-k> :EasyCompleteHover<CR>
 endfunction
 
 function! easycomplete#FileTypes(plugin_name, filetypes)
@@ -2869,6 +2870,12 @@ endfunction
 
 function! easycomplete#Hover()
   call easycomplete#action#hover#do()
+endfunction
+
+function! easycomplete#HoverNothing(msg)
+  call s:log(a:msg)
+  let cw = expand('<cword>')
+  exec "help " . cw
 endfunction
 
 function! easycomplete#BackToOriginalBuffer()

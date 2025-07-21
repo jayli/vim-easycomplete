@@ -525,12 +525,11 @@ function! easycomplete#sources#ts#hover()
         \ {
         \    -> s:SendCommandAsyncResponse('quickinfo',  l:args)
         \ })
-
 endfunction
 
 function! easycomplete#sources#ts#QuickInfoCallback(response)
   if s:get(a:response, "command") == "quickinfo" && s:get(a:response, "success") == v:false
-    call s:log(s:get(a:response, "message"))
+    call easycomplete#HoverNothing(s:get(a:response, "message"))
     return
   endif
   if s:get(a:response, "success") == v:true
@@ -541,6 +540,8 @@ function! easycomplete#sources#ts#QuickInfoCallback(response)
     let content = easycomplete#util#RemoveTrailingEmptyStrings(content)
     if !empty(content)
       call easycomplete#popup#float(content, 'Pmenu', 0, "", [0, 0], 'signature')
+    else
+      call easycomplete#HoverNothing("No hover information")
     endif
   endif
 endfunction

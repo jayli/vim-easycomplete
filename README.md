@@ -48,7 +48,8 @@ vim.g.easycomplete_pum_format = {"kind", "abbr", "menu"}
 vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
 vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
 vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
-vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
+-- Plugin has already bind shift-k to `:EasyCompleteHover`
+-- vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
 vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
 
 -- cmdline completion
@@ -88,7 +89,8 @@ let g:easycomplete_pum_format = ["kind", "abbr", "menu"]
 noremap gr :EasyCompleteReference<CR>
 noremap gd :EasyCompleteGotoDefinition<CR>
 noremap rn :EasyCompleteRename<CR>
-noremap gh :EasyCompleteHover<CR>
+" Plugin has already bind shift-k to `:EasyCompleteHover`
+" noremap gh :EasyCompleteHover<CR>
 noremap gb :BackToOriginalBuffer<CR>
 
 " cmdline completion

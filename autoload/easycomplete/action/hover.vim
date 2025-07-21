@@ -1,4 +1,3 @@
-
 function! easycomplete#action#hover#do()
   call s:do()
 endfunction
@@ -65,7 +64,7 @@ function! s:HandleLspCallback(server, data) abort
     endif
     return
   catch
-    call s:log(v:exception)
+    call easycomplete#HoverNothing(v:exception)
   endtry
 endfunction
 
