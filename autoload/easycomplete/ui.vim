@@ -175,6 +175,14 @@ function! easycomplete#ui#TrackSearchPrev()
   return "N"
 endfunction
 
+function! easycomplete#ui#TrackSearchGlobal()
+  if !exists("b:cs_searched") || b:cs_searched == v:false
+    let b:cs_searched = v:true
+  endif
+  let b:cs_searched = v:true
+  return "*"
+endfunction
+
 function! easycomplete#ui#HiFloatBorder()
   if g:easycomplete_pum_pretty_style == 1
     let l:bg = easycomplete#ui#GetBgColor("Normal")
