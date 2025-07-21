@@ -1,4 +1,3 @@
-let s:cs_searched = v:false
 " markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
@@ -154,10 +153,26 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
 endfunction
 
 function! easycomplete#ui#CmdlineCR()
-  if s:cs_searched == v:false && (getcmdtype() == '/' || getcmdtype() == '?')
-    let s:cs_searched = v:true
+  if (!exists("b:cs_searched") || b:cs_searched == v:false) && (getcmdtype() == '/' || getcmdtype() == '?')
+    let b:cs_searched = v:true
   endif
   return "\<CR>"
+endfunction
+
+function! easycomplete#ui#TrackSearchNext()
+  if !exists("b:cs_searched") || b:cs_searched == v:false
+    let b:cs_searched = v:true
+  endif
+  let b:cs_searched = v:true
+  return "n"
+endfunction
+
+function! easycomplete#ui#TrackSearchPrev()
+  if !exists("b:cs_searched") || b:cs_searched == v:false
+    let b:cs_searched = v:true
+  endif
+  let b:cs_searched = v:true
+  return "N"
 endfunction
 
 function! easycomplete#ui#HiFloatBorder()
@@ -172,7 +187,10 @@ function! easycomplete#ui#HiFloatBorder()
 endfunction
 
 function! s:IsSearchWord()
-  if s:cs_searched == v:false
+  if !exists("b:cs_searched")
+    let b:cs_searched = v:false
+  endif
+  if b:cs_searched == v:false
     return v:false
   endif
   let current_word = expand('<cword>')
