@@ -1784,6 +1784,39 @@ function! easycomplete#util#IsCursorNextToLeftParen() " {{{
   return next_char == '('
 endfunction " }}}
 
+" foo(aaa, bbb) → foo(${1:aaa}, ${2:bbb})
+function! s:NormalizeFunctionalSnip(insertText)
+  let insertText = a:insertText
+  " 替换第一个参数
+  " foo(aaa,bbb,ccc) → foo(${^:aaa},bbb,ccc)
+  let insertText = substitute(insertText,  "\\(.\\{-}(\\)\\@<=\\([^,]\\{-}\\)\\(,\\)\\@=","${^:\\2}","g")
+  " 替换中间所有的参数
+  " "foo(aaa,bbb,ccc,ddd) → foo(aaa,${^:bbb},${^:ccc},ddd)
+  let insertText = substitute(insertText, "\\(.\\{-},\\)\\@<=\\([^,]\\{-}\\)\\(,\\)\\@=","${^:\\2}","g")
+  " 替换最后一个参数
+  " foo(aaa,bbb,ccc,ddd) → foo(aaa,bbb,ccc,${^:ddd})
+  let insertText = substitute(insertText, "\\(.\\{-},\\)\\@<=\\([^,]\\{-}\\)\\()\\)\\@=","${^:\\2}","g")
+  " 替换唯一一个参数
+  " foo(aaaddd) → foo(${^:aaaddd})
+  let insertText = substitute(insertText, "\\(.\\{-}(\\)\\@<=\\([^,]\\{-}\\)\\()\\)\\@=","${^:\\2}","g")
+  " 把 占位符替换成数字
+  let cnt = 1
+  let cursor_idx = 1
+  let ret_str = ""
+  while cursor_idx <= strlen(insertText)
+    let curr_char = insertText[cursor_idx-1]
+    if curr_char == "^"
+      let curr_char = string(cnt)
+      let cnt = cnt + 1
+    else
+      let curr_char = curr_char
+    endif
+    let ret_str = ret_str . curr_char
+    let cursor_idx += 1
+  endwhile
+  return ret_str
+endfunction
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:result = a:response['result']
@@ -1837,6 +1870,10 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['word'] = l:completion_item['label']
     endif
+    if a:plugin_name == "cpp" && l:completion_item['label'] =~ "^\\(•\\|\\s\\)" 
+      let l:vim_complete_item['word'] = substitute(l:completion_item['label'], "^\\(•\\|\\s\\)", "", "g")
+      let l:completion_item['label'] = l:vim_complete_item['word']
+    endif
 
     if l:expandable
       let l:origin_word = l:vim_complete_item['word']
@@ -1878,10 +1915,18 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
         " 确保 vim_complete_item['lsp_item'] 中的 insertText 是标准的 snippet
         " 格式，展开时从 lsp_item.insertText 中获取
         " let l:complete_item['insertText'] = ...
-        if !(l:completion_item["insertText"] =~ ".(.*)$")
-          " 如果原本的函数格式不是可展开的，则修饰为可展开的形式
-          " TODO here jayli
-          let l:completion_item["insertText"] = "#define ${1:SYMBOL} ${2:value}"
+        if l:completion_item["insertText"] =~ "${\\d"
+          " 如果原本就是正确的 snippet 格式
+          " Do Nothing
+        elseif l:completion_item["insertText"] =~ ".(.*)$"
+          " 如果insertText 就是函数形式
+          let l:completion_item["insertText"] = s:NormalizeFunctionalSnip(l:completion_item["insertText"])
+        elseif l:vim_complete_item["word"] =~ ".(.*)$"
+          " 如果 word 是函数形式
+          let l:completion_item["insertText"] = s:NormalizeFunctionalSnip(l:vim_complete_item["word"])
+        else
+          " 如果insertText 不是函数形式，且word也不是函数形式
+          " Do nothing
         endif
       else
         let l:vim_complete_item['user_data_json']["custom_expand"] = 1
@@ -1889,9 +1934,6 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
       let l:vim_complete_item["user_data"] = json_encode(l:vim_complete_item['user_data_json'])
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
-    endif
-    if a:plugin_name == "cpp" && l:vim_complete_item['word'] =~ "^\\(•\\|\\s\\)" 
-      let l:vim_complete_item['word'] = substitute(l:vim_complete_item['word'], "^\\(•\\|\\s\\)", "", "g")
     endif
     let l:t_info = s:NormalizeLspInfo(get(l:completion_item, "documentation", ""))
     if !empty(get(l:completion_item, "detail", ""))
