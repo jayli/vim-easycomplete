@@ -354,8 +354,8 @@ function this.cmdline_handler(keys, key_str)
   elseif string.byte(key_str) == 58 then
     -- console("冒号:")
     should_redraw = this.do_complete()
-  elseif string.byte(key_str) == 95 then
-    -- console("下划线_")
+  elseif string.byte(key_str) == 95 or string.byte(key_str) == 35 then
+    -- console("下划线_或者#")
     should_redraw = this.do_complete()
   else
     -- console("其他键: " .. keys)
@@ -426,7 +426,7 @@ this.REG_CMP_HANDLER = {
   {
     pattern = {
       "^[a-zA-Z0-9_]+%s$", -- 命令输入完毕，并敲击空格
-      "^[a-zA-Z0-9_]+%s+[_%w]+$", -- 命令输入完毕，敲击空格后直接输入正常单词
+      "^[a-zA-Z0-9_]+%s+[_%w#]+$", -- 命令输入完毕，敲击空格后直接输入正常单词
       "^[a-zA-Z0-9_]+%s+[glbwtvas]:%w-$", -- 命令输入完毕，输入 x:y 变量
     },
     get_cmp_items = function()
