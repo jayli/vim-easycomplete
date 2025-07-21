@@ -315,6 +315,41 @@ function EasyComplete.global_timer_start(function_name, timeout)
   end)
 end
 
+-- buf_list + dict_list 去重后做 normalize 包裹
+function EasyComplete.combine_list(buf_list, dict_list)
+  local combined_list = {}
+  for _, v in ipairs(buf_list) do table.insert(combined_list, v) end
+  for _, v in ipairs(dict_list) do table.insert(combined_list, v) end
+  local combine_all = EasyComplete.distinct(combined_list)
+  local ret_list = {}
+  for _, v in ipairs(combine_all) do
+    if vim.tbl_contains(buf_list, v) then
+      table.insert(ret_list, {
+          word = v,
+          dup = 1,
+          icase = 1,
+          equal = 1,
+          info = "",
+          abbr = v,
+          kind = vim.g.easycomplete_kindflag_buf,
+          menu = vim.g.easycomplete_menuflag_buf,
+        })
+    else
+      table.insert(ret_list, {
+          word = v,
+          dup = 1,
+          icase = 1,
+          equal = 1,
+          info = "",
+          abbr = v,
+          kind = vim.g.easycomplete_kindflag_dict,
+          menu = vim.g.easycomplete_menuflag_dict,
+        })
+    end
+  end
+  return ret_list
+end
+
 function EasyComplete.global_timer_stop()
   global_timer:stop()
 end

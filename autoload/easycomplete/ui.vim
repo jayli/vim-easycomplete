@@ -140,6 +140,7 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
     let append_bg_str = s:IsSearchWord() ? join([prefix_bg_key, bgcolor], "=") : join([prefix_bg_key, "NONE"], "=")
     let prefix_fg_key = easycomplete#util#IsGui() ? "guifg" : "ctermfg"
     let append_fg_str = s:IsSearchWord() ? join([prefix_fg_key, fgcolor], "=") : join([prefix_fg_key, "NONE"], "=")
+    exec "hi clear EasyMatchWord"
     exec "hi EasyMatchWord cterm=underline gui=underline " . append_bg_str . " " . append_fg_str
     try
       let cur_search_word = histget("search")

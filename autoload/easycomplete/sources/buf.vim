@@ -24,6 +24,7 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
 
+  " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   " if g:env_is_nvim
   "   call s:util_toolkit.defer_fn("easycomplete#sources#buf#CompleteHandler",
   "       \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
@@ -49,12 +50,20 @@ function! s:GetKeywords(typing)
   " vim: 0.2573
   let bufkeyword_list = s:GetBufKeywordsList(a:typing)
   let dickeyword_list = s:GetDicKeywordsList(a:typing)
-  let combined_all_temp  = bufkeyword_list + dickeyword_list
+  if g:env_is_nvim
+    return s:lua_toolkit.combine_list(bufkeyword_list, dickeyword_list)
+  else
+    return s:CombineList(bufkeyword_list, dickeyword_list)
+  endif
+endfunction
+
+function! s:CombineList(bufkeyword_list, dickeyword_list)
+  let combined_all_temp  = a:bufkeyword_list + a:dickeyword_list
   let combined_all = s:ArrayDistinct(combined_all_temp)
   let combined_list = combined_all
   let ret_list = []
   for word in combined_list
-    if index(bufkeyword_list, word) >= 0
+    if index(a:bufkeyword_list, word) >= 0
       call add(ret_list, {
             \ "word": word,
             \ "dup" : 1,
@@ -83,7 +92,9 @@ endfunction
 
 function! easycomplete#sources#buf#CompleteHandler(typing, name, ctx, startcol)
   try
+    " let ttt = reltime()
     let keywords_result = s:GetKeywords(a:typing)
+    " call s:console(reltimestr(reltime(ttt)), len(keywords_result))
   catch
     echom v:exception
   endtry
