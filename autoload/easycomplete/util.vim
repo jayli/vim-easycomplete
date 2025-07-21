@@ -1579,6 +1579,7 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
   if is_func
     if stridx(word,"(") <= 0
       " 不包含括号时，自动加上括号，考虑到右侧是否挨着左括号
+      " 没括号就没有需要展开的结构，还需要简单展开即可
       let ret["word"] = word . (next_to_left_paren ? "" : "()")
       let ret['abbr'] = word . "~"
       let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
@@ -1603,14 +1604,19 @@ function! easycomplete#util#FunctionSurffixMap(key, val)
       let ret['user_data_json'] = user_data_json_f
     elseif !next_to_left_paren && stridx(word,"(") > 0
       " 右侧没挨着左括号，且包含()
+      " 保持原样，需要判断snip展开
       let ret["word"] = word
       let ret['abbr'] = ret['abbr']
       let user_data_json_f = extend(easycomplete#util#GetUserData(a:val), {
             \ 'expandable': 1,
-            \ 'custom_expand': 1,
             \ 'placeholder_position': strlen(word) - 1,
             \ 'cursor_backing_steps':1
             \ })
+      if easycomplete#SnipExpandSupport()
+        let user_data_json_f["custom_expand"] = 0
+      else
+        let user_data_json_f["custom_expand"] = 1
+      endif
       let ret['user_data'] = json_encode(user_data_json_f)
       let ret['user_data_json'] = user_data_json_f
     endif
@@ -1813,11 +1819,11 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
           \ }
 
     " 如果 label 中包含括号 且过长
-    if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
-      if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
-        let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
-      endif
-    endif
+    " if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
+    "   if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
+    "     let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
+    "   endif
+    " endif
 
     if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({})
       if has_key(l:completion_item['textEdit'], 'nextText')
@@ -1856,13 +1862,30 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
       let l:vim_complete_item['user_data_json'] = l:user_data_json_l
     elseif l:completion_item['label'] =~ ".(.*)$"
       let l:vim_complete_item['abbr'] = l:completion_item['label']
-      let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
+      if easycomplete#SnipExpandSupport()
+        let l:vim_complete_item['word'] = l:completion_item['label']
+      else
+        " 如果不支持snipexpand，则只做简易展开
+        let l:vim_complete_item['word'] = substitute(l:completion_item['label'],"(.*)$","",'g') . "()"
+      endif
+        " \ 'custom_expand': 1,
       let l:vim_complete_item['user_data_json'] = {
-        \ 'custom_expand': 1,
         \ 'expandable': 1,
         \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
         \ 'cursor_backing_steps': 1
         \ }
+      if easycomplete#SnipExpandSupport()
+        " 确保 vim_complete_item['lsp_item'] 中的 insertText 是标准的 snippet
+        " 格式，展开时从 lsp_item.insertText 中获取
+        " let l:complete_item['insertText'] = ...
+        if !(l:completion_item["insertText"] =~ ".(.*)$")
+          " 如果原本的函数格式不是可展开的，则修饰为可展开的形式
+          " TODO here jayli
+          let l:completion_item["insertText"] = "#define ${1:SYMBOL} ${2:value}"
+        endif
+      else
+        let l:vim_complete_item['user_data_json']["custom_expand"] = 1
+      endif
       let l:vim_complete_item["user_data"] = json_encode(l:vim_complete_item['user_data_json'])
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']

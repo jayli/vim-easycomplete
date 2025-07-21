@@ -544,6 +544,14 @@ function! s:ResetOnKeyEvent()
   let g:easycomplete_onkey_event = 1
 endfunction
 
+" snip 展开时，需要把已经 tab 匹配出来的单词清空
+function! easycomplete#pum#ResetBSOperatorStr()
+  let startcol = s:original_ctx["startcol"]
+  let backing_count = col('.') - startcol
+  let oprator_str = repeat("\<bs>", backing_count)
+  return oprator_str
+endfunction
+
 " TAB 和 S-TAB 的过程中对单词的自动补全动作，返回一个需要操作的字符串
 function! easycomplete#pum#SetWordBySelecting()
   let pum_pos = s:PumPosition()

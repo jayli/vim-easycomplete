@@ -1642,6 +1642,7 @@ function! easycomplete#TypeEnterWithPUM()
     endif
     " 其他选中动作一律插入单词并关闭匹配菜单
     call s:zizz()
+    " snippets 的逻辑不会走这里，这里只处理lsp带的snip返回
     if easycomplete#util#expandable(l:item)
       " 新增 expandable 支持 for #48
       let oitems = easycomplete#util#GetLspItem(l:item)
@@ -1654,13 +1655,15 @@ function! easycomplete#TypeEnterWithPUM()
               \ -> easycomplete#CursorExpandableSnipBackword(l:back)
               \ })
       elseif !empty(insert_text) && s:LuaSnipSupports()
-          call timer_start(20, {
-                \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
-                \ })
+        call timer_start(20, {
+              \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
+              \ })
+        return s:FlushCtrlY()
       elseif !empty(insert_text) && s:SnipSupports()
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
         call timer_start(30, { -> call(function("UltiSnips#Anon"), [insert_text, word])})
+        return s:FlushCtrlY()
         " TODO 把光标 cursor 到正确的位置
         " call timer_start(170, { -> s:HandleLspSnipPosition(oitems)})
       else
@@ -1674,6 +1677,14 @@ function! easycomplete#TypeEnterWithPUM()
   else " 如果没有 pum，正常回车
     return "\<CR>"
   endif
+endfunction
+
+" 强制关闭，把已经匹配的单词也删掉
+function! s:FlushCtrlY()
+  let ret_str = easycomplete#pum#ResetBSOperatorStr()
+  call s:CloseCompletionMenu()
+  call s:flush()
+  return ret_str
 endfunction
 
 " pumvisible 情况下，填入选中的单词，并关闭 pum
@@ -2314,6 +2325,10 @@ endfunction
 
 function! easycomplete#LuaSnipSupports()
   return s:LuaSnipSupports()
+endfunction
+
+function! easycomplete#SnipExpandSupport()
+  return s:SnipSupports() || s:LuaSnipSupports()
 endfunction
 
 function! s:SnipSupports()
