@@ -5,6 +5,7 @@ local cmdline_start_cmdpos = 0
 local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
 local redraw_queued = false
+local last_redraw = false
 local this = {}
 
 function this.pum_complete(start_col, menu_items)
@@ -106,11 +107,12 @@ function this.pum_redraw()
     -- 首次insearch匹配<s-tab>会导致匹配高亮渲染消失，这里做一下区分
     local cmdline = vim.fn.getcmdline()
     local first_insearch_match = false
-    if #cmdline == 1 then
+    if last_redraw == false then
       first_insearch_match = true
     else
       first_insearch_match = false
     end
+    last_redraw = true
     -- cmdline 中模拟 redraw：
     -- 问题现象：cmdline动作不会直接redraw主屏，会慢一拍，需要手动触发 redraw 才
     -- 能正确的渲染出 PUM，否则 PUM 中的内容是上一次匹配的结果。
@@ -155,6 +157,7 @@ function this.flush()
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
   cmdline_start_cmdpos = 0
+  last_redraw = false
   this.pum_close()
 end
 
@@ -361,6 +364,8 @@ function this.cmdline_handler(keys, key_str)
   old_cmdline = cmdline
   if should_redraw then
     this.pum_redraw()
+  else
+    last_redraw = false
   end
 end
 
@@ -589,8 +594,13 @@ function this.cmp_regex_handler(get_cmp_items, word)
     should_redraw = false
     this.pum_close()
   else
-    should_redraw = true
-    this.pum_complete(start_col, this.normalize_list(menu_items, word))
+    local filtered_items = this.normalize_list(menu_items, word)
+    if #filtered_items == 0 then
+      should_redraw = false
+    else
+      should_redraw = true
+    end
+    this.pum_complete(start_col, filtered_items)
   end
   return should_redraw
 end
