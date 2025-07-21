@@ -10,14 +10,22 @@ SNIPPETS_FILES_CTX = {}
 ALWAYS = 'always'
 NEVER = 'never'
 
+
 def listdir(path):
-    return os.listdir(path)
+    ret = []
+    try:
+        ret = os.listdir(path)
+    except FileNotFoundError:
+        ret = []
+    return ret
+
 
 def get_sha256(str):
     s = hashlib.sha256()
     s.update(str.encode("utf8"))
-    sha_str= s.hexdigest()
+    sha_str = s.hexdigest()
     return sha_str
+
 
 # Normal sort
 def _get_key(el):
@@ -27,11 +35,14 @@ def _get_key(el):
         k1 = el["word"]
     return k1
 
+
 def getkey_by_alphabet(el):
-    return _get_key(el).lower().rjust(5,"a")
+    return _get_key(el).lower().rjust(5, "a")
+
 
 def getkey_by_length(el):
     return len(_get_key(el))
+
 
 def json_parse_bool2str(obj):
     if obj is None:
@@ -41,8 +52,10 @@ def json_parse_bool2str(obj):
     if isinstance(obj, (list, tuple)):
         return [json_parse_bool2str(item) for item in obj]
     if isinstance(obj, dict):
-        return {json_parse_bool2str(key):json_parse_bool2str(value) for key, value in obj.items()}
+        its = obj.items()
+        return {json_parse_bool2str(k): json_parse_bool2str(v) for k, v in its}
     return obj
+
 
 def normalize_sort(items):
     # 先按照长度排序
@@ -51,12 +64,13 @@ def normalize_sort(items):
     items.sort(key=getkey_by_alphabet)
     return json.dumps(json_parse_bool2str(items), ensure_ascii=False)
 
+
 # Fuzzy search
 def fuzzy_search(needle, haystack):
     """
     判断是否符合模糊匹配的规则，实测性能不如 viml 的实现
     """
-    flag = 1
+    # flag = 1
     tlen = len(haystack)
     qlen = len(needle)
     if qlen > tlen:
@@ -85,8 +99,10 @@ def fuzzy_search(needle, haystack):
             return 0
         return 1
 
+
 def log(msg):
     print(msg)
+
 
 # py vs vim，vim 性能极好
 # 27 次调用，py 用时 0.012392
@@ -105,7 +121,8 @@ def snippets_code_info(filename, line_number):
 
     cursor_line = line_number
     while cursor_line + 1 < len(snip_ctx):
-        if re.compile(r"^(snippet|endsnippet)").match(snip_ctx[cursor_line + 1]):
+        new_ln = cursor_line + 1
+        if re.compile(r"^(snippet|endsnippet)").match(snip_ctx[new_ln]):
             break
         else:
             cursor_line += 1
@@ -114,20 +131,25 @@ def snippets_code_info(filename, line_number):
     end_line_index = cursor_line
 
     code_original_info = snip_ctx[start_line_index:end_line_index + 1]
-    ret_array = list(map(lambda line: re.sub(r"\n$", "", line), code_original_info))
+    lam = map(lambda line: re.sub(r"\n$", "", line), code_original_info)
+    ret_array = list(lam)
     # vim.command("echom %s"% json.dumps(ret_array))
     return json.dumps(ret_array, ensure_ascii=False)
 
+
 def complete_menu_filter(all_menu, word, maxlength):
     return json.dumps(all_menu, ensure_ascii=False)
+
 
 """
 Helper utilities to format javascript snippets.
 """
 # {{{
 
+
 def get_option(snip, option, default=None):
     return snip.opt('g:ultisnips_javascript["{}"]'.format(option), default)
+
 
 def semi(snip):
     option = get_option(snip, 'semi', ALWAYS)
