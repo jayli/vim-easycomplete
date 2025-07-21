@@ -1,3 +1,4 @@
+let s:cs_searched = v:false
 " markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
@@ -129,6 +130,10 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
   if &diff || &buftype == "terminal" || index(disabled_ft, &filetype) >= 0
     return
   endif
+  if s:IsSearchWord()
+    3match none
+    return
+  endif
   if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
     let bgcolor = easycomplete#ui#GetBgColor("Search")
     let fgcolor = easycomplete#ui#GetFgColor("Search")
@@ -136,15 +141,23 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
     let append_bg_str = s:IsSearchWord() ? join([prefix_bg_key, bgcolor], "=") : join([prefix_bg_key, "NONE"], "=")
     let prefix_fg_key = easycomplete#util#IsGui() ? "guifg" : "ctermfg"
     let append_fg_str = s:IsSearchWord() ? join([prefix_fg_key, fgcolor], "=") : join([prefix_fg_key, "NONE"], "=")
-    exec "hi MatchWord cterm=underline gui=underline " . append_bg_str . " " . append_fg_str
+    exec "hi EasyMatchWord cterm=underline gui=underline " . append_bg_str . " " . append_fg_str
     try
-      exec '2match' 'MatchWord' '/\V\<'.expand('<cword>').'\>/'
+      let cur_search_word = histget("search")
+      exec '3match' 'EasyMatchWord' '/\V\<'.expand('<cword>').'\>/'
     catch
       " do nothing
     endtry
   else
-    2match none
+    3match none
   endif
+endfunction
+
+function! easycomplete#ui#CmdlineCR()
+  if s:cs_searched == v:false && (getcmdtype() == '/' || getcmdtype() == '?')
+    let s:cs_searched = v:true
+  endif
+  return "\<CR>"
 endfunction
 
 function! easycomplete#ui#HiFloatBorder()
@@ -159,14 +172,17 @@ function! easycomplete#ui#HiFloatBorder()
 endfunction
 
 function! s:IsSearchWord()
+  if s:cs_searched == v:false
+    return v:false
+  endif
   let current_word = expand('<cword>')
   let search_word = histget("search")
   let search_word = substitute(search_word, "^\\\\\<", "", "g")
   let search_word = substitute(search_word, "\\\\\>$", "", "g")
   if &ignorecase
-    return current_word == search_word
+    return current_word =~ search_word
   else
-    return current_word ==# search_word
+    return current_word =~# search_word
   endif
 endfunction " }}}
 
