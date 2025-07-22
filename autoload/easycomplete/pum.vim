@@ -247,11 +247,16 @@ function! easycomplete#pum#WinScrolled()
     let cursor_left = s:CursorLeft()
     let typing_word = easycomplete#util#GetTypingWord()
     let new_startcol = getcurpos()[2] - strlen(typing_word)
+    let new_startcol = s:original_ctx["startcol"]
     let lines = getbufline(s:pum_buffer, 1, "$")
     let buffer_size = s:GetBufSize(lines)
     let pum_pos = s:ComputePumPos(new_startcol, buffer_size)
     let opts = deepcopy(s:default_pum_pot)
     call extend(opts, pum_pos)
+    if new_startcol - v:event[bufwinid(bufnr(""))].leftcol <= 1
+      let new_startcol = 1
+      call timer_start(10, { -> s:RenderScroll() })
+    endif
     call nvim_win_set_config(s:pum_window, opts)
     let curr_item = easycomplete#pum#CursoredItem()
     if !empty(curr_item)
