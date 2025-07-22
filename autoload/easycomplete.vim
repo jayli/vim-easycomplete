@@ -1187,12 +1187,25 @@ function! s:CompletorCallingAtFirstComplete(ctx)
   " 设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
   " 情况，还不清楚，先这样hack掉
   try
-    let source_names = ['directory']
+    let source_directory = ['directory']
+    let source_names = []
+
     for name in keys(g:easycomplete_source)
-      if name !=# 'directory'
+      if name == "directory"
+        continue
+      endif
+      if name == "snips" || name == "buf"
+        " 非lsp plugin，都放后面
+        call add(source_names, name)
+      elseif has_key(g:easycomplete_source[name], "command")
+        " lsp 需要耗时的，都放前面
+        let source_names = [name] + source_names
+      else
         call add(source_names, name)
       endif
     endfor
+    " 最后把 source_directory 放在最前面
+    let source_names = source_directory + source_names
 
     let l:count = 0
     while l:count < len(source_names)
@@ -1770,8 +1783,8 @@ function! s:MainCompleteHandler()
   call s:StopAsyncRun()
   if s:NotInsertMode() && g:env_is_vim | return | endif
   let l:ctx = easycomplete#context()
-  " 执行 complete action 之前最后一道严格拦截，只对这四个末尾特殊字符放行
-  let l:checking = [':','.','/','>']
+  " 执行 complete action 之前最后一道严格拦截，只对这几个末尾特殊字符放行
+  let l:checking = [':','.','/','>',"@","$"]
   if &filetype == "json"
     call extend(l:checking, ['"'])
   endif
@@ -1935,7 +1948,6 @@ function! easycomplete#GetPlugNameByCommand(cmd)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
-  " call s:console(reltimestr(reltime(g:tt)), 'firstrendering')
   if easycomplete#util#NotInsertMode()
     call s:flush()
     return
@@ -2703,7 +2715,6 @@ endfunction
 
 function! easycomplete#TextChangedI()
   " 如果输入的字符是非法字符，则终止
-  let g:tt = reltime()
   let cc = getcharstr(1)
   if stridx(easycomplete#GetBindingKeys(), cc) == -1
     return

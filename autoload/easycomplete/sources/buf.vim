@@ -16,21 +16,11 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   endif
 
   " 这里异步和非异步都可以，性能考虑，如果返回空用同步，如果数据量大用异步
-  " call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
-  " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], keywords_result)
-  " call timer_start(0, { -> easycomplete#sources#buf#asyncHandler(l:typing,
-  "                                         \ a:opt['name'], a:ctx, a:ctx['startcol'])})
 
-  call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
-        \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
+  " call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
+  "       \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
 
-  " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
-  " if g:env_is_nvim
-  "   call s:util_toolkit.defer_fn("easycomplete#sources#buf#CompleteHandler",
-  "       \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 1)
-  " else
-  "   call timer_start(1, { -> easycomplete#sources#buf#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol']) })
-  " endif
+  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
 
   return v:true
 endfunction

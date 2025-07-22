@@ -38,7 +38,7 @@ function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, plugin_name, data) abort
-  " call s:console('<--', 'lsp response')
+  " call s:console('<--', 'lsp response', reltimestr(reltime(g:xx)))
   if easycomplete#IsBacking() | return | endif
   let l:ctx = easycomplete#context()
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
@@ -65,7 +65,10 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
+  let g:xx = reltime()
+  " 192 个元素，55 ms
   let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name)
+  " call s:console('<--', 'TODOTODOTODO', reltimestr(reltime(g:xx)), len(l:completion_result['items']))
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 
