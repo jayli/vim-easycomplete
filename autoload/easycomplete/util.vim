@@ -235,7 +235,11 @@ function! easycomplete#util#GetUserData(item) " {{{
   if !empty(ret)
     return ret
   endif
-  let user_data_str = get(a:item, 'user_data', "")
+  if has_key(a:item, 'user_data')
+    let user_data_str = a:item["user_data"]
+  else
+    let user_data_str = ""
+  endif
   if empty(user_data_str)
     return {}
   endif
@@ -1493,37 +1497,38 @@ endfunction
 " }
 function! easycomplete#util#LspType(c_type)
   if string(a:c_type) =~ "^\\d\\{0,2}$"
-    let l:kinds = [
-          \ '',
-          \ 'text',
-          \ 'method',
-          \ 'function',
-          \ 'constructor',
-          \ 'field',
-          \ 'variable',
-          \ 'class',
-          \ 'interface',
-          \ 'module',
-          \ 'property',
-          \ 'unit',
-          \ 'value',
-          \ 'enum',
-          \ 'keyword',
-          \ 'snippet',
-          \ 'color',
-          \ 'file',
-          \ 'reference',
-          \ 'folder',
-          \ 'enummember',
-          \ 'constant',
-          \ 'struct',
-          \ 'event',
-          \ 'operator',
-          \ 'typeparameter',
-          \ ]
-    call extend(l:kinds, [
-          \ 'const'
-          \ ])
+    if !exists("s:easycomplete_kinds")
+      let s:easycomplete_kinds = [
+            \ '',
+            \ 'text',
+            \ 'method',
+            \ 'function',
+            \ 'constructor',
+            \ 'field',
+            \ 'variable',
+            \ 'class',
+            \ 'interface',
+            \ 'module',
+            \ 'property',
+            \ 'unit',
+            \ 'value',
+            \ 'enum',
+            \ 'keyword',
+            \ 'snippet',
+            \ 'color',
+            \ 'file',
+            \ 'reference',
+            \ 'folder',
+            \ 'enummember',
+            \ 'constant',
+            \ 'struct',
+            \ 'event',
+            \ 'operator',
+            \ 'typeparameter',
+            \ 'const'
+            \ ]
+    endif
+    let l:kinds = s:easycomplete_kinds
     try
       let l:type_fullname = l:kinds[str2nr(a:c_type)]
       let l:type_shortname = l:type_fullname[0]
@@ -1539,7 +1544,7 @@ function! easycomplete#util#LspType(c_type)
     let l:type_shortname = l:type_fullname[0]
   endif
   if has_key(g:easycomplete_lsp_type_font, l:type_fullname)
-    let symble = get(g:easycomplete_lsp_type_font, l:type_fullname)
+    let symble = g:easycomplete_lsp_type_font[l:type_fullname]
   else
     let symble = get(g:easycomplete_lsp_type_font, l:type_shortname, l:type_shortname)
   endif
@@ -1844,14 +1849,16 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
     if has_key(l:completion_item, "kind")
       let l:lsp_type_obj = easycomplete#util#LspType(l:completion_item["kind"])
+      let l:kind = l:completion_item["kind"]
     else
       let l:lsp_type_obj = easycomplete#util#LspType(0)
+      let l:kind = 0
     endif
     let l:menu_str = g:easycomplete_menu_abbr ? "[". toupper(a:plugin_name) ."]" : l:lsp_type_obj["fullname"]
     let l:vim_complete_item = {
-          \ 'kind': get(l:lsp_type_obj, "symble"),
+          \ 'kind': l:lsp_type_obj["symble"],
           \ 'dup': 1,
-          \ 'kind_number': get(l:completion_item, 'kind', 0),
+          \ 'kind_number': l:kind,
           \ 'menu' : l:menu_str,
           \ 'empty': 1,
           \ 'icase': 1,
@@ -1942,7 +1949,11 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
     else
       let l:vim_complete_item['abbr'] = l:completion_item['label']
     endif
-    let l:t_info = s:NormalizeLspInfo(get(l:completion_item, "documentation", ""))
+    if has_key(l:completion_item, "documentation")
+      let l:t_info = s:NormalizeLspInfo(l:completion_item["documentation"])
+    else
+      let l:t_info = []
+    endif
     if !empty(get(l:completion_item, "detail", ""))
       let l:vim_complete_item['info'] = [get(l:completion_item, "detail", "")] + l:t_info
     else
@@ -1985,18 +1996,6 @@ function! s:NormalizeLspInfo(info)
   let l:li = split(info, "\n")
   let l:str = []
 
-  " for item in l:li
-  "   if item ==# ''
-  "     call add(l:str, item)
-  "   else
-  "     if len(l:str) == 0
-  "       call add(l:str, item)
-  "     else
-  "       let l:old = l:str[len(l:str) - 1]
-  "       let l:str[len(l:str) - 1] = l:old . " " . item
-  "     endif
-  "   endif
-  " endfor
   for item in l:li
     if item ==# '```' || item =~ "^```\[a-zA-Z0-9]\\{-}$"
       continue
