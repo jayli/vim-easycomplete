@@ -20,8 +20,9 @@ function! easycomplete#sources#buf#completor(opt, ctx)
   " call easycomplete#util#timer_start("easycomplete#sources#buf#CompleteHandler",
   "       \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']], 0)
 
-  call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
+  call easycomplete#sources#buf#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
 
+  " call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
   return v:true
 endfunction
 

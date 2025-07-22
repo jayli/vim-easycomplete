@@ -1717,9 +1717,9 @@ function! s:BadBoy.Vim(item, typing_word)
   if &filetype != "vim" | return v:false | endif
   let word = get(a:item, "label", "")
   if empty(word) | return v:true | endif
-  let pos = stridx(word, a:typing_word)
   if len(a:typing_word) == 1
-    if pos >= 0 && pos <= 7
+    let pos = stridx(word, a:typing_word)
+    if pos >= 0 && pos <= 5
       return v:false
     else
       return v:true
@@ -1838,11 +1838,15 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
   let l:items_length = len(l:items)
   let typing_word = easycomplete#util#GetTypingWord()
   for l:completion_item in l:items
-    if s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
-    if s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
-    if s:BadBoy.Dart(l:completion_item, typing_word) | continue | endif
+    if &filetype == "nim" && s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
+    if &filetype == "vim" && s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
+    if &filetype == "dart" && s:BadBoy.Dart(l:completion_item, typing_word) | continue | endif
     let l:expandable = get(l:completion_item, 'insertTextFormat', 1) == 2
-    let l:lsp_type_obj = easycomplete#util#LspType(get(l:completion_item, 'kind', 0))
+    if has_key(l:completion_item, "kind")
+      let l:lsp_type_obj = easycomplete#util#LspType(l:completion_item["kind"])
+    else
+      let l:lsp_type_obj = easycomplete#util#LspType(0)
+    endif
     let l:menu_str = g:easycomplete_menu_abbr ? "[". toupper(a:plugin_name) ."]" : l:lsp_type_obj["fullname"]
     let l:vim_complete_item = {
           \ 'kind': get(l:lsp_type_obj, "symble"),
