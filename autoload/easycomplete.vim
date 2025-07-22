@@ -1162,12 +1162,16 @@ function! s:CompletorCallingAtFirstComplete(ctx)
     call timer_stop(s:first_render_timer)
   endif
   let s:first_render_timer = timer_start(s:easycomplete_first_render_delay,
-        \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
-        \          [
+        \ { -> s:FirstCompleteRendering(
         \            s:GetCompleteCache(l:ctx['typing'])['start_pos'],
         \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
-        \          ])
+        \          )
         \ })
+        " \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
+        " \          [
+        " \            s:GetCompleteCache(l:ctx['typing'])['start_pos'],
+        " \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
+        " \          ])
 
   " TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
   " 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
@@ -1298,7 +1302,8 @@ function! s:CompleteMatchAction()
   if s:TabnineSupports()
     call easycomplete#sources#tn#refresh()
   endif
-  let l:vim_word = s:GetTypingWordByGtx() " 刚输入的单词
+  " let l:vim_word = s:GetTypingWordByGtx() " 刚输入的单词
+  let l:vim_word = easycomplete#util#GetTypingWord()
   let l:vim_char = strpart(getline('.'), col('.') - 2, 1) " 刚输入的字符
   if g:env_is_nvim && empty(l:vim_word)
     " 输入了 . 或者 : 后先 closemenu 再尝试做一次匹配
@@ -1650,16 +1655,19 @@ function! easycomplete#TypeEnterWithPUM()
       let user_data = easycomplete#util#GetUserData(l:item)
       let custom_expand = get(user_data, 'custom_expand', 0)
       if custom_expand
+        " 简易展开
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
         call timer_start(40, {
               \ -> easycomplete#CursorExpandableSnipBackword(l:back)
               \ })
       elseif !empty(insert_text) && s:LuaSnipSupports()
+        " luasnip 展开
         call timer_start(20, {
               \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
               \ })
         return s:FlushCtrlY()
       elseif !empty(insert_text) && s:SnipSupports()
+        " ultisnip 展开
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
         call timer_start(30, { -> call(function("UltiSnips#Anon"), [insert_text, word])})
@@ -1688,6 +1696,7 @@ function! s:FlushCtrlY()
 endfunction
 
 " pumvisible 情况下，填入选中的单词，并关闭 pum
+" Normal CtrlY
 function! s:CtrlY()
   if g:env_is_vim
     return "\<C-Y>"
@@ -1926,6 +1935,7 @@ function! easycomplete#GetPlugNameByCommand(cmd)
 endfunction
 
 function! s:FirstCompleteRendering(start_pos, menuitems)
+  " call s:console(reltimestr(reltime(g:tt)), 'firstrendering')
   if easycomplete#util#NotInsertMode()
     call s:flush()
     return
@@ -2693,6 +2703,7 @@ endfunction
 
 function! easycomplete#TextChangedI()
   " 如果输入的字符是非法字符，则终止
+  let g:tt = reltime()
   let cc = getcharstr(1)
   if stridx(easycomplete#GetBindingKeys(), cc) == -1
     return
