@@ -1785,27 +1785,30 @@ function! easycomplete#util#IsCursorNextToLeftParen() " {{{
 endfunction " }}}
 
 " foo(aaa, bbb) → foo(${1:aaa}, ${2:bbb})
+" foo(void *base, size_t nel, int (* _Nonnull compar)(const void *, const void *))
+" → 
+" foo(${1:void *base}, size_t nel, int (* _Nonnull compar)(const void *, const void *))
 function! s:NormalizeFunctionalSnip(insertText)
   let insertText = a:insertText
   " 替换第一个参数
   " foo(aaa,bbb,ccc) → foo(${^:aaa},bbb,ccc)
-  let insertText = substitute(insertText,  "\\(.\\{-}(\\)\\@<=\\([^,]\\{-}\\)\\(,\\)\\@=","${^:\\2}","g")
+  let insertText = substitute(insertText,  "\\([^()]\\{-}(\\)\\@<=\\([^,()]\\{-}\\)\\(,\\)\\@=","${`:\\2}","g")
   " 替换中间所有的参数
   " "foo(aaa,bbb,ccc,ddd) → foo(aaa,${^:bbb},${^:ccc},ddd)
-  let insertText = substitute(insertText, "\\(.\\{-},\\)\\@<=\\([^,]\\{-}\\)\\(,\\)\\@=","${^:\\2}","g")
+  let insertText = substitute(insertText, "\\([^()]\\{-},\\)\\@<=\\([^,()]\\{-}\\)\\(,\\)\\@=","${`:\\2}","g")
   " 替换最后一个参数
   " foo(aaa,bbb,ccc,ddd) → foo(aaa,bbb,ccc,${^:ddd})
-  let insertText = substitute(insertText, "\\(.\\{-},\\)\\@<=\\([^,]\\{-}\\)\\()\\)\\@=","${^:\\2}","g")
+  let insertText = substitute(insertText, "\\(.\\{-},\\)\\@<=\\([^,()]\\{-}\\)\\()\\)\\@=","${`:\\2}","g")
   " 替换唯一一个参数
   " foo(aaaddd) → foo(${^:aaaddd})
-  let insertText = substitute(insertText, "\\(.\\{-}(\\)\\@<=\\([^,]\\{-}\\)\\()\\)\\@=","${^:\\2}","g")
+  let insertText = substitute(insertText, "\\(.\\{-}(\\)\\@<=\\([^,]\\{-}\\)\\()\\)\\@=","${`:\\2}","g")
   " 把 占位符替换成数字
   let cnt = 1
   let cursor_idx = 1
   let ret_str = ""
   while cursor_idx <= strlen(insertText)
     let curr_char = insertText[cursor_idx-1]
-    if curr_char == "^"
+    if curr_char == "`"
       let curr_char = string(cnt)
       let cnt = cnt + 1
     else

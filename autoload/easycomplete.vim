@@ -1662,7 +1662,7 @@ function! easycomplete#TypeEnterWithPUM()
               \ })
       elseif !empty(insert_text) && s:LuaSnipSupports()
         " luasnip 展开
-        call timer_start(20, {
+        call timer_start(10, {
               \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
               \ })
         return s:FlushCtrlY()
