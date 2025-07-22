@@ -41,6 +41,7 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   " call s:console('<--', 'lsp response', reltimestr(reltime(g:xx)))
   if easycomplete#IsBacking() | return | endif
   let l:ctx = easycomplete#context()
+  let l:word = l:ctx["typing"]
   if easycomplete#lsp#client#is_error(a:data) || !has_key(a:data, 'response') ||
         \ !has_key(a:data['response'], 'result')
     call easycomplete#complete(a:plugin_name, l:ctx, l:ctx['startcol'], [])
@@ -52,7 +53,7 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
     return
   endif
 
-  let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name)
+  let l:result = s:GetLspCompletionResult(a:server_name, a:data, a:plugin_name, l:word)
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
@@ -60,14 +61,14 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction
 
-function! s:GetLspCompletionResult(server_name, data, plugin_name) abort
+function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   let l:result = a:data['response']['result']
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
   let g:xx = reltime()
   " 192 个元素，55 ms
-  let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name)
+  let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
   " call s:console('<--', 'TODOTODOTODO', reltimestr(reltime(g:xx)), len(l:completion_result['items']))
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction

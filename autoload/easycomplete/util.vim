@@ -1702,9 +1702,9 @@ function! s:BadBoy.Nim(item, typing_word)
   if &filetype != "nim" | return v:false | endif
   let word = get(a:item, "label", "")
   if empty(word) | return v:true | endif
-  let pos = stridx(word, a:typing_word)
   if len(a:typing_word) == 1
-    if pos >= 0 && pos <= 5
+    let pos = stridx(word, a:typing_word)
+    if pos >= 0 && pos <= 3
       return v:false
     else
       return v:true
@@ -1826,7 +1826,7 @@ function! s:NormalizeFunctionalSnip(insertText)
 endfunction
 
 " GetVimCompletionItems {{{
-function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
+function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
   let l:result = a:response['result']
   if type(l:result) == type([])
     let l:items = l:result
@@ -1841,7 +1841,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name)
 
   let l:vim_complete_items = []
   let l:items_length = len(l:items)
-  let typing_word = easycomplete#util#GetTypingWord()
+  let typing_word = a:word
   for l:completion_item in l:items
     if &filetype == "nim" && s:BadBoy.Nim(l:completion_item, typing_word) | continue | endif
     if &filetype == "vim" && s:BadBoy.Vim(l:completion_item, typing_word) | continue | endif
@@ -1995,13 +1995,16 @@ function! s:NormalizeLspInfo(info)
   endif
   let l:li = split(info, "\n")
   let l:str = []
-
-  for item in l:li
-    if item ==# '```' || item =~ "^```\[a-zA-Z0-9]\\{-}$"
-      continue
-    endif
-    call add(l:str, item)
-  endfor
+  if &filetype == "vim"
+    let l:str = l:li
+  else
+    for item in l:li
+      if item ==# '```' || item =~ "^```\[a-zA-Z0-9]\\{-}$"
+        continue
+      endif
+      call add(l:str, item)
+    endfor
+  endif
   return l:str
 endfunction
 
