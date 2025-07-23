@@ -176,7 +176,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
     if vim.o.filetype == 'dart' and vim.fn['easycomplete#util#BadBoy_Dart'](l_completion_item, typing_word) then
       goto continue
     end
-    
+
     local l_expandable = false
     if l_completion_item["insertTextFormat"] == 2 then
       l_expandable = true
@@ -220,10 +220,11 @@ function util.get_vim_complete_items(response, plugin_name, word)
       l_vim_complete_item["word"] = l_completion_item['label']
     end
     if plugin_name == "cpp" and string.find(l_completion_item['label'], "^[•%s]") then
-      l_vim_complete_item["word"] = string.gsub(l_completion_item['label'], "^[•%s]", "")
+      l_vim_complete_item["word"] = string.gsub(l_completion_item['label'], "^•", "")
+      l_vim_complete_item["word"] = string.gsub(l_vim_complete_item["word"], "^%s", "")
       l_completion_item["label"] = l_vim_complete_item["word"]
     end
-    
+
     if l_expandable == true then
       local l_origin_word = l_vim_complete_item['word']
       local l_placeholder_regex = [[\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}]]
