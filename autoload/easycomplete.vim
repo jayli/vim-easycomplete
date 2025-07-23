@@ -330,6 +330,9 @@ function! s:CompleteTypingMatch(...)
 
   " 如果正常匹配为空，但还存在旧的 TN 占位符，则物理匹配旧的占位符
   if len(filtered_menu) == 0 && len(tn_result) != 0
+    if &filetype == "vim"
+      let word = split(word, "#")[-1]
+    endif
     let tn_result = easycomplete#util#CompleteMenuFilter(tn_result, word, 500)
     if len(tn_result) == 0
       if has('nvim')
