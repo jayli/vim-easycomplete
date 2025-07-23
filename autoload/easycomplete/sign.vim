@@ -20,13 +20,13 @@ let s:lint_popup_timer = 0
 
 let g:easycomplete_diagnostics_config = {
       \ 'error':
-      \ {'type': 1, 'prompt_text': s:error_text,      'fg_color': easycomplete#util#IsGui() ? '#FF0000' : 'red'   , "hl": 'ErrorMsg'},
+      \ {'type': 1, 'prompt_text': s:error_text,      'fg_color': easycomplete#util#IsGui() ? easycomplete#ui#DiagColor("error") : 'red'   , "hl": 'ErrorMsg'},
       \ 'warning':
-      \ {'type': 2, 'prompt_text': s:waring_text,     'fg_color': easycomplete#util#IsGui() ? '#FFFF00' : 'yellow', "hl": 'WarningMsg'},
+      \ {'type': 2, 'prompt_text': s:waring_text,     'fg_color': easycomplete#util#IsGui() ? easycomplete#ui#DiagColor("warning") : 'yellow', "hl": 'WarningMsg'},
       \ 'information':
-      \ {'type': 3, 'prompt_text': s:infermation_text,'fg_color': easycomplete#util#IsGui() ? '#5FFFAF' : '85'    , "hl": 'Pmenu'},
+      \ {'type': 3, 'prompt_text': s:infermation_text,'fg_color': easycomplete#util#IsGui() ? easycomplete#ui#DiagColor("information") : '85'    , "hl": 'Pmenu'},
       \ 'hint':
-      \ {'type': 4, 'prompt_text': s:hint_text,       'fg_color': easycomplete#util#IsGui() ? '#8787FF' : '99'    , "hl": 'Pmenu'}
+      \ {'type': 4, 'prompt_text': s:hint_text,       'fg_color': easycomplete#util#IsGui() ? easycomplete#ui#DiagColor("hint") : '99'    , "hl": 'Pmenu'}
       \ }
 
 function! easycomplete#sign#test()

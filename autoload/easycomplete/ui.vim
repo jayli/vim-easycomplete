@@ -195,6 +195,25 @@ function! easycomplete#ui#HiFloatBorder()
   endif
 endfunction
 
+" error, warning, information, hint
+function! easycomplete#ui#DiagColor(str_type)
+  if a:str_type == "error"
+    let color = easycomplete#ui#GetFgColor("DiagnosticFloatingError")
+    if color == "NONE" | let color = "#FF0000" | endif
+  elseif a:str_type == "warning"
+    let color = easycomplete#ui#GetFgColor("DiagnosticFloatingWarn")
+    if color == "NONE" | let color = "#FFFF00" | endif
+  elseif a:str_type == "information"
+    let color = easycomplete#ui#GetFgColor("DiagnosticFloatingInfo")
+    if color == "NONE" | let color = "#5FFFAF" | endif
+  elseif a:str_type == "hint"
+    let color = easycomplete#ui#GetFgColor("DiagnosticFloatingHint")
+    if color == "NONE" | let color = "#8787FF" | endif
+  endif
+  return color
+endfunction
+
+
 function! s:IsSearchWord()
   if !exists("b:cs_searched")
     let b:cs_searched = v:false
