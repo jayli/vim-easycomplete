@@ -67,7 +67,6 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
-  let g:xx = reltime()
   " 192 个元素
   " vim 用时 55 ms
   " lua 用时 29 ms
@@ -76,18 +75,21 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   else
     let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
   endif
-  " call s:console('<--', 'TODOTODOTODO', reltimestr(reltime(g:xx)), len(l:completion_result['items']))
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 
 function! s:MatchResultFilterPipe(plugin_name, matches, ctx)
   let lsp_ctx = easycomplete#GetCurrentLspContext()
-  if type(get(lsp_ctx, "constructor")) != type('')
-    let fn_name = a:plugin_name
-    let Fun_name = "easycomplete#sources#" . fn_name . "#filter"
+  if has_key(lsp_ctx, "filter")
+    let Fun_name = lsp_ctx["filter"]
   else
-    let constructor_str = lsp_ctx["constructor"]
-    let Fun_name = substitute(constructor_str, "#constructor$", "#filter", "g")
+    if type(get(lsp_ctx, "constructor")) != type('')
+      let fn_name = a:plugin_name
+      let Fun_name = "easycomplete#sources#" . fn_name . "#filter"
+    else
+      let constructor_str = lsp_ctx["constructor"]
+      let Fun_name = substitute(constructor_str, "#constructor$", "#filter", "g")
+    endif
   endif
   if !easycomplete#util#FuncExists(Fun_name)
     return a:matches
