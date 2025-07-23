@@ -3,6 +3,7 @@
 " 参考 vim-lsp 完全重构了，无须再安装外部依赖，这里的 LSP
 " 工具函数主要是给 easycomplete 的插件用的通用方法，内部使用方便
 " ----------------------------------------------------------------------
+let s:util_toolkit = has('nvim') ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#action#completion#do(opt, ctx)
   if empty(easycomplete#installer#GetCommand(a:opt['name']))
@@ -68,7 +69,11 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   " 这里包含了 info document 和 matches
   let g:xx = reltime()
   " 192 个元素，55 ms
-  let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
+  if g:env_is_nvim
+    let l:completion_result = s:util_toolkit.get_vim_complete_items(l:response, a:plugin_name, a:word)
+  else
+    let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
+  endif
   " call s:console('<--', 'TODOTODOTODO', reltimestr(reltime(g:xx)), len(l:completion_result['items']))
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction

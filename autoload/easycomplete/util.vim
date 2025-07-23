@@ -1697,6 +1697,18 @@ endfunction " }}}
 " {{{ BadBoy
 " 对 lsp response 的过滤，这个过滤本来应该 lsp 给做掉，但实际 lsp
 " 偷懒都给过来了, 导致渲染很慢, v:true === isBad
+function! easycomplete#util#BadBoy_Nim(item, typing_word)
+  return s:BadBoy.Nim(a:item, a:typing_word)
+endfunction
+
+function! easycomplete#util#BadBoy_Vim(item, typing_word)
+  return s:BadBoy.Vim(a:item, a:typing_word)
+endfunction
+
+function! easycomplete#util#BadBoy_Dart(item, typing_word)
+  return s:BadBoy.Dart(a:item, a:typing_word)
+endfunction
+
 let s:BadBoy = {}
 function! s:BadBoy.Nim(item, typing_word)
   if &filetype != "nim" | return v:false | endif
@@ -1825,6 +1837,10 @@ function! s:NormalizeFunctionalSnip(insertText)
   return ret_str
 endfunction
 
+function! easycomplete#util#NormalizeFunctionalSnip(insertText)
+  return s:NormalizeFunctionalSnip(a:insertText)
+endfunction
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
   let l:result = a:response['result']
@@ -1864,13 +1880,6 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
           \ 'icase': 1,
           \ 'lsp_item' : l:completion_item
           \ }
-
-    " 如果 label 中包含括号 且过长
-    " if l:completion_item['label'] =~ "(.\\+)" && strlen(l:completion_item['label']) > 40
-    "   if easycomplete#util#contains(l:completion_item['label'], ",") >= 2
-    "     let l:completion_item['label'] = substitute(l:completion_item['label'], "(.\\+)", "(...)", "g")
-    "   endif
-    " endif
 
     if has_key(l:completion_item, 'textEdit') && type(l:completion_item['textEdit']) == type({})
       if has_key(l:completion_item['textEdit'], 'nextText')
@@ -1973,6 +1982,7 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
     if get(l:vim_complete_item, "word", "") != ""
       let l:vim_complete_items += [l:vim_complete_item]
     endif
+    "----------------------------------
   endfor
   return { 'items': l:vim_complete_items, 'incomplete': l:incomplete }
 endfunction

@@ -142,6 +142,173 @@ function util.complete_menu_filter(matching_res, word)
   return filtered_menu
 end
 
+-- easycomplete#util#GetVimCompletionItems 的 lua 实现
+function util.get_vim_complete_items(response, plugin_name, word)
+  local l_result = response["result"]
+  local l_items = {}
+  local l_incomplete = 0
+  if type(l_result) == type({}) and l_result["items"] == nil then
+    l_items = l_result
+    l_incomplete = 0
+  elseif type(l_result) == type({}) and l_result["items"] ~= nil then
+    l_items = l_result["items"]
+    if l_result["isIncomplete"] ~= nil then
+      l_incomplete = l_result["isIncomplete"]
+    else
+      l_incomplete = 0
+    end
+  else
+    l_items = {}
+    l_incomplete = 0
+  end
+
+  local l_vim_complete_items = {}
+  local l_items_length = #l_items
+  local typing_word = word
+
+  for _, l_completion_item in ipairs(l_items) do
+    if vim.o.filetype == "nim" and vim.fn['easycomplete#util#BadBoy_Nim'](l_completion_item, typing_word) then
+      goto continue
+    end
+    if vim.o.filetype == "vim" and vim.fn['easycomplete#util#BadBoy_Vim'](l_completion_item, typing_word) then
+      goto continue
+    end
+    if vim.o.filetype == 'dart' and vim.fn['easycomplete#util#BadBoy_Dart'](l_completion_item, typing_word) then
+      goto continue
+    end
+    
+    local l_expandable = false
+    if l_completion_item["insertTextFormat"] == 2 then
+      l_expandable = true
+    end
+
+    local l_lsp_type_obj = {}
+    local l_kind = 0
+    if l_completion_item["kind"] ~= nil then
+      l_lsp_type_obj = vim.fn["easycomplete#util#LspType"](l_completion_item["kind"])
+      l_kind = l_completion_item["kind"]
+    else
+      l_lsp_type_obj = vim.fn["easycomplete#util#LspType"](0)
+      l_kind = 0
+    end
+
+    local l_menu_str = ""
+    if vim.g.easycomplete_menu_abbr == 1 then
+      l_menu_str = "[" .. string.upper(plugin_name) .. "]"
+    else
+      l_menu_str = l_lsp_type_obj["fullname"]
+    end
+    local l_vim_complete_item = {
+      kind = l_lsp_type_obj["symble"],
+      dup = 1,
+      kind_number = l_kind,
+      menu = l_menu_str,
+      empty = 1,
+      icase = 1,
+      lsp_item = l_completion_item
+    }
+    if l_completion_item["textEdit"] ~= nil and type(l_completion_item['textEdit']) == type({}) then
+      if l_completion_item['textEdit']['nextText'] ~= nil then
+        l_vim_complete_item["word"] = l_completion_item['textEdit']['nextText']
+      end
+      if l_completion_item['textEdit']['newText'] ~= nil then
+        l_vim_complete_item["word"] = l_completion_item['textEdit']['newText']
+      end
+    elseif l_completion_item["insertText"] ~= nil and l_completion_item['insertText'] ~= "" then
+      l_vim_complete_item["word"] = l_completion_item['insertText']
+    else
+      l_vim_complete_item["word"] = l_completion_item['label']
+    end
+    if plugin_name == "cpp" and string.find(l_completion_item['label'], "^[•%s]") then
+      l_vim_complete_item["word"] = string.gsub(l_completion_item['label'], "^[•%s]", "")
+      l_completion_item["label"] = l_vim_complete_item["word"]
+    end
+    
+    if l_expandable == true then
+      local l_origin_word = l_vim_complete_item['word']
+      local l_placeholder_regex = [[\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}]]
+      l_vim_complete_item['word'] = vim.fn['easycomplete#lsp#utils#make_valid_word'](
+            vim.fn.substitute(l_vim_complete_item['word'], l_placeholder_regex, "", "g"))
+      local l_placeholder_position = vim.fn.match(l_origin_word, l_placeholder_regex)
+      local l_cursor_backing_steps = string.len(string.sub(l_vim_complete_item['word'], l_placeholder_position + 1))
+      l_vim_complete_item['abbr'] = l_completion_item['label'] .. '~'
+      if string.len(l_origin_word) > string.len(l_vim_complete_item['word']) then
+        local l_user_data_json = {
+          expandable = 1,
+          placeholder_position = l_placeholder_position,
+          cursor_backing_steps = l_cursor_backing_steps
+        }
+        l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json)
+        l_vim_complete_item['user_data_json'] = l_user_data_json
+      end
+      local l_user_data_json_l = vim.fn.extend(vim.fn["easycomplete#util#GetUserData"](l_vim_complete_item), {
+          expandable = 1
+        })
+      l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json_l)
+      l_vim_complete_item['user_data_json'] = l_user_data_json_l
+    elseif string.find(l_completion_item['label'], ".+%(.*%)") then
+      l_vim_complete_item['abbr'] = l_completion_item['label']
+      if vim.fn['easycomplete#SnipExpandSupport']() then
+        l_vim_complete_item['word'] = l_completion_item['label']
+      else
+        -- 如果不支持snipexpand，则只做简易展开
+        l_vim_complete_item['word'] = string.gsub(l_completion_item['label'], "%(.*%)","") .. "()"
+      end
+      l_vim_complete_item['user_data_json'] = {
+        expandable = 1,
+        placeholder_position = string.len(l_vim_complete_item['word']) - 1,
+        cursor_backing_steps = 1
+      }
+      if vim.fn['easycomplete#SnipExpandSupport']() then
+        if string.find(l_completion_item["insertText"], "%${%d") then
+          -- 原本就是 snippet 形式
+          -- Do nothing
+        elseif string.find(l_completion_item["insertText"], ".+%(.*%)$") then
+          l_completion_item["insertText"] = vim.fn["easycomplete#util#NormalizeFunctionalSnip"](l_completion_item["insertText"])
+        elseif string.find(l_vim_complete_item["word"], ".+%(.*%)$") then
+          l_completion_item["insertText"] = vim.fn["easycomplete#util#NormalizeFunctionalSnip"](l_vim_complete_item["word"])
+        else
+          -- 不是函数形式，do nogthing
+        end
+      else
+        l_vim_complete_item['user_data_json']["custom_expand"] = 1
+      end
+      l_vim_complete_item["user_data"] = vim.fn.json_encode(l_vim_complete_item['user_data_json'])
+    else
+      l_vim_complete_item['abbr'] = l_completion_item['label']
+    end
+    local l_t_info = {}
+    if l_completion_item["documentation"] ~= nil then
+      l_t_info = vim.fn['easycomplete#util#NormalizeLspInfo'](l_completion_item["documentation"])
+    else
+      l_t_info = {}
+    end
+    if l_completion_item["detail"] == nil or l_completion_item["detail"] == "" then
+      l_vim_complete_item['info'] = l_t_info
+    else
+      l_vim_complete_item['info'] = {l_completion_item["detail"]}
+      for _, v in ipairs(l_t_info) do table.insert(l_vim_complete_item['info'], v) end
+    end
+
+    local sha256_str_o = vim.fn['easycomplete#util#Sha256'](l_vim_complete_item['word'] .. tostring(l_vim_complete_item['info']))
+    local sha256_str = string.sub(sha256_str_o, 1, 16)
+    local user_data_json = vim.fn.extend(vim.fn['easycomplete#util#GetUserData'](l_vim_complete_item), {
+             plugin_name = plugin_name,
+             sha256 = sha256_str,
+             lsp_item = l_completion_item
+           })
+    l_vim_complete_item['user_data'] = vim.fn.json_encode(user_data_json)
+    l_vim_complete_item["user_data_json"] = user_data_json
+
+    if l_vim_complete_item["word"] ~= "" then
+      table.insert(l_vim_complete_items, l_vim_complete_item)
+    end
+
+    ::continue::
+  end -- endfor
+  return { items = l_vim_complete_items, incomplete = l_incomplete }
+end -- endfunction
+
 -- TODO 需要再测试一下这个函数
 function util.get(a, ...)
   local args = {...}
