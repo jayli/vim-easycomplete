@@ -330,7 +330,11 @@ function! s:job_pid(jobid) abort
 
   let l:jobinfo = s:jobs[a:jobid]
   if l:jobinfo.type == s:job_type_nvimjob
-    return jobpid(a:jobid)
+    try
+      return jobpid(a:jobid)
+    catch /E900/
+      return 0
+    endtry
   elseif l:jobinfo.type == s:job_type_vimjob
     let l:vimjobinfo = s:job_info(a:jobid)
     if type(l:vimjobinfo) == type({}) && has_key(l:vimjobinfo, 'process')
