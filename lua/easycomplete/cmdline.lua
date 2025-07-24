@@ -221,6 +221,9 @@ function this.get_tab_returing_opword()
 end
 
 function this.bind_cmdline_event()
+  if this.check_noice() then
+    return
+  end
   local augroup = vim.api.nvim_create_augroup('CustomCmdlineComplete', { clear = true })
 
   vim.api.nvim_create_autocmd("CmdlineEnter", {
@@ -323,6 +326,17 @@ function this.normalize_list(arr, word)
   end
   local filtered_items = this.menu_filter(ret, word, 500)
   return filtered_items
+end
+
+function this.check_noice()
+  local ok, nc = pcall(function()
+    return require("noice.config")
+  end)
+  if not ok then
+    return false
+  else
+    return nc.is_running()
+  end
 end
 
 function this.cmdline_handler(keys, key_str)
