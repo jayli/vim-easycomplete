@@ -201,7 +201,7 @@ require("easycomplete").setup({
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
 | `g:easycomplete_cmdline`             | 1             | cmdline 匹配                                                |
 | `g:easycomplete_pum_maxlength`       | 35            | 匹配列表单词最长的字符数                                    |
-| `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | 是否自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
+| `g:easycomplete_pum_noselect`        | 0             | 是否不自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
 
 ## 语言支持
 

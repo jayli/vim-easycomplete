@@ -201,7 +201,7 @@ Global configurations:
 | `g:easycomplete_pum_pretty_style`    | 1             | Adjust the pum style with border automatically                |
 | `g:easycomplete_cmdline`             | 1             | Commandline complete                                          |
 | `g:easycomplete_pum_maxlength`       | 35            | Max length of mathing word in pum list                        |
-| `g:easycomplete_pum_noselect`        | `&cot =~ "noselect"` | Autoselect first matched item or not. Same as `set &completeopt+=noselect` |
+| `g:easycomplete_pum_noselect`        | 0             | Autoselect first matched item or not. Same as `set &completeopt+=noselect` |
 
 Typing `:h easycomplete` for help.
 
