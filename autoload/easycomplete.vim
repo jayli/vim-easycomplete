@@ -1996,7 +1996,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       else
         " distinct 只去重 bufkeyword 和 dict
         let tmp_result = easycomplete#util#distinct(deepcopy(source_result))
-        let filtered_menu = easycomplete#util#CompleteMenuFilter(tmp_result, typing_word, 500)
+        let filtered_menu = easycomplete#util#CompleteMenuFilter(tmp_result, typing_word, 350)
       endif
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
