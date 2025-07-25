@@ -10,7 +10,7 @@
 
 Vim-easycomplete 是一个快速极简的自动补全插件，兼容 vim 和 neovim，支持 Linux 和 MacOS. 基于 Vimscript 实现，配置简单。
 
-https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
+<img src="https://github.com/user-attachments/assets/12ddc3b0-4bc3-40c8-8044-3f57c97261fb" width=700 />
 
 
 包含特性:

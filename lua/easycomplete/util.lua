@@ -129,7 +129,9 @@ function util.complete_menu_filter(matching_res, word)
     end
   end
 
-  if vim.fn["easycomplete#GetStuntMenuItems"]() == 0 and vim.g.easycomplete_first_complete_hit == 1 then
+  local stunt_items = vim.fn["easycomplete#GetStuntMenuItems"]()
+
+  if #stunt_items == 0 and vim.g.easycomplete_first_complete_hit == 1 then
     table.sort(fuzzymatch_result, function(a, b)
       return #a.abbr < #b.abbr -- 按 abbr 字段的长度升序排序
     end)
