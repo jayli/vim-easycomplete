@@ -52,11 +52,11 @@ if g:easycomplete_nerd_font == 1
         \      "menu": g:easycomplete_menu_abbr ? "CMD" : "cmdline"
         \    }
         \ }
-  if !exists("g:easycomplete_menu_skin")
+  if !exists("g:easycomplete_menu_skin") || empty(g:easycomplete_menu_skin)
     let g:easycomplete_menu_skin = l_menu_skin
   else
     call extend(l_menu_skin, g:easycomplete_menu_skin)
-    let g:easycomplete_menu_skin = l_menu_skin
+    let g:easycomplete_menu_skin = deepcopy(l_menu_skin)
   endif
 
   if !exists("g:easycomplete_sign_text")
@@ -126,11 +126,11 @@ if g:easycomplete_menu_abbr
   let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
                                   \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 else
-  let g:easycomplete_menuflag_buf = "text"
-  let g:easycomplete_menuflag_dict = "dict"
-  let g:easycomplete_menuflag_snip = "snippet"
-  let g:easycomplete_menuflag_tabnine = "tabnine"
-  let g:easycomplete_menuflag_cmdline = "cmdline"
+  let g:easycomplete_menuflag_buf     = easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
+  let g:easycomplete_menuflag_dict    = easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
+  let g:easycomplete_menuflag_snip    = easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
+  let g:easycomplete_menuflag_tabnine = easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
+  let g:easycomplete_menuflag_cmdline = easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")
 endif
 
 if !exists("g:easycomplete_tabnine_suggestion")
