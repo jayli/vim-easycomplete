@@ -133,9 +133,6 @@ else
   let g:easycomplete_menuflag_cmdline = "cmdline"
 endif
 
-if !exists("g:easycomplete_fuzzymatch_hlgroup")
-  let g:easycomplete_fuzzymatch_hlgroup = ""
-endif
 if !exists("g:easycomplete_tabnine_suggestion")
   let g:easycomplete_tabnine_suggestion = 0
 endif
