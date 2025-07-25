@@ -5,6 +5,8 @@ local console = util.console
 local cmdline_start_cmdpos = 0
 local old_cmdline = ""
 local pum_noselect = vim.g.easycomplete_pum_noselect
+-- 把 firstcomplete 匹配到的单词列表缓存起来
+local search_cmp_cache = {}
 local redraw_queued = false
 local last_redraw = false
 local this = {}
@@ -142,6 +144,7 @@ function this.flush()
   vim.g.easycomplete_cmdline_typing = 0
   cmdline_start_cmdpos = 0
   last_redraw = false
+  search_cmp_cache = {}
   this.pum_close()
 end
 
@@ -381,11 +384,25 @@ end
 
 function this.get_normal_search_cmp()
   local typing_word = this.get_typing_word()
-  local ret = this.get_buf_keywords(string.sub(typing_word, 1, 1))
-  local ret = util.filter(ret, function(item)
-    return string.lower(string.sub(item, 1, 1)) == string.lower(string.sub(typing_word, 1, 1))
-  end)
-  return ret
+  local word_list = {}
+  if #typing_word >=2 and #search_cmp_cache >= 1 then
+    word_list = search_cmp_cache
+  elseif #typing_word == 1 then
+    word_list = this.get_buf_keywords(typing_word)
+    search_cmp_cache = word_list
+  end
+  if #word_list > 200 then
+    word_list = util.filter(word_list, function(item)
+      local lower_sub_word = string.lower(string.sub(item, 1, 5))
+      if string.find(lower_sub_word, string.lower(string.sub(typing_word, 1, 1))) then
+        return true
+      else
+        return false
+      end
+    end)
+  end
+  console(#word_list)
+  return word_list
 end
 
 -- MAIN ROUTER
