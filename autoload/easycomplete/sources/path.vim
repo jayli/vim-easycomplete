@@ -120,7 +120,7 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
         call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item, "menu" : dir_menu, "kind": ""})
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):] . "/", "abbr":item,
-              \ "menu" : dir_menu, "kind": "" })
+              \ "menu" : dir_menu, "kind": g:easycomplete_lsp_type_font["folder"] })
       endif
     else
       if g:easycomplete_nerd_font == 0
@@ -128,7 +128,7 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
       else
         call add(result_with_kind, {"word": item[strwidth(l:pfx):], "abbr": item,
               \ "menu" : file_menu,
-              \ "kind": ""
+              \ "kind": g:easycomplete_lsp_type_font["file"]
               \ })
       endif
     endif

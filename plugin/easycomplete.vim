@@ -30,7 +30,7 @@ endif
 let kind_icons = g:easycomplete_kind_icons
 
 if g:easycomplete_nerd_font == 1
-  let g:easycomplete_menu_skin = {
+  let l_menu_skin = {
         \   "buf": {
         \      "kind":get(kind_icons, "buf", ""),
         \      "menu": g:easycomplete_menu_abbr ? "Text" : "text"
@@ -52,18 +52,27 @@ if g:easycomplete_nerd_font == 1
         \      "menu": g:easycomplete_menu_abbr ? "CMD" : "cmdline"
         \    }
         \ }
-  let g:easycomplete_sign_text = {
-        \   'error':       "",
-        \   'warning':     "",
-        \   'information': '',
-        \   'hint':        ''
-        \ }
+  if !exists("g:easycomplete_menu_skin")
+    let g:easycomplete_menu_skin = l_menu_skin
+  else
+    call extend(l_menu_skin, g:easycomplete_menu_skin)
+    let g:easycomplete_menu_skin = l_menu_skin
+  endif
+
+  if !exists("g:easycomplete_sign_text")
+    let g:easycomplete_sign_text = {
+          \   'error':       "",
+          \   'warning':     "",
+          \   'information': '',
+          \   'hint':        ''
+          \ }
+  endif
   let g:easycomplete_lsp_type_font = {
         \ 'class':     get(kind_icons, "class", ""),     'color':         get(kind_icons, "color", ""),
         \ 'constant':  get(kind_icons, "constant", ""),  'constructor':   get(kind_icons, "constructor", ""),
         \ 'enum':      get(kind_icons, "enum", ""),      'enummember':    get(kind_icons, "enummember", ""),
         \ 'field':     get(kind_icons, "field", ""),     'file':          get(kind_icons, "file", ''),
-        \ 'folder':    get(kind_icons, "folder", ""),    'function':      get(kind_icons, "function", "󰊕"),
+        \ 'folder':    get(kind_icons, "folder", ""),    'function':      get(kind_icons, "function", "󰊕"),
         \ 'interface': get(kind_icons, "interface", ""), 'keyword':       get(kind_icons, "keyword", ""),
         \ 'snippet':   get(kind_icons, "snippet", ""),   'struct':        get(kind_icons, "struct", "󰙅"),
         \ 'text':      get(kind_icons, "text", ""),      'typeparameter': get(kind_icons, "typeparameter", "󰌹"),
