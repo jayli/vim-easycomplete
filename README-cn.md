@@ -26,7 +26,36 @@ https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
 
 Vim 8.2 及以上版本，Neovim 0.7.0 及以上，支持 MacOS/Linux/FreeBSD。
 
-lua 配置（基于 Packer.nvim ）：
+lua 配置（基于 Packer.nvim ），通过 `require("easycomplete").config(opt)` 配置:
+
+```lua
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- snippet 可选方案还有 'SirVer/ultisnips'
+-- `tabnine_enable = 0` 等同于 `vim.g.easycomplete_tabnine_enable = 0`
+require("easycomplete").config({
+    cmdline = 1,
+    pum_noselect = 0,
+    tabnine_enable = 0,
+    nerd_font = 1,
+    enable = 1,
+    winborder = 1,
+    ghost_text = 1,
+    menu_abbr = 0,
+    pum_format = {"abbr", "kind", "menu"},
+    setup = function()
+      vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+      vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+      vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+      -- Plugin has already bind shift-k to `:EasyCompleteHover`
+      -- vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
+      vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+    end
+  })
+```
+
+执行 `:PackerInstall`
+
+还可以通过全局变量的方式来配置，这段lua配置和上面这段代码作用完全一样：
 
 ```lua
 -- lua
@@ -68,7 +97,7 @@ vim.g.easycomplete_cmdline = 1
 ```
 执行 `:PackerInstall`
 
-Vimscript 配置（基于vim-plug）:
+在非 lua 中，可以使用 viml 配置，Vimscript 配置（基于vim-plug）:
 
 ```vim
 " vim
@@ -112,24 +141,6 @@ let g:easycomplete_cmdline = 1
 执行 `:PlugInstall`.
 
 [一个例子](custom-config.md).
-
-可以使用 Lua setup 风格初始化配置：`require("easycomplete").setup()`:
-
-```lua
--- lua style setup
--- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
-require("easycomplete").setup({
-    cmdline = 1,
-    pum_noselect = 0,
-    tabnine_enable = 0,
-    nerd_font = 1,
-    enable = 1,
-    winborder = 1,
-    ghost_text = 1,
-    menu_abbr = 0,
-    pum_format = {"abbr", "kind", "menu"}
-  })
-```
 
 ## 使用
 

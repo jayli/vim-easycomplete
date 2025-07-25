@@ -45,9 +45,23 @@ local function nvim_lsp_handler()
   end
 end
 
-function EasyComplete.setup(config)
+function EasyComplete.config(config)
   for key, value in pairs(config) do
-    vim.g["easycomplete_" .. key] = value
+    if key == "setup" and type(value) == "function" then
+      pcall(value)
+    else
+      vim.g["easycomplete_" .. key] = value
+    end
+  end
+  return EasyComplete
+end
+
+function EasyComplete.setup(func)
+  if func == nil then
+    return
+  end
+  if type(func) == 'function' then
+    pcall(func)
   end
 end
 
