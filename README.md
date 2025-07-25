@@ -186,6 +186,7 @@ Global configurations:
 |--------------------------------------|---------------|---------------------------------------------------------------|
 | `g:easycomplete_nerd_font`           | 0             | Using nerdfont for lsp icons                                  |
 | `g:easycomplete_menu_skin`           | `{}`          | Menu skin.                                                    |
+| `g:easycomplete_kind_icons`          | `{}`          | Kind icons.                                                   |
 | `g:easycomplete_sign_text`           | `{}`          | Sign icons.                                                   |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp icons configuration                                       |
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine inline suggestion(for nvim only)                      |

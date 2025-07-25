@@ -186,6 +186,7 @@ let g:easycomplete_cmdline = 1
 |--------------------------------------|---------------|-------------------------------------------------------------|
 | `g:easycomplete_nerd_font`           | 0             | 使用 nerdfont                                               |
 | `g:easycomplete_menu_skin`           | `{}`          | 菜单图标配置.                                               |
+| `g:easycomplete_kind_icons`          | `{}`          | Kind 图标.                                                   |
 | `g:easycomplete_sign_text`           | `{}`          | 提示图标配置.                                               |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp 图标配置                                                |
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine 行内补全(for nvim only)                             |
