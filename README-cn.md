@@ -193,6 +193,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_lsp_checking`        | 1             | 打开文件时是否立即检查 lsp 是否安装                         |
 | `g:easycomplete_tabnine_enable`      | 1             | 启用 Tabnine：启用后补全菜单里会出现 Tabnine 补全项         |
 | `g:easycomplete_path_enable`         | 1             | 目录匹配                                                    |
+| `g:easycomplete_snips_enable`        | 1             | 代码片段匹配                                                    |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine 配置](#ai-coding-via-tabnine-support)              |
 | `g:easycomplete_filetypes`           | `{}`          | [自定义文件类型配置](#language-support)                     |
 | `g:easycomplete_enable`              | 1             | 是否启用插件                                                |

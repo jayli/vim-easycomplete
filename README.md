@@ -193,6 +193,7 @@ Global configurations:
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
 | `g:easycomplete_path_enable`         | 1             | Path complete                                                 |
+| `g:easycomplete_snips_enable`        | 1             | snippets complete                                                 |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine Configuration](#ai-coding-via-tabnine-support)       |
 | `g:easycomplete_filetypes`           | `{}`          | [Custom filetyps configuration](#language-support)            |
 | `g:easycomplete_enable`              | 1             | Enable this plugin                                            |
