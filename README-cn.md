@@ -55,6 +55,8 @@ require("easycomplete").config({
 
 执行 `:PackerInstall`
 
+[完整配置](https://github.com/jayli/vim-easycomplete/wiki/2.-%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE#%E5%9F%BA%E4%BA%8E-lua-%E7%9A%84%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE)
+
 还可以通过全局变量的方式来配置，这段lua配置和上面这段代码作用完全一样：
 
 ```lua
@@ -189,7 +191,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine 行内补全(for nvim only)                             |
 | `g:easycomplete_lsp_checking`        | 1             | 打开文件时是否立即检查 lsp 是否安装                         |
 | `g:easycomplete_tabnine_enable`      | 1             | 启用 Tabnine：启用后补全菜单里会出现 Tabnine 补全项         |
-| `g:easycomplete_directory_enable`    | 1             | 目录匹配                                                    |
+| `g:easycomplete_path_enable`         | 1             | 目录匹配                                                    |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine 配置](#ai-coding-via-tabnine-support)              |
 | `g:easycomplete_filetypes`           | `{}`          | [自定义文件类型配置](#language-support)                     |
 | `g:easycomplete_enable`              | 1             | 是否启用插件                                                |
@@ -232,7 +234,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 
 | 名称        | 语言      | LSP 服务                 | LSP 是否需要安装   | 依赖         | URL |
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:--------:|
-| directory   | directory | No Need                  | 内置               | 无           |          |
+| path        | path      | No Need                  | 内置               | 无           |          |
 | buf         | buf & dict| No Need                  | 内置               | 无           |          |
 | snips       | Snippets  | ultisnips/LuaSnip        | 内置               | python3/lua  |          |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     |          |

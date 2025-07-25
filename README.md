@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/30c265f3-e65c-47d0-8762-e9e8250d7b4d
 It contains these features:
 
 - Full [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
-- Keywords/Directory support
+- Keywords/path support
 - Implemented based on pure vimscript
 - Snippet support.
 - Fast performance
@@ -55,6 +55,8 @@ require("easycomplete").config({
 ```
 
 Run `:PackerInstall`
+
+[Full configuration](https://github.com/jayli/vim-easycomplete/wiki/2.-%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE#%E5%9F%BA%E4%BA%8E-lua-%E7%9A%84%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE)
 
 You can configure it through global variables like this which is exactly the same as the above configuration:
 
@@ -190,7 +192,7 @@ Global configurations:
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine inline suggestion(for nvim only)                      |
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
-| `g:easycomplete_directory_enable`    | 1             | Directory complete                                            |
+| `g:easycomplete_path_enable`         | 1             | Path complete                                                 |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine Configuration](#ai-coding-via-tabnine-support)       |
 | `g:easycomplete_filetypes`           | `{}`          | [Custom filetyps configuration](#language-support)            |
 | `g:easycomplete_enable`              | 1             | Enable this plugin                                            |
@@ -235,7 +237,7 @@ All supported languages:
 
 | Plugin Name | Languages | Language Server          | Installer          | Requirements | URL |
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:---:|
-| directory   | directory | No Need                  | Integrated         | None         |     |
+| path        | path      | No Need                  | Integrated         | None         |     |
 | buf         | buf & dict| No Need                  | Integrated         | None         |     |
 | snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  |     |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     |     |

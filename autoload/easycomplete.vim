@@ -86,7 +86,7 @@ let g:easycomplete_ghost_text_str = ""
 let b:easycomplete_typing_timer = 0
 let s:easycomplete_toolkit = g:env_is_nvim ? v:lua.require("easycomplete") : v:null
 let s:util_toolkit = g:env_is_nvim ? v:lua.require("easycomplete.util") : v:null
-let b:is_directory_complete = 0
+let b:is_path_complete = 0
 let b:fast_bs_timer = 0
 
 function! easycomplete#Enable()
@@ -1178,7 +1178,7 @@ function! s:CompletorCallingAtFirstComplete(ctx)
 
   " TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
   " 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
-  " directory. 这样就只能串行执行每个插件的 completor()
+  " path. 这样就只能串行执行每个插件的 completor()
   "
   " 但在 runtime 中不能很好的执行，因为每个 complete_plugin 的
   " completor 的调用顺序不确定，如果让所有 completor 全都异步，是可以实现排他性
@@ -1186,15 +1186,15 @@ function! s:CompletorCallingAtFirstComplete(ctx)
   " 能abort掉 lsp 进程，因此还是会有返回值冲刷进 g:easycomplete_menuitems，进而
   " 污染匹配结果。
   "
-  " 这里默认只有 directory 唯一一个需要排他的情况，把 directory 提前。
+  " 这里默认只有 path 唯一一个需要排他的情况，把 path 提前。
   " 设计上需要重新考虑下，是否是只能有一个排他completor，还是存在多个共存的
   " 情况，还不清楚，先这样hack掉
   try
-    let source_directory = ['directory']
+    let source_path = ['path']
     let source_names = []
 
     for name in keys(g:easycomplete_source)
-      if name == "directory"
+      if name == "path"
         continue
       endif
       if name == "snips" || name == "buf"
@@ -1207,8 +1207,8 @@ function! s:CompletorCallingAtFirstComplete(ctx)
         call add(source_names, name)
       endif
     endfor
-    " 最后把 source_directory 放在最前面
-    let source_names = source_directory + source_names
+    " 最后把 source_path 放在最前面
+    let source_names = source_path + source_names
 
     let l:count = 0
     while l:count < len(source_names)
@@ -1866,12 +1866,12 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
   let filtered_menu = g_easycomplete_menuitems
   let start_pos = col('.') - strwidth(typing_word)
 
-  if a:plugin_name == "directory"
+  if a:plugin_name == "path"
     " let typed = strpart(getline('.'), 0, col('.') - 1)
     " let start_pos = strwidth(typed) - strwidth(fnamemodify(typed, ":t"))
-    let b:is_directory_complete = 1
+    let b:is_path_complete = 1
   else
-    let b:is_directory_complete = 0
+    let b:is_path_complete = 0
   endif
 
   try
@@ -1962,7 +1962,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
   endif
   let l:ctx = easycomplete#context()
   let typing_word = l:ctx["typing"]
-  if b:is_directory_complete
+  if b:is_path_complete
     let typing_word = easycomplete#util#GetFileName(l:ctx["typed"])
   endif
   let should_stop_render = 0
@@ -1982,7 +1982,7 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
     endif
 
     if !should_stop_render && len(source_result) > 0
-      if b:is_directory_complete
+      if b:is_path_complete
         let filtered_menu = deepcopy(source_result)
       else
         " distinct 只去重 bufkeyword 和 dict

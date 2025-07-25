@@ -477,7 +477,7 @@ function! s:CompleteHandler(res)
 endfunction
 
 function! s:UpdateRendering(result)
-  if easycomplete#sources#directory#pum()
+  if easycomplete#sources#path#pum()
     return
   endif
   call easycomplete#StoreCompleteSourceItems(s:tn_name, a:result)
