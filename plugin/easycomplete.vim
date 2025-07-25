@@ -112,26 +112,20 @@ let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete
                                   \ "t" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 let g:easycomplete_kindflag_cmdline = empty(easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "kind")) ?
                                   \ "c" :    easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "kind")
-if g:easycomplete_menu_abbr
-  let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
-                                    \ "[B]" : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
-  let g:easycomplete_menuflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")) ?
-                                    \ "[D]" : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
-  let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")) ?
-                                    \ "[S]" : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
-  let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
-                                    \ "[TN]": easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
-  let g:easycomplete_menuflag_cmdline = empty(easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")) ?
-                                    \ "[CMD]": easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")
-  let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
-                                  \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
-else
-  let g:easycomplete_menuflag_buf     = easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
-  let g:easycomplete_menuflag_dict    = easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
-  let g:easycomplete_menuflag_snip    = easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
-  let g:easycomplete_menuflag_tabnine = easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
-  let g:easycomplete_menuflag_cmdline = easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")
-endif
+
+
+let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
+                                  \ (g:easycomplete_menu_abbr ? "[B]" : "buffer") : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
+let g:easycomplete_menuflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")) ?
+                                  \ (g:easycomplete_menu_abbr ? "[D]" : "dict") : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
+let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")) ?
+                                  \ (g:easycomplete_menu_abbr ? "[S]" : "snippet") : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
+let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
+                                  \ (g:easycomplete_menu_abbr ? "[TN]" : "tabnine") : easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")
+let g:easycomplete_menuflag_cmdline = empty(easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")) ?
+                                  \ (g:easycomplete_menu_abbr ? "[CMD]" : "cmdline"): easycomplete#util#get(g:easycomplete_menu_skin, "cmdline", "menu")
+let g:easycomplete_kindflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")) ?
+                                \ "" :    easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "kind")
 
 if !exists("g:easycomplete_tabnine_suggestion")
   let g:easycomplete_tabnine_suggestion = 0
