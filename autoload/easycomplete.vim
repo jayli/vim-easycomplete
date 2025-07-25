@@ -1826,6 +1826,15 @@ function! s:CompleteMenuResetHandler(...)
   endif
 endfunction
 
+function! s:Has_Shift_K_Map()
+  let maps = execute('map <s-k>')
+  if maps =~ "EasyCompleteHover"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! easycomplete#CompleteAdd(menu_list, plugin_name)
   if !s:CheckCompleteTaskQueueAllDone()
     if s:zizzing() | return | endif
@@ -2914,8 +2923,10 @@ endfunction
 
 function! easycomplete#HoverNothing(msg)
   call s:log(a:msg)
-  let cw = expand('<cword>')
-  exec "help " . cw
+  if s:Has_Shift_K_Map()
+    let cw = expand('<cword>')
+    exec "h " . cw
+  endif
 endfunction
 
 function! easycomplete#BackToOriginalBuffer()
