@@ -1,12 +1,12 @@
 
-function! easycomplete#sources#directory#completor(opt, ctx)
+function! easycomplete#sources#path#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
   if !l:typing_path.is_path
     call easycomplete#complete(a:opt['name'], a:ctx, a:ctx['startcol'], [])
     return v:true
   endif
   call easycomplete#util#timer_start(
-        \ "easycomplete#sources#directory#CompleteHandler",
+        \ "easycomplete#sources#path#CompleteHandler",
         \ [a:ctx['typing'], a:opt['name'], a:ctx, a:ctx['startcol'], l:typing_path],
         \ 10 )
   " 展开目录时，中断其他complete逻辑
@@ -15,12 +15,12 @@ function! easycomplete#sources#directory#completor(opt, ctx)
   return v:false
 endfunction
 
-function! easycomplete#sources#directory#CompleteHandler(...)
+function! easycomplete#sources#path#CompleteHandler(...)
   return call(function("s:CompleteHandler"), a:000)
 endfunction
 
 function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
-  if g:easycomplete_directory_enable == 0
+  if g:easycomplete_path_enable == 0
     call easycomplete#complete(a:name, a:ctx, a:startcol, [])
     return
   endif
@@ -28,7 +28,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   try
     let result = s:GetDirAndFiles(a:typing_path, a:typing_path.fname)
   catch
-    call s:errlog('[Directory]', v:exception)
+    call s:errlog('[Path]', v:exception)
     return
   endtry
   if len(result) == 0
@@ -39,7 +39,7 @@ function! s:CompleteHandler(typing, name, ctx, startcol, typing_path)
   call easycomplete#complete(a:name, a:ctx, a:startcol, result)
 endfunction
 
-function! easycomplete#sources#directory#pum()
+function! easycomplete#sources#path#pum()
   if g:env_is_vim && (!pumvisible() || !exists('g:easycomplete_stunt_menuitems'))
     return v:valse
   endif
@@ -49,7 +49,7 @@ function! easycomplete#sources#directory#pum()
   if empty(g:easycomplete_stunt_menuitems)
     return v:false
   endif
-  if get(g:easycomplete_stunt_menuitems[-1], 'plugin_name', "") == "directory"
+  if get(g:easycomplete_stunt_menuitems[-1], 'plugin_name', "") == "path"
     return v:true
   endif
   return v:false
@@ -92,7 +92,7 @@ function! s:GetDirAndFiles(typing_path, base)
   return s:GetWrappedFileAndDirsList(result_list, s:GetPathName(path), l:base)
 endfunction
 
-function! easycomplete#sources#directory#GetDirAndFiles(typing_path, base)
+function! easycomplete#sources#path#GetDirAndFiles(typing_path, base)
   return s:GetDirAndFiles(a:typing_path, a:base)
 endfunction
 
@@ -137,7 +137,7 @@ function! s:GetWrappedFileAndDirsList(rlist, fpath, base)
   return result_with_kind
 endfunction
 
-function! easycomplete#sources#directory#TypingAPath(...)
+function! easycomplete#sources#path#TypingAPath(...)
   return call(function('s:TypingAPath'), a:000)
 endfunction
 

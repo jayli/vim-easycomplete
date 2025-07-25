@@ -478,6 +478,32 @@ function util.create_config(file_path, content)
   vim.fn.writefile(content, file_path, "a")
 end
 
+function util.get_typing_word()
+  return vim.fn['easycomplete#util#GetTypingWord']()
+end
+
+function util.menu_filter(menu_list, word, max_word)
+  local ret = vim.fn['easycomplete#util#CompleteMenuFilter'](menu_list, word, max_word)
+  return ret
+end
+
+function util.get_buf_keywords(typing_word)
+  local items_list = vim.fn['easycomplete#sources#buf#GetBufKeywords'](typing_word)
+  local distinct_items = util.distinct(items_list)
+  return distinct_items
+end
+
+function util.check_noice()
+  local ok, nc = pcall(function()
+    return require("noice.config")
+  end)
+  if not ok then
+    return false
+  else
+    return nc.is_running()
+  end
+end
+
 function util.nvim_lsp_installed()
   local current_lsp_ctx = util.current_plugin_ctx()
   local lsp_name = util.current_lsp_name()

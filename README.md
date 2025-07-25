@@ -15,7 +15,7 @@ Vim-easycomplete is a fast and minimalism style completion plugin for both vim a
 It contains these features:
 
 - Full [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
-- Keywords/Directory support
+- Keywords/path support
 - Implemented based on pure vimscript
 - Snippet support.
 - Fast performance
@@ -26,7 +26,38 @@ It contains these features:
 
 Requires Vim 8.2 or higher version on MacOS/Linux/FreeBSD. Neovim 0.7.0 or higher.
 
-Lua config with Packer.nvim:
+Lua config with Packer.nvim via `require("easycomplete").config(opt)`:
+
+```lua
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- For snippet support, 'SirVer/ultisnips' is an alternative option
+-- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
+require("easycomplete").config({
+    cmdline = 1,
+    pum_noselect = 0,
+    tabnine_enable = 0,
+    nerd_font = 1,
+    enable = 1,
+    winborder = 1,
+    ghost_text = 1,
+    menu_abbr = 0,
+    pum_format = {"abbr", "kind", "menu"},
+    setup = function()
+      vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+      vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+      vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+      -- Plugin has already bind shift-k to `:EasyCompleteHover`
+      -- vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
+      vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+    end
+  })
+```
+
+Run `:PackerInstall`
+
+[Full configuration](https://github.com/jayli/vim-easycomplete/wiki/2.-%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE#%E5%9F%BA%E4%BA%8E-lua-%E7%9A%84%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE)
+
+You can configure it through global variables like this which is exactly the same as the above configuration:
 
 ```lua
 -- lua
@@ -65,6 +96,7 @@ vim.g.easycomplete_cmdline = 1
 -- vim.g.easycomplete_use_default_cr = 0
 -- vim.keymap.set('i', '<C-L>', '<Plug>EasycompleteCR')
 ```
+
 Run `:PackerInstall`
 
 Vimscript config with vim-plug:
@@ -109,24 +141,6 @@ let g:easycomplete_cmdline = 1
 Run `:PlugInstall`.
 
 [Full configuration example](custom-config.md).
-
-Lua style setup with `require("easycomplete").setup()`:
-
-```lua
--- lua style setup
--- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
-require("easycomplete").setup({
-    cmdline = 1,
-    pum_noselect = 0,
-    tabnine_enable = 0,
-    nerd_font = 1,
-    enable = 1,
-    winborder = 1,
-    ghost_text = 1,
-    menu_abbr = 0,
-    pum_format = {"abbr", "kind", "menu"}
-  })
-```
 
 ## Useage
 
@@ -177,7 +191,7 @@ Global configurations:
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine inline suggestion(for nvim only)                      |
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
-| `g:easycomplete_directory_enable`    | 1             | Directory complete                                            |
+| `g:easycomplete_path_enable`         | 1             | Path complete                                                 |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine Configuration](#ai-coding-via-tabnine-support)       |
 | `g:easycomplete_filetypes`           | `{}`          | [Custom filetyps configuration](#language-support)            |
 | `g:easycomplete_enable`              | 1             | Enable this plugin                                            |
@@ -222,7 +236,7 @@ All supported languages:
 
 | Plugin Name | Languages | Language Server          | Installer          | Requirements | URL |
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:---:|
-| directory   | directory | No Need                  | Integrated         | None         |     |
+| path        | path      | No Need                  | Integrated         | None         |     |
 | buf         | buf & dict| No Need                  | Integrated         | None         |     |
 | snips       | Snippets  | ultisnips/LuaSnip        | Integrated         | python3/lua  |     |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     |     |

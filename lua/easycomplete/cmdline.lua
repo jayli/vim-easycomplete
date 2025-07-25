@@ -1,4 +1,5 @@
 local util = require("easycomplete.util")
+local pum = require("easycomplete.pum")
 local console = util.console
 -- cmdline_start_cmdpos 是不带偏移量的，偏移量只给 pum 定位用
 local cmdline_start_cmdpos = 0
@@ -14,19 +15,7 @@ function this.pum_complete(start_col, menu_items)
 end
 
 function this.get_path_cmp_items()
-  local typing_path = vim.fn['easycomplete#sources#directory#TypingAPath']()
-  -- 取根目录
-  -- insert模式下为了避免和输入注释"//"频繁干扰，去掉了根目录的路径匹配
-  -- 这里不存在这个频繁干扰的问题，再加回来
-  if string.find(typing_path.prefx,"%s/$") ~= nil then
-    typing_path.is_path = 1
-  end
-  if typing_path.is_path == 0 then
-    return {}
-  else
-    local ret = vim.fn['easycomplete#sources#directory#GetDirAndFiles'](typing_path, typing_path.fname)
-    return ret
-  end
+  return pum.get_path_cmp_items()
 end
 
 function this.pum_close()
@@ -35,28 +24,23 @@ function this.pum_close()
 end
 
 function this.pum_bufid()
-  local pum_bufid = vim.fn['easycomplete#pum#bufid']()
-  return pum_bufid
+  return pum.bufid()
 end
 
 function this.pum_winid()
-  local pum_winid = vim.fn['easycomplete#pum#winid']()
-  return pum_winid
+  return pum.winid()
 end
 
 function this.get_typing_word()
-  return vim.fn['easycomplete#util#GetTypingWord']()
+  return util.get_typing_word()
 end
 
 function this.menu_filter(menu_list, word, max_word)
-  local ret = vim.fn['easycomplete#util#CompleteMenuFilter'](menu_list, word, max_word)
-  return ret
+  return util.menu_filter(menu_list, word, max_word)
 end
 
 function this.get_buf_keywords(typing_word)
-  local items_list = vim.fn['easycomplete#sources#buf#GetBufKeywords'](typing_word)
-  local distinct_items = util.distinct(items_list)
-  return distinct_items
+  return util.get_buf_keywords(typing_word)
 end
 
 function this.calculate_sign_and_linenr_width()
@@ -170,23 +154,23 @@ function this.insearch()
 end
 
 function this.pum_visible()
-  return vim.fn["easycomplete#pum#visible"]()
+  return pum.visible()
 end
 
 function this.pum_selected()
-  return vim.fn['easycomplete#pum#CompleteCursored']()
+  return pum.selected()
 end
 
 function this.pum_selected_item()
-  return vim.fn['easycomplete#pum#CursoredItem']()
+  return pum.selected_item()
 end
 
 function this.pum_select(index)
-  return vim.fn['easycomplete#pum#select'](index)
+  return pum.select(index)
 end
 
 function this.pum_select_next()
-  vim.fn['easycomplete#pum#next']()
+  pum.select_next()
   if this.insearch() then
     return ""
   end
@@ -196,7 +180,7 @@ function this.pum_select_next()
 end
 
 function this.pum_select_prev()
-  vim.fn['easycomplete#pum#prev']()
+  pum.select_prev()
   if this.insearch() then
     return ""
   end
@@ -221,7 +205,7 @@ function this.get_tab_returing_opword()
 end
 
 function this.bind_cmdline_event()
-  if this.check_noice() then
+  if util.check_noice() then
     return
   end
   local augroup = vim.api.nvim_create_augroup('CustomCmdlineComplete', { clear = true })
@@ -326,17 +310,6 @@ function this.normalize_list(arr, word)
   end
   local filtered_items = this.menu_filter(ret, word, 500)
   return filtered_items
-end
-
-function this.check_noice()
-  local ok, nc = pcall(function()
-    return require("noice.config")
-  end)
-  if not ok then
-    return false
-  else
-    return nc.is_running()
-  end
 end
 
 function this.cmdline_handler(keys, key_str)

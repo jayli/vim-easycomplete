@@ -157,8 +157,8 @@ endif
 if g:env_is_vim || !has('nvim-0.11.0')
   let g:easycomplete_winborder = 0
 endif
-if !exists("g:easycomplete_directory_enable")
-  let g:easycomplete_directory_enable = 1
+if !exists("g:easycomplete_path_enable")
+  let g:easycomplete_path_enable = 1
 endif
 if !exists("g:easycomplete_tabnine_config")
   let g:easycomplete_tabnine_config = {}
@@ -250,7 +250,7 @@ let g:easycomplete_config = {
       \ 'g:easycomplete_ghost_text':         g:easycomplete_ghost_text,
       \ 'g:easycomplete_cursor_word_hl':     g:easycomplete_cursor_word_hl,
       \ 'g:easycomplete_signature_offset':   g:easycomplete_signature_offset,
-      \ 'g:easycomplete_directory_enable':   g:easycomplete_directory_enable,
+      \ 'g:easycomplete_path_enable':        g:easycomplete_path_enable,
       \ 'g:easycomplete_winborder':          g:easycomplete_winborder,
       \ 'g:easycomplete_pum_maxheight':      g:easycomplete_pum_maxheight
       \ }
@@ -300,9 +300,9 @@ endif
 augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
-      \ 'name': 'directory',
+      \ 'name': 'path',
       \ 'whitelist': ['*'],
-      \ 'completor': function('easycomplete#sources#directory#completor'),
+      \ 'completor': function('easycomplete#sources#path#completor'),
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({

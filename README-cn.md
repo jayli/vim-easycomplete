@@ -26,7 +26,38 @@ Vim-easycomplete 是一个快速极简的自动补全插件，兼容 vim 和 neo
 
 Vim 8.2 及以上版本，Neovim 0.7.0 及以上，支持 MacOS/Linux/FreeBSD。
 
-lua 配置（基于 Packer.nvim ）：
+lua 配置（基于 Packer.nvim ），通过 `require("easycomplete").config(opt)` 配置:
+
+```lua
+use { 'jayli/vim-easycomplete', requires = {'L3MON4D3/LuaSnip'}}
+-- snippet 可选方案还有 'SirVer/ultisnips'
+-- `tabnine_enable = 0` 等同于 `vim.g.easycomplete_tabnine_enable = 0`
+require("easycomplete").config({
+    cmdline = 1,
+    pum_noselect = 0,
+    tabnine_enable = 0,
+    nerd_font = 1,
+    enable = 1,
+    winborder = 1,
+    ghost_text = 1,
+    menu_abbr = 0,
+    pum_format = {"abbr", "kind", "menu"},
+    setup = function()
+      vim.keymap.set('n', 'gr', ':EasyCompleteReference<CR>')
+      vim.keymap.set('n', 'gd', ':EasyCompleteGotoDefinition<CR>')
+      vim.keymap.set('n', 'rn', ':EasyCompleteRename<CR>')
+      -- Plugin has already bind shift-k to `:EasyCompleteHover`
+      -- vim.keymap.set('n', 'gh', ':EasyCompleteHover<CR>')
+      vim.keymap.set('n', 'gb', ':BackToOriginalBuffer<CR>')
+    end
+  })
+```
+
+执行 `:PackerInstall`
+
+[完整配置](https://github.com/jayli/vim-easycomplete/wiki/2.-%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE#%E5%9F%BA%E4%BA%8E-lua-%E7%9A%84%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE)
+
+还可以通过全局变量的方式来配置，这段lua配置和上面这段代码作用完全一样：
 
 ```lua
 -- lua
@@ -68,7 +99,7 @@ vim.g.easycomplete_cmdline = 1
 ```
 执行 `:PackerInstall`
 
-Vimscript 配置（基于vim-plug）:
+在非 lua 中，可以使用 viml 配置，Vimscript 配置（基于vim-plug）:
 
 ```vim
 " vim
@@ -112,24 +143,6 @@ let g:easycomplete_cmdline = 1
 执行 `:PlugInstall`.
 
 [一个例子](custom-config.md).
-
-可以使用 Lua setup 风格初始化配置：`require("easycomplete").setup()`:
-
-```lua
--- lua style setup
--- `tabnine_enable = 0` alias `vim.g.easycomplete_tabnine_enable = 0`
-require("easycomplete").setup({
-    cmdline = 1,
-    pum_noselect = 0,
-    tabnine_enable = 0,
-    nerd_font = 1,
-    enable = 1,
-    winborder = 1,
-    ghost_text = 1,
-    menu_abbr = 0,
-    pum_format = {"abbr", "kind", "menu"}
-  })
-```
 
 ## 使用
 
@@ -178,7 +191,7 @@ require("easycomplete").setup({
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine 行内补全(for nvim only)                             |
 | `g:easycomplete_lsp_checking`        | 1             | 打开文件时是否立即检查 lsp 是否安装                         |
 | `g:easycomplete_tabnine_enable`      | 1             | 启用 Tabnine：启用后补全菜单里会出现 Tabnine 补全项         |
-| `g:easycomplete_directory_enable`    | 1             | 目录匹配                                                    |
+| `g:easycomplete_path_enable`         | 1             | 目录匹配                                                    |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine 配置](#ai-coding-via-tabnine-support)              |
 | `g:easycomplete_filetypes`           | `{}`          | [自定义文件类型配置](#language-support)                     |
 | `g:easycomplete_enable`              | 1             | 是否启用插件                                                |
@@ -221,7 +234,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 
 | 名称        | 语言      | LSP 服务                 | LSP 是否需要安装   | 依赖         | URL |
 |-------------|-----------|:------------------------:|:------------------:|:------------:|:--------:|
-| directory   | directory | No Need                  | 内置               | 无           |          |
+| path        | path      | No Need                  | 内置               | 无           |          |
 | buf         | buf & dict| No Need                  | 内置               | 无           |          |
 | snips       | Snippets  | ultisnips/LuaSnip        | 内置               | python3/lua  |          |
 | ts          | js/ts     | tsserver                 | Yes                | node/npm     |          |

@@ -85,8 +85,8 @@ vim.g.easycomplete_tabnine_enable = 1
 -- Enable Tabnine suggestion, default is off
 vim.g.easycomplete_tabnine_suggestion = 0
 
--- Enable directory complete. Default is on
-vim.g.easycomplete_directory_enable = 1
+-- Enable path complete. Default is on
+vim.g.easycomplete_path_enable = 1
 
 -- Show abbr(shortname) at `menu` position in pum
 vim.g.easycomplete_menu_abbr = 1
