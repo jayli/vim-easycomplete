@@ -1,6 +1,6 @@
 # Vim-EasyComplete
 
-> [中文](README-cn.md) | [English](README.md)
+> [中文](README-cn.md) | [English](README.md) | [Wiki](https://github.com/jayli/vim-easycomplete/wiki)
 
 It's a Fast and Minimalism Style Completion Plugin for vim/nvim. 
 
@@ -426,13 +426,11 @@ You can add custom Pmenu styles by defining these highlight groups:
 
 When `g:easycomplete_winborder` is set to `1`. The guibg of Pmenu will be set to be the same as the Normal guibg automatically. If you want to redefine pum style, disable the auto setting by `let g:easycomplete_pum_pretty_style = 0`. Then define these highlight group: "FloatBorder, Pmenu, PmenuExtra, PmenuKind" etc.
 
-More examples here: [full config example](custom-config.md)
+More examples here: [full config example](https://github.com/jayli/vim-easycomplete/wiki)
 
 ![截屏2023-12-30 20 25 06](https://github.com/jayli/vim-easycomplete/assets/188244/597db686-d4fe-4b25-8c39-d9b90db184cb)
 
-## Add custom completion plugin
-
-→ [add custom completion plugin](add-custom-plugin.md)
+[More documentation](https://github.com/jayli/vim-easycomplete/wiki)
 
 ### License
 

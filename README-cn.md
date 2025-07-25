@@ -1,6 +1,6 @@
 # Vim-EasyComplete
 
-> [中文](README-cn.md) | [English](README.md)
+> [中文](README-cn.md) | [English](README.md) | [Wiki](https://github.com/jayli/vim-easycomplete/wiki)
 
 快速极简的 Vim/Nvim 补全插件
 
