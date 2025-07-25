@@ -401,7 +401,6 @@ function this.get_normal_search_cmp()
       end
     end)
   end
-  console(#word_list)
   return word_list
 end
 
