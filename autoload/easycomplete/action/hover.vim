@@ -23,6 +23,9 @@ function! s:do()
   let l:server = l:servers[0]
   let has_provider = easycomplete#lsp#HasProvider(l:server, "hoverProvider")
   if has_provider == 0
+    if s:Has_Shift_K_Map()
+      exec "h ". expand('<cword>')
+    endif
     return
   endif
 
@@ -37,22 +40,40 @@ function! s:do()
         \ })
 endfunction
 
+function! s:Has_Shift_K_Map()
+  let maps = execute('map <s-k>')
+  if maps =~ "EasyCompleteHover"
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! s:HandleLspCallback(server, data) abort
   try
     if easycomplete#lsp#client#is_error(a:data['response'])
       call easycomplete#lsp#utils#error('Failed ' . a:server)
       call s:flush()
+      if s:Has_Shift_K_Map()
+        exec "h ". expand('<cword>')
+      endif
       return
     endif
 
     if !has_key(a:data['response'], 'result')
       call s:flush()
+      if s:Has_Shift_K_Map()
+        exec "h ". expand('<cword>')
+      endif
       return
     endif
 
     let local_msg = s:get(a:data,"response","result","contents","value")
     if empty(local_msg)
       call s:log("No hover informations!")
+      if s:Has_Shift_K_Map()
+        exec "h ". expand('<cword>')
+      endif
       return
     endif
     let content = substitute(local_msg, "```\\w\\+", "", "g")
@@ -61,6 +82,8 @@ function! s:HandleLspCallback(server, data) abort
     let content = s:RemoveTrailingEmptyStrings(content)
     if !empty(content)
       call easycomplete#popup#float(content, 'Pmenu', 0, "", [0, 0], 'signature')
+    elseif s:Has_Shift_K_Map()
+      exec "h ". expand('<cword>')
     endif
     return
   catch
