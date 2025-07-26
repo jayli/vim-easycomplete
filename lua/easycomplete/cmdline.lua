@@ -475,21 +475,23 @@ this.REG_CMP_HANDLER = {
       end
     end
   },
-  -- {
-  --   -- highlight colors name
-  --   patterns = {
-  --     "^hi%s.*gui[fb]g=$",
-  --     "^highlight%s.*gui[fb]g=$"
-  --   },
-  --   get_cmp_items = function()
-  --     if this.insearch() then
-  --       return this.get_normal_search_cmp()
-  --     else
-  --       local colors = this.native_colors
-  --       return colors
-  --     end
-  --   end
-  -- },
+  {
+    -- highlight colors name
+    pattern = {
+      "^hi%s.*gui[fb]g=$",
+      "^hi%s.*gui[fb]g=%w+$",
+      "^highlight%s.*gui[fb]g=$",
+      "^highlight%s.*gui[fb]g=%w+$",
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local colors = this.native_colors
+        return colors
+      end
+    end
+  },
   {
     -- highlight color groups
     pattern = {
