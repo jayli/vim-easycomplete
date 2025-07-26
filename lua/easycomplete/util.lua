@@ -101,6 +101,22 @@ function util.get_server()
   return Server
 end
 
+function util.get_file_tags(filename)
+  local lines = {}
+  local tags = {}
+  local file, err = io.open(filename, "r")  -- 打开文件为只读模式
+  if not file then
+    print("打开文件失败: " .. err)
+    return {}
+  end
+  for line in file:lines() do  -- 使用 :lines() 迭代器逐行读取
+    local tag = line:match('^([^\t]+)')
+    if tag then table.insert(tags, tag) end
+  end
+  file:close()  -- 关闭文件
+  return tags
+end
+
 function util.complete_menu_filter(matching_res, word)
   local fullmatch_result = {} -- 完全匹配
   local firstchar_result = {} -- 首字母匹配

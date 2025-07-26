@@ -427,6 +427,69 @@ this.REG_CMP_HANDLER = {
     end
   },
   {
+    -- help
+    pattern = {
+      "^h%s[%w_]+$",
+      "^help%s[%w_]+$"
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local all_tags = this.get_help_completions()
+        local typing_word = this.get_typing_word()
+        local guide_char = string.sub(typing_word, 1, 1)
+        local result = util.filter(all_tags, function(item)
+          if string.find(string.lower(string.sub(item, 1, 2)), string.lower(guide_char)) and
+             not string.find(item, "[%s<>%+%-]") then
+            return true
+          else
+            return false
+          end
+        end)
+        return result
+      end
+    end
+  },
+  {
+    -- highlight colors name
+    pattern = {
+      "^hi%s.*gui[fb]g=$",
+      "^hi%s.*gui[fb]g=%w+$",
+      "^highlight%s.*gui[fb]g=$",
+      "^highlight%s.*gui[fb]g=%w+$",
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local colors = this.native_colors
+        return colors
+      end
+    end
+  },
+  {
+    -- highlight color groups
+    pattern = {
+      "^hi%s+[%w@]+$",
+      "^highlight%s+[%w@]+$", -- 几个常见的属性 TODO
+      "^hi%s+link%s+$",
+      "^hi%s+link%s+[%w@]+$",
+      "^hi%s+link%s+[%w@]+%s+$",
+      "^hi%s+link%s+[%w@]+%s+[%w@]+$"
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local typing_word = this.get_typing_word()
+        local guide_str = string.sub(typing_word, 1, 1)
+        local result = vim.fn.getcompletion(guide_str, "highlight")
+        return result
+      end
+    end
+  },
+  {
     pattern = {
       "^[a-zA-Z0-9_]+%s$", -- 命令输入完毕，并敲击空格
       "^[a-zA-Z0-9_]+%s+[_%w#]+$", -- 命令输入完毕，敲击空格后直接输入正常单词
@@ -471,40 +534,6 @@ this.REG_CMP_HANDLER = {
             end
           end
         end
-        return result
-      end
-    end
-  },
-  {
-    -- highlight colors name
-    pattern = {
-      "^hi%s.*gui[fb]g=$",
-      "^hi%s.*gui[fb]g=%w+$",
-      "^highlight%s.*gui[fb]g=$",
-      "^highlight%s.*gui[fb]g=%w+$",
-    },
-    get_cmp_items = function()
-      if this.insearch() then
-        return this.get_normal_search_cmp()
-      else
-        local colors = this.native_colors
-        return colors
-      end
-    end
-  },
-  {
-    -- highlight color groups
-    pattern = {
-      "^hi%s.*$",
-      "^highlight%s.*$",
-    },
-    get_cmp_items = function()
-      if this.insearch() then
-        return this.get_normal_search_cmp()
-      else
-        local typing_word = this.get_typing_word()
-        local guide_str = string.sub(typing_word, 1, 1)
-        local result = vim.fn.getcompletion(guide_str, "highlight")
         return result
       end
     end
@@ -682,6 +711,23 @@ function this.cmd_match(rgx)
   end
 end
 
+-- 得到所有的文档中的tags
+local help_all_tags = nil
+function this.get_help_completions()
+  if help_all_tags ~= nil then
+    return help_all_tags
+  else
+    local help_files = vim.api.nvim_get_runtime_file('doc/tags', true)
+    local all_tags = {}
+    for _, filename in ipairs(help_files) do
+      local tags = util.get_file_tags(filename)
+      for _, v in ipairs(tags) do table.insert(all_tags, v) end
+    end
+    help_all_tags = all_tags
+    return all_tags
+  end
+end
+
 this.cmd_type = {
   -- File completion
   file = {
@@ -703,7 +749,7 @@ this.cmd_type = {
   diff_buffer = { 'diffthis', 'diffoff', 'diffupdate' },
   command = { 'command', 'delcommand' },
   option = { 'set', 'setlocal', 'setglobal' },
-  help = { 'help' },
+  -- help = { 'help' },
   expression = {
     'substitute', 'global', 'vglobal', 'let',
     'echo', 'echom', 'echon',
