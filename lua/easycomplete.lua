@@ -307,7 +307,8 @@ function EasyComplete.replacement(abbr, positions, wrap_char)
   -- 转换为字符数组（字符串 -> 字符表）
   local letters = {}
   for i = 1, #abbr do
-    letters[i] = abbr:sub(i, i)
+    -- letters[i] = abbr:sub(i, i)
+    letters[i] = vim.fn.strcharpart(abbr, i - 1, 1)
   end
   -- 对每个位置进行包裹处理
   for _, idx in ipairs(positions) do
