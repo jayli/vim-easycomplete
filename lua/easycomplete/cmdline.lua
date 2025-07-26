@@ -762,16 +762,10 @@ this.native_colors = {
   "crimson","pink","lightpink"
 }
 
-
-
 function this.init_once()
   if vim.g.easycomplete_cmdline ~= 1 then
     return
   end
-  -- debug start -----------------------------
-  -- do return end
-  -- console(1)
-  --------------------------------------------
   vim.g.easycomplete_cmdline_pattern = ""
   vim.g.easycomplete_cmdline_typing = 0
   this.bind_cmdline_event()
