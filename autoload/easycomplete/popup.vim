@@ -180,7 +180,7 @@ function! s:lint(content, hl, ft)
 
     let opt = extend({
           \   'relative':'editor',
-          \   'focusable': v:true,
+          \   'focusable': v:false,
           \   'style':'minimal',
           \   'filetype': empty(a:ft) ? "help" : a:ft
           \ },

@@ -36,7 +36,7 @@ let g:easycomplete_firstcomplete_ctx = {}
 " 和 YCM 一样，用做 FirstComplete 标志位
 let g:easycomplete_first_complete_hit = 0
 " 菜单显示最大 item 数量
-let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 45)
+let g:easycomplete_maxlength = (&filetype == 'vim' && !has('nvim') ? 35 : 50)
 " Global CompleteChanged Event：异步回调显示 popup 时借用
 let g:easycomplete_completechanged_event = {}
 " 触发 lint 动作的延迟

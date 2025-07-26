@@ -603,7 +603,8 @@ function this.cmp_regex_handler(get_cmp_items, word)
     else
       should_redraw = true
     end
-    this.pum_complete(start_col, filtered_items)
+    local final_result = util.sub_table(filtered_items, 1, vim.g.easycomplete_maxlength)
+    this.pum_complete(start_col, final_result)
   end
   return should_redraw
 end
