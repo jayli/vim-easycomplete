@@ -2950,11 +2950,11 @@ endfunction
 
 function! easycomplete#QuickfixEnter()
   execute "normal! \<CR>"
-  call timer_start(70, { -> s:CloseQuickFix() })
+  " call timer_start(70, { -> s:CloseQuickFix() })
 endfunction
 
 function! s:CloseQuickFix()
-  silent! noa cclose
+  call easycomplete#action#reference#CloseQF()
 endfunction
 
 function! easycomplete#LintRefreash()
