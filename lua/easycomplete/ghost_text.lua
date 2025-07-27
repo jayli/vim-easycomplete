@@ -88,6 +88,15 @@ local function onkey_event_prevented()
   end
 end
 
+local function safe_redraw()
+  if vim.fn.has('nvim-0.10') then
+    vim.api.nvim__redraw({
+        win = vim.fn.win_getid(),
+        flush = true
+      })
+  end
+end
+
 local function ghost_text_bind_event()
   if not vim.g.easycomplete_ghost_text then
     return
@@ -107,69 +116,69 @@ local function ghost_text_bind_event()
     -- 更新 last_key 变量
     curr_key = key_str
     -- console('on_key', string.byte(curr_key))
-    do
-      ------{{ ghost_handler --------------------------------
-      -- 这里的作用是输入过程中处理 ghost_text 的占位，封装到函数中
-      -- 就会有闪烁, 原因未知
-      if vim.api.nvim_get_mode().mode ~= "i" then
-        return
-      end
-      if onkey_event_prevented() then
-        return
-      end
-      if curr_key == nil or string.byte(curr_key) == nil then
-        return
-      end
-      -- console("输入字符" .. vim.inspect(string.byte(curr_key)))
-      if curr_key and string.find(normal_chars, curr_key, 1, true) then
-        -- 正常输入
-        if vim.fn["easycomplete#pum#visible"]() then
-          local ok, err = pcall(function()
-            local ghost_text = get_current_extmark()
-            if ghost_text == "" or #ghost_text == 1 then
-              M.delete_hint()
-              vim.g.easycomplete_ghost_text_str = ""
-            elseif #ghost_text >= 2 then
-              local new_ghost_text = string.sub(ghost_text, 2)
-              M.show_hint({new_ghost_text})
-              vim.g.easycomplete_ghost_text_str = new_ghost_text
-            end
-          end)
-          if not ok then
-            print("Ghost Text Error: " .. err)
-          end
-        end
-      elseif curr_key and string.byte(curr_key) == 8 then
-        -- 退格键
-        if vim.fn["easycomplete#pum#visible"]() then
-          local ok, err = pcall(function()
-            local ghost_text = get_current_extmark()
-            if ghost_text == "" then
-              -- M.delete_hint()
-              vim.g.easycomplete_ghost_text_str = ""
-            elseif #ghost_text >= 1 then
-              local new_ghost_text = "a" .. ghost_text
-              M.show_hint({new_ghost_text})
-              vim.g.easycomplete_ghost_text_str = new_ghost_text
-            end
-          end)
-          if not ok then
-            print("Ghost Text Error BackSpace " .. err)
-          end
-        else
-          M.delete_hint()
-          vim.g.easycomplete_ghost_text_str = ""
-        end
-      else
-        -- 其他字符
-      end
-      curr_key = nil
-      ------}} ghost_handler --------------------------------
-    end -- end do
   end)
   vim.api.nvim_create_autocmd({"CursorMovedI"}, {
       pattern = "*",
       callback = function()
+        ------{{ ghost_handler --------------------------------
+        -- 这里的作用是输入过程中处理 ghost_text 的占位，封装到函数中
+        -- 就会有闪烁, 原因未知
+        if vim.api.nvim_get_mode().mode ~= "i" then
+          return
+        end
+        if onkey_event_prevented() then
+          return
+        end
+        if curr_key == nil or string.byte(curr_key) == nil then
+          return
+        end
+        -- console("输入字符" .. vim.inspect(string.byte(curr_key)))
+        if curr_key and string.find(normal_chars, curr_key, 1, true) then
+          -- 正常输入
+          if vim.fn["easycomplete#pum#visible"]() then
+            local ok, err = pcall(function()
+              local ghost_text = get_current_extmark()
+              if ghost_text == "" or #ghost_text == 1 then
+                M.delete_hint()
+                vim.g.easycomplete_ghost_text_str = ""
+              elseif #ghost_text >= 2 then
+                local new_ghost_text = string.sub(ghost_text, 2)
+                M.show_hint({new_ghost_text})
+                vim.g.easycomplete_ghost_text_str = new_ghost_text
+              end
+              safe_redraw()
+            end)
+            if not ok then
+              print("Ghost Text Error: " .. err)
+            end
+          end
+        elseif curr_key and string.byte(curr_key) == 8 then
+          -- 退格键
+          if vim.fn["easycomplete#pum#visible"]() then
+            local ok, err = pcall(function()
+              local ghost_text = get_current_extmark()
+              if ghost_text == "" then
+                -- M.delete_hint()
+                vim.g.easycomplete_ghost_text_str = ""
+              elseif #ghost_text >= 1 then
+                local new_ghost_text = "a" .. ghost_text
+                M.show_hint({new_ghost_text})
+                vim.g.easycomplete_ghost_text_str = new_ghost_text
+              end
+              safe_redraw()
+            end)
+            if not ok then
+              print("Ghost Text Error BackSpace " .. err)
+            end
+          else
+            M.delete_hint()
+            vim.g.easycomplete_ghost_text_str = ""
+          end
+        else
+          -- 其他字符
+        end
+        curr_key = nil
+        ------}} ghost_handler --------------------------------
       end,
     })
 end
