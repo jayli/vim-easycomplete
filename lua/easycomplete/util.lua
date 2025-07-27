@@ -66,7 +66,6 @@ end
 function util.distinct(items)
   local unique_values = {}
   local result = {}
-  table.sort(items)
   for _, value in ipairs(items) do
     if #value == 0 then
       -- 空字符串
@@ -82,6 +81,7 @@ function util.distinct(items)
       table.insert(result, value)
     end
   end
+  table.sort(result)
   return result
 end
 
@@ -243,6 +243,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
       l_completion_item["label"] = l_vim_complete_item["word"]
     end
 
+    local l_item_user_data_json_cache = {}
     if l_expandable == true then
       local l_origin_word = l_vim_complete_item['word']
       local l_placeholder_regex = [[\$[0-9]\+\|\${\%(\\.\|[^}]\)\+}]]
@@ -257,14 +258,15 @@ function util.get_vim_complete_items(response, plugin_name, word)
           placeholder_position = l_placeholder_position,
           cursor_backing_steps = l_cursor_backing_steps
         }
-        l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json)
+        -- l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json)
         l_vim_complete_item['user_data_json'] = l_user_data_json
       end
-      local l_user_data_json_l = vim.fn.extend(vim.fn["easycomplete#util#GetUserData"](l_vim_complete_item), {
+      local l_user_data_json_l = vim.fn.extend(l_user_data_json, {
           expandable = 1
         })
-      l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json_l)
+      -- l_vim_complete_item['user_data'] = vim.fn.json_encode(l_user_data_json_l)
       l_vim_complete_item['user_data_json'] = l_user_data_json_l
+      l_item_user_data_json_cache = l_user_data_json_l
     elseif string.find(l_completion_item['label'], ".+%(.*%)") then
       l_vim_complete_item['abbr'] = l_completion_item['label']
       if vim.fn['easycomplete#SnipExpandSupport']() then
@@ -292,9 +294,11 @@ function util.get_vim_complete_items(response, plugin_name, word)
       else
         l_vim_complete_item['user_data_json']["custom_expand"] = 1
       end
-      l_vim_complete_item["user_data"] = vim.fn.json_encode(l_vim_complete_item['user_data_json'])
+      -- l_vim_complete_item["user_data"] = vim.fn.json_encode(l_vim_complete_item['user_data_json'])
+      l_item_user_data_json_cache = l_vim_complete_item['user_data_json']
     else
       l_vim_complete_item['abbr'] = l_completion_item['label']
+      l_item_user_data_json_cache = {plugin_name = plugin_name}
     end
     local l_t_info = {}
     if l_completion_item["documentation"] ~= nil then
@@ -309,9 +313,9 @@ function util.get_vim_complete_items(response, plugin_name, word)
       for _, v in ipairs(l_t_info) do table.insert(l_vim_complete_item['info'], v) end
     end
 
-    local sha256_str_o = vim.fn['easycomplete#util#Sha256'](l_vim_complete_item['word'] .. tostring(l_vim_complete_item['info']))
+    local sha256_str_o = vim.fn.sha256(l_vim_complete_item['word'] .. tostring(l_vim_complete_item['info']))
     local sha256_str = string.sub(sha256_str_o, 1, 16)
-    local user_data_json = vim.fn.extend(vim.fn['easycomplete#util#GetUserData'](l_vim_complete_item), {
+    local user_data_json = vim.fn.extend(l_item_user_data_json_cache, {
              plugin_name = plugin_name,
              sha256 = sha256_str,
              lsp_item = l_completion_item

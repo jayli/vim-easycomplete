@@ -70,11 +70,13 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   " 192 个元素
   " vim 用时 55 ms
   " lua 用时 29 ms
+  let tt = reltime()
   if g:env_is_nvim
     let l:completion_result = s:util_toolkit.get_vim_complete_items(l:response, a:plugin_name, a:word)
   else
     let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
   endif
+  " call s:console(reltimestr(reltime(tt)), len(l:completion_result['items']))
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 

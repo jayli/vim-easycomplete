@@ -338,29 +338,25 @@ function EasyComplete.combine_list(buf_list, dict_list)
   local combine_all = EasyComplete.distinct(combined_list)
   local ret_list = {}
   for _, v in ipairs(combine_all) do
+    local kind_str = ""
+    local menu_str = ""
     if vim.tbl_contains(buf_list, v) then
-      table.insert(ret_list, {
-          word = v,
-          dup = 1,
-          icase = 1,
-          equal = 1,
-          info = "",
-          abbr = v,
-          kind = vim.g.easycomplete_kindflag_buf,
-          menu = vim.g.easycomplete_menuflag_buf,
-        })
+      kind_str = vim.g.easycomplete_kindflag_buf
+      menu_str = vim.g.easycomplete_menuflag_buf
     else
-      table.insert(ret_list, {
-          word = v,
-          dup = 1,
-          icase = 1,
-          equal = 1,
-          info = "",
-          abbr = v,
-          kind = vim.g.easycomplete_kindflag_dict,
-          menu = vim.g.easycomplete_menuflag_dict,
-        })
+      kind_str = vim.g.easycomplete_kindflag_dict
+      menu_str = vim.g.easycomplete_menuflag_dict
     end
+    table.insert(ret_list, {
+        word = v,
+        dup = 1,
+        icase = 1,
+        equal = 1,
+        info = "",
+        abbr = v,
+        kind = kind_str,
+        menu = menu_str,
+      })
   end
   return ret_list
 end
