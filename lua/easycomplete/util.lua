@@ -252,8 +252,9 @@ function util.get_vim_complete_items(response, plugin_name, word)
       local l_placeholder_position = vim.fn.match(l_origin_word, l_placeholder_regex)
       local l_cursor_backing_steps = string.len(string.sub(l_vim_complete_item['word'], l_placeholder_position + 1))
       l_vim_complete_item['abbr'] = l_completion_item['label'] .. '~'
+      local l_user_data_json = {plugin_name = plugin_name}
       if string.len(l_origin_word) > string.len(l_vim_complete_item['word']) then
-        local l_user_data_json = {
+        l_user_data_json = {
           expandable = 1,
           placeholder_position = l_placeholder_position,
           cursor_backing_steps = l_cursor_backing_steps

@@ -9,22 +9,14 @@ local global_timer_counter = 1
 
 local function test()
   console(vim.inspect(Util))
-  console(replaceCharacters("XMLDocument", {0,1,7}, "*"))
-
-  do
-    return
-  end
-
-  console('-------------')
-  console(Util.get(current_lsp_ctx,'lsp'))
-  console('-------------')
-  console(Util.get(current_lsp_ctx, "lsp_name"))
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
 end
 
--- all in all 入口
+-- 兼容 nvim_lsp_handler 所需的检查 nvim_lsp 是否安装的入口
 -- 每次进入 buf 时执行
+-- @param nil
+-- @return nil
 local function nvim_lsp_handler()
   if not Util.nvim_installer_installed() then
     return
@@ -45,6 +37,9 @@ local function nvim_lsp_handler()
   end
 end
 
+-- 全局配置函数
+-- @param config, 全局配置的对象
+-- @return this, 以便链式调用
 function EasyComplete.config(config)
   for key, value in pairs(config) do
     if key == "setup" and type(value) == "function" then
@@ -56,6 +51,9 @@ function EasyComplete.config(config)
   return EasyComplete
 end
 
+-- setup 函数，传入一个方法，这个方法是一个空入参的立即执行的函数
+-- @param func，一个立即执行的函数
+-- @return this, 以便链式调用
 function EasyComplete.setup(func)
   if func == nil then
     return
@@ -63,12 +61,14 @@ function EasyComplete.setup(func)
   if type(func) == 'function' then
     pcall(func)
   end
+  return EasyComplete
 end
 
 function EasyComplete.complete_changed()
   console('--',Util.get(vim.v.event, "completed_item", "user_data"))
 end
 
+-- 执行typing的函数，已经废弃
 function EasyComplete.typing(...)
   local ctx = vim.fn['easycomplete#context']()
   print({
@@ -84,6 +84,8 @@ function EasyComplete.typing(...)
 end
 
 -- 执行每个模块里的 init_once 方法
+-- @param mojos, 一个 table，传入需要初始化的模块名称
+-- @return nil
 function EasyComplete.load_mojo(mojos)
   if vim.g.easycomplete_lua_mojos_loaded == 1 then
     return
@@ -96,18 +98,17 @@ function EasyComplete.load_mojo(mojos)
   end
 end
 
--- 初始化入口
+-- 全局的 lua 初始化入口
 function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
-  nvim_lsp_handler()
-  if vim.api.nvim_get_var('easycomplete_kindflag_buf') == "羅" and debug == true then
-    test()
-  else
-    return
-  end
+  -- nvim_lsp 的支持已经废弃
+  -- nvim_lsp_handler()
 end
 
+-- 普通的 cmp items 排序方法，只做最简单的比较
+-- @param items, cmp items 列表
+-- @reutrn 返回排序后的列表
 function EasyComplete.normalize_sort(items)
   table.sort(items, function(a1, a2)
     local k1 = Util.get_word(a1)
@@ -126,12 +127,16 @@ function EasyComplete.normalize_sort(items)
 end
 
 
--- 字符串组成的数组
+-- 字符串组成的数组进行去重
+-- @param items, 字符串数组
+-- @return table, 去重后的数组
 function EasyComplete.distinct(items)
   return Util.distinct(items)
 end
 
--- 返回去重之后的列表
+-- 根据 buflines 分割出来关键词
+-- @param table list, 传入buflines
+-- @return table, 字符串数组，这里的数组没有去重
 function EasyComplete.get_buf_keywords(lines)
   local buf_keywords = {}
   for _, line in ipairs(lines) do
@@ -148,7 +153,10 @@ function EasyComplete.get_buf_keywords(lines)
   return buf_keywords
 end
 
--- 一个单词的 fuzzy 比对
+-- 一个单词的 fuzzy 比对，没有计算 score
+-- @param needle, 原始单词
+-- @param haystack, 比对单词
+-- @return boolean, 比对成功或者失败
 function EasyComplete.fuzzy_search(needle, haystack)
   if #needle > #haystack then
     return false
@@ -175,6 +183,9 @@ function EasyComplete.fuzzy_search(needle, haystack)
 end
 
 -- vim.fn.matchfuzzy 的重新实现，只返回结果，不返回分数
+-- @param match_list, 待比对的数组列表
+-- @param needle, 比对的单词
+-- @return table, 返回比对成功的列表
 function EasyComplete.matchfuzzy_and_filter(match_list, needle)
   local result = {}
   for _, item in ipairs(match_list) do
@@ -185,6 +196,10 @@ function EasyComplete.matchfuzzy_and_filter(match_list, needle)
   return result
 end
 
+-- 简单的过滤，只通过做模糊匹配来过滤，不考虑fuzzymatch 的分数
+-- @param match_list, 原始列表
+-- @param needle, 比对单词
+-- @return table，返回过滤后的列表
 function EasyComplete.filter(match_list, needle)
   local result = {}
   for _, item in ipairs(match_list) do
@@ -206,11 +221,15 @@ function EasyComplete.filter(match_list, needle)
 end
 
 -- 假设 s:GetItemWord(item) 在 Lua 中对应 item.word
+-- @param item
+-- @return word
 local function get_item_word(item)
   return item.word or ""
 end
 
--- Firstcomplete 中调用
+-- 给 menu_list 去重，只在 Firstcomplete 中调用
+-- @param menu_list, 待去重的列表，列表元素是 cmp item
+-- @return table, 去重后的列表
 function EasyComplete.distinct_keywords(menu_list)
   if not menu_list or #menu_list == 0 then
     return {}
@@ -249,26 +268,32 @@ function EasyComplete.distinct_keywords(menu_list)
   return result_items
 end
 
+-- 注册源
 function EasyComplete.register_source(tb)
   vim.fn["easycomplete#RegisterSource"](tb)
 end
 
+-- 注册 lsp server
 function EasyComplete.register_lsp_server(opt, tb)
   vim.fn["easycomplete#RegisterLspServer"](opt, tb)
 end
 
+-- 获得 lsp 命令
 function EasyComplete.get_command(plugin_name)
   return vim.fn["easycomplete#installer#GetCommand"](plugin_name)
 end
 
+-- 得到插件根目录
 function EasyComplete.get_default_root_uri()
   return vim.fn["easycomplete#util#GetDefaultRootUri"]()
 end
 
+-- 调用 lsp complete
 function EasyComplete.do_lsp_complete(opt, ctx)
   return vim.fn["easycomplete#DoLspComplete"](opt, ctx)
 end
 
+-- 调用 lsp defination
 function EasyComplete.do_lsp_defination()
   return vim.fn["easycomplete#DoLspDefinition"]()
 end
@@ -307,6 +332,8 @@ function EasyComplete.replacement(abbr, positions, wrap_char)
   -- 转换为字符数组（字符串 -> 字符表）
   local letters = {}
   for i = 1, #abbr do
+    -- lua 的 string.sub 是根据字节长度取下表对应的字符，而不是字符长度
+    -- 因此对于 unicode 字符就取不正确，需要用 vim.fn.strcharpart 代替
     -- letters[i] = abbr:sub(i, i)
     letters[i] = vim.fn.strcharpart(abbr, i - 1, 1)
   end

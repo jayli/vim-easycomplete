@@ -67,9 +67,12 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
   let l:response = a:data['response']
 
   " 这里包含了 info document 和 matches
-  " 192 个元素
-  " vim 用时 55 ms
-  " lua 用时 29 ms
+  " 性能：
+  " 2025年5月2日：
+  "   192 个元素
+  "     vim 用时 55 ms
+  "     lua 用时 29 ms
+  " 2025年7月27日更新：192 个元素 lua 耗时减少到 18ms
   let tt = reltime()
   if g:env_is_nvim
     let l:completion_result = s:util_toolkit.get_vim_complete_items(l:response, a:plugin_name, a:word)
