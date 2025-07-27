@@ -1842,6 +1842,16 @@ function! easycomplete#util#NormalizeFunctionalSnip(insertText)
   return s:NormalizeFunctionalSnip(a:insertText)
 endfunction
 
+" Json encode 性能对比
+" vim.fn.json_encode
+"  - 10000 次  75ms
+"  - 1000  次  8ms
+"  - 500   次  4ms
+" lua json.encode
+"  - 10000 次  154ms
+"  - 1000  次  15ms
+"  - 500   次  8ms
+
 " GetVimCompletionItems {{{
 function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
   let l:result = a:response['result']
