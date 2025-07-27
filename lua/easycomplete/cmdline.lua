@@ -486,26 +486,6 @@ this.REG_CMP_HANDLER = {
     end
   },
   {
-    -- 输入 highlight 的 属性
-    -- hi Normal |
-    -- hi Normal g|
-    -- hi Normal guifg=red |
-    -- hi Normal guifg=red gui|
-    pattern = {
-      "^hi%s+[%w@]+%s$",
-      "^hi%s+[%w@]+%s.*%s$",
-      "^hi%s+[%w@]+%s+%w+$",
-      "^hi%s+[%w@]+%s.*%s%w+$",
-    },
-    get_cmp_items = function()
-      if this.insearch() then
-        return this.get_normal_search_cmp()
-      else
-        return this.hl_args
-      end
-    end
-  },
-  {
     -- highlight color groups
     pattern = {
       "^hi%s+[%w@]+$",
@@ -523,6 +503,26 @@ this.REG_CMP_HANDLER = {
         local guide_str = string.sub(typing_word, 1, 1)
         local result = vim.fn.getcompletion(guide_str, "highlight")
         return result
+      end
+    end
+  },
+  {
+    -- 输入 highlight 的 属性
+    -- hi Normal |
+    -- hi Normal g|
+    -- hi Normal guifg=red |
+    -- hi Normal guifg=red gui|
+    pattern = {
+      "^hi%s+[%w@]+%s$",
+      "^hi%s+[%w@]+%s.*%s$",
+      "^hi%s+[%w@]+%s+%w+$",
+      "^hi%s+[%w@]+%s.*%s%w+$",
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        return this.hl_args
       end
     end
   },
