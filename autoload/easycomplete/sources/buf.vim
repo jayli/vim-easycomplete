@@ -119,7 +119,7 @@ function! s:GetBufKeywordsList(typing)
       " lua: 0.021
       " vim: 0.147
       if g:env_is_nvim
-        let local_kwlist = s:lua_toolkit.get_buf_keywords(lines)
+        let local_kwlist = s:lua_toolkit.get_buf_keywords_from_lines(lines)
       else
         for line in lines
           let local_kwlist += split(line,'[^A-Za-z0-9_#]')

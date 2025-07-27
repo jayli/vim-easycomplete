@@ -137,7 +137,7 @@ end
 -- 根据 buflines 分割出来关键词
 -- @param table list, 传入buflines
 -- @return table, 字符串数组，这里的数组没有去重
-function EasyComplete.get_buf_keywords(lines)
+function EasyComplete.get_buf_keywords_from_lines(lines)
   local buf_keywords = {}
   for _, line in ipairs(lines) do
     if vim.bo.filetype == "lua" then
