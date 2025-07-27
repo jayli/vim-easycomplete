@@ -41,35 +41,15 @@ end
 -- call v:lua.require("easycomplete.ghost_text").show_hint()
 -- code_block 是数组类型
 function M.show_hint(code_block)
-  local lines = {}
-  local count = 1
-  local code_lines = code_block
-  for key, line in pairs(code_lines) do
-    local highlight_group = ""
-    if count == 1 then
-      highlight_group = "TabNineSuggestionFirstLine"
-    else
-      highlight_group = "TabNineSuggestionNoneFirstLine"
-    end
-    count = count + 1
-    table.insert(lines, {{line, highlight_group}})
-  end
-
-  local virt_text = lines[1]
-  local virt_lines
-
-  if #lines >= 2 then
-    table.remove(lines, 1)
-    virt_lines = lines
-  else
-    virt_lines = nil
-  end
-
+  local virt_text = {{
+    code_block[1],
+    "TabNineSuggestionFirstLine"
+  }}
   local opt = {
     id = 1,
     virt_text_pos = "inline",
     virt_text = virt_text,
-    virt_lines = virt_lines,
+    -- virt_lines = virt_lines,
     -- virt_text_win_col = vim.fn.virtcol('.') - 1
   }
   -- 用virt_text_win_col 来防止抖动
