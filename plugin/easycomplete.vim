@@ -674,6 +674,9 @@ endif
 nnoremap <expr> n easycomplete#ui#TrackSearchNext()
 nnoremap <expr> N easycomplete#ui#TrackSearchPrev()
 nnoremap <expr> * easycomplete#ui#TrackSearchGlobal()
+nnoremap <expr> u easycomplete#Undo()
+nnoremap <expr> x easycomplete#SingleDelete()
+nnoremap <expr> <c-r> easycomplete#Recover()
 cnoremap <expr><CR>  easycomplete#ui#CmdlineCR()
 inoremap <silent><expr> <BS> easycomplete#BackSpace()
 inoremap  <Plug>EasycompleteTabTrigger <c-r>=easycomplete#CleverTab()<cr>

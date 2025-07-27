@@ -2957,6 +2957,26 @@ function! s:CloseQuickFix()
   silent! noa cclose
 endfunction
 
+function! easycomplete#LintRefreash()
+  call easycomplete#sign#DiagHoverFlush()
+  call easycomplete#sign#LintPopup()
+endfunction
+
+function! easycomplete#Undo()
+  call easycomplete#LintRefreash()
+  return "u"
+endfunction
+
+function! easycomplete#SingleDelete()
+  call easycomplete#LintRefreash()
+  return "x"
+endfunction
+
+function! easycomplete#Recover()
+  call easycomplete#LintRefreash()
+  return "\<c-r>"
+endfunction
+
 function! easycomplete#InsertEnter()
   call s:SnapShoot()
   call easycomplete#sign#DiagHoverFlush()

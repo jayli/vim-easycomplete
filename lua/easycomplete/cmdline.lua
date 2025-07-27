@@ -452,12 +452,29 @@ this.REG_CMP_HANDLER = {
     end
   },
   {
+    -- highlight attr names
+    pattern = {
+      "^hi%s.*gui=%w*$",
+      "^hi%s.*cterm=%w*$",
+      "^highlight%s.*gui=%w*$",
+      "^highlight%s.*cterm=%w*$",
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local colors = this.hl_attrs
+        return colors
+      end
+    end
+  },
+  {
     -- highlight colors name
     pattern = {
-      "^hi%s.*gui[fb]g=$",
-      "^hi%s.*gui[fb]g=%w+$",
-      "^highlight%s.*gui[fb]g=$",
-      "^highlight%s.*gui[fb]g=%w+$",
+      "^hi%s.*gui[fb]g=%w*$",
+      "^hi%s.*cterm[fb]g=%w*$",
+      "^highlight%s.*gui[fb]g=%w*$",
+      "^highlight%s.*cterm[fb]g=%w*$",
     },
     get_cmp_items = function()
       if this.insearch() then
@@ -465,6 +482,26 @@ this.REG_CMP_HANDLER = {
       else
         local colors = this.native_colors
         return colors
+      end
+    end
+  },
+  {
+    -- 输入 highlight 的 属性
+    -- hi Normal |
+    -- hi Normal g|
+    -- hi Normal guifg=red |
+    -- hi Normal guifg=red gui|
+    pattern = {
+      "^hi%s+[%w@]+%s$",
+      "^hi%s+[%w@]+%s.*%s$",
+      "^hi%s+[%w@]+%s+%w+$",
+      "^hi%s+[%w@]+%s.*%s%w+$",
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        return this.hl_args
       end
     end
   },
@@ -805,7 +842,17 @@ this.native_colors = {
   "mediumpurple","rebeccapurple","blueviolet","indigo","darkorchid","darkviolet",
   "mediumorchid","thistle","plum","violet","purple","darkmagenta","fuchsia","magenta",
   "orchid","mediumvioletred","deeppink","hotpink","lavenderblush","palevioletred",
-  "crimson","pink","lightpink"
+  "crimson","pink","lightpink","NONE"
+}
+
+this.hl_args = {
+  "guifg","guibg","ctermfg","ctermbg","guisp","gui","cterm"
+}
+
+this.hl_attrs = {
+  "bold", "underline","undercurl","underdouble","underdotted","underdashed",
+  "strikethrough","reverse","inverse","italic","standout","altfont","nocombine",
+  "NONE"
 }
 
 function this.init_once()
