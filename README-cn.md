@@ -193,7 +193,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_lsp_checking`        | 1             | 打开文件时是否立即检查 lsp 是否安装                         |
 | `g:easycomplete_tabnine_enable`      | 1             | 启用 Tabnine：启用后补全菜单里会出现 Tabnine 补全项         |
 | `g:easycomplete_path_enable`         | 1             | 目录匹配                                                    |
-| `g:easycomplete_snips_enable`        | 1             | 代码片段匹配                                                    |
+| `g:easycomplete_snips_enable`        | 1             | 代码片段匹配                                                |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine 配置](#ai-coding-via-tabnine-support)              |
 | `g:easycomplete_filetypes`           | `{}`          | [自定义文件类型配置](#language-support)                     |
 | `g:easycomplete_enable`              | 1             | 是否启用插件                                                |
@@ -207,6 +207,8 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_signature_enable`    | 1             | 启用函数参数说明提醒                                        |
 | `g:easycomplete_diagnostics_hover`   | 1             | 光标停住所在行显示错误提醒                                  |
 | `g:easycomplete_winborder`           | 1             | 窗口边框 (支持 nvim 0.11 和更高版本)                        |
+| `g:easycomplete_pum_border_style`    | `"rounded"`   | Pum 边框样式                                                |
+| `g:easycomplete_info_border_style`   | `"single"`    | 辅助信息边框样式                                            |
 | `g:easycomplete_ghost_text`          | 1             | 幽灵文本                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |

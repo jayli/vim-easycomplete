@@ -674,11 +674,11 @@ function! s:NVimShow(opt, windowtype, float_type)
   let opt = a:opt
   " pum info
   if g:easycomplete_winborder && (a:windowtype == "popup")
-    let opt.border = "single"
+    let opt.border = g:easycomplete_info_border_style
   endif
   " signature
   if g:easycomplete_winborder && (a:windowtype == "float" && a:float_type == "signature")
-    let opt.border = "single"
+    let opt.border = g:easycomplete_info_border_style
   endif
   if has_key(opt, "filetype")
     unlet opt.filetype

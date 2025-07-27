@@ -193,7 +193,7 @@ Global configurations:
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
 | `g:easycomplete_path_enable`         | 1             | Path complete                                                 |
-| `g:easycomplete_snips_enable`        | 1             | snippets complete                                                 |
+| `g:easycomplete_snips_enable`        | 1             | snippets complete                                             |
 | `g:easycomplete_tabnine_config`      | `{}`          | [TabNine Configuration](#ai-coding-via-tabnine-support)       |
 | `g:easycomplete_filetypes`           | `{}`          | [Custom filetyps configuration](#language-support)            |
 | `g:easycomplete_enable`              | 1             | Enable this plugin                                            |
@@ -207,6 +207,8 @@ Global configurations:
 | `g:easycomplete_signature_enable`    | 1             | Enable signature                                              |
 | `g:easycomplete_diagnostics_hover`   | 1             | Gives a diagnostic prompt when the cursor holds               |
 | `g:easycomplete_winborder`           | 1             | Add window border for pum (for nvim 0.11 or higher)           |
+| `g:easycomplete_pum_border_style`    | `"rounded"`   | Pum window border style                                       |
+| `g:easycomplete_info_border_style`   | `"single"`    | More info window border style                                 |
 | `g:easycomplete_ghost_text`          | 1             | Ghost text                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |

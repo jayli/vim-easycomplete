@@ -189,6 +189,12 @@ endif
 if !exists("g:easycomplete_cursor_word_hl")
   let g:easycomplete_cursor_word_hl = 0
 endif
+if !exists("g:easycomplete_pum_border_style")
+  let g:easycomplete_pum_border_style = "rounded"
+endif
+if !exists("g:easycomplete_info_border_style")
+  let g:easycomplete_info_border_style = "single"
+endif
 if !exists("g:easycomplete_colorful")
   let g:easycomplete_colorful= 0
 endif
