@@ -70,9 +70,9 @@ endfunction
 function! easycomplete#sources#lua#filter(matches, ctx)
   let ctx = a:ctx
   let matches = a:matches
-  if ctx['typed'] =~ '\(\w\+\.\)\{-1,}$' " LoaDotTyping bugfix for #196
-    call filter(matches, function("s:LuaHack_S_DotFilter"))
-  endif
+  " if ctx['typed'] =~ '\(\w\+\.\)\{-1,}$' " LoaDotTyping bugfix for #196
+  "   call filter(matches, function("s:LuaHack_S_DotFilter"))
+  " endif
   let matches = map(copy(matches), function("s:LuaHack_A_DotMap"))
   let matches = map(copy(matches), function("easycomplete#util#FunctionSurffixMap"))
   return matches
@@ -85,9 +85,11 @@ function! s:LuaHack_A_DotMap(key, val)
     let lua_typing_word = s:GetLuaTypingWordWithDot()
     if ctx["char"] == "."
       let a:val.word = substitute(get(a:val, "word"), "^" . lua_typing_word, "", "g")
+      let a:val.abbr = a:val.word
     else
       let word = easycomplete#util#GetTypingWord()
       let a:val.word = substitute(get(a:val, "word"), "^" . lua_typing_word[:-1 * ( 1 + strlen(word))], "", "g")
+      let a:val.abbr = a:val.word
     endif
     let lua_typing_word = s:GetLuaTypingWordWithDot()
   endif
