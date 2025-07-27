@@ -203,11 +203,19 @@ function! easycomplete#pum#bufid()
   return s:pum_buffer
 endfunction
 
+function! s:cmdline()
+  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    return v:true
+  else
+    return v:false
+  endif
+endfunction
+
 function! s:OpenPum(startcol, lines)
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
-  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+  if s:cmdline()
     let pum_pos.row = &window
   endif
   let pum_opts = deepcopy(s:default_pum_pot)
@@ -230,12 +238,12 @@ function! s:OpenPum(startcol, lines)
   call s:RenderScrollBar()
   call s:RenderScrollThumb()
   " 缓解在 cmdline 中匹配查找时造成Search高亮的抖动
-  if !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
+  if !(s:cmdline())
     noa setl textwidth=0
     noa setl completeopt=menu
   endif
   if g:easycomplete_ghost_text &&
-        \ !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
+        \ !(s:cmdline())
     noa setlocal lazyredraw
   endif
 endfunction
@@ -839,7 +847,7 @@ function! s:PumPosition()
     let pos = nvim_win_get_position(s:pum_window)
     let h = nvim_win_get_height(s:pum_window)
     let w = nvim_win_get_width(s:pum_window)
-    if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+    if s:cmdline()
       let editor_height = &window
       let rel_row = editor_height - h - (g:easycomplete_winborder ? 2 : 0)
       let pos[0] = rel_row
@@ -941,6 +949,11 @@ function! s:ComputePumPos(startcol, buffer_size)
   let below_space = s:TrimBelowHeight(below_space)
   let above_space = s:CursorTop() - 1
   let above_space = s:TrimAboveHeight(above_space)
+  if s:cmdline()
+    let pum_direction = "above"
+    let above_space = &window - 1
+    let above_space = s:TrimAboveHeight(above_space)
+  endif
   if pum_direction == "below"
     if a:buffer_size.height >= below_space " 需要滚动
       let l:height = below_space
