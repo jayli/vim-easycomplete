@@ -2128,7 +2128,7 @@ function! easycomplete#_complete(start, items)
           call timer_stop(b:second_complete_hint_timer)
           let b:second_complete_hint_timer = 0
         endif
-        let b:second_complete_hint_timer = timer_start(2, {
+        let b:second_complete_hint_timer = timer_start(40, {
               \ -> easycomplete#util#ShowHint(ghost_text)
               \ })
       endif
