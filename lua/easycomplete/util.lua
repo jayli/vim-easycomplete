@@ -16,8 +16,13 @@ end
 
 function util.parse_abbr(abbr)
   local max_length = vim.g.easycomplete_pum_maxlength
-  if max_length == 0 or #abbr <= max_length then
-    return abbr
+  if #abbr <= max_length then
+    if vim.g.easycomplete_pum_fix_width == 1 then
+      local spaces = string.rep(" ", max_length - #abbr)
+      return abbr .. spaces
+    else
+      return abbr
+    end
   else
     local short_abbr = string.sub(abbr, 1, max_length - 2) .. "…"
     return short_abbr

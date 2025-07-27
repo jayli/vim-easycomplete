@@ -211,6 +211,7 @@ Global configurations:
 | `g:easycomplete_info_border_style`   | `"single"`    | More info window border style                                 |
 | `g:easycomplete_ghost_text`          | 1             | Ghost text                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | Pum window max height                                         |
+| `g:easycomplete_pum_fix_width`       | 0             | Pum fix width or not                                          |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| Pmenu format                                      |
 | `g:easycomplete_menu_abbr`           | 0             | Show abbr(shortname) at pum `menu` position, or show fullname |
 | `g:easycomplete_custom_snippet`      | `""`          | Custom snippets path                                          |

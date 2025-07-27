@@ -1156,6 +1156,9 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   if strlen(word) == 0
     let l:result_menu = a:all_menu[0 : a:maxlength]
     call sort(l:result_menu, "easycomplete#util#SortTextComparatorByLength")
+    for item in l:result_menu
+      let item.abbr = easycomplete#util#parseAbbr(item.abbr)
+    endfor
     return l:result_menu
   endif
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
@@ -2190,8 +2193,13 @@ endfunction
 
 function! s:ParseAbbr(abbr)
   let max_length = g:easycomplete_pum_maxlength
-  if max_length == 0 || strlen(a:abbr) <= max_length
-    return a:abbr
+  if strlen(a:abbr) <= max_length
+    if g:easycomplete_pum_fix_width == 1
+      let spaces = repeat(" ", max_length - strlen(abbr))
+      return abbr . spaces
+    else
+      return a:abbr
+    endif
   else
     let short_abbr = a:abbr[0:max_length - 2] . "…"
     return short_abbr

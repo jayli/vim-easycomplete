@@ -234,6 +234,9 @@ endif
 if !exists("g:easycomplete_pum_maxlength")
   let g:easycomplete_pum_maxlength = 35
 endif
+if !exists("g:easycomplete_pum_fix_width")
+  let g:easycomplete_pum_fix_width = 0
+endif
 
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  g:easycomplete_diagnostics_hover,
