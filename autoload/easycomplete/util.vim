@@ -1147,6 +1147,27 @@ function! s:ReplaceMent(abbr, positions, wrap_char) " {{{
   endif
 endfunction " }}}
 
+
+function! s:TrimArrayToLength(arr, n) abort
+  " 如果数组长度小于等于 n，直接返回原数组
+  if len(a:arr) <= a:n
+    return a:arr
+  endif
+  let l:arr_length_arr = []
+  let l:count = 0
+  for item in a:arr
+    call add(l:arr_length_arr, { "idx": l:count, "length" : strlen(item["word"]) })
+    let l:count += 1
+  endfor
+  call sort(l:arr_length_arr, {a, b -> a["length"] == b["length"] ? 0 : (a["length"] > b["length"] ? 1 : -1)})
+  let l:new_arr_length_arr = l:arr_length_arr[0 : a:n - 1]
+  let l:ret = []
+  for item in l:new_arr_length_arr
+    call add(l:ret, a:arr[item["idx"]])
+  endfor
+  return l:ret
+endfunction
+
 " CompleteMenuFilter {{{
 " 这是 Typing 过程中耗时最多的函数，决定整体性能瓶颈
 " maxlength: 针对 all_menu 的一定数量的前排元素做过滤，超过的元素就丢弃，牺牲
@@ -1165,7 +1186,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let word = substitute(word, "\\.", "\\\\\\\\.", "g")
   endif
   if exists('*matchfuzzy')
-    let all_items = a:all_menu
+    let all_items = s:TrimArrayToLength(a:all_menu, a:maxlength + 200)
     " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
     " 和 word 不是一一对应的，通过word fuzzy 匹配的位置无法正确应用在 abbr 上
     " 这里只 hack 了 vim，其他类型的文件未测试

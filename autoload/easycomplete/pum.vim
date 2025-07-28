@@ -405,14 +405,14 @@ endfunction
 
 function! easycomplete#pum#next()
   call s:SelectNext()
-  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+  if s:cmdline()
     redraw
   endif
 endfunction
 
 function! easycomplete#pum#prev()
   call s:SelectPrev()
-  if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
+  if s:cmdline()
     redraw
   endif
 endfunction
@@ -452,6 +452,7 @@ function! easycomplete#pum#select(index)
   call s:select(a:index)
 endfunction
 
+" 从 1 开始
 function! s:select(line_index)
   if !s:pumvisible() | return | endif
   if a:line_index > len(s:curr_items)
@@ -1119,8 +1120,7 @@ function! s:flush()
   endif
   call execute("noa setl textwidth=" . s:textwidth)
   call execute("noa setl completeopt=" . s:completeopt)
-  if g:easycomplete_ghost_text &&
-        \ !(exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1)
+  if g:easycomplete_ghost_text && !(s:cmdline())
     if !s:lazyredraw
       noa setlocal nolazyredraw
     endif

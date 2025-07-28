@@ -213,7 +213,6 @@ function! easycomplete#ui#DiagColor(str_type)
   return color
 endfunction
 
-
 function! s:IsSearchWord()
   if !exists("b:cs_searched")
     let b:cs_searched = v:false
@@ -225,12 +224,21 @@ function! s:IsSearchWord()
   let search_word = histget("search")
   let search_word = substitute(search_word, "^\\\\\<", "", "g")
   let search_word = substitute(search_word, "\\\\\>$", "", "g")
+  let search_word = s:SpecialTrim(search_word)
   if &ignorecase
     return current_word =~ search_word
   else
     return current_word =~# search_word
   endif
 endfunction " }}}
+
+function! s:SpecialTrim(search_word)
+  " 去掉字符串开头的非字母数字字符
+  let result = substitute(a:search_word, '^\W\+', '', '')
+  " 去掉字符串结尾的非字母数字字符
+  let result = substitute(result, '\W\+$', '', '')
+  return result
+endfunction
 
 " console {{{
 function! s:console(...)
