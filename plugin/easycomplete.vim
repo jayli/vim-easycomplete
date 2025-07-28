@@ -237,6 +237,9 @@ endif
 if !exists("g:easycomplete_pum_fix_width")
   let g:easycomplete_pum_fix_width = 0
 endif
+if !exists("g:easycomplete_lsp_server")
+  let g:easycomplete_lsp_server = {}
+endif
 
 let g:easycomplete_config = {
       \ 'g:easycomplete_diagnostics_hover':  g:easycomplete_diagnostics_hover,
@@ -319,7 +322,7 @@ augroup easycomplete#PluginRegister
         \ 'whitelist': ['*'],
         \ 'completor': function('easycomplete#sources#tn#completor'),
         \ 'constructor': function('easycomplete#sources#tn#constructor'),
-        \ 'command': 'TabNine',
+        \ 'command': get(g:easycomplete_lsp_server, "tn", 'TabNine')
         \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -338,7 +341,7 @@ augroup easycomplete#PluginRegister
       \ "root_uri_patterns": [
       \    "package.json", "tsconfig.json"
       \ ],
-      \ 'command': 'tsserver'
+      \ 'command': get(g:easycomplete_lsp_server, "ts", 'tsserver')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -351,7 +354,7 @@ augroup easycomplete#PluginRegister
       \ "root_uri_patterns": [
       \    "deno.jsonc", "deno.json"
       \ ],
-      \ 'command': 'deno'
+      \ 'command': get(g:easycomplete_lsp_server,"deno", 'deno')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -360,7 +363,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': function('easycomplete#sources#dart#completor'),
       \ 'constructor' :function('easycomplete#sources#dart#constructor'),
       \ 'gotodefinition': function('easycomplete#sources#dart#GotoDefinition'),
-      \ 'command': 'analysis-server-dart-snapshot'
+      \ 'command': get(g:easycomplete_lsp_server, 'dart', 'analysis-server-dart-snapshot')
       \  })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -369,7 +372,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#vim#completor',
       \ 'constructor' :'easycomplete#sources#vim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#vim#GotoDefinition',
-      \ 'command': 'vim-language-server',
+      \ 'command': get(g:easycomplete_lsp_server,'vim','vim-language-server'),
       \ 'semantic_triggers':[
       \      "\\W\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
       \      "^\\(w\\|t\\|a\\|b\\|v\\|s\\|g\\):$",
@@ -384,7 +387,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cpp#GotoDefinition',
-      \ 'command': 'clangd',
+      \ 'command': get(g:easycomplete_lsp_server,'cpp','clangd'),
       \ "root_uri_patterns": [
       \    "compile_flags.txt", "compile_commands.json"
       \ ],
@@ -397,7 +400,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#php#completor',
       \ 'constructor' :'easycomplete#sources#php#constructor',
       \ 'gotodefinition': 'easycomplete#sources#php#GotoDefinition',
-      \ 'command': 'intelephense',
+      \ 'command': get(g:easycomplete_lsp_server,'php','intelephense'),
       \ "root_uri_patterns": [
       \    "psalm.xml", "psalm.xml.dist"
       \ ],
@@ -414,7 +417,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#css#completor',
       \ 'constructor' :'easycomplete#sources#css#constructor',
       \ 'gotodefinition': 'easycomplete#sources#css#GotoDefinition',
-      \ 'command': 'css-languageserver',
+      \ 'command': get(g:easycomplete_lsp_server,'css','css-languageserver'),
       \ 'semantic_triggers':['[^:]:$']
       \ })
 
@@ -424,7 +427,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#html#completor',
       \ 'constructor' :'easycomplete#sources#html#constructor',
       \ 'gotodefinition': 'easycomplete#sources#html#GotoDefinition',
-      \ 'command': 'html-languageserver',
+      \ 'command': get(g:easycomplete_lsp_server,'html','html-languageserver'),
       \ 'semantic_triggers':['[^<]<$']
       \ })
 
@@ -434,7 +437,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#yaml#completor',
       \ 'constructor' :'easycomplete#sources#yaml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#yaml#GotoDefinition',
-      \ 'command': 'yaml-language-server',
+      \ 'command': get(g:easycomplete_lsp_server,'yml','yaml-language-server'),
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -443,7 +446,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#bash#completor',
       \ 'constructor' :'easycomplete#sources#bash#constructor',
       \ 'gotodefinition': 'easycomplete#sources#bash#GotoDefinition',
-      \ 'command': 'bash-language-server',
+      \ 'command': get(g:easycomplete_lsp_server,'sh','bash-language-server'),
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -452,7 +455,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#json#completor',
       \ 'constructor' :'easycomplete#sources#json#constructor',
       \ 'gotodefinition': 'easycomplete#sources#json#GotoDefinition',
-      \ 'command': 'json-languageserver',
+      \ 'command': get(g:easycomplete_lsp_server,'json','json-languageserver'),
       \ 'semantic_triggers':['[^:]:$', '\(^"\|[^"]"\)$']
       \ })
 
@@ -462,7 +465,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#py#completor',
       \ 'constructor' :'easycomplete#sources#py#constructor',
       \ 'gotodefinition': 'easycomplete#sources#py#GotoDefinition',
-      \ 'command': 'pylsp'
+      \ 'command': get(g:easycomplete_lsp_server,'py','pylsp')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -474,7 +477,7 @@ augroup easycomplete#PluginRegister
       \ "root_uri_patterns": [
       \    "pom.xml", "build.gradle"
       \ ],
-      \ 'command': 'eclipse-jdt-ls'
+      \ 'command': get(g:easycomplete_lsp_server,'java','eclipse-jdt-ls')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -486,7 +489,7 @@ augroup easycomplete#PluginRegister
       \ "root_uri_patterns": [
       \    "go.mod",
       \ ],
-      \ 'command': 'gopls'
+      \ 'command': get(g:easycomplete_lsp_server,'go','gopls')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -495,7 +498,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#nim#completor',
       \ 'constructor' :'easycomplete#sources#nim#constructor',
       \ 'gotodefinition': 'easycomplete#sources#nim#GotoDefinition',
-      \ 'command': 'nimlsp'
+      \ 'command': get(g:easycomplete_lsp_server,'nim','nimlsp')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -507,7 +510,7 @@ augroup easycomplete#PluginRegister
       \ "root_uri_patterns": [
       \    "build.gradle",
       \ ],
-      \ 'command': 'groovy-language-server'
+      \ 'command': get(g:easycomplete_lsp_server,'grvy','groovy-language-server')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
@@ -516,7 +519,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#lua#completor',
       \ 'constructor' :'easycomplete#sources#lua#constructor',
       \ 'gotodefinition': 'easycomplete#sources#lua#GotoDefinition',
-      \ 'command': 'sumneko-lua-language-server',
+      \ 'command': get(g:easycomplete_lsp_server,'lua','sumneko-lua-language-server'),
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
       " \ 'command': 'emmylua-ls',
@@ -526,7 +529,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#ruby#completor',
       \ 'constructor' :'easycomplete#sources#ruby#constructor',
       \ 'gotodefinition': 'easycomplete#sources#ruby#GotoDefinition',
-      \ 'command': 'solargraph'
+      \ 'command': get(g:easycomplete_lsp_server,'rb','solargraph')
       \ })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'kt',
@@ -534,7 +537,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#kotlin#completor',
       \ 'constructor' :'easycomplete#sources#kotlin#constructor',
       \ 'gotodefinition': 'easycomplete#sources#kotlin#GotoDefinition',
-      \ 'command': 'kotlin-language-server'
+      \ 'command': get(g:easycomplete_lsp_server,'kt','kotlin-language-server')
       \  })
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'rust',
@@ -542,7 +545,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#rust#completor',
       \ 'constructor' :'easycomplete#sources#rust#constructor',
       \ 'gotodefinition': 'easycomplete#sources#rust#GotoDefinition',
-      \ 'command': 'rust-analyzer',
+      \ 'command': get(g:easycomplete_lsp_server,'rust','rust-analyzer'),
       \ "root_uri_patterns": [
       \    "Cargo.toml",
       \ ],
@@ -554,7 +557,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#xml#completor',
       \ 'constructor' :'easycomplete#sources#xml#constructor',
       \ 'gotodefinition': 'easycomplete#sources#xml#GotoDefinition',
-      \ 'command': 'lemminx',
+      \ 'command': get(g:easycomplete_lsp_server,'xml','lemminx'),
       \ 'semantic_triggers':['[0-9a-zA-Z]:$']
       \ })
 
@@ -564,7 +567,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#cs#completor',
       \ 'constructor' :'easycomplete#sources#cs#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cs#GotoDefinition',
-      \ 'command': 'omnisharp-lsp',
+      \ 'command': get(g:easycomplete_lsp_server,'c#','omnisharp-lsp'),
       \ 'semantic_triggers':[]
       \ })
 
@@ -574,7 +577,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#r#completor',
       \ 'constructor' :'easycomplete#sources#r#constructor',
       \ 'gotodefinition': 'easycomplete#sources#r#GotoDefinition',
-      \ 'command': 'r-languageserver',
+      \ 'command': get(g:easycomplete_lsp_server,'r','r-languageserver'),
       \ 'semantic_triggers':[]
       \ })
 
@@ -584,7 +587,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#zig#completor',
       \ 'constructor' :'easycomplete#sources#zig#constructor',
       \ 'gotodefinition': 'easycomplete#sources#zig#GotoDefinition',
-      \ 'command': 'zls'
+      \ 'command': get(g:easycomplete_lsp_server,'zig','zls')
       \ })
 
   " TODO cmake-languageserver 本身有 bug，等其更新
@@ -594,7 +597,7 @@ augroup easycomplete#PluginRegister
       \ 'completor': 'easycomplete#sources#cmake#completor',
       \ 'constructor' :'easycomplete#sources#cmake#constructor',
       \ 'gotodefinition': 'easycomplete#sources#cmake#GotoDefinition',
-      \ 'command': 'cmake-language-server'
+      \ 'command': get(g:easycomplete_lsp_server,'cmake','cmake-language-server')
       \ })
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({

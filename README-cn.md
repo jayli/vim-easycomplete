@@ -189,6 +189,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_kind_icons`          | `{}`          | Kind 图标.                                                   |
 | `g:easycomplete_sign_text`           | `{}`          | 提示图标配置.                                               |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp 图标配置                                                |
+| `g:easycomplete_lsp_server`          | `{}`          | 给特定的源使用 不同的 lsp server                            |
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine 行内补全(for nvim only)                             |
 | `g:easycomplete_lsp_checking`        | 1             | 打开文件时是否立即检查 lsp 是否安装                         |
 | `g:easycomplete_tabnine_enable`      | 1             | 启用 Tabnine：启用后补全菜单里会出现 Tabnine 补全项         |

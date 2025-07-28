@@ -191,6 +191,7 @@ Global configurations:
 | `g:easycomplete_lsp_type_font`       | ...           | lsp icons configuration                                       |
 | `g:easycomplete_tabnine_suggestion`  | 0             | Tabnine inline suggestion(for nvim only)                      |
 | `g:easycomplete_lsp_checking`        | 1             | Check whether the lsp is installed while opening a file       |
+| `g:easycomplete_lsp_server`          | `{}`          | Set your custom lsp server for specific source                |
 | `g:easycomplete_tabnine_enable`      | 1             | Enable Tabnine                                                |
 | `g:easycomplete_path_enable`         | 1             | Path complete                                                 |
 | `g:easycomplete_snips_enable`        | 1             | snippets complete                                             |
