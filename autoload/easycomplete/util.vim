@@ -1147,7 +1147,9 @@ function! s:ReplaceMent(abbr, positions, wrap_char) " {{{
   endif
 endfunction " }}}
 
-
+" 把过长的字符删掉，如果不能完全匹配的情况，尽可能匹配短单词，放弃长单词
+" arr: 原始 items 列表
+" n: item 列表的长度，把word最长的item删除，直到符合n的长度
 function! s:TrimArrayToLength(arr, n) abort
   " 如果数组长度小于等于 n，直接返回原数组
   if len(a:arr) <= a:n
