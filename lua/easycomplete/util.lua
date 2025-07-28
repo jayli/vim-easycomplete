@@ -24,7 +24,7 @@ function util.parse_abbr(abbr)
       return abbr
     end
   else
-    local short_abbr = string.sub(abbr, 1, max_length - 2) .. "…"
+    local short_abbr = string.sub(abbr, 1, max_length - 1) .. "…"
     return short_abbr
   end
 end

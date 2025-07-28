@@ -232,7 +232,7 @@ if !exists("g:easycomplete_pum_maxheight")
 endif
 " 匹配文本的距离
 if !exists("g:easycomplete_pum_maxlength")
-  let g:easycomplete_pum_maxlength = 35
+  let g:easycomplete_pum_maxlength = 31
 endif
 if !exists("g:easycomplete_pum_fix_width")
   let g:easycomplete_pum_fix_width = 0

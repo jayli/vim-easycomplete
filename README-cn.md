@@ -219,7 +219,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_use_default_cr`      | 1             | 是否使用默认回车的事件绑定                                  |
 | `g:easycomplete_pum_pretty_style`    | 1             | 开启 border 时自适应 pum 样式                               |
 | `g:easycomplete_cmdline`             | 1             | cmdline 匹配                                                |
-| `g:easycomplete_pum_maxlength`       | 35            | 匹配列表单词最长的字符数                                    |
+| `g:easycomplete_pum_maxlength`       | 31            | 匹配列表单词最长的字符数                                    |
 | `g:easycomplete_pum_noselect`        | 0             | 是否不自动选中第一个匹配项. 同 `set &completeopt+=noselect` |
 
 ## 语言支持
