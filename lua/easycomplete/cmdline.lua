@@ -45,6 +45,7 @@ function this.get_buf_keywords(typing_word)
   return util.get_buf_keywords(typing_word)
 end
 
+-- 计算 sign 和 number 列的宽度
 function this.calculate_sign_and_linenr_width()
   local width = 0
   -- 检查是否有 sign 列
@@ -67,6 +68,7 @@ function this.calculate_sign_and_linenr_width()
   return width
 end
 
+-- 计算当前窗口距离window左边距的距离
 function this.window_offset_horizontal()
   local offset = vim.fn.win_screenpos(vim.fn.win_getid())
   local offset_horizontal = offset[2]
@@ -91,7 +93,6 @@ function this.pum_redraw()
   if this.insearch() then
     redraw_queued = true
     -- 首次insearch匹配<s-tab>会导致匹配高亮渲染消失，这里做一下区分
-    local cmdline = vim.fn.getcmdline()
     local first_insearch_match = false
     if last_redraw == false then
       first_insearch_match = true
@@ -315,6 +316,7 @@ function this.normalize_list(arr, word)
   return filtered_items
 end
 
+-- cmdline 处理器
 function this.cmdline_handler(keys, key_str)
   if vim.g.easycomplete_cmdline_pattern == "" then
     return
@@ -359,6 +361,7 @@ function this.cmdline_handler(keys, key_str)
   end
 end
 
+-- 回车处理器
 function this.cr_handler()
   if this.pum_visible() and this.pum_selected() then
     if vim.g.easycomplete_cmdline_pattern == ":" then
@@ -382,6 +385,7 @@ function this.cr_handler()
   end
 end
 
+-- 获得搜索模式下的匹配词列表
 function this.get_normal_search_cmp()
   local typing_word = this.get_typing_word()
   local word_list = {}
@@ -404,7 +408,7 @@ function this.get_normal_search_cmp()
   return word_list
 end
 
--- MAIN ROUTER
+-- MAIN ROUTER, 主路由
 this.REG_CMP_HANDLER = {
   {
     -- cmdline 是空
@@ -463,7 +467,7 @@ this.REG_CMP_HANDLER = {
       if this.insearch() then
         return this.get_normal_search_cmp()
       else
-        local colors = this.hl_attrs
+        local colors = this.HL_ATTRS
         return colors
       end
     end
@@ -480,7 +484,7 @@ this.REG_CMP_HANDLER = {
       if this.insearch() then
         return this.get_normal_search_cmp()
       else
-        local colors = this.native_colors
+        local colors = this.NATIVE_COLORS
         return colors
       end
     end
@@ -522,7 +526,7 @@ this.REG_CMP_HANDLER = {
       if this.insearch() then
         return this.get_normal_search_cmp()
       else
-        return this.hl_args
+        return this.HL_ARGS
       end
     end
   },
@@ -611,6 +615,7 @@ this.REG_CMP_HANDLER = {
   }
 }
 
+-- 执行路径匹配
 function this.do_path_complete()
   this.cmp_regex_handler(function()
     return this.get_path_cmp_items()
@@ -620,9 +625,10 @@ function this.do_path_complete()
   end, 10)
 end
 
+-- 根据 cmd_name 获得命令的类型
 function this.get_complition_type(cmd_name)
   local cmd_type = ""
-  for key, item in pairs(this.cmd_type) do
+  for key, item in pairs(this.CMD_TYPES) do
     if util.has_item(item, cmd_name) then
       cmd_type = key
       break
@@ -631,6 +637,7 @@ function this.get_complition_type(cmd_name)
   return cmd_type
 end
 
+-- 执行匹配
 function this.do_complete()
   local word = this.get_typing_word()
   local should_redraw = false
@@ -692,6 +699,7 @@ function this.cmp_regex_handler(get_cmp_items, word)
   return should_redraw
 end
 
+-- 计算当前行李tab的数量
 function this.tabs_number()
   local line = vim.fn.getline('.')
   local res, no = string.gsub(line, "\t", "")
@@ -710,12 +718,14 @@ function this.get_all_commands()
   return all_commands
 end
 
+-- 计算光标之前的字符串
 function this.cmdline_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
   local cmdline_typed = util.trim_before(string.sub(cmdline_all, 1, vim.fn.getcmdpos() - 1))
   return cmdline_typed
 end
 
+-- 计算光标之前的单个字符
 function this.char_before_cursor()
   local cmdline_all = vim.fn.getcmdline()
   local char = string.sub(cmdline_all, vim.fn.getcmdpos() - 1, vim.fn.getcmdpos() - 1)
@@ -765,7 +775,8 @@ function this.get_help_completions()
   end
 end
 
-this.cmd_type = {
+-- 命令类型
+this.CMD_TYPES = {
   -- File completion
   file = {
     'edit', 'read', 'write','saveas',
@@ -820,7 +831,7 @@ this.cmd_type = {
   user      = { 'user' }
 }
 
-this.native_colors = {
+this.NATIVE_COLORS = {
   "black","dimgray","dimgrey","gray","grey","darkgray","darkgrey","silver",
   "lightgray","lightgrey","gainsboro","whitesmoke","white","snow","rosybrown",
   "lightcoral","indianred","brown","firebrick","maroon","darkred","red",
@@ -845,11 +856,11 @@ this.native_colors = {
   "crimson","pink","lightpink","NONE"
 }
 
-this.hl_args = {
+this.HL_ARGS = {
   "guifg","guibg","ctermfg","ctermbg","guisp","gui","cterm"
 }
 
-this.hl_attrs = {
+this.HL_ATTRS = {
   "bold", "underline","undercurl","underdouble","underdotted","underdashed",
   "strikethrough","reverse","inverse","italic","standout","altfont","nocombine",
   "NONE"

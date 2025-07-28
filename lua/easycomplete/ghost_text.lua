@@ -1,9 +1,50 @@
-local Util = require "easycomplete.util"
-local log = Util.log
-local console = Util.console
+local util = require "easycomplete.util"
+local log = util.log
+local console = util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 local global_ghost_tx_ns = vim.api.nvim_create_namespace('global_ghost_tx_ns')
 local M = {}
+
+local function is_cursor_at_EOL()
+  -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local row = cursor[1] - 1  -- 行号从0开始计数，所以减1
+  local col = cursor[2]
+
+  -- 获取当前行的文本
+  local lines = vim.api.nvim_buf_get_lines(0, row, row + 1, false)
+  if #lines == 0 then return true end  -- 如果没有获取到行，则认为是在行尾
+
+  local line = lines[1]
+  line = line:gsub("%s*$", "")
+
+  -- 检查光标位置是否等于或超过行的长度
+  if col >= #line then
+    -- 光标位于行末或者超出行末
+    return true
+  else
+    -- 光标不在行末
+    return false
+  end
+end
+
+local function get_current_extmark()
+  local row = vim.fn.line('.') - 1
+  local mks = vim.api.nvim_buf_get_extmarks(0, global_ghost_tx_ns, { row, 0 }, { row, -1 }, {
+    details = true,
+  })
+  local mk_text = ""
+  if not mks or #mks == 0 then
+    return ""
+  end
+  for _, mark in ipairs(mks) do
+    local info = mark[4]
+    if info.virt_text and #info.virt_text > 0 then
+      mk_text = info.virt_text[1][1]
+    end
+  end
+  return mk_text
+end
 
 function M.nvim_init_ghost_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
@@ -112,7 +153,7 @@ local function ghost_text_bind_event()
         if curr_key == nil or string.byte(curr_key) == nil then
           return
         end
-        -- console("输入字符" .. vim.inspect(string.byte(curr_key)))
+        -- TODO: 这里连续输入极快时会有抖动
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
           -- 正常输入
           if vim.fn["easycomplete#pum#visible"]() then
@@ -169,48 +210,6 @@ function M.init_once()
   end
   vim.g.easycomplete_ghost_txt_tmp_ready = 1
   ghost_text_bind_event()
-end
-
-
-function get_current_extmark()
-  local row = vim.fn.line('.') - 1
-  local mks = vim.api.nvim_buf_get_extmarks(0, global_ghost_tx_ns, { row, 0 }, { row, -1 }, {
-    details = true,
-  })
-  local mk_text = ""
-  if not mks or #mks == 0 then
-    return ""
-  end
-  for _, mark in ipairs(mks) do
-    local info = mark[4]
-    if info.virt_text and #info.virt_text > 0 then
-      mk_text = info.virt_text[1][1]
-    end
-  end
-  return mk_text
-end
-
-function is_cursor_at_EOL()
-  -- 获取当前窗口的光标位置 (返回值为 {行号, 列号})
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local row = cursor[1] - 1  -- 行号从0开始计数，所以减1
-  local col = cursor[2]
-
-  -- 获取当前行的文本
-  local lines = vim.api.nvim_buf_get_lines(0, row, row + 1, false)
-  if #lines == 0 then return true end  -- 如果没有获取到行，则认为是在行尾
-
-  local line = lines[1]
-  line = line:gsub("%s*$", "")
-
-  -- 检查光标位置是否等于或超过行的长度
-  if col >= #line then
-    -- 光标位于行末或者超出行末
-    return true
-  else
-    -- 光标不在行末
-    return false
-  end
 end
 
 function M.delete_hint()
