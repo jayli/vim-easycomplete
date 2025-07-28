@@ -89,6 +89,7 @@ function M.show_hint(code_block)
 
   vim.api.nvim_buf_set_extmark(0, global_ghost_tx_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
   current_ghost_text = code_block[1]
+  current_typing_word = util.get_typing_word()
 end
 
 local function onkey_event_prevented()
