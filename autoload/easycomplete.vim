@@ -906,7 +906,8 @@ function! s:BackingCompleteHandler()
         endif
         noa call easycomplete#util#timer_start("easycomplete#pum#complete", [start_pos, result], 30)
         call easycomplete#sources#tn#SetGlobalSourceItems([])
-        call s:CloseCompleteInfo()
+        noa call timer_start(31, { -> s:CloseCompleteInfo() && s:ShowCompleteInfoWithoutTimer()})
+        " TODO here 这里的 easycomplete_pum_done 没执行？
         " pumvisible时的正常退回默认会关闭pum，关闭动作会触发completedone事件
         " 这里在nvim中模拟completedone事件
         if !empty(result)
