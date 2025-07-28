@@ -1140,7 +1140,7 @@ function! easycomplete#RegisterLspServer(opt, config)
     return
   endif
   let g:easycomplete_source[a:opt["name"]].lsp = copy(a:config)
-  if !easycomplete#installer#executable(cmd)
+  if !easycomplete#installer#executable(cmd) && !has_key(g:easycomplete_lsp_server, a:opt["name"])
     let l:lsp_installing_msg = "'". cmd ."' is not avilable. Do ':InstallLspServer'"
     if g:easycomplete_lsp_checking
       if g:env_is_nvim
