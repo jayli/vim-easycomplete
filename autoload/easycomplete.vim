@@ -367,7 +367,23 @@ function! s:CompleteTypingMatch(...)
     return
   endif
   let s:easycomplete_start_pos = col('.') - strlen(word)
-  call s:SecondComplete(s:easycomplete_start_pos, filtered_menu, g:easycomplete_menuitems, word)
+  " 为了防止抖动，加上判断 tabnine 是否存在占位，如果有则立即刷新 SecondComplete
+  " 如果没有则等 30 ms，尽量等 tabnine 有返回后再刷新，但 tabnine 不一定有返回
+  " 但可以尽可能多的缓解抖动问题
+  let l:fire_complete_immediately = v:true
+  if easycomplete#sources#tn#available()
+    let l:tn_ph = easycomplete#sources#tn#GetGlobalSourceItems()
+    if empty(l:tn_ph)
+      let l:fire_complete_immediately = v:false
+    endif
+  endif
+  if l:fire_complete_immediately
+    call s:SecondComplete(s:easycomplete_start_pos, filtered_menu, g:easycomplete_menuitems, word)
+  else
+    call easycomplete#util#timer_start("easycomplete#SecondComplete", [
+      \   s:easycomplete_start_pos, filtered_menu, g:easycomplete_menuitems, word
+      \ ], 25)
+  endif
 endfunction
 
 " 这里调用是异步回来，需要记录上一次 complete 的 start_pos
@@ -410,6 +426,10 @@ function! s:SecondCompleteRendering(start_pos, result)
   else
     call s:complete(a:start_pos, a:result)
   endif
+endfunction
+
+function! easycomplete#SecondComplete(...)
+  return call('s:SecondComplete', a:000)
 endfunction
 
 function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)

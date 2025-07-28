@@ -33,7 +33,7 @@ if g:easycomplete_nerd_font == 1
   let l_menu_skin = {
         \   "buf": {
         \      "kind":get(kind_icons, "buf", ""),
-        \      "menu": g:easycomplete_menu_abbr ? "Text" : "text"
+        \      "menu": g:easycomplete_menu_abbr ? "Text" : "buffers"
         \    },
         \   "snip": {
         \      "kind":get(kind_icons, "snip", ""),
@@ -41,7 +41,7 @@ if g:easycomplete_nerd_font == 1
         \    },
         \   "dict": {
         \      "kind":get(kind_icons, "dict", "󰈍"),
-        \      "menu": g:easycomplete_menu_abbr ? "Dict" : "dict"
+        \      "menu": g:easycomplete_menu_abbr ? "Dict" : "library"
         \    },
         \   "tabnine": {
         \      "kind":get(kind_icons, "tabnine", "󰕃"),
@@ -115,9 +115,9 @@ let g:easycomplete_kindflag_cmdline = empty(easycomplete#util#get(g:easycomplete
 
 
 let g:easycomplete_menuflag_buf = empty(    easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")) ?
-                                  \ (g:easycomplete_menu_abbr ? "[B]" : "buffer") : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
+                                  \ (g:easycomplete_menu_abbr ? "[B]" : "buffers") : easycomplete#util#get(g:easycomplete_menu_skin, "buf", "menu")
 let g:easycomplete_menuflag_dict = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")) ?
-                                  \ (g:easycomplete_menu_abbr ? "[D]" : "dict") : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
+                                  \ (g:easycomplete_menu_abbr ? "[D]" : "library") : easycomplete#util#get(g:easycomplete_menu_skin, "dict", "menu")
 let g:easycomplete_menuflag_snip = empty(   easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")) ?
                                   \ (g:easycomplete_menu_abbr ? "[S]" : "snippet") : easycomplete#util#get(g:easycomplete_menu_skin, "snip", "menu")
 let g:easycomplete_menuflag_tabnine = empty(easycomplete#util#get(g:easycomplete_menu_skin, "tabnine", "menu")) ?
