@@ -121,6 +121,10 @@ function! s:GetDocumentParams(item, server_name)
   catch
     " call s:log(v:exception)
   endtry
+  " for rust completion/resolve
+  if has_key(lsp_item, "data") && has_key(lsp_item["data"], "hash")
+    let ret.completion_item.data["hash"] = lsp_item["data"]["hash"]
+  endif
   if !empty(text_edit)
     let ret.completion_item["textEdit"] = text_edit
   endif
