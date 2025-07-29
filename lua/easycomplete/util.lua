@@ -506,6 +506,7 @@ function util.create_config(file_path, content)
   vim.fn.writefile(content, file_path, "a")
 end
 
+-- 根据word的长度，晒出最短的n个元素
 function util.trim_array_to_length(arr, n)
   -- 如果数组长度小于等于 n，直接返回原数组
   if #arr <= n then
