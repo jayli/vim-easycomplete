@@ -285,6 +285,16 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
   return info
 endfunction
 
+" 一般在 item 的 word 过长被隐藏显示时（或者是 buffers）
+" 如果 lsp 没有返回 info，最好显示一下完整的label
+" 通常在 lsp 返回后调用，所以这里不用考虑延迟的问题
+function! easycomplete#util#ShowDefaultInfo(item)
+  let whole_info = get(a:item, "word", "")
+  let menu_flag = get(a:item, "menu", "")
+  call easycomplete#ShowCompleteInfo(whole_info)
+  call easycomplete#SetMenuInfo(whole_info, whole_info, menu_flag)
+endfunction
+
 function! s:GetTabNineItemInfo(item)
   " 这里的 info 是一个字符串，不是数组
   let l:info = get(a:item, "info", "")

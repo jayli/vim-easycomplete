@@ -73,7 +73,11 @@ function! s:HandleLspCallback(server_name, data) abort
     endif
   catch
     call s:ClosePopup()
-    " echom v:exception
+    " 如果 documentation 不存在，且item因过长被缩写了
+    if get(g:easycomplete_completed_item, "abbr", "") =~ "…"
+      call easycomplete#util#ShowDefaultInfo(g:easycomplete_completed_item)
+    endif
+    " call s:console(v:exception)
   endtry
 endfunction
 
