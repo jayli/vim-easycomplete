@@ -25,7 +25,7 @@ endfunction
 " info: lsp server 信息
 " plugin_name: 插件的名字，比如 py, ts
 function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
-  " call s:console('-->', 'lsp request start')
+  " call s:console("--> request")
   let l:server_name = a:info['server_names'][0]
   call easycomplete#lsp#send_request(l:server_name, {
         \ 'method': 'textDocument/completion',
@@ -39,7 +39,7 @@ function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
 endfunction
 
 function! s:HandleLspCallback(server_name, plugin_name, data) abort
-  " call s:console('<--', 'lsp response', reltimestr(reltime(g:xx)))
+  " call s:console('<--', 'lsp response', a:data)
   if easycomplete#IsBacking() | return | endif
   let l:ctx = easycomplete#context()
   let l:word = l:ctx["typing"]

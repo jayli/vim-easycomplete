@@ -35,12 +35,12 @@ function! easycomplete#installer#GetCommand(name)
     return ''
   endif
   let cmd = opt['command']
-  if executable(cmd)
-    return cmd
-  endif
   let local_cmd = easycomplete#installer#LspServerDir() . '/' . a:name . '/' . cmd
   if executable(local_cmd)
     return local_cmd
+  endif
+  if executable(cmd)
+    return cmd
   endif
   return ''
 endfunction

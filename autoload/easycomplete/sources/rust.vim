@@ -23,3 +23,6 @@ function! easycomplete#sources#rust#GotoDefinition(...)
   return easycomplete#DoLspDefinition()
 endfunction
 
+function! s:console(...)
+  return call('easycomplete#log#log', a:000)
+endfunction
