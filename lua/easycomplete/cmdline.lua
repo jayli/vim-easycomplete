@@ -312,7 +312,7 @@ function this.normalize_list(arr, word)
         })
     end
   end
-  local filtered_items = this.menu_filter(ret, word, 500)
+  local filtered_items = this.menu_filter(ret, word, 800)
   return filtered_items
 end
 
