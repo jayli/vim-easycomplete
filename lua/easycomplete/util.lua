@@ -349,6 +349,14 @@ function util.get_vim_complete_items(response, plugin_name, word)
   return { items = l_vim_complete_items, incomplete = l_incomplete }
 end -- endfunction
 
+function util.get_plain_items(all_menu)
+  local new_list = {}
+  for _, value in ipairs(all_menu) do
+    table.insert(new_list, all_menu["label"])
+  end
+  return new_list
+end
+
 -- TODO 需要再测试一下这个函数
 function util.get(a, ...)
   local args = {...}

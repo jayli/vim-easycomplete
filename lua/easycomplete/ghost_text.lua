@@ -4,7 +4,7 @@ local console = util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 local global_ghost_tx_ns = vim.api.nvim_create_namespace('global_ghost_tx_ns')
 local current_ghost_text = ""
-local current_typing_word = ""
+local current_col = 0
 local M = {}
 
 local function is_cursor_at_EOL()
@@ -89,7 +89,7 @@ function M.show_hint(code_block)
 
   vim.api.nvim_buf_set_extmark(0, global_ghost_tx_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
   current_ghost_text = code_block[1]
-  current_typing_word = util.get_typing_word()
+  current_col = vim.fn.col('.')
 end
 
 local function onkey_event_prevented()
@@ -145,24 +145,29 @@ local function ghost_text_bind_event()
         end
         -- TODO: 这里连续输入极快时会有抖动，原因是输入过有时会一次前进两个字符
         -- 这时处理占位符时要按两个步长来处理
-        local typing_word = util.get_typing_word()
-        local old_typing_word = current_typing_word
-        current_typing_word = typing_word
+        local old_col = current_col
+        current_col = vim.fn.col('.')
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
           -- 正常输入
-          local foreword_step = #current_typing_word - #old_typing_word
-          if is_cursor_at_EOL() then
-            foreword_step = 1
+          local foreword_step = current_col - old_col
+          if current_col == 0 then
+            foreword_step = 0
           end
           if vim.fn["easycomplete#pum#visible"]() then
             local ok, err = pcall(function()
-              local ghost_text = get_current_extmark()
+              local ghost_text = current_ghost_text
+              -- console(string.rep("x", old_col), ghost_text, foreword_step, #ghost_text == #new_ghost_text)
               if ghost_text == "" or #ghost_text == 1 then
                 M.delete_hint()
                 vim.g.easycomplete_ghost_text_str = ""
               elseif #ghost_text >= 2 then
                 local new_ghost_text = string.sub(ghost_text, 1 + foreword_step)
-                M.show_hint({new_ghost_text})
+                current_ghost_text = new_ghost_text
+                if #new_ghost_text == 0 then
+                  M.delete_hint()
+                else
+                  M.show_hint({new_ghost_text})
+                end
                 vim.g.easycomplete_ghost_text_str = new_ghost_text
               end
               -- safe_redraw()
@@ -173,10 +178,13 @@ local function ghost_text_bind_event()
           end
         elseif curr_key and string.byte(curr_key) == 8 then
           -- 退格键
-          local backword_step = #old_typing_word - #current_typing_word
+          local backword_step = old_col - current_col
+          if current_col == 0 then
+            backword_step = 0
+          end
           if vim.fn["easycomplete#pum#visible"]() then
             local ok, err = pcall(function()
-              local ghost_text = get_current_extmark()
+              local ghost_text = current_ghost_text
               if ghost_text == "" then
                 -- M.delete_hint()
                 vim.g.easycomplete_ghost_text_str = ""
@@ -196,7 +204,7 @@ local function ghost_text_bind_event()
           end
         else
           -- 其他字符
-          current_typing_word = ""
+          current_col = 0
         end
         curr_key = nil
         ------}} ghost_handler --------------------------------
@@ -215,7 +223,7 @@ end
 function M.delete_hint()
   vim.api.nvim_buf_del_extmark(0, global_ghost_tx_ns, 1)
   current_ghost_text = ""
-  current_typing_word = ""
+  current_col = 0
 end
 
 return M
