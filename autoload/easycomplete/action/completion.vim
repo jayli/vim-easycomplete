@@ -58,6 +58,8 @@ function! s:HandleLspCallback(server_name, plugin_name, data) abort
   let l:matches = l:result['matches']
   let l:startcol = l:ctx['startcol']
 
+  " TODO #398
+  " call s:console(v:lua.require("easycomplete.util").get_plain_items(l:matches))
   let l:matches = s:MatchResultFilterPipe(a:plugin_name, l:matches, l:ctx)
   call easycomplete#complete(a:plugin_name, l:ctx, l:startcol, l:matches)
 endfunction

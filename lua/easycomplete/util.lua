@@ -349,10 +349,12 @@ function util.get_vim_complete_items(response, plugin_name, word)
   return { items = l_vim_complete_items, incomplete = l_incomplete }
 end -- endfunction
 
+-- 把一个lsp返回标准格式的items列表
+-- 转换为一个字符串组成的数组，主要是调试用
 function util.get_plain_items(all_menu)
   local new_list = {}
   for _, value in ipairs(all_menu) do
-    table.insert(new_list, all_menu["label"])
+    table.insert(new_list, value["word"])
   end
   return new_list
 end
