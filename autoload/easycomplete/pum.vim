@@ -969,7 +969,11 @@ function! s:ComputePumPos(startcol, buffer_size)
     else
       let l:height = a:buffer_size.height
     endif
-    let l:row = s:CursorTop() - l:height - 1
+    if s:cmdline()
+      let l:row = &window - l:height - 1
+    else
+      let l:row = s:CursorTop() - l:height - 1
+    endif
   endif
   if g:easycomplete_winborder
     if pum_direction == "below"
