@@ -262,20 +262,16 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     let l:info = s:GetTabNineItemInfo(a:item)
     return l:info
   endif
-  let t_name = empty(get(a:item, "abbr")) ? get(a:item, "word") : get(a:item, "abbr")
-  let t_name = s:TrimWavyLine(t_name)
   let t_sha = easycomplete#util#GetSha256(a:item)
   let info = ""
   for item in a:all_menu
     if type(item) != type({})
       continue
     endif
-    let i_name = empty(get(item, "abbr")) ? get(item, "word") : get(item, "abbr")
-    let i_name = s:TrimWavyLine(i_name)
     let i_plugin_name = get(item, 'plugin_name', '')
     let i_plugin_name = s:GetPluginNameFromUserData(item)
     let i_sha = easycomplete#util#GetSha256(item)
-    if i_sha ==# t_sha && t_name ==# i_name && i_plugin_name ==# t_plugin_name
+    if i_sha ==# t_sha && i_plugin_name ==# t_plugin_name
       if has_key(item, "info")
         let info = get(item, "info", [])
       endif
