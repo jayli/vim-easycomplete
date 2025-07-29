@@ -151,6 +151,9 @@ local function ghost_text_bind_event()
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
           -- 正常输入
           local foreword_step = #current_typing_word - #old_typing_word
+          if is_cursor_at_EOL() then
+            foreword_step = 1
+          end
           if vim.fn["easycomplete#pum#visible"]() then
             local ok, err = pcall(function()
               local ghost_text = get_current_extmark()
