@@ -127,7 +127,6 @@ local function ghost_text_bind_event()
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     -- 更新 last_key 变量
     curr_key = key_str
-    -- console('on_key', string.byte(curr_key))
   end)
   vim.api.nvim_create_autocmd({"CursorMovedI"}, {
       pattern = "*",
