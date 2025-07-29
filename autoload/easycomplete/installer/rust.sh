@@ -13,7 +13,7 @@ darwin)
   ;;
 esac
 
-echo "https://github.com/rust-analyzer/rust-analyzer/releases/download/2021-09-27/rust-analyzer-$platform.gz"
+echo "https://github.com/rust-analyzer/rust-analyzer/releases/download/2025-07-28/rust-analyzer-$platform.gz"
 
 curl -L -o "rust-analyzer-$platform.gz" "https://github.com/rust-analyzer/rust-analyzer/releases/download/2021-09-27/rust-analyzer-$platform.gz"
 gzip -d "rust-analyzer-$platform.gz"

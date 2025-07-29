@@ -286,16 +286,27 @@ function util.get_vim_complete_items(response, plugin_name, word)
         placeholder_position = string.len(l_vim_complete_item['word']) - 1,
         cursor_backing_steps = 1
       }
+      -- rust 里insertText字段不存在，改用 label
+      local insert_text = ""
+      if plugin_name == "rust" then
+        if l_completion_item["insertText"] then
+          insert_text = l_completion_item["insertText"]
+        else
+          insert_text = l_completion_item["label"]
+        end
+      end
       if vim.fn['easycomplete#SnipExpandSupport']() then
-        if string.find(l_completion_item["insertText"], "%${%d") then
+        if string.find(insert_text, "%${%d") then
           -- 原本就是 snippet 形式
           -- Do nothing
-        elseif string.find(l_completion_item["insertText"], ".+%(.*%)$") then
-          l_completion_item["insertText"] = vim.fn["easycomplete#util#NormalizeFunctionalSnip"](l_completion_item["insertText"])
+          l_completion_item["insertText"] = insert_text
+        elseif string.find(insert_text, ".+%(.*%)$") then
+          l_completion_item["insertText"] = vim.fn["easycomplete#util#NormalizeFunctionalSnip"](insert_text)
         elseif string.find(l_vim_complete_item["word"], ".+%(.*%)$") then
           l_completion_item["insertText"] = vim.fn["easycomplete#util#NormalizeFunctionalSnip"](l_vim_complete_item["word"])
         else
           -- 不是函数形式，do nogthing
+          l_completion_item["insertText"] = insert_text
         end
       else
         l_vim_complete_item['user_data_json']["custom_expand"] = 1

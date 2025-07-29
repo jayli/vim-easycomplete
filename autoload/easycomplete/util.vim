@@ -1977,22 +1977,28 @@ function! easycomplete#util#GetVimCompletionItems(response, plugin_name, word)
         \ 'placeholder_position': strlen(l:vim_complete_item['word']) - 1,
         \ 'cursor_backing_steps': 1
         \ }
+      let insert_text = ""
+      if a:plugin_name == "rust"
+        let insert_text = get(l:completion_item, "insertText", l:completion_item["label"])
+      end
       if easycomplete#SnipExpandSupport()
         " 确保 vim_complete_item['lsp_item'] 中的 insertText 是标准的 snippet
         " 格式，展开时从 lsp_item.insertText 中获取
         " let l:complete_item['insertText'] = ...
-        if l:completion_item["insertText"] =~ "${\\d"
+        if insert_text =~ "${\\d"
           " 如果原本就是正确的 snippet 格式
           " Do Nothing
-        elseif l:completion_item["insertText"] =~ ".(.*)$"
+          let l:completion_item["insertText"] = insert_text
+        elseif insert_text =~ ".(.*)$"
           " 如果insertText 就是函数形式
-          let l:completion_item["insertText"] = s:NormalizeFunctionalSnip(l:completion_item["insertText"])
+          let l:completion_item["insertText"] = s:NormalizeFunctionalSnip(insert_text)
         elseif l:vim_complete_item["word"] =~ ".(.*)$"
           " 如果 word 是函数形式
           let l:completion_item["insertText"] = s:NormalizeFunctionalSnip(l:vim_complete_item["word"])
         else
           " 如果insertText 不是函数形式，且word也不是函数形式
           " Do nothing
+          let l:completion_item["insertText"] = insert_text
         endif
       else
         let l:vim_complete_item['user_data_json']["custom_expand"] = 1

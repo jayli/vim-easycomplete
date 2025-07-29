@@ -291,7 +291,7 @@ More info about supported language:
 - Java: [jdtls](https://github.com/eclipse/eclipse.jdt.ls/), java 11 and upper version required.
 - Cmake: [cmake](https://github.com/regen100/cmake-language-server) required.
 - Kotlin: [kotlin language server](https://github.com/fwcd/kotlin-language-server) required.
-- Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required.
+- Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer) required. Please use mason to install `rust-analyzer`.
 - Lua: [sumneko lua](https://github.com/sumneko/lua-language-server) required. Local configuration file path is `~/.config/vim-easycomplete/servers/lua/config.json`. Get more information [here](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
 - Xml: [lemminx](https://github.com/eclipse/lemminx) required.
 - Groovy: [groovyls](https://github.com/prominic/groovy-language-server) required.

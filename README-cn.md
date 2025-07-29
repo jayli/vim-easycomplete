@@ -289,7 +289,7 @@ LSP 服务会安装在本地路径： `~/.config/vim-easycomplete/servers`。
 - Java: [jdtls](https://github.com/eclipse/eclipse.jdt.ls/), 依赖 java 11 以及更高版本.
 - Cmake: [cmake](https://github.com/regen100/cmake-language-server).
 - Kotlin: [kotlin language server](https://github.com/fwcd/kotlin-language-server).
-- Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer).
+- Rust: [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer). 请用 mason 安装 lsp。
 - Lua: [sumneko lua](https://github.com/sumneko/lua-language-server). 本地配置文件路径 `~/.config/vim-easycomplete/servers/lua/config.json`. [更多信息](https://github.com/xiyaowong/coc-sumneko-lua/blob/main/settings.md).
 - Xml: [lemminx](https://github.com/eclipse/lemminx).
 - Groovy: [groovyls](https://github.com/prominic/groovy-language-server).
