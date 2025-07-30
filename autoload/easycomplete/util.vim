@@ -279,6 +279,9 @@ function! easycomplete#util#GetInfoByCompleteItem(item, all_menu)
     endif
   endfor
   let max_height = 50
+  if type(info) == type("")
+    let info = [info]
+  endif
   if len(info) > max_height
     let info = info[0:50] + ["..."]
   endif
