@@ -4,7 +4,6 @@ local console = util.console
 local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
 local global_ghost_tx_ns = vim.api.nvim_create_namespace('global_ghost_tx_ns')
 local current_ghost_text = ""
-local current_col = 0
 local M = {}
 
 local function is_cursor_at_EOL()
@@ -62,14 +61,18 @@ function M.nvim_init_ghost_hl()
   })
 end
 
+local function stop_ghost_timer()
+  vim.fn["easycomplete#StopSecondCompleteGhostTimer"]()
+end
+
 -- code_block 是一个字符串，有可能包含回车符
 -- call v:lua.require("easycomplete.ghost_text").show_hint()
 -- code_block 是数组类型
 function M.show_hint(code_block)
-  local virt_text = {{
+  local virt_text = vim.fn.deepcopy({{
     code_block[1],
     "TabNineSuggestionFirstLine"
-  }}
+  }})
   local opt = {
     id = 1,
     virt_text_pos = "inline",
@@ -84,7 +87,6 @@ function M.show_hint(code_block)
 
   vim.api.nvim_buf_set_extmark(0, global_ghost_tx_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
   current_ghost_text = code_block[1]
-  current_col = vim.fn.col('.')
 end
 
 local function onkey_event_prevented()
@@ -122,89 +124,76 @@ local function ghost_text_bind_event()
     local key_str = vim.api.nvim_replace_termcodes(keys, true, false, true)
     -- 更新 last_key 变量
     curr_key = key_str
+    do
+      ------{{ ghost_handler --------------------------------
+      if vim.api.nvim_get_mode().mode ~= "i" then
+        return
+      end
+      if onkey_event_prevented() then
+        return
+      end
+      if curr_key == nil or string.byte(curr_key) == nil then
+        return
+      end
+      -- 这里连续输入极快时会有抖动，原因是输入过有时会一次前进两个字符
+      -- 这时处理占位符时要按两个步长来处理，因此这里记录了上一次输入
+      stop_ghost_timer()
+      if curr_key and string.find(normal_chars, curr_key, 1, true) then
+        -- 正常输入
+        if vim.fn["easycomplete#pum#visible"]() then
+          local ok, err = pcall(function()
+            local ghost_text = current_ghost_text
+            if ghost_text == "" or #ghost_text == 1 then
+              M.delete_hint()
+              vim.g.easycomplete_ghost_text_str = ""
+            elseif #ghost_text >= 2 then
+              local new_ghost_text = string.sub(ghost_text, 2)
+              current_ghost_text = new_ghost_text
+              if #new_ghost_text == 0 then
+                M.delete_hint()
+              else
+                M.show_hint({new_ghost_text})
+              end
+              vim.g.easycomplete_ghost_text_str = new_ghost_text
+            end
+            -- safe_redraw()
+          end)
+          if not ok then
+            print("Ghost Text Error: " .. err)
+          end
+        end
+      elseif curr_key and string.byte(curr_key) == 8 then
+        -- 退格键
+        if vim.fn["easycomplete#pum#visible"]() then
+          local ok, err = pcall(function()
+            local ghost_text = current_ghost_text
+            if ghost_text == "" then
+              -- M.delete_hint()
+              vim.g.easycomplete_ghost_text_str = ""
+            elseif #ghost_text >= 1 then
+              local new_ghost_text = string.rep("a", 1) .. ghost_text
+              M.show_hint({new_ghost_text})
+              vim.g.easycomplete_ghost_text_str = new_ghost_text
+            end
+            -- safe_redraw()
+          end)
+          if not ok then
+            print("Ghost Text Error BackSpace " .. err)
+          end
+        else
+          M.delete_hint()
+          vim.g.easycomplete_ghost_text_str = ""
+        end
+      else
+        -- 其他字符
+      end
+      curr_key = nil
+      ------}} ghost_handler --------------------------------
+    end -- end do
   end)
   vim.api.nvim_create_autocmd({"CursorMovedI"}, {
       pattern = "*",
       callback = function()
-        ------{{ ghost_handler --------------------------------
-        -- 这里的作用是输入过程中处理 ghost_text 的占位，封装到函数中
-        -- 就会有闪烁, 原因未知
-        if vim.api.nvim_get_mode().mode ~= "i" then
-          return
-        end
-        if onkey_event_prevented() then
-          return
-        end
-        if curr_key == nil or string.byte(curr_key) == nil then
-          return
-        end
-        -- 这里连续输入极快时会有抖动，原因是输入过有时会一次前进两个字符
-        -- 这时处理占位符时要按两个步长来处理，因此这里记录了上一次输入
-        local old_col = current_col
-        current_col = vim.fn.col('.')
-        if curr_key and string.find(normal_chars, curr_key, 1, true) then
-          -- 正常输入
-          local foreword_step = current_col - old_col
-          if current_col == 0 then
-            foreword_step = 0
-          end
-          if vim.fn["easycomplete#pum#visible"]() then
-            local ok, err = pcall(function()
-              local ghost_text = current_ghost_text
-              if ghost_text == "" or #ghost_text == 1 then
-                M.delete_hint()
-                vim.g.easycomplete_ghost_text_str = ""
-              elseif #ghost_text >= 2 then
-                -- 这里如果快速输入，有极低的概率会发生new_ghost_text和ghost_text一致
-                -- 从而导致ghost_text长度没有减一，导致闪一下，在按住按键连续输入时低概率发生
-                -- 按理说100%不应该发生，原因未知
-                local new_ghost_text = string.sub(ghost_text, 1 + foreword_step)
-                current_ghost_text = new_ghost_text
-                if #new_ghost_text == 0 then
-                  M.delete_hint()
-                else
-                  M.show_hint({new_ghost_text})
-                end
-                vim.g.easycomplete_ghost_text_str = new_ghost_text
-              end
-              -- safe_redraw()
-            end)
-            if not ok then
-              print("Ghost Text Error: " .. err)
-            end
-          end
-        elseif curr_key and string.byte(curr_key) == 8 then
-          -- 退格键
-          local backword_step = old_col - current_col
-          if current_col == 0 then
-            backword_step = 0
-          end
-          if vim.fn["easycomplete#pum#visible"]() then
-            local ok, err = pcall(function()
-              local ghost_text = current_ghost_text
-              if ghost_text == "" then
-                -- M.delete_hint()
-                vim.g.easycomplete_ghost_text_str = ""
-              elseif #ghost_text >= 1 then
-                local new_ghost_text = string.rep("a", backword_step) .. ghost_text
-                M.show_hint({new_ghost_text})
-                vim.g.easycomplete_ghost_text_str = new_ghost_text
-              end
-              -- safe_redraw()
-            end)
-            if not ok then
-              print("Ghost Text Error BackSpace " .. err)
-            end
-          else
-            M.delete_hint()
-            vim.g.easycomplete_ghost_text_str = ""
-          end
-        else
-          -- 其他字符
-          current_col = 0
-        end
-        curr_key = nil
-        ------}} ghost_handler --------------------------------
       end,
     })
 end
@@ -220,7 +209,6 @@ end
 function M.delete_hint()
   vim.api.nvim_buf_del_extmark(0, global_ghost_tx_ns, 1)
   current_ghost_text = ""
-  current_col = 0
 end
 
 return M

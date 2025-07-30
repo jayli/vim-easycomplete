@@ -2142,14 +2142,14 @@ function! easycomplete#_complete(start, items)
       if g:easycomplete_ghost_text
         let ghost_text = s:GetGhostText(a:start, a:items[0]["word"])
         let g:easycomplete_ghost_text_str = ghost_text
-        if !exists("b:second_complete_hint_timer")
-          let b:second_complete_hint_timer = 0
+        if !exists("g:easycomplete_second_complete_ghost_timer")
+          let g:easycomplete_second_complete_ghost_timer = 0
         endif
-        if b:second_complete_hint_timer > 0
-          call timer_stop(b:second_complete_hint_timer)
-          let b:second_complete_hint_timer = 0
+        if g:easycomplete_second_complete_ghost_timer > 0
+          call timer_stop(g:easycomplete_second_complete_ghost_timer)
+          let g:easycomplete_second_complete_ghost_timer = 0
         endif
-        let b:second_complete_hint_timer = timer_start(40, {
+        let g:easycomplete_second_complete_ghost_timer = timer_start(40, {
               \ -> easycomplete#util#ShowHint(ghost_text)
               \ })
       endif
@@ -2165,6 +2165,18 @@ function! easycomplete#_complete(start, items)
     else
       call s:ShowCompleteInfoInSecondRendering()
     endif
+  endif
+endfunction
+
+" 这个方法是给 lua ghost_text 快速输入处理占位符用的
+" 当快速输入时应当避免这个定时器的干扰
+function! easycomplete#StopSecondCompleteGhostTimer()
+  if !exists("g:easycomplete_second_complete_ghost_timer")
+    let g:easycomplete_second_complete_ghost_timer = 0
+  endif
+  if g:easycomplete_second_complete_ghost_timer > 0
+    call timer_stop(g:easycomplete_second_complete_ghost_timer)
+    let g:easycomplete_second_complete_ghost_timer = 0
   endif
 endfunction
 
