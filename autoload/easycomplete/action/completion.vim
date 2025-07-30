@@ -81,6 +81,7 @@ function! s:GetLspCompletionResult(server_name, data, plugin_name, word) abort
     let l:completion_result = easycomplete#util#GetVimCompletionItems(l:response, a:plugin_name, a:word)
   endif
   " call s:console(reltimestr(reltime(tt)), len(l:completion_result['items']))
+  " call v:lua.require("easycomplete.util").get_plain_items(l:completion_result["items"])
   return {'matches': l:completion_result['items'], 'incomplete': l:completion_result['incomplete'] }
 endfunction
 
