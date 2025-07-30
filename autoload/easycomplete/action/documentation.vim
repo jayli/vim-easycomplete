@@ -74,6 +74,7 @@ function! s:HandleLspCallback(server_name, data) abort
   catch
     call s:ClosePopup()
     " 如果 documentation 不存在，且item因过长被缩写了
+    " 则在 info 中显示完全未缩写的word
     if get(g:easycomplete_completed_item, "abbr", "") =~ "…"
       call easycomplete#util#ShowDefaultInfo(g:easycomplete_completed_item)
     endif

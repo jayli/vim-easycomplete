@@ -30,11 +30,6 @@ local function is_cursor_at_EOL()
   end
 end
 
--- #395
-local function get_current_extmark()
-  return current_ghost_text
-end
-
 function M.nvim_init_ghost_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
   local normal_bg = vim.fn["easycomplete#ui#GetBgColor"]("Normal")
@@ -143,8 +138,8 @@ local function ghost_text_bind_event()
         if curr_key == nil or string.byte(curr_key) == nil then
           return
         end
-        -- TODO: 这里连续输入极快时会有抖动，原因是输入过有时会一次前进两个字符
-        -- 这时处理占位符时要按两个步长来处理
+        -- 这里连续输入极快时会有抖动，原因是输入过有时会一次前进两个字符
+        -- 这时处理占位符时要按两个步长来处理，因此这里记录了上一次输入
         local old_col = current_col
         current_col = vim.fn.col('.')
         if curr_key and string.find(normal_chars, curr_key, 1, true) then
@@ -156,11 +151,13 @@ local function ghost_text_bind_event()
           if vim.fn["easycomplete#pum#visible"]() then
             local ok, err = pcall(function()
               local ghost_text = current_ghost_text
-              -- console(string.rep("x", old_col), ghost_text, foreword_step, #ghost_text == #new_ghost_text)
               if ghost_text == "" or #ghost_text == 1 then
                 M.delete_hint()
                 vim.g.easycomplete_ghost_text_str = ""
               elseif #ghost_text >= 2 then
+                -- 这里如果快速输入，有极低的概率会发生new_ghost_text和ghost_text一致
+                -- 从而导致ghost_text长度没有减一，导致闪一下，在按住按键连续输入时低概率发生
+                -- 按理说100%不应该发生，原因未知
                 local new_ghost_text = string.sub(ghost_text, 1 + foreword_step)
                 current_ghost_text = new_ghost_text
                 if #new_ghost_text == 0 then

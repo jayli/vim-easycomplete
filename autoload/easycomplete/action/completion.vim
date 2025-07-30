@@ -21,7 +21,6 @@ function! easycomplete#action#completion#do(opt, ctx)
   return v:true
 endfunction
 
-" 原 s:send_completion_request(info)
 " info: lsp server 信息
 " plugin_name: 插件的名字，比如 py, ts
 function! easycomplete#action#completion#LspRequest(info, plugin_name) abort
