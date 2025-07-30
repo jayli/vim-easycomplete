@@ -453,6 +453,7 @@ function! s:SecondComplete(start_pos, menuitems, easycomplete_menuitems, word)
   else
     let result_all = [] + result
   endif
+  call s:StopFirstCompleteRenderingTimer()
   call s:SecondCompleteRendering(a:start_pos, result_all)
   call s:AddCompleteCache(a:word, deepcopy(g:easycomplete_stunt_menuitems))
   " complete() 会触发 completedone 事件，会执行 s:flush()
@@ -1191,11 +1192,6 @@ function! s:CompletorCallingAtFirstComplete(ctx)
         \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
         \          )
         \ })
-        " \ { -> easycomplete#util#call(function("s:FirstCompleteRendering"),
-        " \          [
-        " \            s:GetCompleteCache(l:ctx['typing'])['start_pos'],
-        " \            s:GetCompleteCache(l:ctx['typing'])['menu_items']
-        " \          ])
 
   " TODO 原本在设计 CompletorCalling 机制时，每个CallCompeltorByName返回true时继
   " 续执行，返回false中断执行，目的是为了实现那些排他性的CompleteCalling，比如
@@ -1247,7 +1243,7 @@ function! s:CompletorCallingAtFirstComplete(ctx)
       endif
     endwhile
   catch
-    call s:errlog("[ERR] CompletorCallingAtFirstComplete", v:exception)
+    call s:errlog("[ERR] Completor Calling At FirstComplete", v:exception)
     call s:flush()
   endtry
 endfunction
@@ -1980,11 +1976,19 @@ function! easycomplete#GetPlugNameByCommand(cmd)
   return plug_name
 endfunction
 
+function! s:StopFirstCompleteRenderingTimer()
+  if s:first_render_timer > 0
+    call timer_stop(s:first_render_timer)
+    let s:first_render_timer = 0
+  endif
+endfunction
+
 function! s:FirstCompleteRendering(start_pos, menuitems)
   if easycomplete#util#NotInsertMode()
     call s:flush()
     return
   endif
+  call s:StopFirstCompleteRenderingTimer()
   " 如果 copilot.nvim 已经给了提示，那么就暂停展示 pum
   if exists("g:copilot_ready") && g:copilot_ready && copilot#copilot_snippet_ready()
     call s:flush()
@@ -2017,7 +2021,10 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
       else
         " distinct 只去重 bufkeyword 和 dict
         let tmp_result = easycomplete#util#distinct(deepcopy(source_result))
+        let tt = reltime()
+        " 过滤出 350 个字符是 17ms
         let filtered_menu = easycomplete#util#CompleteMenuFilter(tmp_result, typing_word, 350)
+        " call s:console(reltimestr(reltime(tt)),len(filtered_menu))
       endif
       let filtered_menu = map(filtered_menu, function("easycomplete#util#PrepareInfoPlaceHolder"))
       let g:easycomplete_stunt_menuitems = filtered_menu
@@ -2058,10 +2065,6 @@ function! s:FirstCompleteRendering(start_pos, menuitems)
         let g:easycomplete_ghost_text_str = ghost_text
       endif
       call s:AddCompleteCache(s:GetTypingWord(), deepcopy(g:easycomplete_stunt_menuitems))
-    endif
-    if s:first_render_timer > 0
-      call timer_stop(s:first_render_timer)
-      let s:first_render_timer = 0
     endif
     call s:LetCompleteTaskQueueAllDone()
   catch

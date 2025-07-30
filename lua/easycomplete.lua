@@ -227,9 +227,63 @@ local function get_item_word(item)
   return item.word or ""
 end
 
+local function find_string_pos(arr, target)
+  for i, str in ipairs(arr) do
+    if str == target then
+      return i  -- 返回找到的索引
+    end
+  end
+  return 0  -- 如果未找到，则返回 0
+end
+
 -- 给 menu_list 去重，只在 Firstcomplete 中调用
+-- 这两个函数耗时相等，570个元素耗时3~4ms
 -- @param menu_list, 待去重的列表，列表元素是 cmp item
 -- @return table, 去重后的列表
+function EasyComplete.distinct_keywords_new(menu_list)
+  if not menu_list or #menu_list == 0 then
+    return {}
+  end
+
+  local result_items = {}
+  local buf_list = {}
+
+  -- 第一步：收集所有来自 'buf' 的 word
+  for _, item in ipairs(menu_list) do
+    local plugin_name = item.plugin_name or ""
+    if plugin_name == "buf" then
+      table.insert(buf_list, item.word)
+    end
+  end
+
+  local same_word_list = {}
+  for _, item in ipairs(menu_list) do
+    local plugin_name = item.plugin_name or ""
+    if plugin_name == "buf" or plugin_name == "snips" then
+      goto continue
+    end
+
+    local word = get_item_word(item)
+    local idx = find_string_pos(buf_list, word)
+    if idx >= 1 then
+      table.remove(buf_list, idx)
+    end
+    ::continue::
+  end
+
+  for _, item in ipairs(menu_list) do
+    local plugin_name = item.plugin_name or ""
+    local word = get_item_word(item)
+    if plugin_name == "buf" and vim.tbl_contains(buf_list, word) then
+      table.insert(result_items, item)
+    elseif plugin_name ~= "buf" then
+      table.insert(result_items, item)
+    end
+  end
+
+  return result_items
+end
+
 function EasyComplete.distinct_keywords(menu_list)
   if not menu_list or #menu_list == 0 then
     return {}
@@ -329,24 +383,7 @@ function EasyComplete.sign_distinct(diagnostics)
 end
 
 function EasyComplete.replacement(abbr, positions, wrap_char)
-  -- 转换为字符数组（字符串 -> 字符表）
-  local letters = {}
-  for i = 1, #abbr do
-    -- lua 的 string.sub 是根据字节长度取下表对应的字符，而不是字符长度
-    -- 因此对于 unicode 字符就取不正确，需要用 vim.fn.strcharpart 代替
-    -- letters[i] = abbr:sub(i, i)
-    letters[i] = vim.fn.strcharpart(abbr, i - 1, 1)
-  end
-  -- 对每个位置进行包裹处理
-  for _, idx in ipairs(positions) do
-    if idx >= 0 and idx < #letters then
-      letters[idx+1] = wrap_char .. letters[idx+1] .. wrap_char
-    end
-  end
-  -- 合并成新字符串
-  local res_o = table.concat(letters)
-  local res_r = string.gsub(res_o, "%" .. wrap_char .. "%" .. wrap_char, "")
-  return res_r
+  return Util.replacement(abbr, positions, wrap_char)
 end
 
 function EasyComplete.global_timer_start(function_name, timeout)
