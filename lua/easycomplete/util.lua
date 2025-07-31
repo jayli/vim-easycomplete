@@ -4,6 +4,8 @@ local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
 local async_timer_counter = 0
 local global_rust_util = nil
+local global_rust_ready = nil
+local package_cpath = nil
 
 local function console(...)
   local args = {...}
@@ -115,27 +117,42 @@ function util.get_os()
   end
 end
 
--- 加载 rust util，如果没有动态链接库，则返回 util 本身
-function util.import_rust_util()
-  if global_rust_util ~= nil then
-    return global_rust_util
+function util.get_rust_util()
+  -- 确保库文件名为 helloworld_module.so/.dll/.dylib
+  if package_cpath then
+    -- do nothing
+  else
+    package_cpath = package.cpath .. ";" .. util.get_rust_lib_path()
   end
+  package.cpath = package_cpath
+  local mod = require("easycomplete_rust_util")
+  return mod
+end
+
+function util.get_rust_lib_path()
   local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
-  local lib_path = ""
+  local lib_path = nil
   if util.get_os() == "macOS" then
     lib_path = root_dir .. "/target/debug/libeasycomplete_util.dylib"
   end
-  if lib_path ~= "" then
-    local ffi = require("ffi")
-    local rust_util = ffi.load(lib_path)
-    ffi.cdef [[
-      int32_t add(int32_t a, int32_t b);
-    ]]
-    global_rust_util = rust_util
-    return rust_util
-  else
-    return util
+  return lib_path
+end
+
+function util.rust_ready()
+  if global_rust_ready == true then
+    return true
   end
+  local lib_path = util.get_rust_lib_path()
+  local file, _ = io.open(lib_path, "r")  -- 打开文件为只读模式
+  local ready = false
+  if not file then
+    ready = false
+  else
+    ready = true
+    pcall(file:close())  -- 关闭文件
+  end
+  global_rust_ready = ready
+  return ready
 end
 
 function util.get_servers()

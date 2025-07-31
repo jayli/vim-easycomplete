@@ -1,11 +1,18 @@
 [package]
-name = "easycomplete-util"
+name = "easycomplete_util"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+# [target.x86_64-apple-darwin]
+# rustflags = [
+#   "-C", "link-arg=-undefined",
+#   "-C", "link-arg=dynamic_lookup",
+# ]
 
 [lib]
-path = "lua/easycomplete/rust/util.rs"
+path = "lua/easycomplete/util.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 mlua = { version = "0.10.2", features = ["module", "luajit"] }
+

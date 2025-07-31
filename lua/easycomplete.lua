@@ -102,7 +102,12 @@ end
 function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
-  local rust_util = util.import_rust_util()
+  if util.rust_ready() then
+    local rust_util = util.get_rust_util()
+    -- console(rust_util.hello("abc", "def"))
+    console(rust_util.return_kv_table())
+  end
+  -- local rust_util = util.get_rust_util()
   -- console(rust_util.add(3,7))
 
   -- nvim_lsp 的支持已经废弃
