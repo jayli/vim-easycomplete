@@ -90,6 +90,49 @@ function util.distinct(items)
   return result
 end
 
+function util.get_os()
+  -- 打开管道执行 uname -s 命令
+  local handle = io.popen("uname -s")
+  if not handle then
+    return "Unknown"
+  end
+
+  -- 读取命令输出
+  local os_name = handle:read("*a")
+  handle:close()
+
+  -- 去除换行符
+  os_name = string.gsub(os_name, "\n$", "")
+
+  -- 判断操作系统
+  if os_name == "Linux" then
+    return "Linux"
+  elseif os_name == "Darwin" then
+    return "macOS"
+  else
+    return os_name  -- 其他系统如 FreeBSD 等
+  end
+end
+
+-- 加载 rust util，如果没有动态链接库，则返回 util 本身
+function util.import_rust_util()
+  local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
+  local lib_path = ""
+  if util.get_os() == "macOS" then
+    lib_path = root_dir .. "/target/debug/libeasycomplete_util.dylib"
+  end
+  if lib_path ~= "" then
+    local ffi = require("ffi")
+    local rust_util = ffi.load(lib_path)
+    ffi.cdef [[
+      int32_t add(int32_t a, int32_t b);
+    ]]
+    return rust_util
+  else
+    return util
+  end
+end
+
 function util.get_servers()
   if not util.nvim_installer_installed() then
     return nil

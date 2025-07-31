@@ -1,14 +1,14 @@
 -- local debug = true
 local EasyComplete = {}
-local Util = require "easycomplete.util"
+local util = require "easycomplete.util"
 local AutoLoad = require "easycomplete.autoload"
-local console = Util.console
-local log = Util.log
+local console = util.console
+local log = util.log
 local global_timer = vim.loop.new_timer()
 local global_timer_counter = 1
 
 local function test()
-  console(vim.inspect(Util))
+  console(vim.inspect(util))
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
 end
@@ -18,14 +18,14 @@ end
 -- @param nil
 -- @return nil
 local function nvim_lsp_handler()
-  if not Util.nvim_installer_installed() then
+  if not util.nvim_installer_installed() then
     return
   end
 
   local filetype = vim.o.filetype
-  local plugin_name = Util.current_plugin_name()
-  local nvim_lsp_ready = Util.nvim_lsp_installed()
-  local easy_lsp_ready = Util.easy_lsp_installed()
+  local plugin_name = util.current_plugin_name()
+  local nvim_lsp_ready = util.nvim_lsp_installed()
+  local easy_lsp_ready = util.easy_lsp_installed()
 
   if not easy_lsp_ready and nvim_lsp_ready then
     local AutoLoad_script = AutoLoad.get(plugin_name)
@@ -65,7 +65,7 @@ function EasyComplete.setup(func)
 end
 
 function EasyComplete.complete_changed()
-  console('--',Util.get(vim.v.event, "completed_item", "user_data"))
+  console('--',util.get(vim.v.event, "completed_item", "user_data"))
 end
 
 -- 执行typing的函数，已经废弃
@@ -102,6 +102,9 @@ end
 function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
+  local rust_util = util.import_rust_util()
+  -- console(rust_util.add(3,7))
+
   -- nvim_lsp 的支持已经废弃
   -- nvim_lsp_handler()
 end
@@ -111,16 +114,16 @@ end
 -- @reutrn 返回排序后的列表
 function EasyComplete.normalize_sort(items)
   table.sort(items, function(a1, a2)
-    local k1 = Util.get_word(a1)
+    local k1 = util.get_word(a1)
     local l1 = #k1
-    local k2 = Util.get_word(a2)
+    local k2 = util.get_word(a2)
     local l2 = #k2
     return l1 > l2
   end)
 
   table.sort(items, function(a1, a2)
-    local k1 = Util.get_word(a1)
-    local k2 = Util.get_word(a2)
+    local k1 = util.get_word(a1)
+    local k2 = util.get_word(a2)
     return k1 > k2
   end)
   return items
@@ -131,7 +134,7 @@ end
 -- @param items, 字符串数组
 -- @return table, 去重后的数组
 function EasyComplete.distinct(items)
-  return Util.distinct(items)
+  return util.distinct(items)
 end
 
 -- 根据 buflines 分割出来关键词
@@ -383,7 +386,7 @@ function EasyComplete.sign_distinct(diagnostics)
 end
 
 function EasyComplete.replacement(abbr, positions, wrap_char)
-  return Util.replacement(abbr, positions, wrap_char)
+  return util.replacement(abbr, positions, wrap_char)
 end
 
 function EasyComplete.global_timer_start(function_name, timeout)

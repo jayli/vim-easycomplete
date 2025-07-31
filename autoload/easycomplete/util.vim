@@ -1074,6 +1074,7 @@ function! easycomplete#util#AutoLoadDict()
   endif
 endfunction " }}}
 
+" 获得插件根目录
 function! easycomplete#util#GetEasyCompleteRootDirectory() "{{{
   let plugin_root = substitute(expand('<script>'), "^\\(.\\+vim-easycomplete\\)\\(.\\{\-}\\)$","\\1","g")
   let plugin_root = substitute(plugin_root, "^\\(.\\+script\\s\\)\\(.\\{\-}\\)$", "\\2", "g")
