@@ -3,6 +3,7 @@ local zizz_flag = 0
 local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
 local async_timer_counter = 0
+local global_rust_util = nil
 
 local function console(...)
   local args = {...}
@@ -116,6 +117,9 @@ end
 
 -- 加载 rust util，如果没有动态链接库，则返回 util 本身
 function util.import_rust_util()
+  if global_rust_util ~= nil then
+    return global_rust_util
+  end
   local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
   local lib_path = ""
   if util.get_os() == "macOS" then
@@ -127,6 +131,7 @@ function util.import_rust_util()
     ffi.cdef [[
       int32_t add(int32_t a, int32_t b);
     ]]
+    global_rust_util = rust_util
     return rust_util
   else
     return util
