@@ -105,10 +105,9 @@ function EasyComplete.init()
   if util.rust_ready() then
     local rust_util = util.get_rust_util()
     -- console(rust_util.hello("abc", "def"))
-    console(rust_util.return_kv_table())
+    -- local data = {name = "Alice", age = 30, active = true}
+    -- console(rust_util.parse_table(data))
   end
-  -- local rust_util = util.get_rust_util()
-  -- console(rust_util.add(3,7))
 
   -- nvim_lsp 的支持已经废弃
   -- nvim_lsp_handler()

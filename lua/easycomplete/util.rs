@@ -1,5 +1,5 @@
 
-use mlua::{Lua};
+use mlua::{Lua, Value};
 use mlua::prelude::*;
 
 #[derive(Debug, Clone)]
@@ -31,6 +31,11 @@ fn return_table(lua: &Lua, _: ()) -> LuaResult<LuaTable> {
     Ok(table)
 }
 
+// 传入一个 lua table
+fn parse_table(lua: &Lua, table: LuaTable) -> LuaResult<LuaTable> {
+    Ok(table)
+}
+
 // 返回一个键值对的 Table
 fn return_kv_table(lua: &Lua, _: ()) -> LuaResult<LuaTable> {
     let table = lua.create_table()?;
@@ -39,7 +44,6 @@ fn return_kv_table(lua: &Lua, _: ()) -> LuaResult<LuaTable> {
     Ok(table)
 }
 
-
 #[mlua::lua_module]
 fn easycomplete_rust_util(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
@@ -47,6 +51,7 @@ fn easycomplete_rust_util(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("hello", lua.create_function(hello)?)?;
     exports.set("return_table", lua.create_function(return_table)?)?;
     exports.set("return_kv_table", lua.create_function(return_kv_table)?)?;
+    exports.set("parse_table", lua.create_function(parse_table)?)?;
     
     Ok(exports)
 }
