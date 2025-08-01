@@ -1,7 +1,6 @@
 -- local debug = true
 local EasyComplete = {}
 local util = require "easycomplete.util"
-local AutoLoad = require "easycomplete.autoload"
 local console = util.console
 local log = util.log
 local global_timer = vim.loop.new_timer()
@@ -11,30 +10,6 @@ local function test()
   console(vim.inspect(util))
   console(require'nvim-lsp-installer.servers'.get_installed_server_names())
   console(require'nvim-lsp-installer'.get_install_completion())
-end
-
--- 兼容 nvim_lsp_handler 所需的检查 nvim_lsp 是否安装的入口
--- 每次进入 buf 时执行
--- @param nil
--- @return nil
-local function nvim_lsp_handler()
-  if not util.nvim_installer_installed() then
-    return
-  end
-
-  local filetype = vim.o.filetype
-  local plugin_name = util.current_plugin_name()
-  local nvim_lsp_ready = util.nvim_lsp_installed()
-  local easy_lsp_ready = util.easy_lsp_installed()
-
-  if not easy_lsp_ready and nvim_lsp_ready then
-    local AutoLoad_script = AutoLoad.get(plugin_name)
-    if type(AutoLoad_script) == nil or AutoLoad_script == nil then
-      return
-    else
-      AutoLoad_script:setup()
-    end
-  end
 end
 
 -- 全局配置函数
@@ -102,6 +77,7 @@ end
 function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
+  console(util.get_configuration())
   if util.rust_ready() then
     local rust_speed = util.get_rust_speed()
     console(rust_speed.hello("abc", "def"))
@@ -109,10 +85,6 @@ function EasyComplete.init()
     -- console(rust_util.replacement("1234",{1,2},"x"))
   else
   end
-
-
-  -- nvim_lsp 的支持已经废弃
-  -- nvim_lsp_handler()
 end
 
 -- 普通的 cmp items 排序方法，只做最简单的比较

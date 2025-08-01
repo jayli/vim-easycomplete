@@ -171,22 +171,6 @@ function util.rust_ready()
   end
 end
 
-function util.get_servers()
-  if not util.nvim_installer_installed() then
-    return nil
-  end
-  local Servers = require("nvim-lsp-installer.servers")
-  return Servers
-end
-
-function util.get_server()
-  if not util.nvim_installer_installed() then
-    return nil
-  end
-  local Server = require("nvim-lsp-installer.server")
-  return Server
-end
-
 function util.get_file_tags(filename)
   local lines = {}
   local tags = {}
@@ -495,9 +479,6 @@ end
 
 function util.get_configuration()
   local curr_lsp_name = util.current_lsp_name()
-  local Servers       = util.get_servers()
-  local Server        = util.get_server()
-  local ok, server    = Servers.get_server(curr_lsp_name)
   return {
     easy_plugin_ctx      = util.current_plugin_ctx(),
     easy_plugin_name     = util.current_plugin_name(),
@@ -505,8 +486,8 @@ function util.get_configuration()
     easy_lsp_config_path = util.get_default_config_path(),
     easy_cmd_full_path   = util.get_default_command_full_path(),
     nvim_lsp_root        = util.get(server, "root_dir"),
-    nvim_lsp_root_path   = Server.get_server_root_path(),
-    nvim_lsp_ok          = ok,
+    -- nvim_lsp_root_path   = Server.get_server_root_path(),
+    -- nvim_lsp_ok          = ok,
   }
 end
 
@@ -677,24 +658,6 @@ function util.check_noice()
   else
     return nc.is_running()
   end
-end
-
-function util.nvim_lsp_installed()
-  local current_lsp_ctx = util.current_plugin_ctx()
-  local lsp_name = util.current_lsp_name()
-  if not util.nvim_installer_installed() or type(lsp_name) == nil then
-    return false
-  end
-  local Servers = util.get_servers()
-  local install_list = Servers.get_installed_server_names()
-  local flag = false
-  for i = 1, #install_list do
-    if lsp_name == install_list[i] then
-      flag = true
-      break
-    end
-  end
-  return flag
 end
 
 function util.easy_lsp_installed()
