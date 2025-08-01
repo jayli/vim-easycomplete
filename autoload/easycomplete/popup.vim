@@ -757,6 +757,10 @@ function! s:CloseByWindowType(win_type)
       call popup_close(g:easycomplete_popup_win[windowtype])
       let g:easycomplete_popup_win[windowtype] = 0
     endif
+    if s:buf[windowtype]
+      execute 'bwipeout' . s:buf[windowtype]
+      let s:buf[windowtype] = 0
+    endif
   else
     if g:easycomplete_popup_win[windowtype]
       let id = win_id2win(g:easycomplete_popup_win[windowtype])
@@ -769,7 +773,7 @@ function! s:CloseByWindowType(win_type)
         else
           let delay = 30
         endif
-        call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid) })
+        call timer_start(delay, { -> s:NvimCloseFloatWithPum(winid, windowtype) })
       endif
       let g:easycomplete_popup_win[windowtype] = 0
       let s:last_winargs = []
@@ -803,15 +807,23 @@ function! easycomplete#popup#close(...)
   endif
 endfunction
 
-function! s:NvimCloseFloatWithPum(winid)
+function! s:NvimCloseFloatWithPum(winid, windowtype)
   if nvim_win_is_valid(a:winid)
     call nvim_win_close(a:winid, 1)
+  endif
+  if s:buf[a:windowtype]
+    execute 'bwipeout' . s:buf[a:windowtype]
+    let s:buf[a:windowtype] = 0
   endif
   if easycomplete#pum#visible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)
         call nvim_win_close(winid, 1)
+      endif
+      if s:buf['float']
+        execute 'bwipeout' . s:buf['float']
+        let s:buf['float'] = 0
       endif
     endif
   endif

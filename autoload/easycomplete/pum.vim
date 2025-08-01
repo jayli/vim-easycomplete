@@ -1101,11 +1101,19 @@ function! s:flush()
     call s:RecoverOpt()
     let should_fire_pum_done = 1
   endif
+  if !empty(s:pum_buffer)
+    execute 'bwipeout' . s:pum_buffer
+    let s:pum_buffer = 0
+  endif
   if !empty(s:scrollthumb_window)
     call s:CloseScrollThumb()
   endif
   if !empty(s:scrollbar_window)
     call s:CloseScrollBar()
+  endif
+  if !empty(s:scrollbar_buffer)
+    execute 'bwipeout' . s:scrollbar_buffer
+    let s:scrollbar_buffer = 0
   endif
   let s:pum_window = 0
   let s:has_scrollbar = 0
