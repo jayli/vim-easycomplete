@@ -10,9 +10,10 @@ edition = "2021"
 # ]
 
 [lib]
-path = "lua/easycomplete/util.rs"
+path = "rust/util.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 mlua = { version = "0.10.2", features = ["module", "luajit"] }
+unicode-segmentation = "1.10"
 

@@ -103,11 +103,13 @@ function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
   if util.rust_ready() then
-    local rust_util = util.get_rust_util()
+    -- local rust_util = util.get_rust_util()
     -- console(rust_util.hello("abc", "def"))
     -- local data = {name = "Alice", age = 30, active = true}
-    -- console(rust_util.parse_table(data))
+    -- console(rust_util.replacement("1234",{1,2},"x"))
+  else
   end
+
 
   -- nvim_lsp 的支持已经废弃
   -- nvim_lsp_handler()
