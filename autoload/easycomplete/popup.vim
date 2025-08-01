@@ -750,16 +750,24 @@ function! easycomplete#popup#CloseLintPopup()
   endif
 endfunction
 
+" 把所有的 buf 都清空，以便所有关闭的 window 都被内存回收
+function! easycomplete#popup#free()
+  if !g:easycomplete_popup_win["popup"] && s:buf["popup"]
+    execute 'bwipeout' . s:buf["popup"]
+    let s:buf["popup"] = 0
+  endif
+  if !g:easycomplete_popup_win["float"] && s:buf["float"]
+    execute 'bwipeout' . s:buf["float"]
+    let s:buf["float"] = 0
+  endif
+endfunction
+
 function! s:CloseByWindowType(win_type)
   let windowtype = a:win_type
   if s:is_vim
     if g:easycomplete_popup_win[windowtype]
       call popup_close(g:easycomplete_popup_win[windowtype])
       let g:easycomplete_popup_win[windowtype] = 0
-    endif
-    if s:buf[windowtype]
-      execute 'bwipeout' . s:buf[windowtype]
-      let s:buf[windowtype] = 0
     endif
   else
     if g:easycomplete_popup_win[windowtype]
@@ -811,19 +819,11 @@ function! s:NvimCloseFloatWithPum(winid, windowtype)
   if nvim_win_is_valid(a:winid)
     call nvim_win_close(a:winid, 1)
   endif
-  if s:buf[a:windowtype]
-    execute 'bwipeout' . s:buf[a:windowtype]
-    let s:buf[a:windowtype] = 0
-  endif
   if easycomplete#pum#visible() && s:IsOverlay()
     let winid = g:easycomplete_popup_win['float']
     if winid != 0
       if nvim_win_is_valid(winid)
         call nvim_win_close(winid, 1)
-      endif
-      if s:buf['float']
-        execute 'bwipeout' . s:buf['float']
-        let s:buf['float'] = 0
       endif
     endif
   endif

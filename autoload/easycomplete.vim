@@ -2492,6 +2492,7 @@ function! s:flush()
   endif
   let s:easycomplete_start_pos = 0
   let b:old_changedtick = 0
+  call timer_start(20, { -> easycomplete#popup#free() })
 endfunction
 
 function! s:HideComplete(col)
