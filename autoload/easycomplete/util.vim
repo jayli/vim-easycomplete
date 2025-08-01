@@ -206,6 +206,24 @@ function! easycomplete#util#trim(str)
   return ""
 endfunction " }}}
 
+function! easycomplete#util#GetArch()
+  if exists("s:easycomplete_arch")
+    return s:easycomplete_arch
+  else
+    let s:easycomplete_arch = easycomplete#python#GetArch()
+    return s:easycomplete_arch
+  endif
+endfunction
+
+function! easycomplete#util#IsMacOS()
+  if exists("s:easycomplete_ismacos")
+    return s:easycomplete_ismacos
+  else
+    let s:easycomplete_ismacos = easycomplete#python#IsMacOS()
+    return s:easycomplete_ismacos
+  endif
+endfunction
+
 function! easycomplete#util#GetPluginNameFromUserData(item) " {{{
   return s:GetPluginNameFromUserData(a:item)
 endfunction " }}}

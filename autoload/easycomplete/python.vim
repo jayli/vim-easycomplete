@@ -19,6 +19,18 @@ function! s:PreparePythonEnvironment()
   endif
 endfunction
 
+function! easycomplete#python#GetArch()
+  if !s:PreparePythonEnvironment() | return "" | endif
+  py3 vim.command("let ret = '%s'"% EasyCompleteUtil.get_arch())
+  return ret
+endfunction
+
+function! easycomplete#python#IsMacOS()
+  if !s:PreparePythonEnvironment() | return "" | endif
+  py3 vim.command("let ret = %s"% EasyCompleteUtil.is_macos())
+  return ret
+endfunction
+
 function! easycomplete#python#NormalizeSortPY(items)
   if !s:PreparePythonEnvironment() | return a:items | endif
   try

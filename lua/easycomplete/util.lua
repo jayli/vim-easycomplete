@@ -117,6 +117,14 @@ function util.get_os()
   end
 end
 
+function util.get_arch()
+  return vim.fn["easycomplete#util#GetArch"]()
+end
+
+function util.is_macos()
+  return vim.fn["easycomplete#util#IsMacOS"]()
+end
+
 function util.get_rust_util()
   -- 确保库文件名为 helloworld_module.so/.dll/.dylib
   if global_rust_util ~= nil then
@@ -149,7 +157,9 @@ function util.rust_ready()
     return false
   elseif global_rust_ready == nil then
     local lib_path = util.get_rust_lib_path()
-    if vim.fn.executable(lib_path) == 0 then
+    if util.get_arch() ~= "x86_64" or not util.is_macos() then
+      global_rust_ready = false
+    elseif vim.fn.executable(lib_path) == 0 then
       global_rust_ready = false
     else
       global_rust_ready = true

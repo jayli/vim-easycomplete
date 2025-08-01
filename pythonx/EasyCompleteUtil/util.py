@@ -5,11 +5,21 @@ import vim
 import re
 import os
 import hashlib
+import platform
 
 SNIPPETS_FILES_CTX = {}
 ALWAYS = 'always'
 NEVER = 'never'
 
+def is_macos():
+    if platform.system() == "Darwin":
+        return 'v:true'
+    else:
+        return 'v:false'
+
+def get_arch():
+    arch = platform.machine()
+    return arch
 
 def listdir(path):
     ret = []

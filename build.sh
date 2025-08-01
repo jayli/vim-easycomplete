@@ -1,4 +1,19 @@
-#!#!/usr/bin/env sh
+#!/usr/bin/env sh
 
 rm -rf ./target/release
-cargo rustc -- -C link-arg=-undefined -C link-arg=dynamic_lookup
+
+# cargo build --target x86_64-apple-darwin --release
+# cargo build --target aarch64-apple-darwin --release
+
+# mkdir -p target/universal/release
+
+# lipo -create \
+#   target/x86_64-apple-darwin/release/libeasycomplete_util.dylib \
+#   target/aarch64-apple-darwin/release/libeasycomplete_util.dylib \
+#   -output target/debug/libeasycomplete_util.dylib
+
+
+cargo rustc -- -C link-arg=-undefined -C link-arg=dynamic_lookup --target x86_64-apple-darwin
+# cargo rustc -- -C link-arg=-undefined -C link-arg=dynamic_lookup --target aarch64-apple-darwin
+#
+echo "dylib created!"
