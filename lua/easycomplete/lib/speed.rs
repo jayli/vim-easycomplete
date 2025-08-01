@@ -172,6 +172,39 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
     result
 }
 
+
+// complete_menu_filter 主函数：Rust 版本的 complete_menu_filter
+// lua → util.complete_menu_filter(matching_res, word)
+
+// fn complete_menu_filter(
+//     lua: &Lua,
+//     (matching_res, word): (LuaTable, String)
+// ) -> LuaResult<Vec<LuaTable>> {
+//     let mut fuzzymatching = Vec::new();
+//     let mut fuzzy_position = Vec::new();
+//     let mut fuzzy_scores = Vec::new()
+
+//     // 遍历 Lua 表中的所有键值对
+//     for pair in matching_res.pairs::<mlua::Integer, mlua::LuaTable>() {
+//         let (key, value) = pair?;
+//         if key >= 1 {
+//             // 将 Lua Integer 转换为 usize 并添加到 Vec 中
+//             vec.push(value as usize);
+//         }
+//         if k == 1 {
+//             fuzzymatching = value as Vec<LuaTable>;
+//         }
+//         if k == 2 {
+//             fuzzy_position = value as Vec<mlua::Interger>;
+//         }
+//         if k == 3 {
+//             fuzzy_scores = value as Vec<i32>;
+//         }
+//     }
+
+//     Ok()
+// }
+
 #[mlua::lua_module]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
