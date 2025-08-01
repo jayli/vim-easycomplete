@@ -451,14 +451,18 @@ function! easycomplete#sources#ts#CompleteChanged()
   if easycomplete#util#GetPluginNameFromUserData(l:item) != "ts"
     return
   endif
-  if !empty(
-        \   easycomplete#util#GetInfoByCompleteItem(
-        \      l:item,
-        \      g:easycomplete_source[s:opt['name']].complete_result
-        \   )
-        \ )
+  let o_info = easycomplete#util#GetInfoByCompleteItem(l:item, g:easycomplete_source[s:opt['name']].complete_result)
+  if !(empty(o_info) || (len(o_info) == 1 && empty(o_info[0])))
     return
   endif
+  " if !empty(
+  "       \   easycomplete#util#GetInfoByCompleteItem(
+  "       \      l:item,
+  "       \      g:easycomplete_source[s:opt['name']].complete_result
+  "       \   )
+  "       \ )
+  "   return
+  " endif
   let l:event = g:env_is_vim ? v:event : easycomplete#pum#CompleteChangedEvnet()
   if empty(l:event)
     call s:DoFetchEntryDetails(s:request_queue_ctx, [l:item])
@@ -701,8 +705,11 @@ function! s:NormalizeEntryDetail(item)
 endfunction
 
 function! s:EntriesMap(key, val)
-  let abbr = easycomplete#util#TrimWavyLine(a:val.abbr)
-  return abbr
+  let o_word = a:val.word
+  let word = substitute(o_word, '([^)]*)', '', 'g')
+  return word
+  " let abbr = easycomplete#util#TrimWavyLine(a:val.abbr)
+  " return abbr
 endfunction
 
 function! s:CompleteMenuMap(key, val)
