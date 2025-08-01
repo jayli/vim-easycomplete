@@ -1,4 +1,3 @@
-use core::error::Error;
 use mlua::{Lua, Value};
 use mlua::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
@@ -103,15 +102,15 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
 }
 
 #[mlua::lua_module]
-fn easycomplete_rust_util(lua: &Lua) -> LuaResult<LuaTable> {
+fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
-    
+
     exports.set("hello", lua.create_function(hello)?)?;
     exports.set("return_table", lua.create_function(return_table)?)?;
     exports.set("return_kv_table", lua.create_function(return_kv_table)?)?;
     exports.set("parse_table", lua.create_function(parse_table)?)?;
     exports.set("replacement", lua.create_function(replacement)?)?;
-    
+
     Ok(exports)
 }
 

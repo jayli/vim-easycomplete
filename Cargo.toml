@@ -1,16 +1,10 @@
 [package]
-name = "easycomplete_util"
+name = "easycomplete_rust_speed"
 version = "0.1.0"
 edition = "2021"
 
-# [target.x86_64-apple-darwin]
-# rustflags = [
-#   "-C", "link-arg=-undefined",
-#   "-C", "link-arg=dynamic_lookup",
-# ]
-
 [lib]
-path = "rust/util.rs"
+path = "lua/easycomplete/lib/speed.rs"
 crate-type = ["cdylib"]
 
 [dependencies]

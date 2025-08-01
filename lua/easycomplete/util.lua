@@ -2,6 +2,7 @@ local util = {}
 local zizz_flag = 0
 local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
+local lua_speed = require("easycomplete.lib.speed")
 local async_timer_counter = 0
 local global_rust_util = nil
 local global_rust_ready = nil
@@ -125,7 +126,7 @@ function util.is_macos()
   return vim.fn["easycomplete#util#IsMacOS"]()
 end
 
-function util.get_rust_util()
+function util.get_rust_speed()
   -- 确保库文件名为 helloworld_module.so/.dll/.dylib
   if global_rust_util ~= nil then
     return global_rust_util
@@ -136,7 +137,7 @@ function util.get_rust_util()
       package.cpath = package.cpath .. ";" .. util.get_rust_lib_path()
       package_cpath_ready = true
     end
-    global_rust_util = require("easycomplete_rust_util")
+    global_rust_util = require("easycomplete_rust_speed")
     return global_rust_util
   end
 end
@@ -145,7 +146,8 @@ function util.get_rust_lib_path()
   local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
   local lib_path = nil
   if util.get_os() == "macOS" then
-    lib_path = root_dir .. "/target/debug/libeasycomplete_util.dylib"
+    lib_path = root_dir .. "/target/debug/"
+    lib_path = lib_path .. "libeasycomplete_rust_speed.dylib"
   end
   return lib_path
 end
@@ -157,6 +159,7 @@ function util.rust_ready()
     return false
   elseif global_rust_ready == nil then
     local lib_path = util.get_rust_lib_path()
+    -- TODO mlua 没有 arm64 的编译包，需要从源码重新编译
     if util.get_arch() ~= "x86_64" or not util.is_macos() then
       global_rust_ready = false
     elseif vim.fn.executable(lib_path) == 0 then
@@ -202,28 +205,11 @@ end
 
 function util.replacement(abbr, positions, wrap_char)
   if util.rust_ready() then
-    -- console(333333)
-    local rust_util = util.get_rust_util()
-    return rust_util.replacement(abbr, positions, wrap_char)
+    local rust_speed = util.get_rust_speed()
+    return rust_speed.replacement(abbr, positions, wrap_char)
+  else
+    return lua_speed.replacement(abbr, positions, wrap_char)
   end
-  -- 转换为字符数组（字符串 -> 字符表）
-  local letters = {}
-  for i = 1, #abbr do
-    -- lua 的 string.sub 是根据字节长度取下表对应的字符，而不是字符长度
-    -- 因此对于 unicode 字符就取不正确，需要用 vim.fn.strcharpart 代替
-    -- letters[i] = abbr:sub(i, i)
-    letters[i] = vim.fn.strcharpart(abbr, i - 1, 1)
-  end
-  -- 对每个位置进行包裹处理
-  for _, idx in ipairs(positions) do
-    if idx >= 0 and idx < #letters then
-      letters[idx+1] = wrap_char .. letters[idx+1] .. wrap_char
-    end
-  end
-  -- 合并成新字符串
-  local res_o = table.concat(letters)
-  local res_r = string.gsub(res_o, "%" .. wrap_char .. "%" .. wrap_char, "")
-  return res_r
 end
 
 function util.complete_menu_filter(matching_res, word)
