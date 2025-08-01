@@ -77,12 +77,12 @@ end
 function EasyComplete.init()
   EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
 
-  console(util.get_configuration())
   if util.rust_ready() then
     local rust_speed = util.get_rust_speed()
-    console(rust_speed.hello("abc", "def"))
+    -- console(rust_speed.hello("abc", "def"))
     -- local data = {name = "Alice", age = 30, active = true}
-    -- console(rust_util.replacement("1234",{1,2},"x"))
+    -- console(rust_speed.replacement("1234",{1,2},"x"))
+    -- console(rust_speed.get_first_complete_hit())
   else
   end
 end

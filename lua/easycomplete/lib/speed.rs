@@ -1,6 +1,7 @@
 use mlua::{Lua, Value};
 use mlua::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
+use std::convert::TryInto;
 
 #[derive(Debug, Clone)]
 pub struct LspItem {
@@ -62,7 +63,77 @@ fn lua_table_to_usize_slice(lua: &Lua, table: LuaTable) -> Result<Vec<usize>, Lu
     Ok(vec)
 }
 
-// util.replacement()
+// 读取 lua 中的全局变量
+fn get_global_vars(lua: &Lua, _: ()) -> LuaResult<i32> {
+    let globals = lua.globals();
+    lua.globals().set("my_global_var", "Hello from Lua!")?;
+    let my_global_var: i32 = globals.get("easycomplete_pum_maxlength")?;
+    Ok(my_global_var)
+}
+
+// 先更新全局变量，然后读取全局变量
+fn get_first_complete_hit(lua: &Lua, _:()) -> LuaResult<i32> {
+    let globals = lua.globals();
+    let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
+    init_global_vars.call("x")?;
+    let ret: i32 = globals.get("easycomplete_first_complete_hit")?;
+    Ok(ret)
+}
+
+
+// 模拟 Lua 版本的 `util.parse_abbr`
+// 
+// 参数:
+// - `abbr`: 要处理的字符串
+// - `max_length`: 最大显示长度 (对应 vim.g.easycomplete_pum_maxlength)
+// - `fix_width`: 是否固定宽度 (对应 vim.g.easycomplete_pum_fix_width == 1)
+//
+// 返回: 处理后的字符串
+
+fn parse_abbr(lua: &Lua, abbr: String) -> LuaResult<String> {
+    let globals = lua.globals();
+    let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
+    // init_global_vars.call("default")?; // 好像不用做这一步
+    let max_length_i32: i32 = globals.get("easycomplete_pum_maxlength")?;
+    let fix_width_i32: i32 = globals.get("easycomplete_pum_fix_width")?;
+    let max_length: usize = max_length_i32.try_into().expect("i32 value cannot fit in usize");
+    let fix_width: bool = match fix_width_i32 {
+        1 => true,
+        0 => false,
+        _ => panic!("fix_width must be 0 or 1!"),
+    };
+    let ret: String = _parse_abbr(&abbr, max_length, fix_width);
+
+    Ok(ret)
+}
+
+fn _parse_abbr(abbr: &str, max_length: usize, fix_width: bool) -> String {
+    let abbr_chars: Vec<char> = abbr.chars().collect();
+    let abbr_len = abbr_chars.len();
+
+    if abbr_len <= max_length {
+        if fix_width {
+            // 右填充空格到 max_length
+            let spaces = " ".repeat(max_length - abbr_len);
+            format!("{}{}", abbr, spaces)
+        } else {
+            abbr.to_string()
+        }
+    } else {
+        // 截取前 max_length - 1 个字符，加上 "…"
+        let truncated: String = abbr_chars.into_iter().take(max_length - 1).collect();
+        format!("{}…", truncated)
+    }
+}
+
+// 重写了 lua 版本的 util.replacement()
+// 参数：
+// - abbr: 对应 item 的 abbr, String 类型
+// - positions: matchfuzzy 的 position 数组，LuaTable 类型
+// - wrap_char: 包裹字符，char 类型
+//
+// 返回：返回根据 positions 里所示位置的字符加上了
+// 包裹wrap_char的结果字符串
 fn replacement(lua: &Lua, (abbr, positions, wrap_char) : (mlua::String, LuaTable, char)) -> LuaResult<String> {
     let t_abbr: String = abbr.to_string_lossy();
     let result_positions: Result<Vec<usize>, LuaError> = lua_table_to_usize_slice(lua, positions);
@@ -105,13 +176,18 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
+    // 调试用
     exports.set("hello", lua.create_function(hello)?)?;
     exports.set("return_table", lua.create_function(return_table)?)?;
     exports.set("return_kv_table", lua.create_function(return_kv_table)?)?;
     exports.set("parse_table", lua.create_function(parse_table)?)?;
+    exports.set("get_global_vars", lua.create_function(get_global_vars)?)?;
+    exports.set("get_first_complete_hit", lua.create_function(get_first_complete_hit)?)?;
+
+    // rust 重写的 lua 函数
     exports.set("replacement", lua.create_function(replacement)?)?;
+    exports.set("parse_abbr", lua.create_function(parse_abbr)?)?;
 
     Ok(exports)
 }
-
 

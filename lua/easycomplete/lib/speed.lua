@@ -21,4 +21,19 @@ function speed.replacement(abbr, positions, wrap_char)
   return res_r
 end
 
+function speed.parse_abbr(abbr)
+  local max_length = vim.g.easycomplete_pum_maxlength
+  if #abbr <= max_length then
+    if vim.g.easycomplete_pum_fix_width == 1 then
+      local spaces = string.rep(" ", max_length - #abbr)
+      return abbr .. spaces
+    else
+      return abbr
+    end
+  else
+    local short_abbr = string.sub(abbr, 1, max_length - 1) .. "…"
+    return short_abbr
+  end
+end
+
 return speed

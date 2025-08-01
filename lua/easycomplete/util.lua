@@ -18,18 +18,24 @@ local function console(...)
   end
 end
 
+-- 给 rust 初始化需要的全局变量
+-- 为了确保同名函数入参一致，viml → lua → rust
+-- 一些常用的全局变量同样作为全局值带入 rust
+-- rust 中每次使用最好更新一下
+function init_global_vars_for_rust()
+  easycomplete_pum_maxlength = vim.g.easycomplete_pum_maxlength
+  easycomplete_pum_fix_width = vim.g.easycomplete_pum_fix_width
+  easycomplete_first_complete_hit = vim.g.easycomplete_first_complete_hit
+  easycomplete_stunt_menuitems = vim.g.easycomplete_stunt_menuitems
+end
+
+-- rust & lua
 function util.parse_abbr(abbr)
-  local max_length = vim.g.easycomplete_pum_maxlength
-  if #abbr <= max_length then
-    if vim.g.easycomplete_pum_fix_width == 1 then
-      local spaces = string.rep(" ", max_length - #abbr)
-      return abbr .. spaces
-    else
-      return abbr
-    end
+  if util.rust_ready() then
+    local rust_speed = util.get_rust_speed()
+    return rust_speed.parse_abbr(abbr)
   else
-    local short_abbr = string.sub(abbr, 1, max_length - 1) .. "…"
-    return short_abbr
+    return lua_speed.parse_abbr(abbr)
   end
 end
 
@@ -94,38 +100,17 @@ function util.distinct(items)
   return result
 end
 
-function util.get_os()
-  -- 打开管道执行 uname -s 命令
-  local handle = io.popen("uname -s")
-  if not handle then
-    return "Unknown"
-  end
-
-  -- 读取命令输出
-  local os_name = handle:read("*a")
-  handle:close()
-
-  -- 去除换行符
-  os_name = string.gsub(os_name, "\n$", "")
-
-  -- 判断操作系统
-  if os_name == "Linux" then
-    return "Linux"
-  elseif os_name == "Darwin" then
-    return "macOS"
-  else
-    return os_name  -- 其他系统如 FreeBSD 等
-  end
-end
-
+-- cpu 架构：arm64 / x86_64
 function util.get_arch()
   return vim.fn["easycomplete#util#GetArch"]()
 end
 
+-- 判断是否是 MacOS
 function util.is_macos()
   return vim.fn["easycomplete#util#IsMacOS"]()
 end
 
+-- Get rust speed.rs
 function util.get_rust_speed()
   -- 确保库文件名为 helloworld_module.so/.dll/.dylib
   if global_rust_util ~= nil then
@@ -134,18 +119,19 @@ function util.get_rust_speed()
     if package_cpath_ready then
       -- do nothing
     else
-      package.cpath = package.cpath .. ";" .. util.get_rust_lib_path()
+      package.cpath = package.cpath .. ";" .. util.get_rust_exec_path()
       package_cpath_ready = true
     end
+    init_global_vars_for_rust()
     global_rust_util = require("easycomplete_rust_speed")
     return global_rust_util
   end
 end
 
-function util.get_rust_lib_path()
+function util.get_rust_exec_path()
   local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
   local lib_path = nil
-  if util.get_os() == "macOS" then
+  if util.is_macos() then
     lib_path = root_dir .. "/target/debug/"
     lib_path = lib_path .. "libeasycomplete_rust_speed.dylib"
   end
@@ -158,7 +144,7 @@ function util.rust_ready()
   elseif global_rust_ready == false then
     return false
   elseif global_rust_ready == nil then
-    local lib_path = util.get_rust_lib_path()
+    local lib_path = util.get_rust_exec_path()
     -- TODO mlua 没有 arm64 的编译包，需要从源码重新编译
     if util.get_arch() ~= "x86_64" or not util.is_macos() then
       global_rust_ready = false
@@ -187,6 +173,7 @@ function util.get_file_tags(filename)
   return tags
 end
 
+-- rust & lua
 function util.replacement(abbr, positions, wrap_char)
   if util.rust_ready() then
     local rust_speed = util.get_rust_speed()
@@ -663,7 +650,7 @@ end
 function util.easy_lsp_installed()
   local plugin_name = vim.fn["easycomplete#util#GetLspPluginName"]()
   local current_lsp_ctx = util.current_plugin_ctx()
-  local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name) 
+  local easy_available_command = vim.fn["easycomplete#installer#GetCommand"](plugin_name)
   if plugin_name == "ts" and string.find(easy_available_command, "tsserver$") then
     return true
   end
@@ -701,7 +688,6 @@ function util.async_run(func, args, timeout)
         end
       end)
     else
-      -- print('------------', vim.inspect(func), args, timeout)
       vim.schedule(function()
         vim.notify("async_run: 无效的函数类型", func, vim.log.levels.ERROR)
       end)
@@ -718,13 +704,6 @@ end
 -- 判断一个list中是否包含某个字符串元素
 function util.has_item(tb, it)
   return vim.tbl_contains(tb, it)
-  -- if #tb == 0 then return false end
-  -- local idx = vim.fn.index(tb, it)
-  -- if idx == -1 then
-  --   return false
-  -- else
-  --   return true
-  -- end
 end
 
 function util.stop_async_run()
