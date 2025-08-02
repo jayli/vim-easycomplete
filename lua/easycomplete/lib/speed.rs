@@ -300,6 +300,68 @@ fn complete_menu_filter(
     Ok(filtered_menu)
 }
 
+// util.badboy_vim(item, typing_word) 的 rust 实现
+// TODO, 这个函数的lua版本比 rust 实现要快
+// 200 个节点的循环次数：
+//  - lua: 稳定在 6ms
+//  - rust: 在11ms~8ms 之间浮动
+fn badboy_vim(lua: &Lua, (item, typing_word): (LuaTable, String)) -> LuaResult<bool> {
+    let mut word: String;
+    if is_key_nil(item.clone(), "label") {
+        word = item.get("label")?;
+    } else {
+        word = "".to_string();
+    }
+    word = item.get("label")?;
+    if word.chars().count() == 0 {
+        return Ok(true);
+    } else if typing_word.chars().count() == 1 {
+        let first_char: char = typing_word.chars().next().unwrap_or_default();
+        let pos: i32;
+        match word.find(first_char) {
+            Some(position) => {
+                pos = position.try_into().unwrap();
+            },
+            None => {
+                pos = -1;
+            },
+        }
+        if pos >= 0 && pos <= 5 {
+            return Ok(false);
+        } else {
+            return Ok(true);
+        }
+    } else {
+        if fuzzy_search(&typing_word, &word) {
+            return Ok(false);
+        } else {
+            return Ok(true);
+        }
+    }
+}
+
+//fuzzy_search("AsyncController","ac") true
+fn fuzzy_search(haystack: &str, needle: &str) -> bool {
+    let mut haystack_chars = haystack.chars();
+
+    for n in needle.chars() {
+        // 在 haystack 中查找当前 needle 字符
+        let mut found = false;
+        while let Some(h) = haystack_chars.next() {
+            if n.eq_ignore_ascii_case(&h) {
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            return false;
+        }
+    }
+    true
+}
+
+
+
 #[mlua::lua_module]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
@@ -316,6 +378,7 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("replacement", lua.create_function(replacement)?)?;
     exports.set("parse_abbr", lua.create_function(parse_abbr)?)?;
     exports.set("complete_menu_filter", lua.create_function(complete_menu_filter)?)?;
+    exports.set("badboy_vim", lua.create_function(badboy_vim)?)?;
 
     Ok(exports)
 }

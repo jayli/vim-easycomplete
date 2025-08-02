@@ -1796,6 +1796,7 @@ function! s:BadBoy.Nim(item, typing_word)
   endif
 endfunction
 
+" 有对应的 lua 实现 util.badboy_vim()
 function! s:BadBoy.Vim(item, typing_word)
   if &filetype != "vim" | return v:false | endif
   let word = get(a:item, "label", "")
@@ -1829,7 +1830,7 @@ function! s:BadBoy.Dart(item, typing_word)
       return v:true
     endif
   elseif len(a:typing_word) == 1
-    if pos >= 0 && pos <= 3 
+    if pos >= 0 && pos <= 3
       return v:false
     else
       return v:true

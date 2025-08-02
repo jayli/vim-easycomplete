@@ -79,4 +79,56 @@ function speed.complete_menu_filter(matching_res, word)
   return filtered_menu
 end
 
+-- lua 实现比 rust 要快，原因待查
+function speed.badboy_vim(item, typing_word)
+  local word = ""
+  if item["label"] then
+    word = item["label"]
+  end
+  if #word == 0 then
+    return true
+  elseif #typing_word == 1 then
+    local pos = string.find(word, typing_word)
+    if pos == nil then
+      return true
+    elseif pos >= 0 and pos <= 5 then
+      return false
+    else
+      return true
+    end
+  else
+    if speed.fuzzy_search(typing_word, word) then
+      return false
+    else
+      return true
+    end
+  end
+end
+
+-- fuzzy_search("AsyncController","ac") true
+function speed.fuzzy_search(haystack, needle)
+  if #haystack > #needle then
+    return false
+  end
+  local haystack = string.lower(haystack)
+  local needle = string.lower(needle)
+  if #haystack == #needle then
+    if haystack == needle then
+      return true
+    else
+      return false
+    end
+  end
+  -- string.find("easycomplete#context","[0-9a-z#]*z[0-9a-z#]*t[0-9a-z#_]*")
+  -- string.gsub("easy", "(.)", "-%1")
+  local middle_regx = "[0-9a-z#_]*"
+  local needle_ls_regx = string.gsub(haystack, "(.)", "%1" .. middle_regx)
+  local idx = string.find(needle, needle_ls_regx)
+  if idx ~= nil and idx <= 2 then
+    return true
+  else
+    return false
+  end
+end
+
 return speed

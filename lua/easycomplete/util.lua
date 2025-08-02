@@ -264,6 +264,30 @@ function util.lsp_type(c_type)
   }
 end
 
+-- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
+function util.badboy_vim(item, typing_word)
+  if util.rust_ready() then
+    -- TODO rust 实测速度不比 lua 更快，原因未知
+    -- 暂时都用 lua 实现
+    return lua_speed.badboy_vim(item, typing_word)
+  else
+    return lua_speed.badboy_vim(item, typing_word)
+  end
+end
+
+-- 一个单词的 fuzzy 比对，没有计算 score
+-- @param haystack, 原始单词
+-- @param needle, 比对单词
+-- @return boolean, 比对成功或者失败
+function util.fuzzy_search(haystack, needle)
+  if util.rust_ready() then
+    return rust_speed.fuzzy_search(haystack, needle)
+  else
+    return lua_speed.fuzzy_search(haystack, needle)
+  end
+
+end
+
 -- easycomplete#util#GetVimCompletionItems 的 lua 实现
 function util.get_vim_complete_items(response, plugin_name, word)
   local tt = vim.fn.reltime()
@@ -294,7 +318,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
     if vim.o.filetype == "nim" and vim.fn['easycomplete#util#BadBoy_Nim'](l_completion_item, typing_word) then
       goto continue
     end
-    if vim.o.filetype == "vim" and vim.fn['easycomplete#util#BadBoy_Vim'](l_completion_item, typing_word) then
+    if vim.o.filetype == "vim" and util.badboy_vim(l_completion_item, typing_word) then
       goto continue
     end
     if vim.o.filetype == 'dart' and vim.fn['easycomplete#util#BadBoy_Dart'](l_completion_item, typing_word) then
@@ -447,6 +471,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
 
     ::continue::
   end -- endfor
+  -- console(vim.fn.reltimestr(vim.fn.reltime(tt)))
   return { items = l_vim_complete_items, incomplete = l_incomplete }
 end -- endfunction
 
