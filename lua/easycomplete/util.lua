@@ -7,6 +7,16 @@ local async_timer_counter = 0
 local rust_speed = nil
 local global_rust_ready = nil
 local package_cpath_ready = false
+-- 预定义的 LSP 类型列表（索引从 1 开始，对应 Vimscript 的 1-based）
+local easycomplete_kinds = {
+  '',           'text',        'method',         'function',
+  'constructor','field',       'variable',       'class',
+  'interface',  'module',      'property',       'unit',
+  'value',      'enum',        'keyword',        'snippet',
+  'color',      'file',        'reference',      'folder',
+  'enummember', 'constant',    'struct',         'event',
+  'operator',   'typeparameter', 'const'
+}
 
 local function console(...)
   local args = {...}
@@ -193,6 +203,67 @@ function util.complete_menu_filter(matching_res, word)
   end
 end
 
+-- 主函数：LSP 类型解析
+-- easycomplete#util#LspType(c_type) 重新实现
+function util.lsp_type(c_type)
+  local type_fullname = ""
+  local type_shortname = ""
+
+  local idx = 0
+  if type(c_type) == "string" and not c_type:find("^%d%d?$") then
+    type_fullname = c_type
+  else
+    if type(c_type) == "string" and c_type:find("^%d%d?$") then
+      idx = tonumber(c_type)
+    elseif type(c_type) == "number" then
+      idx = c_type
+    end
+    idx = idx + 1
+
+    if idx >= 1 and idx <= #easycomplete_kinds then
+      type_fullname = easycomplete_kinds[idx]
+    else
+      type_fullname = ""
+    end
+  end
+
+  if type_fullname == "var" then
+    type_fullname = "variable"
+  end
+
+  -- 获取首字母作为 shortname（如果非空）
+  if type(type_fullname) ~= "string" then
+    type_fullname = ""
+    type_shortname = ""
+  elseif type(type_fullname) == "string" and type_fullname ~= "" then
+    type_shortname = type_fullname:sub(1, 1)
+  else
+    type_shortname = ""
+  end
+
+  -- 查找符号（symble）
+  local symble = ""
+  local font_map = vim.g.easycomplete_lsp_type_font or {}
+
+  if type(font_map) == "table" then
+    if font_map[type_fullname] ~= nil then
+      symble = font_map[type_fullname]
+    else
+      -- fallback 到首字母，如果不存在则使用 shortname 本身
+      symble = font_map[type_shortname] or type_shortname
+    end
+  else
+    symble = type_shortname
+  end
+
+  -- 返回结果表
+  return {
+    symble = symble,
+    fullname = type_fullname,
+    shortname = type_shortname
+  }
+end
+
 -- easycomplete#util#GetVimCompletionItems 的 lua 实现
 function util.get_vim_complete_items(response, plugin_name, word)
   local l_result = response["result"]
@@ -236,10 +307,10 @@ function util.get_vim_complete_items(response, plugin_name, word)
     local l_lsp_type_obj = {}
     local l_kind = 0
     if l_completion_item["kind"] ~= nil then
-      l_lsp_type_obj = vim.fn["easycomplete#util#LspType"](l_completion_item["kind"])
+      l_lsp_type_obj = util.lsp_type(l_completion_item["kind"])
       l_kind = l_completion_item["kind"]
     else
-      l_lsp_type_obj = vim.fn["easycomplete#util#LspType"](0)
+      l_lsp_type_obj = util.lsp_type(0)
       l_kind = 0
     end
 
