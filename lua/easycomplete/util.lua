@@ -266,6 +266,7 @@ end
 
 -- easycomplete#util#GetVimCompletionItems 的 lua 实现
 function util.get_vim_complete_items(response, plugin_name, word)
+  local tt = vim.fn.reltime()
   local l_result = response["result"]
   local l_items = {}
   local l_incomplete = 0
@@ -289,6 +290,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
   local typing_word = word
 
   for _, l_completion_item in ipairs(l_items) do
+    -- TODO 这几个耗时要解决
     if vim.o.filetype == "nim" and vim.fn['easycomplete#util#BadBoy_Nim'](l_completion_item, typing_word) then
       goto continue
     end
