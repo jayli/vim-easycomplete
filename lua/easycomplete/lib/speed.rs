@@ -1,4 +1,4 @@
-use mlua::{Lua, Value};
+use mlua::{Lua, Value, Table};
 use mlua::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 use std::convert::TryInto;
@@ -172,38 +172,32 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
     result
 }
 
-
 // complete_menu_filter 主函数：Rust 版本的 complete_menu_filter
 // lua → util.complete_menu_filter(matching_res, word)
 
-// fn complete_menu_filter(
-//     lua: &Lua,
-//     (matching_res, word): (LuaTable, String)
-// ) -> LuaResult<Vec<LuaTable>> {
-//     let mut fuzzymatching = Vec::new();
-//     let mut fuzzy_position = Vec::new();
-//     let mut fuzzy_scores = Vec::new()
+fn complete_menu_filter(
+    lua: &Lua,
+    (matching_res, word): (LuaTable, String))
+-> LuaResult<LuaTable> {
+    let result = lua.create_table()?;
+    let table = lua.create_table()?;
 
-//     // 遍历 Lua 表中的所有键值对
-//     for pair in matching_res.pairs::<mlua::Integer, mlua::LuaTable>() {
-//         let (key, value) = pair?;
-//         if key >= 1 {
-//             // 将 Lua Integer 转换为 usize 并添加到 Vec 中
-//             vec.push(value as usize);
-//         }
-//         if k == 1 {
-//             fuzzymatching = value as Vec<LuaTable>;
-//         }
-//         if k == 2 {
-//             fuzzy_position = value as Vec<mlua::Interger>;
-//         }
-//         if k == 3 {
-//             fuzzy_scores = value as Vec<i32>;
-//         }
-//     }
+    let table: LuaTable = matching_res.get(1)?;
 
-//     Ok()
-// }
+    let mut iter = table.sequence_values::<Table>();
+    let mut i: usize = 1;
+    while let Some(item_result) = iter.next() {
+        let item = item_result?; // ✅ 这里的 item_result 是 Result<Table>
+
+        let new_item = lua.create_table()?;
+        new_item.set("new_key", "abc")?;
+        item.for_each(|k: String, v: Value| new_item.set(k, v))?;
+
+        result.set(i, new_item)?;
+        i += 1;
+    }
+    Ok(result)
+}
 
 #[mlua::lua_module]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
@@ -220,6 +214,7 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     // rust 重写的 lua 函数
     exports.set("replacement", lua.create_function(replacement)?)?;
     exports.set("parse_abbr", lua.create_function(parse_abbr)?)?;
+    exports.set("complete_menu_filter", lua.create_function(complete_menu_filter)?)?;
 
     Ok(exports)
 }

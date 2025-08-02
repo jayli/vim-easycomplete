@@ -75,16 +75,7 @@ end
 
 -- 全局的 lua 初始化入口
 function EasyComplete.init()
-  EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline"})
-
-  if util.rust_ready() then
-    local rust_speed = util.get_rust_speed()
-    -- console(rust_speed.hello("abc", "def"))
-    -- local data = {name = "Alice", age = 30, active = true}
-    -- console(rust_speed.replacement("1234",{1,2},"x"))
-    -- console(rust_speed.get_first_complete_hit())
-  else
-  end
+  EasyComplete.load_mojo({"autocmd", "tabnine", "ghost_text", "luasnip", "cmdline", "util"})
 end
 
 -- 普通的 cmp items 排序方法，只做最简单的比较

@@ -4,7 +4,7 @@ local zizz_timer = vim.loop.new_timer()
 local async_timer = vim.loop.new_timer()
 local lua_speed = require("easycomplete.lib.speed")
 local async_timer_counter = 0
-local global_rust_util = nil
+local rust_speed = nil
 local global_rust_ready = nil
 local package_cpath_ready = false
 
@@ -32,7 +32,6 @@ end
 -- rust & lua
 function util.parse_abbr(abbr)
   if util.rust_ready() then
-    local rust_speed = util.get_rust_speed()
     return rust_speed.parse_abbr(abbr)
   else
     return lua_speed.parse_abbr(abbr)
@@ -111,10 +110,10 @@ function util.is_macos()
 end
 
 -- Get rust speed.rs
-function util.get_rust_speed()
+function util.init_rust_speed()
   -- 确保库文件名为 helloworld_module.so/.dll/.dylib
-  if global_rust_util ~= nil then
-    return global_rust_util
+  if rust_speed ~= nil then
+    return rust_speed
   else
     if package_cpath_ready then
       -- do nothing
@@ -123,8 +122,9 @@ function util.get_rust_speed()
       package_cpath_ready = true
     end
     init_global_vars_for_rust()
-    global_rust_util = require("easycomplete_rust_speed")
-    return global_rust_util
+    local local_lib = require("easycomplete_rust_speed")
+    rust_speed = local_lib
+    return local_lib
   end
 end
 
@@ -138,6 +138,8 @@ function util.get_rust_exec_path()
   return lib_path
 end
 
+-- 判断rust启用环境
+-- 先在 MacOS x86_64 下调通
 function util.rust_ready()
   if global_rust_ready == true then
     return true
@@ -145,7 +147,7 @@ function util.rust_ready()
     return false
   elseif global_rust_ready == nil then
     local lib_path = util.get_rust_exec_path()
-    -- TODO mlua 没有 arm64 的编译包，需要从源码重新编译
+    -- TODO mlua arm64 下重新编译
     if util.get_arch() ~= "x86_64" or not util.is_macos() then
       global_rust_ready = false
     elseif vim.fn.executable(lib_path) == 0 then
@@ -176,7 +178,6 @@ end
 -- rust & lua
 function util.replacement(abbr, positions, wrap_char)
   if util.rust_ready() then
-    local rust_speed = util.get_rust_speed()
     return rust_speed.replacement(abbr, positions, wrap_char)
   else
     return lua_speed.replacement(abbr, positions, wrap_char)
@@ -184,6 +185,11 @@ function util.replacement(abbr, positions, wrap_char)
 end
 
 function util.complete_menu_filter(matching_res, word)
+  if util.rust_ready() then
+    local ret = rust_speed.complete_menu_filter(matching_res, word)
+    -- console(ret)
+  end
+
   local fullmatch_result = {} -- 完全匹配
   local firstchar_result = {} -- 首字母匹配
   local fuzzymatching = matching_res[1]
@@ -733,6 +739,17 @@ function util.defer_fn(func_name, args, timeout)
     vim.schedule(function()
       vim.notify("defer_fn: 传入参数不是字符串", vim.log.levels.ERROR)
     end)
+  end
+end
+
+-- util 初始化入口
+function util.init_once()
+  if util.rust_ready() then
+    util.init_rust_speed()
+    -- console(rust_speed.hello("abc", "def"))
+    -- local data = {name = "Alice", age = 30, active = true}
+    -- console(rust_speed.replacement("1234",{1,2},"x"))
+    -- console(rust_speed.get_first_complete_hit())
   end
 end
 
