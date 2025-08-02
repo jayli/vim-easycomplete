@@ -187,49 +187,10 @@ end
 function util.complete_menu_filter(matching_res, word)
   if util.rust_ready() then
     local ret = rust_speed.complete_menu_filter(matching_res, word)
-    -- console(ret)
+    return ret
+  else
+    return lua_speed.complete_menu_filter(matching_res, word)
   end
-
-  local fullmatch_result = {} -- 完全匹配
-  local firstchar_result = {} -- 首字母匹配
-  local fuzzymatching = matching_res[1]
-  local fuzzy_position = matching_res[2]
-  local fuzzy_scores = matching_res[3]
-  local fuzzymatch_result = {}
-
-  for i, item in ipairs(fuzzymatching) do
-    if item["abbr"] == nil or item["abbr"] == "" then
-      item["abbr"] = item["word"]
-    end
-    local abbr = item["abbr"]
-    abbr = util.parse_abbr(abbr)
-    item["abbr"] = abbr
-    local p = fuzzy_position[i]
-    item["abbr_marked"] = util.replacement(abbr, p, "§")
-    item["marked_position"] = p
-    item["score"] = fuzzy_scores[i]
-    if string.find(string.lower(item["word"]), string.lower(word)) == 1 then
-      table.insert(fullmatch_result, item)
-    elseif string.lower(string.sub(item["word"],1,1)) == string.lower(string.sub(word,1,1)) then
-      table.insert(firstchar_result, item)
-    else
-      table.insert(fuzzymatch_result, item)
-    end
-  end
-
-  local stunt_items = vim.fn["easycomplete#GetStuntMenuItems"]()
-
-  if #stunt_items == 0 and vim.g.easycomplete_first_complete_hit == 1 then
-    table.sort(fuzzymatch_result, function(a, b)
-      return #a.abbr < #b.abbr -- 按 abbr 字段的长度升序排序
-    end)
-  end
-
-  local filtered_menu = {}
-  for _, v in ipairs(fullmatch_result) do table.insert(filtered_menu, v) end
-  for _, v in ipairs(firstchar_result) do table.insert(filtered_menu, v) end
-  for _, v in ipairs(fuzzymatch_result) do table.insert(filtered_menu, v) end
-  return filtered_menu
 end
 
 -- easycomplete#util#GetVimCompletionItems 的 lua 实现

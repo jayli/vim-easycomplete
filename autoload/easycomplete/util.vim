@@ -1412,20 +1412,23 @@ function! easycomplete#util#GetItemAbbr(...)
 endfunction " }}}
 
 function! easycomplete#util#SortTextComparatorByLength(entry1, entry2)
+  " 这里的比较应该基于 word
+  " 这个sort只在模糊匹配时起作用，排序在前的应该是首字母匹配
+  " 首字母不匹配才用得着这里的排序
   let l1 = get(a:entry1, "item_length", 0)
   let l2 = get(a:entry2, "item_length", 0)
   if empty(l1)
-    let k1 = get(a:entry1,"abbr", "")
+    let k1 = get(a:entry1,"word", "")
     if empty(k1)
-      let k1 = get(a:entry1,"word", "")
+      let k1 = get(a:entry1,"abbr", "")
     endif
     let l1 = strlen(k1)
     let a:entry1["item_length"] = l1
   endif
   if empty(l2)
-    let k2 = get(a:entry2,"abbr", "")
+    let k2 = get(a:entry2,"word", "")
     if empty(k2)
-      let k2 = get(a:entry2,"word", "")
+      let k2 = get(a:entry2,"abbr", "")
     endif
     let l2 = strlen(k2)
     let a:entry2["item_length"] = l2

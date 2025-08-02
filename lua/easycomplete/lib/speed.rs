@@ -74,10 +74,16 @@ fn get_global_vars(lua: &Lua, _: ()) -> LuaResult<i32> {
 // 先更新全局变量，然后读取全局变量
 fn get_first_complete_hit(lua: &Lua, _:()) -> LuaResult<i32> {
     let globals = lua.globals();
-    let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
-    init_global_vars.call("x")?;
+    update_global_lua_vars(lua);
     let ret: i32 = globals.get("easycomplete_first_complete_hit")?;
     Ok(ret)
+}
+
+fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
+    let globals = lua.globals();
+    let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
+    init_global_vars.call("default")?;
+    Ok("abc".to_string())
 }
 
 
@@ -172,31 +178,126 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
     result
 }
 
+// 判断 luatable 中的某个键为 nil
+fn is_key_nil(table: LuaTable, key: &str) -> bool {
+    // 尝试获取指定键的值
+    let ret: bool = table.contains_key(key).unwrap();
+    ret
+}
+
+// 根据表的word字段进行长度排序
+fn sort_table_by_word_len(lua: &Lua, mut table: Table) -> Result<LuaTable, LuaError> {
+    // 1. 提取所有元素
+    let mut items: Vec<Table> = table
+        .sequence_values::<Table>()
+        .collect::<Result<Vec<_>, _>>()?;
+
+    // 2. 在 Rust 中排序
+    items.sort_by(|a, b| {
+        let name_a = a.get::<String>("word").unwrap_or_default();
+        let name_b = b.get::<String>("word").unwrap_or_default();
+        name_a.len().cmp(&name_b.len()) // 升序
+    });
+
+    // 3. 清空原 table
+    for i in 1..=table.raw_len() {
+        table.set(i, Value::Nil)?;
+    }
+
+    // 4. 写回排序后的结果
+    for (i, item) in items.into_iter().enumerate() {
+        table.set(i + 1, item)?; // Lua 索引从 1 开始
+    }
+
+    Ok(table)
+}
+
 // complete_menu_filter 主函数：Rust 版本的 complete_menu_filter
 // lua → util.complete_menu_filter(matching_res, word)
-
 fn complete_menu_filter(
     lua: &Lua,
     (matching_res, word): (LuaTable, String))
 -> LuaResult<LuaTable> {
-    let result = lua.create_table()?;
-    let table = lua.create_table()?;
+    let globals = lua.globals();
+    let mut fullmatch_result = lua.create_table()?;
+    let mut firstchar_result = lua.create_table()?;
+    let mut fuzzymatch_result = lua.create_table()?;
 
-    let table: LuaTable = matching_res.get(1)?;
+    let fuzzymatching: LuaTable = matching_res.get(1)?;
+    let fuzzy_position: LuaTable = matching_res.get(2)?;
+    let fuzzy_scores: LuaTable = matching_res.get(3)?;
 
-    let mut iter = table.sequence_values::<Table>();
+    let mut iter = fuzzymatching.sequence_values::<Table>();
     let mut i: usize = 1;
-    while let Some(item_result) = iter.next() {
-        let item = item_result?; // ✅ 这里的 item_result 是 Result<Table>
+    while let Some(every_item) = iter.next() {
+        let item = every_item?;
 
-        let new_item = lua.create_table()?;
-        new_item.set("new_key", "abc")?;
-        item.for_each(|k: String, v: Value| new_item.set(k, v))?;
+        if is_key_nil(item.clone(), "abbr") {
+            let t_abbr: String = item.get("abbr")?;
+            let t_word: String = item.get("word")?;
+            if t_abbr == "" {
+                item.set("abbr", t_word)?;
+            }
+        }
 
-        result.set(i, new_item)?;
+        let o_abbr: String = item.get("abbr")?;
+        let abbr_rust_str: String = parse_abbr(lua, o_abbr)?;
+        let abbr_lua_str = lua.create_string(&abbr_rust_str)?;
+        item.set("abbr", abbr_rust_str)?;
+        let p: LuaTable = fuzzy_position.get(i)?;
+        let abbr_replacement: String = replacement(lua, (abbr_lua_str, p.clone(), '§'))?;
+        let item_score: usize = fuzzy_scores.get(i)?;
+
+        item.set("abbr_marked", abbr_replacement)?;
+        item.set("marked_position", p)?;
+        item.set("score", item_score)?;
+
+        let item_word: String = item.get("word")?;
+        let item_word_lower: String = item_word.clone().to_lowercase();
+        let word_lower: String = word.clone().to_lowercase();
+
+        if item_word_lower.starts_with(&word_lower) {
+            fullmatch_result.push(item.clone());
+        } else if item_word_lower.chars().next() == word_lower.chars().next() {
+            firstchar_result.push(item.clone());
+        } else {
+            fuzzymatch_result.push(item.clone());
+        }
+
         i += 1;
     }
-    Ok(result)
+    // local stunt_items = vim.fn["easycomplete#GetStuntMenuItems"]()
+    update_global_lua_vars(lua);
+    // 数组形式的 table
+    let stunt_items: LuaTable = globals.get("easycomplete_stunt_menuitems")?;
+    let stunt_items_len_i64: i64 = stunt_items.len()?;
+    let stunt_items_len_i32: i32 = stunt_items_len_i64.try_into().unwrap();
+    // 数字
+    let first_complete_hit: i32 = globals.get("easycomplete_first_complete_hit")?;
+    let mut sorted_fuzzymatch_result: LuaTable;
+    if stunt_items_len_i32 == 0 && first_complete_hit == 1 {
+        sorted_fuzzymatch_result = sort_table_by_word_len(lua, fuzzymatch_result.clone())?;
+    } else {
+        sorted_fuzzymatch_result = fuzzymatch_result.clone();
+    }
+    // local filtered_menu = {}
+    // for _, v in ipairs(fullmatch_result) do table.insert(filtered_menu, v) end
+    // for _, v in ipairs(firstchar_result) do table.insert(filtered_menu, v) end
+    // for _, v in ipairs(fuzzymatch_result) do table.insert(filtered_menu, v) end
+    let mut tmp_items = Vec::new();
+
+    // 提取所有元素
+    tmp_items.extend(fullmatch_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
+    tmp_items.extend(firstchar_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
+    tmp_items.extend(fuzzymatch_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
+
+    // 创建新的 Lua table 并写入
+    let filtered_menu = lua.create_table()?;
+    for (i, item) in tmp_items.into_iter().enumerate() {
+        filtered_menu.set(i + 1, item)?; // Lua 索引从 1 开始
+    }
+
+    Ok(filtered_menu)
 }
 
 #[mlua::lua_module]
