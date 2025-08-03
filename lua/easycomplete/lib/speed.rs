@@ -2,6 +2,7 @@ use mlua::{Lua, Value, Table};
 use mlua::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 use std::convert::TryInto;
+use sublime_fuzzy::{best_match, Scoring};
 
 #[derive(Debug, Clone)]
 pub struct LspItem {
@@ -365,6 +366,7 @@ fn fuzzy_search(haystack: &str, needle: &str) -> bool {
 
 // 根据 `word` 的长度，筛选出最短的 n 个元素
 // util.trim_array_to_length 的 rust 实现
+// arr: 原 all_items_list， 是数组形式的 table
 fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable, LuaError> {
     let n = n as usize;
 
@@ -374,7 +376,7 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
         return Ok(arr); // 直接返回原表
     }
 
-
+    // 标准遍历数组形式的 LuaTable 的写法
     let mut indexed = Vec::with_capacity(len);
     let mut iter = arr.sequence_values::<Table>();
     let mut i: usize = 1;
@@ -405,6 +407,18 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
 }
 
 
+fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
+    let mut iter = list.sequence_values::<Table>();
+    let mut i: usize = 1;
+    while let Some(every_item) = iter.next() {
+        let item = every_item?;
+        let t_word: String = item.get("word")?;
+        i += 1;
+    }
+}
+
+
+
 #[mlua::lua_module]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
@@ -423,6 +437,7 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("parse_abbr", lua.create_function(parse_abbr)?)?;
     exports.set("complete_menu_filter", lua.create_function(complete_menu_filter)?)?;
     exports.set("trim_array_to_length", lua.create_function(trim_array_to_length)?)?;
+    exports.set("matchfuzzypos", lua.create_function(matchfuzzypos)?)?;
 
     Ok(exports)
 }

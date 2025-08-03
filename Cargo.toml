@@ -10,4 +10,5 @@ crate-type = ["cdylib"]
 [dependencies]
 mlua = { version = "0.10.2", features = ["module", "luajit"] }
 unicode-segmentation = "1.10"
+sublime_fuzzy = "0.7.0"
 
