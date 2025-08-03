@@ -1224,6 +1224,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
       " 性能：576 个元素，n 是 550  耗时 13ms
       let all_items = s:TrimArrayToLength(a:all_menu, a:maxlength + 130)
     endif
+    " call s:console(reltimestr(reltime(tt)))
     " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
     " 和 word 不是一一对应的，通过word fuzzy 匹配的位置无法正确应用在 abbr 上
     " 这里只 hack 了 vim，其他类型的文件未测试

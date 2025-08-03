@@ -266,15 +266,11 @@ end
 
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
 function util.badboy_vim(item, typing_word)
-  if util.rust_ready() then
-    -- rust 版本实测速度不比 lua 更快，原因是跨语言调用次数本身造成的开销大
-    -- 最佳实践是 rust 应当尽可能少次数的被调用，复杂逻辑实现在 rust 中，
-    -- 而不是通过 lua 多次频繁的调用 rust
-    -- 因此这里暂时都用 lua 实现
-    return lua_speed.badboy_vim(item, typing_word)
-  else
-    return lua_speed.badboy_vim(item, typing_word)
-  end
+  -- rust 版本实测速度不比 lua 更快，原因是跨语言调用次数本身造成的开销大
+  -- 最佳实践是 rust 应当尽可能少次数的被调用，复杂逻辑实现在 rust 中，
+  -- 而不是通过 lua 多次频繁的调用 rust
+  -- 因此这里暂时都用 lua 实现
+  return lua_speed.badboy_vim(item, typing_word)
 end
 
 -- 一个单词的 fuzzy 比对，没有计算 score
@@ -652,40 +648,13 @@ function util.create_config(file_path, content)
   vim.fn.writefile(content, file_path, "a")
 end
 
--- 根据word的长度，晒出最短的n个元素
+-- 根据word的长度，筛出最短的n个元素
 function util.trim_array_to_length(arr, n)
-  -- 如果数组长度小于等于 n，直接返回原数组
-  if #arr <= n then
-    return arr
+  if util.rust_ready() then
+    return rust_speed.trim_array_to_length(arr,n)
+  else
+    return lua_speed.trim_array_to_length(arr,n)
   end
-
-  -- 创建一个包含索引和 word 长度的表
-  local arr_length_arr = {}
-  for idx, item in ipairs(arr) do
-    table.insert(arr_length_arr, {
-      idx = idx - 1,        -- Lua 索引从 1 开始，Vim 从 0 开始，所以存 idx-1 以匹配原逻辑
-      length = #item.word   -- strlen(item["word"]) 等价于 #item.word
-    })
-  end
-
-  -- 按长度升序排序：短的在前
-  table.sort(arr_length_arr, function(a, b)
-    return a.length < b.length
-  end)
-
-  -- 取前 n 个最短的项
-  local new_arr_length_arr = {}
-  for i = 1, n do
-    table.insert(new_arr_length_arr, arr_length_arr[i])
-  end
-
-  -- 根据原始索引从原数组中取出对应元素
-  local ret = {}
-  for _, item in ipairs(new_arr_length_arr) do
-    table.insert(ret, arr[item.idx + 1])  -- 转回 Lua 索引
-  end
-
-  return ret
 end
 
 function util.get_typing_word()

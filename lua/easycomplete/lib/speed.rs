@@ -32,7 +32,7 @@ fn return_table(lua: &Lua, _: ()) -> LuaResult<LuaTable> {
     Ok(table)
 }
 
-// 传入一个 lua table
+// 传入一个 lua table，操作键值对的 table
 fn parse_table(lua: &Lua, table: LuaTable) -> LuaResult<LuaTable> {
     let ret_str : String = String::from("abc");
     table.set("xxx", ret_str);
@@ -47,6 +47,7 @@ fn return_kv_table(lua: &Lua, _: ()) -> LuaResult<LuaTable> {
     Ok(table)
 }
 
+// 将一个数字组成的数组Table 转换为 slice
 fn lua_table_to_usize_slice(lua: &Lua, table: LuaTable) -> Result<Vec<usize>, LuaError> {
     // 创建一个 Vec 来存储 usize 值
     let mut vec = Vec::new();
@@ -361,6 +362,46 @@ fn fuzzy_search(haystack: &str, needle: &str) -> bool {
     true
 }
 
+// 根据 `word` 的长度，筛选出最短的 n 个元素
+// util.trim_array_to_length 的 rust 实现
+fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable, LuaError> {
+    let n = n as usize;
+
+    // 获取数组长度
+    let len = arr.raw_len().try_into().expect("i32 value cannot fit in usize");
+    if len <= n {
+        return Ok(arr); // 直接返回原表
+    }
+
+
+    let mut indexed = Vec::with_capacity(len);
+    let mut iter = arr.sequence_values::<Table>();
+    let mut i: usize = 1;
+    while let Some(every_item) = iter.next() {
+        let item = every_item?;
+        let t_word: String = item.get("word")?;
+        if let word = t_word {
+            indexed.push((i, word.len()));
+        } else {
+            // 如果没有 word 字段，给一个大长度避免优先选中
+            indexed.push((i, usize::MAX));
+        }
+        i += 1;
+    }
+
+    // 按 word 长度升序排序（稳定排序）
+    indexed.sort_by_key(|&(_, len)| len);
+
+    // 创建结果表
+    let ret = lua.create_table()?;
+    for (pos, (orig_idx, _)) in indexed.into_iter().take(n).enumerate() {
+        // 使用原始索引从 arr 取出完整元素
+        let value: LuaTable = arr.get(orig_idx)?;
+        ret.set(pos + 1, value)?; // Lua 表索引从 1 开始
+    }
+
+    Ok(ret)
+}
 
 
 #[mlua::lua_module]
@@ -374,12 +415,13 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("parse_table", lua.create_function(parse_table)?)?;
     exports.set("get_global_vars", lua.create_function(get_global_vars)?)?;
     exports.set("get_first_complete_hit", lua.create_function(get_first_complete_hit)?)?;
+    exports.set("badboy_vim", lua.create_function(badboy_vim)?)?;
 
     // rust 重写的 lua 函数
     exports.set("replacement", lua.create_function(replacement)?)?;
     exports.set("parse_abbr", lua.create_function(parse_abbr)?)?;
     exports.set("complete_menu_filter", lua.create_function(complete_menu_filter)?)?;
-    exports.set("badboy_vim", lua.create_function(badboy_vim)?)?;
+    exports.set("trim_array_to_length", lua.create_function(trim_array_to_length)?)?;
 
     Ok(exports)
 }

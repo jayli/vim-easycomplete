@@ -131,4 +131,40 @@ function speed.fuzzy_search(haystack, needle)
   end
 end
 
+-- 根据word的长度，筛出最短的n个元素
+function speed.trim_array_to_length(arr, n)
+  -- 如果数组长度小于等于 n，直接返回原数组
+  if #arr <= n then
+    return arr
+  end
+
+  -- 创建一个包含索引和 word 长度的表
+  local arr_length_arr = {}
+  for idx, item in ipairs(arr) do
+    table.insert(arr_length_arr, {
+      idx = idx - 1,        -- Lua 索引从 1 开始，Vim 从 0 开始，所以存 idx-1 以匹配原逻辑
+      length = #item.word   -- strlen(item["word"]) 等价于 #item.word
+    })
+  end
+
+  -- 按长度升序排序：短的在前
+  table.sort(arr_length_arr, function(a, b)
+    return a.length < b.length
+  end)
+
+  -- 取前 n 个最短的项
+  local new_arr_length_arr = {}
+  for i = 1, n do
+    table.insert(new_arr_length_arr, arr_length_arr[i])
+  end
+
+  -- 根据原始索引从原数组中取出对应元素
+  local ret = {}
+  for _, item in ipairs(new_arr_length_arr) do
+    table.insert(ret, arr[item.idx + 1])  -- 转回 Lua 索引
+  end
+
+  return ret
+end
+
 return speed
