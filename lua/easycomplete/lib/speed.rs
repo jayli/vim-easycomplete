@@ -301,6 +301,7 @@ fn complete_menu_filter(
     Ok(filtered_menu)
 }
 
+// 函数弃用
 // util.badboy_vim(item, typing_word) 的 rust 实现
 // 这个函数 rust 版本的实现单次执行效率高于 lua，但如果被lua频繁调用，时间多消耗在
 // 跨语言调用本身，因此要避免频繁调用 rust，实测频繁被 lua 调用的性能：
