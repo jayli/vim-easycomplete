@@ -13,7 +13,12 @@ rm -rf ./target/release
 #   -output target/debug/libeasycomplete_util.dylib
 
 
-cargo rustc -- -C link-arg=-undefined -C link-arg=dynamic_lookup --target x86_64-apple-darwin
-# cargo rustc -- -C link-arg=-undefined -C link-arg=dynamic_lookup --target aarch64-apple-darwin
+cargo rustc --release -- \
+  -C link-arg=-undefined \
+  -C link-arg=dynamic_lookup \
+  -C opt-level=3 \
+   -C debuginfo=0 \
+  --target x86_64-apple-darwin
 #
+# -C profile-generate \
 echo "dylib created!"

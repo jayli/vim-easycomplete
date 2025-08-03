@@ -142,7 +142,7 @@ function util.get_rust_exec_path()
   local root_dir = vim.fn["easycomplete#util#GetEasyCompleteRootDirectory"]()
   local lib_path = nil
   if util.is_macos() then
-    lib_path = root_dir .. "/target/debug/"
+    lib_path = root_dir .. "/target/release/"
     lib_path = lib_path .. "libeasycomplete_rust_speed.dylib"
   end
   return lib_path
@@ -690,6 +690,9 @@ function util.get_typing_word()
   return vim.fn['easycomplete#util#GetTypingWord']()
 end
 
+-- CompleteMenuFilter 函数句柄入口，内部会调用 complete_menu_filter
+-- complete_menu_filter 只是性能优化使用的多种实现
+-- 只给 cmdline 调用
 function util.menu_filter(menu_list, word, max_word)
   local ret = vim.fn['easycomplete#util#CompleteMenuFilter'](menu_list, word, max_word)
   return ret
