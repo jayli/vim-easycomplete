@@ -301,7 +301,8 @@ fn complete_menu_filter(
 }
 
 // util.badboy_vim(item, typing_word) 的 rust 实现
-// TODO, 这个函数的lua版本比 rust 实现要快
+// 这个函数 rust 版本的实现单次执行效率高于 lua，但如果被lua频繁调用，时间多消耗在
+// 跨语言调用本身，因此要避免频繁调用 rust，实测频繁被 lua 调用的性能：
 // 200 个节点的循环次数：
 //  - lua: 稳定在 6ms
 //  - rust: 在11ms~8ms 之间浮动

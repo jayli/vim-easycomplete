@@ -267,8 +267,10 @@ end
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
 function util.badboy_vim(item, typing_word)
   if util.rust_ready() then
-    -- TODO rust 实测速度不比 lua 更快，原因未知
-    -- 暂时都用 lua 实现
+    -- rust 版本实测速度不比 lua 更快，原因是跨语言调用次数本身造成的开销大
+    -- 最佳实践是 rust 应当尽可能少次数的被调用，复杂逻辑实现在 rust 中，
+    -- 而不是通过 lua 多次频繁的调用 rust
+    -- 因此这里暂时都用 lua 实现
     return lua_speed.badboy_vim(item, typing_word)
   else
     return lua_speed.badboy_vim(item, typing_word)
