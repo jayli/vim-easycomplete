@@ -406,16 +406,49 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
     Ok(ret)
 }
 
+// https://crates.io/crates/sublime_fuzzy
+// 废弃：vim 原生matchfuzzypos速度最快，rust 涉及到跨语言，2~8ms，原生0.2ms
 fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
+
+    let mut matchfuzzy = lua.create_table()?;
+    let mut positions = lua.create_table()?;
+    let mut scores = lua.create_table()?;
 
     let mut iter = list.sequence_values::<Table>();
     let mut i: usize = 1;
     while let Some(every_item) = iter.next() {
         let item = every_item?;
         let t_word: String = item.get("word")?;
+        let mut position: LuaTable = lua.create_table()?;
+        let mut score: i32;
+        // let m = best_match(&word, &t_word).expect("No match");
+        match best_match(&word, &t_word) {
+            Some(m) => {
+                if m.matched_indices().len() == word.chars().count() {
+                    // match
+                    // position = m.matched_indices();
+                    for p in m.matched_indices() {
+                        position.push(*p as i32);
+                    }
+                    score = m.score() as i32;
+                    matchfuzzy.push(item.clone());
+                    positions.push(position.clone());
+                    scores.push(score.clone());
+                }
+            }
+            None => {
+                // catch 异常情况
+            }
+        }
         i += 1;
     }
-    Ok(list)
+
+    let mut result = lua.create_table()?;
+    result.push(matchfuzzy);
+    result.push(positions);
+    result.push(scores);
+    // TODO 根据 Score 进行排序
+    Ok(result)
 }
 
 

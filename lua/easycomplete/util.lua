@@ -285,14 +285,6 @@ function util.fuzzy_search(haystack, needle)
   end
 end
 
-function util.matchfuzzypos(all_items, word, opt)
-  -- if util.rust_ready() then
-  --   return rust_speed.matchfuzzypos(all_items, word, opt)
-  -- else
-    return vim.fn.matchfuzzypos(all_items, word, opt)
-  -- end
-end
-
 -- easycomplete#util#GetVimCompletionItems 的 lua 实现
 function util.get_vim_complete_items(response, plugin_name, word)
   local tt = vim.fn.reltime()
