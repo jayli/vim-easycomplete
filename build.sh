@@ -17,7 +17,7 @@ cargo rustc --release -- \
   -C link-arg=-undefined \
   -C link-arg=dynamic_lookup \
   -C opt-level=3 \
-   -C debuginfo=0 \
+  -C debuginfo=0 \
   --target x86_64-apple-darwin
 #
 # -C profile-generate \
