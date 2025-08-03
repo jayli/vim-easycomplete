@@ -1,5 +1,9 @@
 local speed = {}
 
+local function console(...)
+  return vim.fn['easycomplete#log#log'](...)
+end
+
 function speed.replacement(abbr, positions, wrap_char)
   -- 转换为字符数组（字符串 -> 字符表）
   local letters = {}

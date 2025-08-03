@@ -17,7 +17,8 @@ pub extern "C" fn add_old(a: i32, b: i32) -> i32 {
 }
 
 // 输出一个简单的字符串
-fn hello(_: &Lua, (a,b) : (String, String)) -> LuaResult<String> {
+fn hello(lua: &Lua, (a,b) : (String, String)) -> LuaResult<String> {
+    // println!("xxxxx");
     Ok(a.to_string() + &b.to_string())
 }
 
@@ -87,7 +88,6 @@ fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
     init_global_vars.call("default")?;
     Ok("abc".to_string())
 }
-
 
 // 模拟 Lua 版本的 `util.parse_abbr`
 // 
@@ -248,7 +248,7 @@ fn complete_menu_filter(
         item.set("abbr", abbr_rust_str)?;
         let p: LuaTable = fuzzy_position.get(i)?;
         let abbr_replacement: String = replacement(lua, (abbr_lua_str, p.clone(), '§'))?;
-        let item_score: usize = fuzzy_scores.get(i)?;
+        let item_score: i32 = fuzzy_scores.get(i)?;
 
         item.set("abbr_marked", abbr_replacement)?;
         item.set("marked_position", p)?;
@@ -406,8 +406,8 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
     Ok(ret)
 }
 
-
 fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
+
     let mut iter = list.sequence_values::<Table>();
     let mut i: usize = 1;
     while let Some(every_item) = iter.next() {
@@ -415,6 +415,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         let t_word: String = item.get("word")?;
         i += 1;
     }
+    Ok(list)
 }
 
 
