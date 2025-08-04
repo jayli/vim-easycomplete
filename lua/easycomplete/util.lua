@@ -501,7 +501,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
 
     ::continue::
   end -- endfor
-  console(vim.fn.reltimestr(vim.fn.reltime(tt)))
+  -- console(vim.fn.reltimestr(vim.fn.reltime(tt)))
   return { items = l_vim_complete_items, incomplete = l_incomplete }
 end -- endfunction
 
