@@ -5,3 +5,4 @@
 pythonx/EasyCompleteUtil/__pycache__/
 pythonx/__pycache__/
 target/debug
+target/.rustc_info.json
