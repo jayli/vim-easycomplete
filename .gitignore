@@ -4,5 +4,4 @@
 ./bundle/YouCompleteMe/*
 pythonx/EasyCompleteUtil/__pycache__/
 pythonx/__pycache__/
-target/*
-target
+target/debug

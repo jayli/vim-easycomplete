@@ -32,6 +32,15 @@ cargo rustc --release -- \
   -C opt-level=3 \
   -C debuginfo=0 \
   --target x86_64-apple-darwin
+rm ./target/CACHEDIR.TAG
+rm ./target/.rustc_info.json
+rm ./target/release/libeasycomplete_rust_speed.d
+rm -rf ./target/release/incremental
+rm -rf ./target/release/examples
+rm -rf ./target/release/deps
+rm -rf ./target/release/build
+rm -rf ./target/release/.fingerprint
+rm ./target/release/.cargo-lock
 #
 # -C profile-generate \
 echo "dylib created!"
