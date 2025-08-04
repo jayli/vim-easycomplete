@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-name="debug"
-#name="release"
+#name="debug"
+name="release"
 
 rm -rf ./target/release
 

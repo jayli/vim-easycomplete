@@ -1217,26 +1217,22 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
   endif
   if exists('*matchfuzzy')
     let tt = reltime()
-    if g:env_is_nvim
-      " 性能：576 个元素，n 是 550 耗时 2ms
-      let all_items = s:util_toolkit.trim_array_to_length(a:all_menu, a:maxlength + 130)
-    else
-      " 性能：576 个元素，n 是 550  耗时 13ms
-      let all_items = s:TrimArrayToLength(a:all_menu, a:maxlength + 130)
-    endif
-    " call s:console(reltimestr(reltime(tt)))
     " TODO here vim 里针对 g: 的匹配有 hack，word 前面减了两个字符，导致abbr
     " 和 word 不是一一对应的，通过word fuzzy 匹配的位置无法正确应用在 abbr 上
     " 这里只 hack 了 vim，其他类型的文件未测试
     let key_name = (&filetype == "vim") ? "abbr" : "word"
-    " let matching_res = all_items->matchfuzzypos(word, {'key': key_name, 'matchseq': 1, "limit": a:maxlength})
-    let matching_res = s:util_toolkit.matchfuzzypos(all_items, word, {'key': key_name, 'matchseq': 1, "limit": a:maxlength})
     if g:env_is_nvim
-      " 350 个元素，7ms
-      let l:ret = s:util_toolkit.complete_menu_filter(matching_res, word)
+      " complete_menu_fuzzy_filter --------------{---
+      let l:ret = s:util_toolkit.complete_menu_fuzzy_filter(a:all_menu, word, key_name, a:maxlength)
       return l:ret
+      " complete_menu_fuzzy_filter --------------}---
     else
+      " 性能：576 个元素，n 是 550  耗时 13ms
+      " complete_menu_fuzzy_filter --------------{---
+      let all_items = s:TrimArrayToLength(a:all_menu, a:maxlength + 130)
+      let matching_res = all_items->matchfuzzypos(word, {'key': key_name, 'matchseq': 1, "limit": a:maxlength})
       return s:CompleteMenuFilterVim(matching_res, word)
+      " complete_menu_fuzzy_filter --------------}---
     endif
   else " for nvim(<=0.5.0)
     " 完整匹配

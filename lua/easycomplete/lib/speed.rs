@@ -406,9 +406,21 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
     Ok(ret)
 }
 
-// https://crates.io/crates/sublime_fuzzy
-fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
+fn complete_menu_fuzzy_filter(lua: &Lua,
+    (all_menu, word, key_name, maxlength): (LuaTable, String, String, i32)) -> Result<LuaTable, LuaError> {
 
+    let all_items: LuaTable = trim_array_to_length(lua, (all_menu, maxlength + 130))?;
+    let opt: LuaTable = lua.create_table()?;
+    opt.set("key", key_name.to_string())?;
+    opt.set("limit", maxlength)?;
+    let mut matching_res: LuaTable = matchfuzzypos(lua, (all_items, word.clone(), opt))?;
+    let mut ret: LuaTable = complete_menu_filter(lua, (matching_res, word.clone()))?;
+    Ok(ret)
+}
+
+// https://crates.io/crates/sublime_fuzzy
+// TODO maxlength: 350， 耗时 11 ~ 15 ms，比 lua 慢 2ms
+fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
     let mut matchfuzzy = lua.create_table()?;
     let mut positions = lua.create_table()?;
     let mut scores = lua.create_table()?;
@@ -427,7 +439,6 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
             Some(m) => {
                 if m.matched_indices().len() == word.chars().count() {
                     // match
-                    // position = m.matched_indices();
                     for p in m.matched_indices() {
                         position.push(*p as i32);
                     }
@@ -457,7 +468,6 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     });
 
     let mut new_matchfuzzy = lua.create_table()?;
-    let max: usize = limit as usize;
 
     // 4. 写回排序后的结果
     for (i, item) in matchfuzzy_vec.into_iter().enumerate() {
@@ -466,7 +476,11 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         new_matchfuzzy.set(i+1, item)?; // Lua 索引从 1 开始
         positions.set(i+1, p.clone())?;
         scores.set(i+1, s.clone())?;
-        if i > max {
+
+        // new_matchfuzzy.push(item)?;
+        // positions.push(p.clone())?;
+        // scores.push(s.clone())?;
+        if i > limit as usize  {
             break;
         }
     }
@@ -497,6 +511,7 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("complete_menu_filter", lua.create_function(complete_menu_filter)?)?;
     exports.set("trim_array_to_length", lua.create_function(trim_array_to_length)?)?;
     exports.set("matchfuzzypos", lua.create_function(matchfuzzypos)?)?;
+    exports.set("complete_menu_fuzzy_filter", lua.create_function(complete_menu_fuzzy_filter)?)?;
 
     Ok(exports)
 }
