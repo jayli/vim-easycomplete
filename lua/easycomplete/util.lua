@@ -213,7 +213,7 @@ function util.complete_menu_fuzzy_filter(all_menu, word, key_name, maxlength)
       })
     ret = util.complete_menu_filter(matching_res, word)
   end
-  -- console(vim.fn.reltimestr(vim.fn.reltime(tt)), #ret)
+  --console(vim.fn.reltimestr(vim.fn.reltime(tt)), #ret)
   return ret
 end
 
@@ -809,7 +809,7 @@ end
 function util.init_once()
   if util.rust_ready() then
     util.init_rust_speed()
-    -- console(rust_speed.hello("abc", "def"))
+    -- console(rust_speed.hello("hello", "rust"))
     -- local data = {name = "Alice", age = 30, active = true}
     -- console(rust_speed.replacement("1234",{1,2},"x"))
     -- console(rust_speed.get_first_complete_hit())

@@ -492,7 +492,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     Ok(result)
 }
 
-#[mlua::lua_module]
+#[mlua::lua_module(skip_memory_check)]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 

@@ -30,7 +30,6 @@ else
       -C debuginfo=0 \
       --target x86_64-apple-darwin
 
-    rm ./target/CACHEDIR.TAG
     rm ./target/.rustc_info.json
     rm ./target/release/libeasycomplete_rust_speed.d
     rm ./target/release/.cargo-lock

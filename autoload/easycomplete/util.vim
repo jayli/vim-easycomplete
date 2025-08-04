@@ -1222,17 +1222,18 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     " 这里只 hack 了 vim，其他类型的文件未测试
     let key_name = (&filetype == "vim") ? "abbr" : "word"
     if g:env_is_nvim
-      " complete_menu_fuzzy_filter --------------{---
+      " 性能：576 个元素，n 是 550, rust 耗时 8ms, lua 耗时 10ms
+      " complete_menu_fuzzy_filter --------------{
       let l:ret = s:util_toolkit.complete_menu_fuzzy_filter(a:all_menu, word, key_name, a:maxlength)
       return l:ret
-      " complete_menu_fuzzy_filter --------------}---
+      " complete_menu_fuzzy_filter --------------}
     else
-      " 性能：576 个元素，n 是 550  耗时 13ms
-      " complete_menu_fuzzy_filter --------------{---
+      " 性能：576 个元素，n 是 550  耗时 15ms
+      " complete_menu_fuzzy_filter --------------{
       let all_items = s:TrimArrayToLength(a:all_menu, a:maxlength + 130)
       let matching_res = all_items->matchfuzzypos(word, {'key': key_name, 'matchseq': 1, "limit": a:maxlength})
       return s:CompleteMenuFilterVim(matching_res, word)
-      " complete_menu_fuzzy_filter --------------}---
+      " complete_menu_fuzzy_filter --------------}
     endif
   else " for nvim(<=0.5.0)
     " 完整匹配
