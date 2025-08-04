@@ -407,18 +407,19 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
 }
 
 // https://crates.io/crates/sublime_fuzzy
-// 废弃：vim 原生matchfuzzypos速度最快，rust 涉及到跨语言，2~8ms，原生0.2ms
 fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
 
     let mut matchfuzzy = lua.create_table()?;
     let mut positions = lua.create_table()?;
     let mut scores = lua.create_table()?;
+    let key: String = opt.get("key")?;
+    let limit: i32 = opt.get("limit")?;
 
-    let mut iter = list.sequence_values::<Table>();
+    let mut list_iter = list.sequence_values::<Table>();
     let mut i: usize = 1;
-    while let Some(every_item) = iter.next() {
-        let item = every_item?;
-        let t_word: String = item.get("word")?;
+    while let Some(every_item) = list_iter.next() {
+        let mut item = every_item?;
+        let t_word: String = item.get(key.clone())?;
         let mut position: LuaTable = lua.create_table()?;
         let mut score: i32;
         // let m = best_match(&word, &t_word).expect("No match");
@@ -431,23 +432,49 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
                         position.push(*p as i32);
                     }
                     score = m.score() as i32;
+
+                    item.set("score", score.clone());
+                    item.set("position", position.clone());
                     matchfuzzy.push(item.clone());
-                    positions.push(position.clone());
-                    scores.push(score.clone());
                 }
             }
             None => {
                 // catch 异常情况
+                // do nothing and continue
             }
         }
         i += 1;
     }
 
+    let mut matchfuzzy_vec: Vec<Table> = matchfuzzy
+        .sequence_values::<Table>()
+        .collect::<Result<Vec<_>, _>>()?;
+
+    matchfuzzy_vec.sort_by(|a, b| {
+        let score_a = a.get::<i32>("score").unwrap_or_default();
+        let score_b = b.get::<i32>("score").unwrap_or_default();
+        score_b.cmp(&score_a)
+    });
+
+    let mut new_matchfuzzy = lua.create_table()?;
+    let max: usize = limit as usize;
+
+    // 4. 写回排序后的结果
+    for (i, item) in matchfuzzy_vec.into_iter().enumerate() {
+        let mut p: LuaTable = item.get("position")?;
+        let mut s: i32 = item.get("score")?;
+        new_matchfuzzy.set(i+1, item)?; // Lua 索引从 1 开始
+        positions.set(i+1, p.clone())?;
+        scores.set(i+1, s.clone())?;
+        if i > max {
+            break;
+        }
+    }
+
     let mut result = lua.create_table()?;
-    result.push(matchfuzzy);
+    result.push(new_matchfuzzy);
     result.push(positions);
     result.push(scores);
-    // TODO 根据 Score 进行排序
     Ok(result)
 }
 
