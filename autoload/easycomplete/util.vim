@@ -1231,7 +1231,7 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     let key_name = (&filetype == "vim") ? "abbr" : "word"
     let matching_res = all_items->matchfuzzypos(word, {'key': key_name, 'matchseq': 1, "limit": a:maxlength})
     if g:env_is_nvim
-      " 350 个元素，10ms
+      " 350 个元素，7ms
       let l:ret = s:util_toolkit.complete_menu_filter(matching_res, word)
       return l:ret
     else

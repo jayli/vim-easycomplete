@@ -17,6 +17,7 @@ rm -rf ./target/release
 # cargo rustc -- \
 #   -C link-arg=-undefined \
 #   -C link-arg=dynamic_lookup \
+#   -C opt-level=3 \
 #   --target x86_64-apple-darwin
 
 # cd ./target
@@ -24,6 +25,7 @@ rm -rf ./target/release
 
 ####################### release #######################
 
+rm -rf ./target/debug
 cargo rustc --release -- \
   -C link-arg=-undefined \
   -C link-arg=dynamic_lookup \

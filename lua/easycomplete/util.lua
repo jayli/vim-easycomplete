@@ -195,12 +195,15 @@ function util.replacement(abbr, positions, wrap_char)
 end
 
 function util.complete_menu_filter(matching_res, word)
+  -- local tt = vim.fn.reltime()
+  local ret = {}
   if util.rust_ready() then
-    local ret = rust_speed.complete_menu_filter(matching_res, word)
-    return ret
+    ret = rust_speed.complete_menu_filter(matching_res, word)
   else
-    return lua_speed.complete_menu_filter(matching_res, word)
+    ret = lua_speed.complete_menu_filter(matching_res, word)
   end
+  -- console(vim.fn.reltimestr(vim.fn.reltime(tt)), #ret)
+  return ret
 end
 
 -- 主函数：LSP 类型解析
