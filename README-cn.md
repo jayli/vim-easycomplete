@@ -184,9 +184,10 @@ let g:easycomplete_cmdline = 1
 
 | 全局变量                             | 默认值        |  说明                                                       |
 |--------------------------------------|---------------|-------------------------------------------------------------|
+| `g:easycomplete_rust_enable`         | 1             | 在`MacOS_x86`平台下开启 rust 高性能模式                     |
 | `g:easycomplete_nerd_font`           | 0             | 使用 nerdfont                                               |
 | `g:easycomplete_menu_skin`           | `{}`          | 菜单图标配置.                                               |
-| `g:easycomplete_kind_icons`          | `{}`          | Kind 图标.                                                   |
+| `g:easycomplete_kind_icons`          | `{}`          | Kind 图标.                                                  |
 | `g:easycomplete_sign_text`           | `{}`          | 提示图标配置.                                               |
 | `g:easycomplete_lsp_type_font`       | ...           | lsp 图标配置                                                |
 | `g:easycomplete_lsp_server`          | `{}`          | 给特定的源使用 不同的 lsp server                            |

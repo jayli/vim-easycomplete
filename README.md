@@ -184,6 +184,7 @@ Global configurations:
 
 | Global Configure                     | Default       | Description                                                   |
 |--------------------------------------|---------------|---------------------------------------------------------------|
+| `g:easycomplete_rust_enable`         | 1             | enable the rust high-performance mode on `MacOS_x86`          |
 | `g:easycomplete_nerd_font`           | 0             | Using nerdfont for lsp icons                                  |
 | `g:easycomplete_menu_skin`           | `{}`          | Menu skin.                                                    |
 | `g:easycomplete_kind_icons`          | `{}`          | Kind icons.                                                   |

@@ -237,6 +237,9 @@ endif
 if !exists("g:easycomplete_pum_fix_width")
   let g:easycomplete_pum_fix_width = 0
 endif
+if !exists("g:easycomplete_rust_enable")
+  let g:easycomplete_rust_enable = 1
+endif
 if !exists("g:easycomplete_lsp_server")
   let g:easycomplete_lsp_server = {}
 endif

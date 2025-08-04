@@ -151,6 +151,9 @@ end
 -- 判断rust启用环境
 -- 先在 MacOS x86_64 下调通
 function util.rust_ready()
+  if vim.g.easycomplete_rust_enable == 0 then
+    return false
+  end
   if global_rust_ready == true then
     return true
   elseif global_rust_ready == false then
