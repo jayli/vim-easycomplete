@@ -291,12 +291,14 @@ function util.lsp_type(c_type)
 end
 
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
+-- 实测 lua 的实现比 rust 在进行 200 次循环时快 2ms
+-- - lua：6ms，rust：8ms
 function util.badboy_vim(item, typing_word)
-  -- rust 版本实测速度不比 lua 更快，原因是跨语言调用次数本身造成的开销大
-  -- 最佳实践是 rust 应当尽可能少次数的被调用，复杂逻辑实现在 rust 中，
-  -- 而不是通过 lua 多次频繁的调用 rust
-  -- 因此这里暂时都用 lua 实现
-  return lua_speed.badboy_vim(item, typing_word)
+  if not util.rust_ready() then
+    return lua_speed.badboy_vim(item, typing_word)
+  else
+    return lua_speed.badboy_vim(item, typing_word)
+  end
 end
 
 -- 一个单词的 fuzzy 比对，没有计算 score
@@ -499,7 +501,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
 
     ::continue::
   end -- endfor
-  -- console(vim.fn.reltimestr(vim.fn.reltime(tt)))
+  console(vim.fn.reltimestr(vim.fn.reltime(tt)))
   return { items = l_vim_complete_items, incomplete = l_incomplete }
 end -- endfunction
 

@@ -2,7 +2,7 @@ use mlua::{Lua, Value, Table};
 use mlua::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 use std::convert::TryInto;
-use sublime_fuzzy::{best_match, Scoring};
+use sublime_fuzzy::{FuzzySearch, Scoring};
 
 #[derive(Debug, Clone)]
 pub struct LspItem {
@@ -11,12 +11,13 @@ pub struct LspItem {
     pub word: String
 }
 
+// 标准 C 调用格式
 #[unsafe(no_mangle)]
 pub extern "C" fn add_old(a: i32, b: i32) -> i32 {
     a + b
 }
 
-// 输出一个简单的字符串
+// 只输出一个简单的字符串
 fn hello(lua: &Lua, (a,b) : (String, String)) -> LuaResult<String> {
     // println!("xxxxx");
     Ok(a.to_string() + &b.to_string())
@@ -82,6 +83,7 @@ fn get_first_complete_hit(lua: &Lua, _:()) -> LuaResult<i32> {
     Ok(ret)
 }
 
+// 更新有用的lua全局变量
 fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
     let globals = lua.globals();
     let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
@@ -89,19 +91,18 @@ fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
     Ok("abc".to_string())
 }
 
-// 模拟 Lua 版本的 `util.parse_abbr`
-// 
+// 实现 Lua 版本的 `util.parse_abbr`
+//
 // 参数:
 // - `abbr`: 要处理的字符串
 // - `max_length`: 最大显示长度 (对应 vim.g.easycomplete_pum_maxlength)
 // - `fix_width`: 是否固定宽度 (对应 vim.g.easycomplete_pum_fix_width == 1)
 //
 // 返回: 处理后的字符串
-
 fn parse_abbr(lua: &Lua, abbr: String) -> LuaResult<String> {
     let globals = lua.globals();
-    let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
-    // init_global_vars.call("default")?; // 好像不用做这一步
+    // let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
+    // init_global_vars.call("default")?; // 能少调用一次lua就少调一次
     let max_length_i32: i32 = globals.get("easycomplete_pum_maxlength")?;
     let fix_width_i32: i32 = globals.get("easycomplete_pum_fix_width")?;
     let max_length: usize = max_length_i32.try_into().expect("i32 value cannot fit in usize");
@@ -134,7 +135,7 @@ fn _parse_abbr(abbr: &str, max_length: usize, fix_width: bool) -> String {
     }
 }
 
-// 重写了 lua 版本的 util.replacement()
+// 重写 lua 版本的 util.replacement()
 // 参数：
 // - abbr: 对应 item 的 abbr, String 类型
 // - positions: matchfuzzy 的 position 数组，LuaTable 类型
@@ -180,14 +181,16 @@ fn _replacement(abbr: &str, positions: &[usize], wrap_char: char) -> String {
     result
 }
 
-// 判断 luatable 中的某个键为 nil
+// 判断 luatable 中的某个键是否为 nil
 fn is_key_nil(table: LuaTable, key: &str) -> bool {
     // 尝试获取指定键的值
     let ret: bool = table.contains_key(key).unwrap();
     ret
 }
 
-// 根据表的word字段进行长度排序
+// 根据Table元素里的word字段进行长度排序
+// 参数：table，待排序的 luatable
+// 返回：排序之后的table
 fn sort_table_by_word_len(lua: &Lua, mut table: Table) -> Result<LuaTable, LuaError> {
     // 1. 提取所有元素
     let mut items: Vec<Table> = table
@@ -214,8 +217,13 @@ fn sort_table_by_word_len(lua: &Lua, mut table: Table) -> Result<LuaTable, LuaEr
     Ok(table)
 }
 
-// complete_menu_filter 主函数：Rust 版本的 complete_menu_filter
+// 重写 lua 版本的 complete_menu_filter 函数，重点做着色
 // lua → util.complete_menu_filter(matching_res, word)
+// 这里只在 rust 内被调用，通常不会被lua直接调用
+// 参数：
+// - matching_res: 待做匹配的原数组
+// - word: 匹配单词
+// 返回：匹配结束的数组
 fn complete_menu_filter(
     lua: &Lua,
     (matching_res, word): (LuaTable, String))
@@ -304,11 +312,9 @@ fn complete_menu_filter(
 
 // 函数弃用
 // util.badboy_vim(item, typing_word) 的 rust 实现
-// 这个函数 rust 版本的实现单次执行效率高于 lua，但如果被lua频繁调用，时间多消耗在
-// 跨语言调用本身，因此要避免频繁调用 rust，实测频繁被 lua 调用的性能：
 // 200 个节点的循环次数：
-//  - lua: 稳定在 6ms
-//  - rust: 在11ms~8ms 之间浮动
+//  - lua: 6ms
+//  - rust: 8ms
 fn badboy_vim(lua: &Lua, (item, typing_word): (LuaTable, String)) -> LuaResult<bool> {
     let mut word: String;
     if is_key_nil(item.clone(), "label") {
@@ -344,7 +350,9 @@ fn badboy_vim(lua: &Lua, (item, typing_word): (LuaTable, String)) -> LuaResult<b
     }
 }
 
-//fuzzy_search("AsyncController","ac") true
+// 重写 fuzzy_search，只做模糊匹配，不算得分，和 lua 里保持一致
+// 只在做少量匹配时使用，大量匹配时仍应使用 sumbline_fuzzy
+// fuzzy_search("AsyncController","ac") true
 fn fuzzy_search(haystack: &str, needle: &str) -> bool {
     let mut haystack_chars = haystack.chars();
 
@@ -373,10 +381,10 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
     // 获取数组长度
     let len = arr.raw_len().try_into().expect("i32 value cannot fit in usize");
     if len <= n {
-        return Ok(arr); // 直接返回原表
+        return Ok(arr); // 返回原表
     }
 
-    // 标准遍历数组形式的 LuaTable 的写法
+    // 遍历数组形式的 LuaTable 的常用写法
     let mut indexed = Vec::with_capacity(len);
     let mut iter = arr.sequence_values::<Table>();
     let mut i: usize = 1;
@@ -406,6 +414,9 @@ fn trim_array_to_length(lua: &Lua, (arr, n): (LuaTable, i32)) -> Result<LuaTable
     Ok(ret)
 }
 
+// lua 做 item fuzzy match 的调用入口，替代原生的 matchfuzzypos
+// 参数：
+// - key_name: 匹配字段，abbr 还是 word
 fn complete_menu_fuzzy_filter(lua: &Lua,
     (all_menu, word, key_name, maxlength): (LuaTable, String, String, i32)) -> Result<LuaTable, LuaError> {
 
@@ -419,13 +430,27 @@ fn complete_menu_fuzzy_filter(lua: &Lua,
 }
 
 // https://crates.io/crates/sublime_fuzzy
-// TODO maxlength: 350， 耗时 11 ~ 15 ms，比 lua 慢 2ms
+// 耗时 6ms，比 lua 快 2ms
+// 参数：
+//  - maxlength: 通常设置 350
+//  - list: 原始数组
+//  - word: 匹配单词
+//  - opt:  参照matchfuzzypos 的第三个参数格式，这里只用到了
+//          key和limit这两个参数
 fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> Result<LuaTable, LuaError> {
     let mut matchfuzzy = lua.create_table()?;
     let mut positions = lua.create_table()?;
     let mut scores = lua.create_table()?;
     let key: String = opt.get("key")?;
     let limit: i32 = opt.get("limit")?;
+
+    let scoring = Scoring {
+        bonus_consecutive: 200,
+        bonus_word_start: 10,
+        penalty_distance: 5,
+        bonus_match_case: 100,
+        ..Scoring::default()
+    };
 
     let mut list_iter = list.sequence_values::<Table>();
     let mut i: usize = 1;
@@ -435,7 +460,12 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         let mut position: LuaTable = lua.create_table()?;
         let mut score: i32;
         // let m = best_match(&word, &t_word).expect("No match");
-        match best_match(&word, &t_word) {
+        // match best_match(&word, &t_word) {
+        let match_result = FuzzySearch::new(&word, &t_word)
+                            .case_sensitive()
+                            .score_with(&scoring)
+                            .best_match();
+        match match_result {
             Some(m) => {
                 if m.matched_indices().len() == word.chars().count() {
                     // match
@@ -464,7 +494,10 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     matchfuzzy_vec.sort_by(|a, b| {
         let score_a = a.get::<i32>("score").unwrap_or_default();
         let score_b = b.get::<i32>("score").unwrap_or_default();
-        score_b.cmp(&score_a)
+        let word_a = a.get::<String>("word").unwrap_or_default();
+        let word_b = b.get::<String>("word").unwrap_or_default();
+        // 先按照分数排序，再按照长度排序
+        score_b.cmp(&score_a).then_with(|| word_a.len().cmp(&word_b.len()))
     });
 
     let mut new_matchfuzzy = lua.create_table()?;
@@ -477,9 +510,6 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         positions.set(i+1, p.clone())?;
         scores.set(i+1, s.clone())?;
 
-        // new_matchfuzzy.push(item)?;
-        // positions.push(p.clone())?;
-        // scores.push(s.clone())?;
         if i > limit as usize  {
             break;
         }
@@ -496,7 +526,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
-    // 调试用
+    // 测试用
     exports.set("hello", lua.create_function(hello)?)?;
     exports.set("return_table", lua.create_function(return_table)?)?;
     exports.set("return_kv_table", lua.create_function(return_kv_table)?)?;
