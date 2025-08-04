@@ -201,10 +201,8 @@ function util.complete_menu_fuzzy_filter(all_menu, word, key_name, maxlength)
   local tt = vim.fn.reltime()
   local ret = nil
   if util.rust_ready() then
-    -- 应该快，但实际慢3ms
     ret = rust_speed.complete_menu_fuzzy_filter(all_menu, word, key_name, maxlength)
   else
-    -- 应该慢，实际快3ms
     local all_items = util.trim_array_to_length(all_menu, maxlength + 130)
     local matching_res = vim.fn.matchfuzzypos(all_items, word, {
         key = key_name,
