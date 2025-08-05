@@ -445,10 +445,10 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     let limit: i32 = opt.get("limit")?;
 
     let scoring = Scoring {
-        bonus_consecutive: 200,
-        bonus_word_start: 10,
-        penalty_distance: 5,
-        bonus_match_case: 100,
+        // bonus_consecutive: 200,
+        // bonus_word_start: 10,
+        // penalty_distance: 5,
+        // bonus_match_case: 100,
         ..Scoring::default()
     };
 
