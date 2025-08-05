@@ -462,7 +462,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         // let m = best_match(&word, &t_word).expect("No match");
         // match best_match(&word, &t_word) {
         let match_result = FuzzySearch::new(&word, &t_word)
-                            .case_sensitive()
+                            // .case_sensitive() // 不需要大小写敏感
                             .score_with(&scoring)
                             .best_match();
         match match_result {
