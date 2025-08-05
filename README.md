@@ -2,25 +2,25 @@
 
 > [中文](README-cn.md) | [English](README.md) | [Wiki](https://github.com/jayli/vim-easycomplete/wiki)
 
-It's a Fast and Minimalism Style Completion Plugin for vim/nvim. 
+It's a Fast and Minimalism Style Completion Plugin for vim/nvim.
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg?style=flat-square) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg?style=flat-square) ![](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI?style=flat-square)
 
 ## What
 
-Vim-easycomplete is a fast and minimalism style completion plugin for both vim and nvim. It aims to be available out of the box on linux and mac. It is implemented in pure VimScript and is extremely simple to configure without installing Node and a bunch of Node modules. Thank [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) and [coc.nvim](https://github.com/neoclide/coc.nvim). They inspired me a lot.
+Vim-easycomplete is a fast and minimalism style completion plugin for vim/nvim. It aims to be available out of the box on linux and mac.
+
+It's extremely simple to configure without installing Node and a bunch of Node modules. For vim, it runs on vimscript for greater compatibility. For nvim, it runs on lua for better performance. On macOS, it includes a version written in Rust to improve performance. Thank [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) and coc.nvim. They inspired me a lot.
 
 <img src="https://github.com/user-attachments/assets/12ddc3b0-4bc3-40c8-8044-3f57c97261fb" width=700 />
 
 It contains these features:
 
+- Compatible with vim and nvim.
 - Full [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)) support. Easy to install LSP Server with one command
-- Keywords/path support
-- Implemented based on pure vimscript
-- Snippet support.
-- Fast performance
+- Keywords/path support. Snippet support. cmdline completion support.
+- Fast performance based on rust.
 - AI coding assistant via [tabnine](#TabNine-Support).
-- cmdline completion support
 
 ## Installation
 

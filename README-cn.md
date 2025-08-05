@@ -2,23 +2,24 @@
 
 > [中文](README-cn.md) | [English](README.md) | [Wiki](https://github.com/jayli/vim-easycomplete/wiki)
 
-快速极简的 Vim/Nvim 补全插件
+高速度的 Vim/Nvim 补全插件
 
 ![](https://img.shields.io/badge/VimScript-Only-orange.svg?style=flat-square) ![](https://img.shields.io/badge/MacOS-available-brightgreen.svg?style=flat-square) ![](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) ![](https://img.shields.io/github/workflow/status/jayli/vim-easycomplete/easycomplete.CI?style=flat-square)
 
 ## What
 
-Vim-easycomplete 是一个快速极简的自动补全插件，兼容 vim 和 neovim，支持 Linux 和 MacOS. 基于 Vimscript 实现，配置简单。
+Vim-easycomplete 是一个快速极简的自动补全插件，兼容 vim 和 neovim，支持 Linux 和 MacOS. 配置简单。vim 中基于 vimscript 实现，nvim 中基于 lua 实现，并给 MacOS 系统编译了 rust 版本，以获得更快的速度。
 
 <img src="https://github.com/user-attachments/assets/12ddc3b0-4bc3-40c8-8044-3f57c97261fb" width=700 />
 
 
 包含特性:
 
+- 兼容 vim/nvim
+- 高性能，核心算法基于 rust
 - 支持 [lsp]([language-server-protocol](https://github.com/microsoft/language-server-protocol)). 通过单命令安装 LSP 服务。
 - 支持关键词和字典
 - 代码片段的补全
-- 高性能
 - 基于 TabNine 的 AI 补全助手
 - 命令行补全
 
