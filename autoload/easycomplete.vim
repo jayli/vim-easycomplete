@@ -3010,6 +3010,11 @@ function! easycomplete#SingleDelete()
   return "x"
 endfunction
 
+function! easycomplete#DeleteLine()
+  call easycomplete#LintRefreash()
+  return "dd"
+endfunction
+
 function! easycomplete#Recover()
   call easycomplete#LintRefreash()
   return "\<c-r>"
