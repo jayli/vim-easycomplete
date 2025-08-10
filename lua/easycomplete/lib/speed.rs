@@ -111,27 +111,72 @@ fn parse_abbr(lua: &Lua, abbr: String) -> LuaResult<String> {
         0 => false,
         _ => panic!("fix_width must be 0 or 1!"),
     };
-    let ret: String = _parse_abbr(&abbr, max_length, fix_width);
+    let abbr_obj = Abbr::new(&abbr, max_length, fix_width);
+    let ret: String = abbr_obj.get_parsed_abbr().unwrap();
 
     Ok(ret)
 }
 
-fn _parse_abbr(abbr: &str, max_length: usize, fix_width: bool) -> String {
-    let abbr_chars: Vec<char> = abbr.chars().collect();
-    let abbr_len = abbr_chars.len();
+// Abbr Struct
+struct Abbr {
+    abbr:  String,
+    chars: Vec<char>,
+    short: String,
+    max_length: usize,
+    symble: char,
+    fix_width: bool
+}
 
-    if abbr_len <= max_length {
-        if fix_width {
-            // 右填充空格到 max_length
-            let spaces = " ".repeat(max_length - abbr_len);
-            format!("{}{}", abbr, spaces)
+impl Abbr {
+    fn new(o_abbr: &str, max_length: usize, fix_width: bool) -> Self {
+        let symble: char = '…';
+        let abbr: String = o_abbr.to_string().clone();
+        let chars: Vec<char> = o_abbr.chars().collect();
+        let max_length: usize = max_length;
+        let fix_width: bool = fix_width;
+        let short: String = String::from("");
+
+        let mut this = Self {
+            abbr:       abbr,
+            symble:     symble,
+            chars:      chars,
+            max_length: max_length,
+            fix_width:  fix_width,
+            short:      short
+        };
+
+        this.produce();
+        this
+    }
+
+    fn produce(&mut self) -> Result<bool, ()>{
+        let abbr_chars: Vec<char> = self.chars.clone();
+        let abbr_len: usize = abbr_chars.len() as usize;
+        let max_length: usize = self.max_length;
+        let fix_width: bool = self.fix_width;
+        let symble: char = self.symble;
+        let mut short: String = String::from("");
+
+        if abbr_len <= max_length {
+            let abbr: String = abbr_chars.into_iter().collect();
+            if fix_width {
+                // 右填充空格到 max_length
+                let spaces = " ".repeat(max_length - abbr_len);
+                short = format!("{}{}", abbr, spaces);
+            } else {
+                short = abbr.to_string();
+            }
         } else {
-            abbr.to_string()
+            // 截取前 max_length - 1 个字符，加上 "…"
+            let truncated: String = abbr_chars.into_iter().take(max_length - 1).collect();
+            short = format!("{}{}", truncated, symble)
         }
-    } else {
-        // 截取前 max_length - 1 个字符，加上 "…"
-        let truncated: String = abbr_chars.into_iter().take(max_length - 1).collect();
-        format!("{}…", truncated)
+        self.short = short;
+        Ok(true)
+    }
+
+    fn get_parsed_abbr(&self) -> Result<String, ()> {
+        Ok(self.short.clone())
     }
 }
 
