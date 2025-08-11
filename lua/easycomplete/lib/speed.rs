@@ -1,8 +1,43 @@
+// lua dependencies
 use mlua::{Lua, Value, Table};
 use mlua::prelude::*;
+
+// sumbline_fuzzy dependencies
 use unicode_segmentation::UnicodeSegmentation;
 use std::convert::TryInto;
 use sublime_fuzzy::{FuzzySearch, Scoring};
+
+// Log dependencies
+use chrono::Local;
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::fmt::Debug;
+use std::fmt;
+
+// 获得环境信息
+use std::env;
+
+fn console<T: Debug>(data: T) -> std::io::Result<()> {
+    let home_dir = match env::var("HOME") {
+        Ok(path) => path,             // macOS/Linux
+        Err(_) => match env::var("USERPROFILE") {
+            Ok(path) => path,         // Windows
+            Err(_) => {
+                panic!("无法确定主目录");
+            }
+        }
+    };
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(home_dir + "/.config/vim-easycomplete/debuglog")?;
+
+    let now = Local::now();
+    let timestamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
+    writeln!(file, "[{}] {:#?}", timestamp, data)?;
+    Ok(())
+}
 
 #[derive(Debug, Clone)]
 pub struct LspItem {
@@ -102,7 +137,7 @@ fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
 fn parse_abbr(lua: &Lua, abbr: String) -> LuaResult<String> {
     let globals = lua.globals();
     // let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
-    // init_global_vars.call("default")?; // 能少调用一次lua就少调一次
+    // init_global_vars.call("default")?; // 不需要每次都更新
     let max_length_i32: i32 = globals.get("easycomplete_pum_maxlength")?;
     let fix_width_i32: i32 = globals.get("easycomplete_pum_fix_width")?;
     let max_length: usize = max_length_i32.try_into().expect("i32 value cannot fit in usize");
@@ -112,12 +147,14 @@ fn parse_abbr(lua: &Lua, abbr: String) -> LuaResult<String> {
         _ => panic!("fix_width must be 0 or 1!"),
     };
     let abbr_obj = Abbr::new(&abbr, max_length, fix_width);
+    // console(&abbr_obj);
     let ret: String = abbr_obj.get_parsed_abbr().unwrap();
 
     Ok(ret)
 }
 
 // Abbr Struct
+// #[derive(Debug)]
 struct Abbr {
     abbr:  String,
     chars: Vec<char>,
@@ -125,6 +162,18 @@ struct Abbr {
     max_length: usize,
     symble: char,
     fix_width: bool
+}
+
+impl fmt::Debug for Abbr {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("Abbr")
+            .field("abbr", &self.abbr)
+            .field("chars", &self.chars)
+            .field("max_length", &self.max_length)
+            .field("symble", &self.symble)
+            .field("fix_width", &self.fix_width)
+            .finish()
+    }
 }
 
 impl Abbr {
@@ -471,6 +520,7 @@ fn complete_menu_fuzzy_filter(lua: &Lua,
     opt.set("limit", maxlength)?;
     let mut matching_res: LuaTable = matchfuzzypos(lua, (all_items, word.clone(), opt))?;
     let mut ret: LuaTable = complete_menu_filter(lua, (matching_res, word.clone()))?;
+    // console(&ret);
     Ok(ret)
 }
 
