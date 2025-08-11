@@ -1052,6 +1052,9 @@ function! s:SetWinBorder(opt, pum_direction)
     let l:above_space = s:CursorTop() - 1
     " TODO here jayli 要处理顶部高度----------------------
     " 不写这句好像就可以了，还需要再测试下
+    if s:cmdline()
+      let l:above_space = &window - 1
+    endif
     let l:above_space = s:TrimAboveHeight(l:above_space)
     let l:row_with_maxheight_computed = s:CursorTop() - l:above_space - 1
     let l:height = a:opt.height
