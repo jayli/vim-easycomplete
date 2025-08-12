@@ -731,6 +731,8 @@ function! easycomplete#util#GetTypingWord()
   " 比如 vim 把 'g:abc' 对待为一个完整单词
   if exists("g:easycomplete_cmdline_typing") && g:easycomplete_cmdline_typing == 1
     let regx = '[a-zA-Z0-9_#:@]'
+  elseif exists("b:is_path_complete") && b:is_path_complete == 1
+    let regx = '[$a-zA-Z0-9_#-.]'
   elseif index(["php", "javascript", "typescript"], &filetype) >= 0
     let regx = '[$a-zA-Z0-9_#]'
   elseif index(["lua"], &filetype) >= 0
@@ -1213,7 +1215,10 @@ function! easycomplete#util#CompleteMenuFilter(all_menu, word, maxlength)
     return l:result_menu
   endif
   if index(easycomplete#util#str2list(word), char2nr('.')) >= 0
-    let word = substitute(word, "\\.", "\\\\\\\\.", "g")
+    if exists("b:is_path_complete") && b:is_path_complete == 1
+    else
+      let word = substitute(word, "\\.", "\\\\\\\\.", "g")
+    endif
   endif
   if exists('*matchfuzzy')
     let tt = reltime()
