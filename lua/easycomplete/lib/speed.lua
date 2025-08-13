@@ -61,8 +61,8 @@ function speed.complete_menu_filter(matching_res, word)
     item["score"] = fuzzy_scores[i]
     if string.find(string.lower(item["word"]), string.lower(word)) == 1 then
       table.insert(fullmatch_result, item)
-    elseif string.lower(string.sub(item["word"],1,1)) == string.lower(string.sub(word,1,1)) then
-      table.insert(firstchar_result, item)
+    -- elseif string.lower(string.sub(item["word"],1,1)) == string.lower(string.sub(word,1,1)) then
+    --   table.insert(firstchar_result, item)
     else
       table.insert(fuzzymatch_result, item)
     end

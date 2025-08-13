@@ -364,8 +364,8 @@ fn complete_menu_filter(
             fullmatch_result.raw_insert(1, item.clone());
         } else if item_word_lower.starts_with(&word_lower) {
             fullmatch_result.push(item.clone());
-        } else if item_word_lower.chars().next() == word_lower.chars().next() {
-            firstchar_result.push(item.clone());
+        // } else if item_word_lower.chars().next() == word_lower.chars().next() {
+        //     firstchar_result.push(item.clone());
         } else {
             fuzzymatch_result.push(item.clone());
         }
