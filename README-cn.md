@@ -214,7 +214,7 @@ let g:easycomplete_cmdline = 1
 | `g:easycomplete_info_border_style`   | `"single"`    | 辅助信息边框样式                                            |
 | `g:easycomplete_ghost_text`          | 1             | 幽灵文本                                                    |
 | `g:easycomplete_pum_maxheight`       | 20            | 补全窗口最大高度                                            |
-| `g:easycomplete_pum_fix_width`       | 0             | pum 窗口是否固定宽度                                        |
+| `g:easycomplete_pum_fix_width`       | 1             | pum 窗口是否固定宽度                                        |
 | `g:easycomplete_pum_format`          | `["abbr", "kind", "menu"]`| 匹配项格式                                      |
 | `g:easycomplete_menu_abbr`           | 0             | 匹配菜单里menu字段是否显示简写，否则显示全称                |
 | `g:easycomplete_custom_snippet`      | `""`          | 自定义 snippets 路径                                        |
