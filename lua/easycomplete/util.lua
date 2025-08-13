@@ -483,7 +483,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
       for _, v in ipairs(l_t_info) do table.insert(l_vim_complete_item['info'], v) end
     end
 
-    local sha256_str_o = vim.fn.sha256(l_vim_complete_item['word'] .. tostring(l_vim_complete_item['info']))
+    local sha256_str_o = vim.base64.encode(l_vim_complete_item['word'] .. tostring(l_vim_complete_item['info']))
     local sha256_str = string.sub(sha256_str_o, 1, 16)
     local user_data_json = vim.fn.extend(l_item_user_data_json_cache, {
              plugin_name = plugin_name,
