@@ -8,6 +8,25 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
       \     'completion': {
       \       'autoimport': { 'enable': v:true },
       \     },
+      \     'diagnostics': {
+      \       'enable': v:true,
+      \       'warningsAsInfo': v:true
+      \     },
+      \     'cargo': {
+      \       'buildScripts': {
+      \         'enable': v:false,
+      \       },
+      \     },
+      \     'procMacro': {
+      \       'enable': v:true,
+      \     },
+      \     "cachePriming": {
+      \       "enable": v:false
+      \     },
+      \     "check": {
+      \       "allTargets": v:false
+      \     },
+      \     "checkOnSave": v:false,
       \ },
       \ 'config': {},
       \ 'workspace_config' : {},
