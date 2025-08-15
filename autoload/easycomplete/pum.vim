@@ -212,6 +212,9 @@ function! s:cmdline()
 endfunction
 
 function! s:OpenPum(startcol, lines)
+  if !exists("b:auto_pair_disable")
+    let b:auto_pair_disable = 0
+  endif
   call s:InitBuffer(a:lines)
   let buffer_size = s:GetBufSize(a:lines)
   let pum_pos = s:ComputePumPos(a:startcol, buffer_size)
@@ -246,10 +249,12 @@ function! s:OpenPum(startcol, lines)
         \ !(s:cmdline())
     noa setlocal lazyredraw
   endif
-  call timer_start(10, { ->  s:DeleteAutoPair() })
+  if !b:auto_pair_disable
+    call timer_start(10, { ->  s:DisableAutoPair() })
+  endif
 endfunction
 
-function! s:DeleteAutoPair()
+function! s:DisableAutoPair()
   if exists("g:AutoPairsMapSpace") && g:AutoPairsMapSpace == 1
     try
       exec "iunmap <buffer> <SPACE>"
@@ -259,9 +264,10 @@ function! s:DeleteAutoPair()
     catch
     endtry
   endif
+  let b:auto_pair_disable = 1
 endfunction
 
-function! s:SetupAutoPair()
+function! s:EnableAutoPair()
   if exists("g:AutoPairsMapSpace") && g:AutoPairsMapSpace == 1
     let do_abbrev = ""
     if v:version == 703 && has("patch489") || v:version > 703
@@ -279,7 +285,8 @@ function! s:SetupAutoPair()
   if exists("g:AutoPairsMapBS") && g:AutoPairsMapBS == 1
     " Use <C-R> instead of <expr> for issue #14 sometimes press BS output strange words
     execute 'inoremap <buffer> <silent> <BS> <C-R>=AutoPairsDelete()<CR>'
-  end
+  endif
+  let b:auto_pair_disable = 0
 endfunction
 
 function! easycomplete#pum#WinScrolled()
@@ -1132,6 +1139,9 @@ function! s:reset()
 endfunction
 
 function! s:flush()
+  if !exists("b:auto_pair_disable")
+    let b:auto_pair_disable = 0
+  endif
   let should_fire_pum_done = 0
   if !empty(s:pum_window) && nvim_win_is_valid(s:pum_window)
     call nvim_win_close(s:pum_window, 1)
@@ -1174,7 +1184,9 @@ function! s:flush()
       noa setlocal nolazyredraw
     endif
   endif
-  call timer_start(10, { -> s:SetupAutoPair() })
+  if b:auto_pair_disable
+    call timer_start(10, { -> s:EnableAutoPair() })
+  endif
 endfunction
 
 function! s:close()
