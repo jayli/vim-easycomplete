@@ -246,6 +246,40 @@ function! s:OpenPum(startcol, lines)
         \ !(s:cmdline())
     noa setlocal lazyredraw
   endif
+  call timer_start(10, { ->  s:DeleteAutoPair() })
+endfunction
+
+function! s:DeleteAutoPair()
+  if exists("g:AutoPairsMapSpace") && g:AutoPairsMapSpace == 1
+    try
+      exec "iunmap <buffer> <SPACE>"
+      exec "iunmap <buffer> <BS>"
+      exec "iunmap <buffer> <c-h>"
+      exec "iunmap <buffer> <CR>"
+    catch
+    endtry
+  endif
+endfunction
+
+function! s:SetupAutoPair()
+  if exists("g:AutoPairsMapSpace") && g:AutoPairsMapSpace == 1
+    let do_abbrev = ""
+    if v:version == 703 && has("patch489") || v:version > 703
+      let do_abbrev = "<C-]>"
+    endif
+    execute 'inoremap <buffer> <silent> <SPACE> '.do_abbrev.'<C-R>=AutoPairsSpace()<CR>'
+  endif
+  if exists("g:AutoPairsMapBS") && g:AutoPairsMapBS == 1
+    " Use <C-R> instead of <expr> for issue #14 sometimes press BS output strange words
+    execute 'inoremap <buffer> <silent> <BS> <C-R>=AutoPairsDelete()<CR>'
+  endif
+  if exists("g:AutoPairsMapCh") && g:AutoPairsMapCh == 1
+    execute 'inoremap <buffer> <silent> <C-h> <C-R>=AutoPairsDelete()<CR>'
+  endif
+  if exists("g:AutoPairsMapBS") && g:AutoPairsMapBS == 1
+    " Use <C-R> instead of <expr> for issue #14 sometimes press BS output strange words
+    execute 'inoremap <buffer> <silent> <BS> <C-R>=AutoPairsDelete()<CR>'
+  end
 endfunction
 
 function! easycomplete#pum#WinScrolled()
@@ -1140,6 +1174,7 @@ function! s:flush()
       noa setlocal nolazyredraw
     endif
   endif
+  call timer_start(10, { -> s:SetupAutoPair() })
 endfunction
 
 function! s:close()
