@@ -1,3 +1,4 @@
+local autopair = require "easycomplete.autopair"
 local M = {}
 
 function M.init_once()
@@ -23,6 +24,10 @@ function M.init_once()
         vim.fn["easycomplete#InsertCharPre"]()
       end,
     })
+
+  vim.on_key(function(keys, _)
+    autopair.hack_pair_input(keys)
+  end)
 end
 
 return M
