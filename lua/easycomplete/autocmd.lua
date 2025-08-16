@@ -25,9 +25,11 @@ function M.init_once()
       end,
     })
 
-  vim.on_key(function(keys, _)
-    autopair.hack_pair_input(keys)
-  end)
+  if vim.g.AutoPairsMapSpace and vim.g.AutoPairsMapSpace == 1 then
+    vim.on_key(function(keys, _)
+      autopair.hack_pair_input(keys)
+    end)
+  end
 end
 
 return M
