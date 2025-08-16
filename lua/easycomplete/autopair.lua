@@ -18,7 +18,9 @@ local function match_autopair_func()
 end
 
 function M.hack_pair_input(keys)
-  return
+  do
+    return
+  end
   if #input_chars_vec > 40 then
     table.remove(input_chars_vec,1)
   end
