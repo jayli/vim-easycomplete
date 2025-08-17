@@ -290,39 +290,12 @@ end
 
 -- completeAdd 中对遗留非符合格式的 item 进行 wrap
 function util.final_normalize_menulist(arr, plugin_name)
-  if #arr == 0 then
-    return {}
+  if util.rust_ready() then
+    -- TODO here
+    return lua_speed.final_normalize_menulist(arr, plugin_name)
+  else
+    return lua_speed.final_normalize_menulist(arr, plugin_name)
   end
-  if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
-    return arr
-  end
-  if plugin_name == "snips" then
-    return arr
-  end
-  local l_menu_list = {}
-  -- 601 个元素，用时 10ms
-  for _, item in ipairs(arr) do
-    -- 这里item会转换为"table: 0x0109a29a00"，base64后无需截短
-    local sha256_str = vim.base64.encode(tostring(item))
-    local r_user_data = {
-      plugin_name = plugin_name,
-      sha256 = sha256_str
-    }
-    table.insert(l_menu_list, vim.fn.extend({
-          word = '',
-          menu = '',
-          user_data = vim.fn.json_encode(r_user_data),
-          equal = 0,
-          dup = 1,
-          info = '',
-          kind = '',
-          abbr = '',
-          kind_number = 0,
-          plugin_name = plugin_name,
-          user_data_json = r_user_data
-      }, item))
-  end
-  return l_menu_list
 end
 
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
