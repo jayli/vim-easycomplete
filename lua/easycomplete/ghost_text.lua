@@ -29,6 +29,25 @@ local function is_cursor_at_EOL()
   end
 end
 
+local function get_next_char()
+  -- 获取当前行内容（行号从 1 开始）
+  local line = vim.fn.getline('.')
+
+  -- 获取光标位置：{row, col}，列是 1-based
+  local cursor = vim.api.nvim_win_get_cursor(0)  -- 0 表示当前窗口
+  local row, col = cursor[1], cursor[2]
+
+  -- 计算下一个字符的位置（列从 0 开始索引，所以 col 是 0-based）
+  local next_col = col + 1  -- 下一个字符的索引（Lua 字符串索引从 1 开始）
+
+  -- 检查是否越界
+  if next_col >= 1 and next_col <= #line then
+    return line:sub(next_col, next_col)
+  else
+    return ""  -- 光标已在行尾，无下一个字符
+  end
+end
+
 function M.nvim_init_ghost_hl()
   local cursorline_bg = vim.fn["easycomplete#ui#GetBgColor"]("CursorLine")
   local normal_bg = vim.fn["easycomplete#ui#GetBgColor"]("Normal")
@@ -80,12 +99,14 @@ function M.show_hint(code_block)
     -- virt_lines = virt_lines,
     -- virt_text_win_col = vim.fn.virtcol('.') - 1
   }
-  -- 用virt_text_win_col 来防止抖动
-  -- if is_cursor_at_EOL() then
-  --   opt.virt_text_win_col = vim.fn.virtcol('.') - 1
-  -- end
+  -- 如果光标后跟随字幕，则不展开 ghost，如果是单词边界，则展开ghost
+  local next_char = get_next_char()
+  if next_char ~= "" and string.find(normal_chars, next_char, 1, true) then
+    -- do nothing
+  else
+    vim.api.nvim_buf_set_extmark(0, global_ghost_tx_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
+  end
 
-  vim.api.nvim_buf_set_extmark(0, global_ghost_tx_ns, vim.fn.line('.') - 1, vim.fn.col('.') - 1, opt)
   current_ghost_text = code_block[1]
 end
 

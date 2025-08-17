@@ -290,6 +290,7 @@ end
 
 -- completeAdd 中对遗留非符合格式的 item 进行 wrap
 function util.final_normalize_menulist(arr, plugin_name)
+  -- 601 个元素，lua 用时 10ms, rust 用时 5ms
   if util.rust_ready() then
     if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
       return arr
