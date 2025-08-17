@@ -1,6 +1,7 @@
 // lua dependencies
 use mlua::{Lua, Value, Table};
 use mlua::prelude::*;
+use serde_json;
 
 // sumbline_fuzzy dependencies
 use unicode_segmentation::UnicodeSegmentation;
@@ -13,6 +14,9 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::fmt::Debug;
 use std::fmt;
+
+// base64 两个基本函数
+use base64::{encode, decode};
 
 // 获得环境信息
 use std::env;
@@ -122,7 +126,7 @@ fn get_first_complete_hit(lua: &Lua, _:()) -> LuaResult<i32> {
 fn update_global_lua_vars(lua: &Lua) -> LuaResult<String> {
     let globals = lua.globals();
     let init_global_vars: mlua::Function = globals.get("init_global_vars_for_rust")?;
-    init_global_vars.call("default")?;
+    init_global_vars.call::<()>("default")?;
     Ok("abc".to_string())
 }
 
@@ -619,6 +623,65 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     Ok(result)
 }
 
+fn final_normalize_menulist(lua: &Lua,
+    (arr, plugin_name, curr_lsp_plugin_name): (LuaTable, String, String))
+-> Result<LuaTable, LuaError> {
+    // arr, plugin_name
+    let mut result: LuaTable = lua.create_table()?;
+    let cloned_plugin_name: &str = &plugin_name.clone();
+    let arr_len: usize = arr.raw_len().try_into().expect("final len error");
+    if arr_len == 0 {
+        return Ok(result);
+    } else if curr_lsp_plugin_name == plugin_name {
+        return Ok(arr);
+    } else if plugin_name == "snips" {
+        return Ok(arr);
+    }
+    // local l_menu_list = {}
+    let l_menu_list : LuaTable = lua.create_table()?;
+
+    // let mut indexed : usize = Vec::with_capacity(arr_len);
+    let mut iter = arr.sequence_values::<Table>();
+    while let Some(every_item) = iter.next() {
+        let item = every_item?;
+        let pointer: String = format!("{:p}", &item);
+        let sha256_str = encode(pointer.as_bytes());
+        let r_user_data: LuaTable = lua.create_table()?;
+
+        r_user_data.set("plugin_name", cloned_plugin_name)?;
+        r_user_data.set("sha256", sha256_str)?;
+
+        // 将 LuaTable 包装为 Value
+        let r_user_data_value: Value = mlua::Value::Table(r_user_data.clone());
+
+        // 使用 serde 的序列化能力转换为 JSON
+        let json_value: serde_json::Value = serde_json::from_str(&serde_json::to_string(&r_user_data_value).unwrap()).unwrap();
+        let json_string: String = serde_json::to_string(&json_value).unwrap();
+
+        // println!("{}", json_string);
+
+        let t_item : LuaTable = lua.create_table()?;
+        t_item.set("user_data", json_string)?;
+        t_item.set("word", "")?;
+        t_item.set("menu", "")?;
+        t_item.set("equal", 0)?;
+        t_item.set("dup", 1)?;
+        t_item.set("info", "")?;
+        t_item.set("kind", "")?;
+        t_item.set("abbr", "")?;
+        t_item.set("kind_number", 0)?;
+        t_item.set("plugin_name", plugin_name.clone())?;
+        t_item.set("user_data_json", r_user_data)?;
+
+        for pair in item.pairs::<Value, Value>() {
+            let (key, value) = pair?;
+            t_item.set(key, value)?;
+        }
+        l_menu_list.push(t_item)?;
+    }
+    Ok(l_menu_list)
+}
+
 #[mlua::lua_module(skip_memory_check)]
 fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
@@ -639,6 +702,7 @@ fn easycomplete_rust_speed(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("trim_array_to_length", lua.create_function(trim_array_to_length)?)?;
     exports.set("matchfuzzypos", lua.create_function(matchfuzzypos)?)?;
     exports.set("complete_menu_fuzzy_filter", lua.create_function(complete_menu_fuzzy_filter)?)?;
+    exports.set("final_normalize_menulist", lua.create_function(final_normalize_menulist)?)?;
 
     Ok(exports)
 }
