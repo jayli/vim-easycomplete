@@ -293,33 +293,36 @@ function util.final_normalize_menulist(arr, plugin_name)
   if #arr == 0 then
     return {}
   end
-  -- let l:menu_list = []
-  local l_menu_list = {}
-  -- for item in a:arr
-  --   if has_key(item, "user_data_json")
-  --     continue
-  --   endif
-  --   let sha256_str = strpart(sha256(string(item)), 0, 31)
-  --   let r_user_data = {
-  --         \ 'plugin_name': a:plugin_name,
-  --         \ 'sha256':      sha256_str,
-  --         \ }
-  --   call add(l:menu_list, extend({
-  --         \   'word': '',      'menu': '',
-  --         \   'user_data': json_encode(r_user_data), 'equal': 0,
-  --         \   'dup': 1,        'info': '',
-  --         \   'kind': '',      'abbr': '',
-  --         \   'kind_number' : get(item, 'kind_number', 0),
-  --         \   'plugin_name' : a:plugin_name,
-  --         \   'user_data_json': r_user_data
-  --         \ },  item ))
-  -- endfor
-  -- return l:menu_list
-  for _, item in ipairs(arr) do
-    
+  if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
+    return arr
   end
-
-
+  if plugin_name == "snips" then
+    return arr
+  end
+  local l_menu_list = {}
+  -- 601 个元素，用时 10ms
+  for _, item in ipairs(arr) do
+    -- 这里item会转换为"table: 0x0109a29a00"，base64后无需截短
+    local sha256_str = vim.base64.encode(tostring(item))
+    local r_user_data = {
+      plugin_name = plugin_name,
+      sha256 = sha256_str
+    }
+    table.insert(l_menu_list, vim.fn.extend({
+          word = '',
+          menu = '',
+          user_data = vim.fn.json_encode(r_user_data),
+          equal = 0,
+          dup = 1,
+          info = '',
+          kind = '',
+          abbr = '',
+          kind_number = 0,
+          plugin_name = plugin_name,
+          user_data_json = r_user_data
+      }, item))
+  end
+  return l_menu_list
 end
 
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现

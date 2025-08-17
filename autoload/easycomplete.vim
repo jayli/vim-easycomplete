@@ -1920,7 +1920,13 @@ function! easycomplete#GetStuntItems()
 endfunction
 
 function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
-  let norm_menu_list = s:FinalNormalizeMenulist(a:result, a:plugin_name)
+  " let tt = reltime()
+  if g:env_is_nvim
+    let norm_menu_list = s:util_toolkit.final_normalize_menulist(a:result, a:plugin_name)
+  else
+    let norm_menu_list = s:FinalNormalizeMenulist(a:result, a:plugin_name)
+  endif
+  " call s:console(a:plugin_name, len(a:result), reltimestr(reltime(tt)))
   if a:plugin_name == "tn"
     let sort_menu_list = norm_menu_list
   else
@@ -2273,8 +2279,6 @@ function! s:FinalNormalizeMenulist(arr, plugin_name)
     return []
   endif
   " 似乎只对buffer+dict做封装就可以了
-  call s:console(a:plugin_name)
-  call s:console(a:arr[0])
   let l:menu_list = []
   for item in a:arr
     let sha256_str = strpart(sha256(string(item)), 0, 31)
