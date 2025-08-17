@@ -645,18 +645,13 @@ fn final_normalize_menulist(lua: &Lua,
     let mut iter = arr.sequence_values::<Table>();
     while let Some(every_item) = iter.next() {
         let item = every_item?;
-        let pointer: String = format!("{:p}", &item);
-        let word: String = item.get("word")?;
-        let combined_str: String = pointer + &word;
-        let o_sha256_str = encode(combined_str.as_bytes());
-        let sha256_str: String = o_sha256_str
-                                .chars()
-                                .rev()           // 反转字符迭代器
-                                .take(32)        // 取前 32 个（即原字符串末尾 32 个）
-                                .collect::<Vec<_>>()  // 先收集到 Vec
-                                .into_iter()
-                                .rev()           // 再反转回来，恢复原始顺序
-                                .collect();
+        let now = Local::now();
+        let timestamp: u32 = now.timestamp_subsec_nanos();
+        let timestamp_str = format!("{}", timestamp);
+        let sha256_str = timestamp_str;
+        // let sha256_str = encode(timestamp_str.as_bytes());
+        // console(&sha256_str);
+
         let r_user_data: LuaTable = lua.create_table()?;
 
         r_user_data.set("plugin_name", cloned_plugin_name)?;
