@@ -381,3 +381,4 @@ function EasyComplete.global_timer_stop()
 end
 
 return EasyComplete
+

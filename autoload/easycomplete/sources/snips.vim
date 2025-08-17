@@ -16,6 +16,7 @@ function! easycomplete#sources#snips#completor(opt, ctx)
   " call timer_start(10, {
   "       \ -> easycomplete#sources#snips#CompleteHandler(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
   "       \ })
+  " call s:console(l:typing, a:opt['name'], a:ctx, a:ctx['startcol'])
   call easycomplete#util#timer_start(
         \ "easycomplete#sources#snips#CompleteHandler",
         \ [l:typing, a:opt['name'], a:ctx, a:ctx['startcol']],
