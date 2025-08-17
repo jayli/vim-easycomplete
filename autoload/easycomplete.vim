@@ -1920,7 +1920,7 @@ function! easycomplete#GetStuntItems()
 endfunction
 
 function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
-  let norm_menu_list = s:NormalizeMenulist(a:result, a:plugin_name)
+  let norm_menu_list = s:FinalNormalizeMenulist(a:result, a:plugin_name)
   if a:plugin_name == "tn"
     let sort_menu_list = norm_menu_list
   else
@@ -2262,15 +2262,21 @@ function! s:SortTextComparatorByLength(...)
   return call("easycomplete#util#SortTextComparatorByLength", a:000)
 endfunction
 
-function! s:NormalizeMenulist(arr, plugin_name)
+function! s:FinalNormalizeMenulist(arr, plugin_name)
+  if exists("b:easycomplete_lsp_plugin") && a:plugin_name == b:easycomplete_lsp_plugin["name"]
+    return a:arr
+  endif
+  if a:plugin_name == "snips"
+    return a:arr
+  endif
   if empty(a:arr)
     return []
   endif
+  " 似乎只对buffer+dict做封装就可以了
+  call s:console(a:plugin_name)
+  call s:console(a:arr[0])
   let l:menu_list = []
   for item in a:arr
-    if has_key(item, "user_data_json")
-      continue
-    endif
     let sha256_str = strpart(sha256(string(item)), 0, 31)
     let r_user_data = {
           \ 'plugin_name': a:plugin_name,

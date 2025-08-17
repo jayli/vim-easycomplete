@@ -288,6 +288,40 @@ function util.lsp_type(c_type)
   }
 end
 
+-- completeAdd 中对遗留非符合格式的 item 进行 wrap
+function util.final_normalize_menulist(arr, plugin_name)
+  if #arr == 0 then
+    return {}
+  end
+  -- let l:menu_list = []
+  local l_menu_list = {}
+  -- for item in a:arr
+  --   if has_key(item, "user_data_json")
+  --     continue
+  --   endif
+  --   let sha256_str = strpart(sha256(string(item)), 0, 31)
+  --   let r_user_data = {
+  --         \ 'plugin_name': a:plugin_name,
+  --         \ 'sha256':      sha256_str,
+  --         \ }
+  --   call add(l:menu_list, extend({
+  --         \   'word': '',      'menu': '',
+  --         \   'user_data': json_encode(r_user_data), 'equal': 0,
+  --         \   'dup': 1,        'info': '',
+  --         \   'kind': '',      'abbr': '',
+  --         \   'kind_number' : get(item, 'kind_number', 0),
+  --         \   'plugin_name' : a:plugin_name,
+  --         \   'user_data_json': r_user_data
+  --         \ },  item ))
+  -- endfor
+  -- return l:menu_list
+  for _, item in ipairs(arr) do
+    
+  end
+
+
+end
+
 -- easycomplete#util#BadBoy_Vim(item, typing_word) 的lua 实现
 -- 实测 lua 的实现比 rust 在进行 200 次循环时快 2ms
 -- - lua：6ms，rust：8ms
