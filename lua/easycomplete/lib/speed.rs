@@ -623,6 +623,9 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     Ok(result)
 }
 
+// 161 个元素的遍历，lua 10ms，rust 5ms
+// 只做对 buf keyword 的 raw 格式的封装
+// 参数同 lua
 fn final_normalize_menulist(lua: &Lua,
     (arr, plugin_name): (LuaTable, String))
 -> Result<LuaTable, LuaError> {
@@ -643,7 +646,17 @@ fn final_normalize_menulist(lua: &Lua,
     while let Some(every_item) = iter.next() {
         let item = every_item?;
         let pointer: String = format!("{:p}", &item);
-        let sha256_str = encode(pointer.as_bytes());
+        let word: String = item.get("word")?;
+        let combined_str: String = pointer + &word;
+        let o_sha256_str = encode(combined_str.as_bytes());
+        let sha256_str: String = o_sha256_str
+                                .chars()
+                                .rev()           // 反转字符迭代器
+                                .take(32)        // 取前 32 个（即原字符串末尾 32 个）
+                                .collect::<Vec<_>>()  // 先收集到 Vec
+                                .into_iter()
+                                .rev()           // 再反转回来，恢复原始顺序
+                                .collect();
         let r_user_data: LuaTable = lua.create_table()?;
 
         r_user_data.set("plugin_name", cloned_plugin_name)?;
@@ -653,7 +666,8 @@ fn final_normalize_menulist(lua: &Lua,
         let r_user_data_value: Value = mlua::Value::Table(r_user_data.clone());
 
         // 使用 serde 转换为 JSON
-        let json_value: serde_json::Value = serde_json::from_str(&serde_json::to_string(&r_user_data_value).unwrap()).unwrap();
+        let json_raw_value: &str = &serde_json::to_string(&r_user_data_value).unwrap();
+        let json_value: serde_json::Value = serde_json::from_str(json_raw_value).unwrap();
         let json_string: String = serde_json::to_string(&json_value).unwrap();
 
         // println!("{}", json_string);

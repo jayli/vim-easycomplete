@@ -1925,11 +1925,13 @@ function! easycomplete#GetStuntItems()
 endfunction
 
 function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
+  " let tt = reltime()
   if g:env_is_nvim
     let norm_menu_list = s:util_toolkit.final_normalize_menulist(a:result, a:plugin_name)
   else
     let norm_menu_list = s:FinalNormalizeMenulist(a:result, a:plugin_name)
   endif
+  " call s:console(a:plugin_name, reltimestr(reltime(tt)))
   if a:plugin_name == "tn"
     let sort_menu_list = norm_menu_list
   else
