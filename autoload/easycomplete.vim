@@ -2268,40 +2268,23 @@ function! s:NormalizeMenulist(arr, plugin_name)
   endif
   let l:menu_list = []
   for item in a:arr
-    let o_user_data = easycomplete#util#GetUserData(item)
-    let o_sha256 = get(o_user_data, "sha256", "")
-    if empty(o_sha256)
-      let sha256_str = strpart(sha256(string(item)), 0, 15)
-    else
-      let sha256_str = o_sha256
+    if has_key(item, "user_data_json")
+      continue
     endif
-    let r_user_data = extend(o_user_data, {
+    let sha256_str = strpart(sha256(string(item)), 0, 31)
+    let r_user_data = {
           \ 'plugin_name': a:plugin_name,
           \ 'sha256':      sha256_str,
-          \ })
-    if type(item) == type("")
-      let l:menu_item = {
-            \ 'word':      item,    'menu':       '',
-            \ 'user_data': json_encode(r_user_data), 'info': '',
-            \ 'kind':      '',      'equal':      0,
-            \ 'dup':       1,       'abbr':      '',
-            \ 'kind_number' : get(item, 'kind_number', 0),
-            \ 'plugin_name' : a:plugin_name,
-            \ 'user_data_json': r_user_data
-            \ }
-      call add(l:menu_list, l:menu_item)
-    endif
-    if type(item) == type({})
-      call add(l:menu_list, extend({
-            \   'word': '',      'menu': '',
-            \   'user_data': json_encode(r_user_data), 'equal': 0,
-            \   'dup': 1,        'info': '',
-            \   'kind': '',      'abbr': '',
-            \   'kind_number' : get(item, 'kind_number', 0),
-            \   'plugin_name' : a:plugin_name,
-            \   'user_data_json': r_user_data
-            \ },  item ))
-    endif
+          \ }
+    call add(l:menu_list, extend({
+          \   'word': '',      'menu': '',
+          \   'user_data': json_encode(r_user_data), 'equal': 0,
+          \   'dup': 1,        'info': '',
+          \   'kind': '',      'abbr': '',
+          \   'kind_number' : get(item, 'kind_number', 0),
+          \   'plugin_name' : a:plugin_name,
+          \   'user_data_json': r_user_data
+          \ },  item ))
   endfor
   return l:menu_list
 endfunction
