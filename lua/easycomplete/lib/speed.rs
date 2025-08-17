@@ -624,7 +624,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
 }
 
 fn final_normalize_menulist(lua: &Lua,
-    (arr, plugin_name, curr_lsp_plugin_name): (LuaTable, String, String))
+    (arr, plugin_name): (LuaTable, String))
 -> Result<LuaTable, LuaError> {
     // arr, plugin_name
     let mut result: LuaTable = lua.create_table()?;
@@ -632,8 +632,6 @@ fn final_normalize_menulist(lua: &Lua,
     let arr_len: usize = arr.raw_len().try_into().expect("final len error");
     if arr_len == 0 {
         return Ok(result);
-    } else if curr_lsp_plugin_name == plugin_name {
-        return Ok(arr);
     } else if plugin_name == "snips" {
         return Ok(arr);
     }
@@ -654,7 +652,7 @@ fn final_normalize_menulist(lua: &Lua,
         // 将 LuaTable 包装为 Value
         let r_user_data_value: Value = mlua::Value::Table(r_user_data.clone());
 
-        // 使用 serde 的序列化能力转换为 JSON
+        // 使用 serde 转换为 JSON
         let json_value: serde_json::Value = serde_json::from_str(&serde_json::to_string(&r_user_data_value).unwrap()).unwrap();
         let json_string: String = serde_json::to_string(&json_value).unwrap();
 

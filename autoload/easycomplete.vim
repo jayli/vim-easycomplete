@@ -1882,12 +1882,17 @@ function! easycomplete#CompleteAdd(menu_list, plugin_name)
     endif
   endif
 
+
   " FristComplete 的过滤方法重写了
   " 为了避免重复过滤，去掉了这里的 CompleteMenuFilter 动作
   " 这里只做 CombineAllMenuitems 动作，在 Render 时一次性做过滤
   let typing_word = s:GetTypingWord()
   let new_menulist = a:menu_list
-  call easycomplete#StoreCompleteSourceItems(a:plugin_name, a:menu_list)
+  if empty(new_menulist)
+    let g:easycomplete_source[a:plugin_name].complete_result = []
+  else
+    call easycomplete#StoreCompleteSourceItems(a:plugin_name, a:menu_list)
+  endif
   let g:easycomplete_menuitems = s:CombineAllMenuitems()
   let g_easycomplete_menuitems = deepcopy(g:easycomplete_menuitems)
   let filtered_menu = g_easycomplete_menuitems
@@ -1926,7 +1931,7 @@ function! easycomplete#StoreCompleteSourceItems(plugin_name, result)
   else
     let norm_menu_list = s:FinalNormalizeMenulist(a:result, a:plugin_name)
   endif
-  " call s:console(a:plugin_name, len(a:result), reltimestr(reltime(tt)))
+  call s:console(a:plugin_name, len(a:result), reltimestr(reltime(tt)))
   " call s:console(norm_menu_list[1])
   if a:plugin_name == "tn"
     let sort_menu_list = norm_menu_list

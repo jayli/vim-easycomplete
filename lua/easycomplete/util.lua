@@ -291,10 +291,10 @@ end
 -- completeAdd 中对遗留非符合格式的 item 进行 wrap
 function util.final_normalize_menulist(arr, plugin_name)
   if util.rust_ready() then
-    if vim.b.easycomplete_lsp_plugin == nil then
+    if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
       return arr
     else
-      return rust_speed.final_normalize_menulist(arr, plugin_name, vim.b.easycomplete_lsp_plugin["name"])
+      return rust_speed.final_normalize_menulist(arr, plugin_name)
     end
   else
     return lua_speed.final_normalize_menulist(arr, plugin_name)

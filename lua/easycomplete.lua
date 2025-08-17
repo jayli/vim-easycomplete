@@ -340,7 +340,11 @@ end
 function EasyComplete.global_timer_start(function_name, timeout)
   global_timer:start(timeout, 0, function()
     vim.schedule(function()
-      vim.fn[function_name]()
+      -- vim.fn[function_name]()
+      local ok, err = pcall(vim.fn[function_name])
+      if not ok then
+        print("EasyComplete 调用失败:", err)
+      end
     end)
   end)
 end

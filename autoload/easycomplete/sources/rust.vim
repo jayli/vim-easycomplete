@@ -16,6 +16,7 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
       \       'buildScripts': {
       \         'enable': v:false,
       \       },
+      \       'loadOutDirsFromCheck': v:true
       \     },
       \     'procMacro': {
       \       'enable': v:true,
@@ -27,6 +28,9 @@ function! easycomplete#sources#rust#constructor(opt, ctx)
       \       "allTargets": v:false
       \     },
       \     "checkOnSave": v:false,
+      \     "experimental": {
+      \       "procAttrMacros": v:true
+      \     }
       \ },
       \ 'config': {},
       \ 'workspace_config' : {},
