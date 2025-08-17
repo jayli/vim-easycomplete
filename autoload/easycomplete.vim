@@ -3038,7 +3038,18 @@ function! easycomplete#BufEnter()
     endif
     call timer_start(1600, { -> easycomplete#lint() })
   endif
+  " hack for autopair
+  if exists("g:AutoPairsMapCR") && g:AutoPairsMapCR == 1
+    call timer_start(500, { -> s:UnmapCR() })
+  endif
   call s:flush()
+endfunction
+
+function s:UnmapCR()
+  try
+    iunmap <buffer> <CR>
+  catch
+  endtry
 endfunction
 
 function! easycomplete#finish()

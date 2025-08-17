@@ -282,10 +282,6 @@ function! s:EnableAutoPair()
   if exists("g:AutoPairsMapCh") && g:AutoPairsMapCh == 1
     execute 'inoremap <buffer> <silent> <C-h> <C-R>=AutoPairsDelete()<CR>'
   endif
-  if exists("g:AutoPairsMapBS") && g:AutoPairsMapBS == 1
-    " Use <C-R> instead of <expr> for issue #14 sometimes press BS output strange words
-    execute 'inoremap <buffer> <silent> <BS> <C-R>=AutoPairsDelete()<CR>'
-  endif
   let b:easycomplete_autopair_disabled = 0
 endfunction
 
