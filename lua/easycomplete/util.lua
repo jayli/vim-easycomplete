@@ -289,8 +289,11 @@ function util.lsp_type(c_type)
 end
 
 -- completeAdd 中对遗留非符合格式的 item 进行 wrap
+-- 601 个元素，lua 用时 10ms, rust 用时 5ms
 function util.final_normalize_menulist(arr, plugin_name)
-  -- 601 个元素，lua 用时 10ms, rust 用时 5ms
+  do -- TEST: plugin_name == buf 的情况似乎不需要兜底的包装，再测试下看看
+    return arr
+  end
   if util.rust_ready() then
     if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
       return arr
