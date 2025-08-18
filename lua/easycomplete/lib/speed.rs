@@ -368,6 +368,7 @@ fn complete_menu_filter(
             fullmatch_result.raw_insert(1, item.clone());
         } else if item_word_lower.starts_with(&word_lower) {
             fullmatch_result.push(item.clone());
+        // sumbline_fuzzy 排序结果已经考虑到首字母匹配靠前排序了，这里应该不是必须了
         // } else if item_word_lower.chars().next() == word_lower.chars().next() {
         //     firstchar_result.push(item.clone());
         } else {
@@ -382,7 +383,7 @@ fn complete_menu_filter(
     let stunt_items: LuaTable = globals.get("easycomplete_stunt_menuitems")?;
     let stunt_items_len_i64: i64 = stunt_items.len()?;
     let stunt_items_len_i32: i32 = stunt_items_len_i64.try_into().unwrap();
-    // 数字
+
     let first_complete_hit: i32 = globals.get("easycomplete_first_complete_hit")?;
     let mut sorted_fuzzymatch_result: LuaTable;
     if stunt_items_len_i32 == 0 && first_complete_hit == 1 {
@@ -390,13 +391,10 @@ fn complete_menu_filter(
     } else {
         sorted_fuzzymatch_result = fuzzymatch_result.clone();
     }
-    // local filtered_menu = {}
-    // for _, v in ipairs(fullmatch_result) do table.insert(filtered_menu, v) end
-    // for _, v in ipairs(firstchar_result) do table.insert(filtered_menu, v) end
-    // for _, v in ipairs(fuzzymatch_result) do table.insert(filtered_menu, v) end
-    let mut tmp_items = Vec::new();
 
-    // 提取所有元素
+    // 将几个数组合并到一起 [A..] + [B..] + [C..]
+    let mut tmp_items = Vec::new();
+    // 提取所有元素，依次合并
     tmp_items.extend(fullmatch_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
     tmp_items.extend(firstchar_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
     tmp_items.extend(fuzzymatch_result.sequence_values::<mlua::Value>().collect::<Result<Vec<_>,_>>()?);
@@ -560,8 +558,6 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
         let t_word: String = item.get(key.clone())?;
         let mut position: LuaTable = lua.create_table()?;
         let mut score: i32;
-        // let m = best_match(&word, &t_word).expect("No match");
-        // match best_match(&word, &t_word) {
         let match_result = FuzzySearch::new(&word, &t_word)
                             // .case_sensitive() // 不需要大小写敏感
                             .score_with(&scoring)
@@ -581,13 +577,14 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
                 }
             }
             None => {
-                // catch 异常情况
+                // catch exception
                 // do nothing and continue
             }
         }
         i += 1;
     }
 
+    // matchfuzzy 转换为向量
     let mut matchfuzzy_vec: Vec<Table> = matchfuzzy
         .sequence_values::<Table>()
         .collect::<Result<Vec<_>, _>>()?;
@@ -603,7 +600,7 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
 
     let mut new_matchfuzzy = lua.create_table()?;
 
-    // 4. 写回排序后的结果
+    // 写回排序后的结果
     for (i, item) in matchfuzzy_vec.into_iter().enumerate() {
         let mut p: LuaTable = item.get("position")?;
         let mut s: i32 = item.get("score")?;
@@ -623,13 +620,14 @@ fn matchfuzzypos(lua: &Lua, (list, word, opt): (LuaTable, String, LuaTable)) -> 
     Ok(result)
 }
 
-// 161 个元素的遍历，lua 10ms，rust 5ms
+// 161 个元素的遍历，lua 10ms，rust 5ms, vim 15ms
 // 只做对 buf keyword 的 raw 格式的封装
 // 参数同 lua
+//
+// 返回：完整的封装好的列表，列表会被缓存到全局对象中
 fn final_normalize_menulist(lua: &Lua,
     (arr, plugin_name): (LuaTable, String))
 -> Result<LuaTable, LuaError> {
-    // arr, plugin_name
     let mut result: LuaTable = lua.create_table()?;
     let cloned_plugin_name: &str = &plugin_name.clone();
     let arr_len: usize = arr.raw_len().try_into().expect("final len error");
@@ -641,7 +639,6 @@ fn final_normalize_menulist(lua: &Lua,
     // local l_menu_list = {}
     let l_menu_list : LuaTable = lua.create_table()?;
 
-    // let mut indexed : usize = Vec::with_capacity(arr_len);
     let mut iter = arr.sequence_values::<Table>();
     while let Some(every_item) = iter.next() {
         let item = every_item?;
@@ -649,6 +646,7 @@ fn final_normalize_menulist(lua: &Lua,
         let timestamp: u32 = now.timestamp_subsec_nanos();
         let timestamp_str = format!("{}", timestamp);
         let sha256_str = timestamp_str;
+        // 时间戳就已经符合要求了，不用再强制做 base64 编码
         // let sha256_str = encode(timestamp_str.as_bytes());
         // console(&sha256_str);
 
@@ -664,8 +662,6 @@ fn final_normalize_menulist(lua: &Lua,
         let json_raw_value: &str = &serde_json::to_string(&r_user_data_value).unwrap();
         let json_value: serde_json::Value = serde_json::from_str(json_raw_value).unwrap();
         let json_string: String = serde_json::to_string(&json_value).unwrap();
-
-        // println!("{}", json_string);
 
         let t_item : LuaTable = lua.create_table()?;
         t_item.set("user_data", json_string)?;
