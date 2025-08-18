@@ -316,8 +316,7 @@ function! s:CompleteTypingMatch(...)
   endif
   " 正常匹配为空，tabnine 结果也为空
   if len(filtered_menu) == 0 && len(tn_result) == 0
-    " call s:log(">>>>>>>>>>>>>" . "匹配结果是空，导致pum关闭", "cword:", expand("<cword>"))
-    " 正常SecondComplete中无匹配词了就关掉 pum 了
+    " 正常SecondComplete中无匹配词应该关掉 pum
     if has('nvim')
       call s:CloseCompletionMenu()
       call s:CloseCompleteInfo()
@@ -479,15 +478,9 @@ function! easycomplete#CompleteDone()
   else
     call easycomplete#popup#CompleteDone()
   endif
-  " 偶尔会有一些pum关闭后completeinfo没有关闭，这里做一个扫尾
-  " if g:env_is_nvim && easycomplete#IsBacking()
-  "   call s:StopAsyncRun()
-  "   call s:AsyncRun(function("s:CompleteDoneTeardown"), [], 5)
-  " endif
   if !s:SameCtx(easycomplete#context(), g:easycomplete_firstcomplete_ctx) && !s:zizzing()
     return
   endif
-  " bugfix for #88
   if g:env_is_nvim
     " 触发 tabnine suggest
     if !easycomplete#pum#visible() && !easycomplete#IsBacking() && easycomplete#tabnine#ready()

@@ -6,12 +6,6 @@ local log = util.log
 local global_timer = vim.loop.new_timer()
 local global_timer_counter = 1
 
-local function test()
-  console(vim.inspect(util))
-  console(require'nvim-lsp-installer.servers'.get_installed_server_names())
-  console(require'nvim-lsp-installer'.get_install_completion())
-end
-
 -- 全局配置函数
 -- @param config, 全局配置的对象
 -- @return this, 以便链式调用
