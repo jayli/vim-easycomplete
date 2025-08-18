@@ -1660,7 +1660,7 @@ function! easycomplete#TypeEnterWithPUM()
     " 选中目录
     if (!empty(l:item) && (get(l:item, "menu") ==# "[Dir]" || get(l:item, "menu") ==# "folder"))
       " call s:AsyncRun("easycomplete#DoComplete", [v:true], 60)
-      call timer_start(60, { -> s:DoTabCompleteAction() })
+      call timer_start(80, { -> s:DoTabCompleteAction() })
       return s:CtrlY()
     endif
     if !empty(l:item) && s:CallCRHandlerByName(l:item, g:easycomplete_typing_ctx) && !s:zizzing()
