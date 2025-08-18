@@ -290,10 +290,12 @@ end
 
 -- completeAdd 中对遗留非符合格式的 item 进行 wrap
 -- 601 个元素，lua 用时 10ms, rust 用时 5ms
+--
+-- 实际 runtime 中只有 plugin_name == buf 的 item 是裸的格式，需要 wrap 装配
+-- 但不做装配也可以正常运行，为了格式统一，这里统一做装配
+-- 因为这个函数是异步等 lsp 返回结果后调用的，而最晚调用的是 lsp plugin，因此
+-- 而 lsp 的结果在这个函数里不耗时，因此也不影响性能
 function util.final_normalize_menulist(arr, plugin_name)
-  do -- TEST: plugin_name == buf 的情况似乎不需要兜底的包装，再测试下看看
-    return arr
-  end
   if util.rust_ready() then
     if vim.b.easycomplete_lsp_plugin and vim.b.easycomplete_lsp_plugin["name"] == plugin_name then
       return arr
@@ -359,7 +361,7 @@ function util.get_vim_complete_items(response, plugin_name, word)
   local typing_word = word
 
   for _, l_completion_item in ipairs(l_items) do
-    -- TODO 这几个耗时要解决
+    -- 这几个耗时要解决, 目前只重写了 BadBoy_Vim 函数
     if vim.o.filetype == "nim" and vim.fn['easycomplete#util#BadBoy_Nim'](l_completion_item, typing_word) then
       goto continue
     end
