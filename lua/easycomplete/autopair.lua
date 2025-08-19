@@ -4,7 +4,7 @@ local console = util.console
 local M = {}
 local input_chars_vec = {}
 local auto_pair_funcs = {
-  "=AutoPairsInsert("
+  "AutoPairsInsert("
 }
 
 local function match_autopair_func()
@@ -15,6 +15,9 @@ local function match_autopair_func()
       matched = true
       break
     end
+  end
+  if matched then
+    input_chars_vec = {}
   end
   return matched
 end
