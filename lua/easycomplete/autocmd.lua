@@ -27,6 +27,9 @@ function M.init_once()
 
   if vim.g.AutoPairsMapSpace and vim.g.AutoPairsMapSpace == 1 then
     vim.on_key(function(keys, _)
+      if vim.api.nvim_get_mode().mode == "c" then
+        return
+      end
       autopair.hack_pair_input(keys)
     end)
   end
