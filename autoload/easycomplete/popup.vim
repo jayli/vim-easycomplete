@@ -325,7 +325,9 @@ function! easycomplete#popup#float(content, hl, direction, ft, offset, float_typ
 endfunction
 
 function! easycomplete#popup#LintPopupVisible()
-  if g:env_is_nvim && nvim_win_is_valid(g:easycomplete_popup_win["float"])
+  if g:env_is_nvim && g:easycomplete_popup_win["float"] == 0
+    return v:false
+  elseif g:env_is_nvim && nvim_win_is_valid(g:easycomplete_popup_win["float"])
     return v:true
   elseif g:easycomplete_popup_win["float"] && s:float_type == "lint"
     return v:true
