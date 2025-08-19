@@ -3029,6 +3029,10 @@ function! easycomplete#StartUp()
 endfunction
 
 function! easycomplete#BufEnter()
+  " hack for autopair
+  if exists("g:AutoPairsMapCR") && g:AutoPairsMapCR == 1 && !exists("b:easycomplete_autopairs_loaded")
+    call timer_start(500, { -> easycomplete#UnmapCR() })
+  endif
   if easycomplete#ok('g:easycomplete_diagnostics_enable')
     if easycomplete#sources#deno#IsTSOrJSFiletype() && !easycomplete#sources#deno#IsDenoProject()
       call easycomplete#sources#ts#bufEnter()
@@ -3036,18 +3040,15 @@ function! easycomplete#BufEnter()
     endif
     call timer_start(1600, { -> easycomplete#lint() })
   endif
-  " hack for autopair
-  if exists("g:AutoPairsMapCR") && g:AutoPairsMapCR == 1
-    call timer_start(500, { -> s:UnmapCR() })
-  endif
   call s:flush()
 endfunction
 
-function s:UnmapCR()
+function easycomplete#UnmapCR()
   try
     iunmap <buffer> <CR>
   catch
   endtry
+  let b:easycomplete_autopairs_loaded = 1
 endfunction
 
 function! easycomplete#finish()
