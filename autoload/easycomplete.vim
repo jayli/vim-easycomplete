@@ -2687,8 +2687,8 @@ function! easycomplete#BufWritePost()
 endfunction
 
 function! easycomplete#CursorMoved()
-  if easycomplete#ok('g:easycomplete_diagnostics_enable')
-        \ && easycomplete#util#NormalMode() && s:NotInsertMode()
+  if g:easycomplete_diagnostics_enable
+        \ && easycomplete#util#NormalMode() && easycomplete#util#NotInsertMode()
     " 防止快速换行时的密集调用带来的卡顿
     if s:easycomplete_cursor_move_timer > 0
       call timer_stop(s:easycomplete_cursor_move_timer)
