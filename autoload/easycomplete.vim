@@ -415,15 +415,11 @@ function! easycomplete#UpdateTNPlaceHolder(word)
 endfunction
 
 function! s:SecondCompleteRendering(start_pos, result)
-  if g:env_is_iterm
-    call s:StopAsyncRun()
-    if len(g:easycomplete_stunt_menuitems) < 40
-      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 5)
-    else
-      call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 30)
-    endif
+  call s:StopAsyncRun()
+  if len(g:easycomplete_stunt_menuitems) < 40
+    call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 5)
   else
-    call s:complete(a:start_pos, a:result)
+    call s:AsyncRun('easycomplete#_complete', [a:start_pos, a:result], 30)
   endif
 endfunction
 
