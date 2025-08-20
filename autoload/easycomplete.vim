@@ -2684,7 +2684,7 @@ endfunction
 
 function! easycomplete#CursorMoved()
   if g:easycomplete_diagnostics_enable
-        \ && easycomplete#util#NormalMode() && easycomplete#util#NotInsertMode()
+        \ && easycomplete#util#NormalMode() && s:NotInsertMode()
     " 防止快速换行时的密集调用带来的卡顿
     if s:easycomplete_cursor_move_timer > 0
       call timer_stop(s:easycomplete_cursor_move_timer)
