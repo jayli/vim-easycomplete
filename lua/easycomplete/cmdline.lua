@@ -531,6 +531,23 @@ this.REG_CMP_HANDLER = {
     end
   },
   {
+    -- 输入 options
+    pattern = {
+      '^[a-zA-Z0-9_]+%s&$', -- 输入命令完毕后，空格&匹配option: `echo &|`
+      '^[a-zA-Z0-9_]+%s+&%w+$', -- 匹配 options 过程中: `echo &e|`
+      '^[a-zA-Z0-9_]+%s+.+&$', -- 匹配 options 过程中:`echo &filetype . &|`
+      '^[a-zA-Z0-9_]+%s+.+&%w+$' -- 匹配 options 过程中:`echo &filetype . &file|`
+    },
+    get_cmp_items = function()
+      if this.insearch() then
+        return this.get_normal_search_cmp()
+      else
+        local options = this.NATIVE_OPTIONS
+        return options
+      end
+    end
+  },
+  {
     pattern = {
       "^[a-zA-Z0-9_]+%s$", -- 命令输入完毕，并敲击空格
       "^[a-zA-Z0-9_]+%s+[_%w#]+$", -- 命令输入完毕，敲击空格后直接输入正常单词
