@@ -425,7 +425,7 @@ this.REG_CMP_HANDLER = {
         local ret = this.get_normal_search_cmp()
         return ret
       elseif vim.g.easycomplete_cmdline_pattern == ":" then
-        -- command 共有 670 多个，因为太重要了，这里不做过滤了，返回全部
+        -- command 共有 670 多个，返回全部
         return this.get_all_commands()
       end
     end
@@ -854,6 +854,55 @@ this.NATIVE_COLORS = {
   "mediumorchid","thistle","plum","violet","purple","darkmagenta","fuchsia","magenta",
   "orchid","mediumvioletred","deeppink","hotpink","lavenderblush","palevioletred",
   "crimson","pink","lightpink","NONE"
+}
+
+this.NATIVE_OPTIONS = {
+  'aleph','concealcursor','filetype','key','operatorfunc','selectmode','tabline','varsofttabstop',
+  'noarabic','conceallevel','fixendofline','keymap','nopaste','shell','tabpagemax','vartabstop',
+  'arabicshape','completefunc','foldclose','keymodel','pastetoggle','shellcmdflag','tabstop','verbose',
+  'foldcolumn','keywordprg','patchexpr','shellquote','tagbsearch','verbosefile','ambiwidth','noconfirm',
+  'langmap','patchmode','shelltemp','tagcase','viminfofile','noautochdir','nocopyindent','foldexpr',
+  'shellxquote','tagfunc','virtualedit','noautoshelldir','cpoptions','foldignore','nolangnoremap',
+  'previewheight','shellxescape','taglength','novisualbell','noautoindent','cscopepathcomp',
+  'foldlevel','langremap','previewpopup','noshiftround','tagrelative','warn','noautoread','cscopeprg',
+  'foldlevelstart','laststatus','nopreviewwindow','shiftwidth','tags','noweirdinvert','noautowrite',
+  'cscopequickfix','foldmethod','nolazyredraw','printdevice','noshortname','tagstack','whichwrap',
+  'noautowriteall','nocscoperelative','foldminlines','nolinebreak','printencoding','showbreak',
+  'notermbidi','wildchar','background','nocscopetag','foldnestmax','lines','printfont','noshowcmd',
+  'termencoding','wildcharm','nobackup','cscopetagorder','formatexpr','nolisp','printmbcharset',
+  'noshowfulltag','notermguicolors','wildignore','backupcopy','nocscopeverbose','formatprg','nolist',
+  'printmbfont','noshowmatch','termwinkey','nowildignorecase','backupext','nocursorbind','fsync',
+  'listchars','printoptions','showmode','termwinsize','nowildmenu','balloondelay','nocursorcolumn','nogdefault',
+  'loadplugins','prompt','noallowrevins','completepopup','foldenable','langmenu','nopreserveindent',
+  'showtabline','noterse','wildmode','noballoonevalterm','nocursorline','helpheight','magic','pumheight',
+  'sidescroll','textauto','wildoptions','balloonexpr','debug','helplang','makeef','pumwidth','sidescrolloff',
+  'notextmode','wincolor','belloff','nodelcombine','nohidden','makeencoding','pythonthreehome','signcolumn',
+  'textwidth','window','nobinary','dictionary','history','makeprg','pythonhome','nosmartcase','thesaurus',
+  'winheight','nobomb','nodiff','nohkmap','matchtime','pyxversion','nosmartindent','notildeop','nowinfixheight',
+  'nobreakindent','diffexpr','nohkmapp','maxcombine','quickfixtextfunc','nosmarttab','timeout','nowinfixwidth',
+  'breakindentopt','nodigraph','nohlsearch','maxfuncdepth','quoteescape','softtabstop','timeoutlen',
+  'winminheight','bufhidden','display','noicon','maxmapdepth','noreadonly','nospell','notitle','winminwidth',
+  'buflisted','eadirection','iconstring','maxmem','redrawtime','spellfile','titlelen','winwidth','buftype',
+  'noedcompatible','noignorecase','maxmemtot','regexpengine','spelllang','titlestring','wrap','cdpath',
+  'emoji','imactivatefunc','menuitems','norelativenumber','spelloptions','nottimeout','wrapmargin','cedit',
+  'encoding','noimcmdline','modeline','remap','spellsuggest','ttimeoutlen','wrapscan','charconvert',
+  'endofline','noimdisable','nomodelineexpr','report','nosplitbelow','ttybuiltin','write','nocindent','equalalways',
+  'iminsert','modelines','norevins','nosplitright','ttyfast','nowriteany','cinoptions','equalprg','imsearch',
+  'modifiable', 'norightleft', 'startofline', 'ttymouse', 'writebackup', 'clipboard', 'noerrorbells', 'imstatusfunc',
+  'nomodified', 'noruler', 'statusline', 'ttyscroll', 'writedelay', 'cmdheight', 'esckeys', 'includeexpr', 'more',
+  'rulerformat', 'suffixesadd', 'undodir', 'cmdwinheight', 'eventignore', 'noincsearch', 'mouse', 'scroll',
+  'swapfile', 'noundofile', 'colorcolumn', 'noexpandtab', 'noinfercase', 'mousetime', 'noscrollbind', 'swapsync',
+  'undolevels', 'columns', 'noexrc', 'noinsertmode', 'nonumber', 'scrolljump', 'switchbuf', 'undoreload', 'commentstring',
+  'fileformat', 'isprint', 'numberwidth', 'scrolloff', 'synmaxcol', 'updatecount', 'nocompatible', 'fileignorecase',
+  'omnifunc', 'nosecure', 'syntax', 'updatetime', 'backspace', 'backupdir', 'backupskip','breakat','casemap',
+  'cinkeys', 'cinwords', 'comments', 'complete', 'completeopt', 'cryptmethod', 'cursorlineopt','define','diffopt',
+  'directory', 'errorfile', 'errorformat', 'fileencoding', 'fileencodings', 'fileformats', 'fillchars', 'foldmarker',
+  'foldtext', 'formatoptions', 'formatlistpat', 'grepformat', 'grepprg', 'guicursor', 'helpfile', 'highlight',
+  'include', 'indentexpr', 'indentkeys', 'isfname', 'isident', 'iskeyword', 'lispwords', 'matchpairs',
+  'maxmempattern', 'mkspellmem', 'mousemodel', 'nrformats', 'packpath', 'paragraphs', 'path', 'printexpr',
+  'printheader', 'pythonthreedll', 'pythondll', 'rightleftcmd', 'rubydll', 'foldopen', 'joinspaces',
+  'runtimepath', 'scrollopt', 'sections', 'selection', 'sessionoptions', 'shellpipe', 'shellredir', 'shortmess',
+  'spellcapcheck', 'suffixes', 'term', 'termwinscroll', 'titleold', 'ttytype', 'viewdir', 'viewoptions', 'viminfo'
 }
 
 this.HL_ARGS = {
