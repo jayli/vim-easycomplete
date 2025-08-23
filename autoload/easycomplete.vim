@@ -1677,20 +1677,25 @@ function! easycomplete#TypeEnterWithPUM()
       let insert_text = get(oitems, 'insertText', '')
       let user_data = easycomplete#util#GetUserData(l:item)
       let custom_expand = get(user_data, 'custom_expand', 0)
+      let is_snips = (get(user_data, 'plugin_name', '') == "snips" ? v:true : v:false)
       if custom_expand
         " 简易展开
         let l:back = get(json_decode(l:item['user_data']), 'cursor_backing_steps', 0)
         call timer_start(40, {
               \ -> easycomplete#CursorExpandableSnipBackword(l:back)
               \ })
+      elseif is_snips
+        " 如果源是 snips
+        call easycomplete#sources#snips#cr(l:item, {})
+        return s:FlushCtrlY()
       elseif !empty(insert_text) && s:LuaSnipSupports()
-        " luasnip 展开
+        " lsp 返回的 snip: 如果支持 luaSnip，则用 luasnip 展开
         call timer_start(10, {
               \ -> easycomplete#sources#snips#ExpandLuaSnipManually(insert_text)
               \ })
         return s:FlushCtrlY()
       elseif !empty(insert_text) && s:SnipSupports()
-        " ultisnip 展开
+        " lsp 返回的 snip: 如果支持 ultiSnip，则用 ultisnip 展开
         let word = get(l:item, "word")
         call s:AsyncRun("UltiSnips#Anon",[insert_text, word], 60)
         call timer_start(30, { -> call(function("UltiSnips#Anon"), [insert_text, word])})

@@ -1520,8 +1520,12 @@ function! easycomplete#util#expandable(item)
     endif
 
     let l:data = json_decode(user_data_str)
-    if has_key(l:data, 'expandable') && get(l:data, 'expandable', 0)
-      return get(l:data, 'expandable', 0)
+    if get(l:data, 'plugin_name', '') == "snips"
+      return v:true
+    elseif has_key(l:data, 'expandable') && get(l:data, 'expandable', 0) == 1
+      return v:true
+    else
+      return v:false
     endif
   else
     return v:false
