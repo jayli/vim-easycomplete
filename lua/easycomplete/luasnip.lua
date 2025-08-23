@@ -113,16 +113,8 @@ function M.get_snip_items(typing, plugin_name, ctx)
           }
           local ok, user_data = pcall(vim.fn.json_encode, user_data_json)
           if not ok then
-            -- console('>>' .. user_data)
             return {}
           end
-          -- \ 'word' : trigger,
-          -- \ 'abbr' : trigger . '~',
-          -- \ 'kind' : g:easycomplete_kindflag_snip,
-          -- \ 'menu' : g:easycomplete_menuflag_snip,
-          -- \ 'user_data': json_encode(user_data_json),
-          -- \ 'info' : [description, "-----"] + s:CodeInfoFilter(code_info),
-          -- \ 'user_data_json': user_data_json
 
           local snip_docstring = ""
           if vim.g.easycomplete_luasnip_from_where == "snipmate" then
