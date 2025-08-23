@@ -1,7 +1,7 @@
 local util = require "easycomplete.util"
 local log = util.log
 local console = util.console
-local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST0123456789#$_"
+local normal_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$_"
 local global_ghost_tx_ns = vim.api.nvim_create_namespace('global_ghost_tx_ns')
 local current_ghost_text = ""
 local M = {}
