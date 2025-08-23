@@ -90,6 +90,9 @@ function M.get_snip_items(typing, plugin_name, ctx)
   end
 
   local ls = require("luasnip")
+  -- TODO: 如果 buffer 中输入了一个 snip，删除后未保存，在原位置
+  -- 继续输入字符，则会判断为in_snippet，返回空，实则不应该判断
+  -- 为 in_snippet，需进一步调试
   if ls.in_snippet() then
     return {}
   end
