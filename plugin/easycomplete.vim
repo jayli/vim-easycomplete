@@ -385,7 +385,7 @@ augroup easycomplete#PluginRegister
 
   au User easycomplete_default_plugin call easycomplete#RegisterSource({
       \ 'name': 'cpp',
-      \ 'whitelist': easycomplete#FileTypes("cpp", ['hpp', 'h', 'tpp', "c", "cc",
+      \ 'whitelist': easycomplete#FileTypes("cpp", ['hpp', 'h', 'tpp', "c", "cc", "m",
       \                                             "cpp", "c++", "objc", "objcpp"]),
       \ 'completor': 'easycomplete#sources#cpp#completor',
       \ 'constructor' :'easycomplete#sources#cpp#constructor',
