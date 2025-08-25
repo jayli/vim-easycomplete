@@ -67,6 +67,15 @@ function util.zizzing()
   end
 end
 
+function util.get_fullpath(prefx)
+  local last_path
+  -- 匹配包含斜杠的路径（如 ./a/b/c、../a/b/c、/a/b/c 等）
+  for path in string.gmatch(prefx, "%S+/[^%s]*") do
+    last_path = path
+  end
+  return last_path or ""
+end
+
 -- 求一个列表t的前limit个元素
 -- util.sub_table({...}, 1, 20) 求列表从1到20个元素
 function util.sub_table(t, from, to)

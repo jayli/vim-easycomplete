@@ -1,3 +1,4 @@
+let s:util_toolkit = has('nvim') ? v:lua.require("easycomplete.util") : v:null
 
 function! easycomplete#sources#path#completor(opt, ctx)
   let l:typing_path = s:TypingAPath(a:ctx)
@@ -141,6 +142,21 @@ function! easycomplete#sources#path#TypingAPath(...)
   return call(function('s:TypingAPath'), a:000)
 endfunction
 
+function! s:GetFullPath(prefx)
+  if g:env_is_nvim
+    let fpath = s:util_toolkit.get_fullpath(a:prefx)
+  else
+    try
+      let fpath = matchstr(a:prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
+            \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
+    catch /^Vim\%((\a\+)\)\=:E945/
+      let fpath = matchstr(a:prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
+            \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
+    endtry
+  endif
+  return fpath
+endfunction
+
 " 判断当前是否正在输入一个地址path
 " base 原本想传入当前文件名字，实际上传不进来，这里也没用到
 " s:TypingAPath(ctx) 参数是ctx时，在当前脚本中调用
@@ -166,14 +182,7 @@ function! s:TypingAPath(...)
   "   \<Tab> => done
   "   xxxss \ xxxss<Tab> => done
   " MoreInfo: #140
-  try
-    let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-          \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\u2e80-\uef4f\\_\\- ]\\+\\|[\\.\\/]\\)")
-  catch /^Vim\%((\a\+)\)\=:E945/
-    let fpath = matchstr(prefx,"\\([\\(\\) \"'\\t\\[\\]\\{\\}]\\)\\@<=" .
-          \   "\\([\\/\\.\\~]\\+[\\.\\/a-zA-Z0-9\\_\\- ]\\+\\|[\\.\\/]\\)")
-  endtry
-
+  let fpath = s:GetFullPath(prefx)
   " 兼容单个 '/' 匹配的情况
   let spath = s:GetPathName(substitute(fpath,"^[\\.\\/].*\\/","./","g"))
   " 清除对 '\' 的路径识别
