@@ -1,3 +1,6 @@
+let s:easycomplete_search_bg_color = ""
+let s:easycomplete_search_fg_color = ""
+
 " markdown syntax {{{
 function! easycomplete#ui#ApplyMarkdownSyntax(winid)
   " 默认 Popup 的 Markdown 文档都基于 help syntax
@@ -129,17 +132,26 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
   if &diff || &buftype == "terminal" || index(disabled_ft, &filetype) >= 0
     return
   endif
-  if s:IsSearchWord()
+  let l:is_in_search_word = s:IsSearchWord()
+  if l:is_in_search_word
     3match none
     return
   endif
   if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
-    let bgcolor = easycomplete#ui#GetBgColor("Search")
-    let fgcolor = easycomplete#ui#GetFgColor("Search")
+    if empty(s:easycomplete_search_bg_color)
+      let bgcolor = easycomplete#ui#GetBgColor("Search")
+    else
+      let bgcolor = s:easycomplete_search_bg_color
+    endif
+    if empty(s:easycomplete_search_fg_color)
+      let fgcolor = easycomplete#ui#GetFgColor("Search")
+    else
+      let fgcolor = s:easycomplete_search_fg_color
+    endif
     let prefix_bg_key = easycomplete#util#IsGui() ? "guibg" : "ctermbg"
-    let append_bg_str = s:IsSearchWord() ? join([prefix_bg_key, bgcolor], "=") : join([prefix_bg_key, "NONE"], "=")
+    let append_bg_str = l:is_in_search_word ? join([prefix_bg_key, bgcolor], "=") : join([prefix_bg_key, "NONE"], "=")
     let prefix_fg_key = easycomplete#util#IsGui() ? "guifg" : "ctermfg"
-    let append_fg_str = s:IsSearchWord() ? join([prefix_fg_key, fgcolor], "=") : join([prefix_fg_key, "NONE"], "=")
+    let append_fg_str = l:is_in_search_word ? join([prefix_fg_key, fgcolor], "=") : join([prefix_fg_key, "NONE"], "=")
     exec "hi clear EasyMatchWord"
     exec "hi EasyMatchWord cterm=underline gui=underline " . append_bg_str . " " . append_fg_str
     try
