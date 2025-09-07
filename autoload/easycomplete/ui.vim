@@ -137,7 +137,8 @@ function! easycomplete#ui#HighlightWordUnderCursor() " {{{
     3match none
     return
   endif
-  if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
+  let curr_char = getline(".")[col(".")-1]
+  if curr_char !~# '[[:punct:][:blank:]]' || curr_char == "_"
     if empty(s:easycomplete_search_bg_color)
       let bgcolor = easycomplete#ui#GetBgColor("Search")
     else
