@@ -230,7 +230,7 @@ Typing `:h easycomplete` for help.
 There are tow ways to install lsp server.
 
 1. vim/nvim: Via command`:InstallLspServer`.
-2. nvim: Via [mason.nvim](https://github.com/mason-org/mason.nvim), Do `:MasonInstall {lsp-server-name}`
+2. nvim: Via [mason.nvim](https://github.com/mason-org/mason.nvim), Do `:MasonInstall {lsp-server-name}` (Highly recommended)
 
 LSP Server will all be installed in local path: `~/.config/vim-easycomplete/servers`.
 
